@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <title>Pahrul Irfan - Digital Architect</title>
+    <meta content="Experimental web developer and research innovator" name="description">
+    <meta content="web developer, portfolio, research, experimental design" name="keywords">
+
+    <!-- Favicons -->
+    <link href="assets/img/favicon.png" rel="icon">
+    <link href="assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Vendor CSS Files -->
+    <link href="assets/vendor/aos/aos.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="assets/vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+    <link href="assets/vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="assets/css/style.css" rel="stylesheet">
+
+    <style>
+        /* Experimental Brutalist Design */
+        :root {
+            --neon-green: #00ff41;
+            --electric-blue: #0066ff;
+            --cyber-purple: #9d00ff;
+            --warning-orange: #ff6600;
+            --matrix-black: #0d1117;
+            --terminal-green: #39ff14;
+            --glitch-pink: #ff0080;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--matrix-black);
+            color: var(--neon-green);
+            overflow-x: hidden;
+            cursor: crosshair;
+        }
+
+        /* Glitch Effect */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        @keyframes neon-flicker {
+            0%, 100% { 
+                text-shadow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green), 0 0 15px var(--neon-green);
+            }
+            50% { 
+                text-shadow: 0 0 2px var(--neon-green), 0 0 5px var(--neon-green), 0 0 8px var(--neon-green);
+            }
+        }
+
+        @keyframes matrix-rain {
+            0% { transform: translateY(-100vh); opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Matrix Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .matrix-char {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--terminal-green);
+            font-size: 14px;
+            animation: matrix-rain 3s linear infinite;
+            opacity: 0.3;
+        }
+
+        /* Header Styles */
+        #header {
+            background: rgba(13, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+        }
+
+        .logo a {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-green) !important;
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+            animation: neon-flicker 2s ease-in-out infinite alternate;
+        }
+
+        .logo a::before {
+            content: '> ';
+            color: var(--electric-blue);
+        }
+
+        /* Navigation */
+        #navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 0;
+        }
+
+        #navbar li {
+            position: relative;
+        }
+
+        #navbar a {
+            color: var(--neon-green) !important;
+            text-decoration: none;
+            padding: 15px 20px;
+            display: block;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        #navbar a:hover,
+        #navbar a.active {
+            color: var(--matrix-black) !important;
+            background: var(--neon-green);
+            border-color: var(--neon-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            animation: glitch 0.3s ease-in-out;
+        }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--matrix-black);
+            border: 2px solid var(--cyber-purple);
+            border-top: none;
+            min-width: 300px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(157, 0, 255, 0.3);
+            display: block;
+        }
+
+        .dropdown:hover .dropdown-menu,
+        .dropdown.active .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-menu a {
+            color: var(--cyber-purple) !important;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(157, 0, 255, 0.2);
+            font-size: 0.85rem;
+            display: block;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .dropdown-menu a:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-menu a:hover {
+            background: var(--cyber-purple);
+            color: var(--matrix-black) !important;
+            box-shadow: inset 0 0 10px rgba(157, 0, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        .dropdown-menu a i {
+            margin-right: 10px;
+            width: 16px;
+        }
+
+        /* Hero Section */
+        #hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 255, 65, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 102, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(157, 0, 255, 0.1) 0%, transparent 40%),
+                var(--matrix-black);
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 8rem);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-green);
+            margin-bottom: 1rem;
+            animation: neon-flicker 3s ease-in-out infinite alternate;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 2rem);
+            color: var(--electric-blue);
+            margin-bottom: 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            font-size: 1.2rem;
+            color: var(--cyber-purple);
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            line-height: 1.6;
+        }
+
+        /* Terminal-style buttons */
+        .terminal-btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: transparent;
+            border: 2px solid var(--neon-green);
+            color: var(--neon-green);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+
+        .terminal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--neon-green);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .terminal-btn:hover {
+            color: var(--matrix-black);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
+            animation: glitch 0.3s ease-in-out;
+        }
+
+        .terminal-btn:hover::before {
+            left: 0;
+        }
+
+        /* Experimental Sections */
+        .section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: clamp(2rem, 5vw, 4rem);
+            color: var(--neon-green);
+            text-align: center;
+            margin-bottom: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: neon-flicker 2s ease-in-out infinite alternate;
+        }
+
+        /* Experimental Cards */
+        .experimental-card {
+            background: rgba(13, 17, 23, 0.8);
+            border: 2px solid var(--electric-blue);
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            transform: skew(-2deg);
+        }
+
+        .experimental-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-green), var(--electric-blue), var(--cyber-purple), var(--glitch-pink));
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .experimental-card:hover {
+            transform: skew(0deg) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 255, 65, 0.2);
+        }
+
+        .experimental-card:hover::before {
+            opacity: 1;
+        }
+
+        .card-content {
+            transform: skew(2deg);
+        }
+
+        .card-title {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--electric-blue);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .card-text {
+            color: var(--neon-green);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Footer */
+        #footer {
+            background: var(--matrix-black);
+            border-top: 2px solid var(--neon-green);
+            padding: 2rem 0;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-green);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            #navbar ul {
+                flex-direction: column;
+                background: var(--matrix-black);
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                display: none;
+                border: 2px solid var(--neon-green);
+                border-top: none;
+            }
+
+            #navbar.active ul {
+                display: flex;
+            }
+
+            .dropdown {
+                width: 100%;
+            }
+
+            .dropdown-menu {
+                position: static;
+                opacity: 1;
+                visibility: visible;
+                transform: none;
+                border: 1px solid rgba(157, 0, 255, 0.3);
+                box-shadow: inset 0 0 10px rgba(157, 0, 255, 0.2);
+                background: rgba(157, 0, 255, 0.1);
+                min-width: 100%;
+                margin-top: 0;
+                display: none;
+            }
+
+            .dropdown.active .dropdown-menu {
+                display: block;
+            }
+
+            .dropdown-menu a {
+                padding: 10px 15px;
+                font-size: 0.8rem;
+            }
+
+            .experimental-card {
+                transform: none;
+                margin: 1rem 0;
+            }
+
+            .card-content {
+                transform: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrix-bg"></div>
+
+    <!-- ======= Header ======= -->
+    <header id="header" class="fixed-top">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+
+            <h1 class="logo me-auto me-lg-0"><a href="index.html">PAHRUL_IRFAN.EXE</a></h1>
+
+            <nav id="navbar" class="navbar order-last order-lg-0">
+                <ul>
+                    <li><a class="active" href="index.html">HOME</a></li>
+                    <li><a href="about.html">ABOUT</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle">RESEARCH_POSTERS</a>
+                        <div class="dropdown-menu">
+                            <a href="poster-rifqi.html">
+                                <i class="fas fa-microscope"></i> Rifqi - Kearifan Lokal & Medis Modern
+                            </a>
+                            <a href="poster-yusuf.html">
+                                <i class="fas fa-brain"></i> Yusuf - Sistem Rekomendasi Pengobatan
+                            </a>
+                            <a href="poster-fitri.html">
+                                <i class="fas fa-pills"></i> Fitri - Platform Interaksi Obat & Makanan
+                            </a>
+                        </div>
+                    </li>
+                    <li><a href="contact.html">CONTACT</a></li>
+                </ul>
+                <i class="bi bi-list mobile-nav-toggle"></i>
+            </nav>
+
+            <div class="header-social-links">
+                <a href="#" class="twitter"><i class="bi bi-twitter"></i></a>
+                <a href="#" class="facebook"><i class="bi bi-facebook"></i></a>
+                <a href="#" class="instagram"><i class="bi bi-instagram"></i></a>
+                <a href="#" class="linkedin"><i class="bi bi-linkedin"></i></a>
+            </div>
+
+        </div>
+    </header>
+    <!-- End Header -->
+
+    <!-- ======= Hero Section ======= -->
+    <section id="hero">
+        <div class="hero-content" data-aos="fade-up">
+            <h1 class="hero-title">PAHRUL IRFAN</h1>
+            <h2 class="hero-subtitle">DIGITAL_ARCHITECT.INIT()</h2>
+            <p class="hero-description">
+                Experimental web developer pushing boundaries between code and creativity. 
+                Crafting digital experiences that challenge conventional design paradigms.
+            </p>
+            <div class="hero-buttons">
+                <a href="about.html" class="terminal-btn">EXECUTE_ABOUT.SH</a>
+                <a href="#projects" class="terminal-btn">VIEW_PROJECTS.BAT</a>
+            </div>
+        </div>
+    </section>
+    <!-- End Hero -->
+
+    <!-- ======= Experimental Section ======= -->
+    <section class="section" id="projects">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">SYSTEM_MODULES</h2>
+            
+            <div class="row">
+                <div class="col-lg-4" data-aos="fade-right" data-aos-delay="100">
+                    <div class="experimental-card">
+                        <div class="card-content">
+                            <h3 class="card-title">WEB_DEVELOPMENT.EXE</h3>
+                            <p class="card-text">
+                                Building experimental web applications using cutting-edge technologies. 
+                                Specializing in unconventional UI/UX patterns and performance optimization.
+                            </p>
+                            <div class="tech-stack">
+                                <span style="color: var(--warning-orange);">[REACT]</span>
+                                <span style="color: var(--cyber-purple);">[NODE.JS]</span>
+                                <span style="color: var(--electric-blue);">[WEBGL]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="experimental-card">
+                        <div class="card-content">
+                            <h3 class="card-title">RESEARCH_ENGINE.AI</h3>
+                            <p class="card-text">
+                                Conducting innovative research in healthcare technology and AI applications. 
+                                Contributing to academic knowledge through experimental methodologies.
+                            </p>
+                            <div class="tech-stack">
+                                <span style="color: var(--neon-green);">[MACHINE_LEARNING]</span>
+                                <span style="color: var(--glitch-pink);">[DATA_ANALYSIS]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4" data-aos="fade-left" data-aos-delay="300">
+                    <div class="experimental-card">
+                        <div class="card-content">
+                            <h3 class="card-title">CREATIVE_CODING.JS</h3>
+                            <p class="card-text">
+                                Exploring the intersection of art and technology through generative design, 
+                                interactive installations, and experimental digital experiences.
+                            </p>
+                            <div class="tech-stack">
+                                <span style="color: var(--electric-blue);">[P5.JS]</span>
+                                <span style="color: var(--warning-orange);">[THREE.JS]</span>
+                                <span style="color: var(--cyber-purple);">[GLSL]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= Research Showcase ======= -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">RESEARCH_DATABASE</h2>
+            
+            <div class="row">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <div class="experimental-card">
+                        <div class="card-content">
+                            <h3 class="card-title">ACTIVE_PROJECTS.LOG</h3>
+                            <p class="card-text">
+                                Currently working on three groundbreaking research projects in healthcare technology:
+                            </p>
+                            <ul style="color: var(--neon-green); font-family: 'JetBrains Mono', monospace;">
+                                <li>> Integrating traditional medicine with modern AI systems</li>
+                                <li>> Developing smart drug-food interaction platforms</li>
+                                <li>> Creating recommendation systems for pediatric healthcare</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6" data-aos="fade-left">
+                    <div class="experimental-card">
+                        <div class="card-content">
+                            <h3 class="card-title">COLLABORATION.NETWORK</h3>
+                            <p class="card-text">
+                                Working with researchers from multiple universities to push the boundaries 
+                                of healthcare technology and AI applications.
+                            </p>
+                            <div class="network-nodes" style="margin-top: 1rem;">
+                                <span style="color: var(--electric-blue);">[UNIVERSITAS_BUMIGORA]</span><br>
+                                <span style="color: var(--cyber-purple);">[UNIVERSITAS_AL_AZHAR]</span><br>
+                                <span style="color: var(--warning-orange);">[UNIVERSITAS_QAMARUL_HUDA]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= Terminal Contact ======= -->
+    <section class="section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8" data-aos="fade-up">
+                    <div class="experimental-card">
+                        <div class="card-content" style="text-align: center;">
+                            <h3 class="card-title">INITIALIZE_CONNECTION.BAT</h3>
+                            <p class="card-text">
+                                Ready to collaborate on experimental projects or discuss innovative research ideas?
+                            </p>
+                            <a href="contact.html" class="terminal-btn" style="margin-top: 1rem;">
+                                ESTABLISH_CONTACT.EXE
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= Footer ======= -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-text">
+                &copy; 2024 PAHRUL_IRFAN.SYS | EXPERIMENTAL_DIGITAL_ARCHITECT | ALL_RIGHTS_RESERVED.LOG
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer -->
+
+    <div id="preloader"></div>
+    <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+    <!-- Vendor JS Files -->
+    <script src="assets/vendor/purecounter/purecounter_vanilla.js"></script>
+    <script src="assets/vendor/aos/aos.js"></script>
+    <script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/glightbox/js/glightbox.min.js"></script>
+    <script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="assets/vendor/waypoints/noframework.waypoints.js"></script>
+    <script src="assets/vendor/php-email-form/validate.js"></script>
+
+    <!-- Template Main JS File -->
+    <script src="assets/js/main.js"></script>
+
+    <!-- Matrix Rain Effect -->
+    <script>
+        // Matrix Rain Effect
+        function createMatrixRain() {
+            const matrixBg = document.getElementById('matrix-bg');
+            const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+            
+            for (let i = 0; i < 50; i++) {
+                const char = document.createElement('div');
+                char.className = 'matrix-char';
+                char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                char.style.left = Math.random() * 100 + '%';
+                char.style.animationDelay = Math.random() * 3 + 's';
+                char.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                matrixBg.appendChild(char);
+            }
+        }
+
+        // Initialize matrix effect
+        document.addEventListener('DOMContentLoaded', function() {
+            createMatrixRain();
+            
+            // Recreate matrix chars periodically
+            setInterval(createMatrixRain, 5000);
+
+            // Dropdown functionality
+            const dropdown = document.querySelector('.dropdown');
+            const dropdownToggle = document.querySelector('.dropdown-toggle');
+            
+            if (dropdown && dropdownToggle) {
+                // Toggle dropdown on click for mobile
+                dropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    dropdown.classList.toggle('active');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdown.contains(e.target)) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+
+                // Keep dropdown open on hover for desktop
+                dropdown.addEventListener('mouseenter', function() {
+                    dropdown.classList.add('active');
+                });
+
+                dropdown.addEventListener('mouseleave', function() {
+                    dropdown.classList.remove('active');
+                });
+            }
+        });
+
+        // Glitch effect on scroll
+        window.addEventListener('scroll', function() {
+            const scrolled = window.pageYOffset;
+            const rate = scrolled * -0.5;
+            
+            document.querySelectorAll('.experimental-card').forEach((card, index) => {
+                if (scrolled > card.offsetTop - window.innerHeight) {
+                    card.style.transform = `translateX(${Math.sin(scrolled * 0.01 + index) * 10}px) skew(${Math.sin(scrolled * 0.02) * 2}deg)`;
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
