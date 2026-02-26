@@ -1704,23 +1704,100 @@
 
     <!-- JavaScript -->
     <script>
-        // Disable right-click context menu
+        // Fungsi untuk menampilkan peringatan
+        function showCopyWarning() {
+            var existingModal = document.getElementById('copy-warning-modal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+
+            var modal = document.createElement('div');
+            modal.id = 'copy-warning-modal';
+            modal.innerHTML = '<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 99999;"><div style="background: white; padding: 30px; border-radius: 10px; text-align: center; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"><div style="font-size: 50px; margin-bottom: 15px;">🚫</div><h3 style="color: #e74c3c; margin-bottom: 10px;">Copy Tidak Diizinkan!</h3><p style="color: #555; margin-bottom: 20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p><button onclick="this.closest(\'#copy-warning-modal\').remove()" style="background: #3498db; color: white; border: none; padding: 10px 30px; border-radius: 5px; cursor: pointer; font-size: 16px;">Mengerti</button></div></div>';
+            document.body.appendChild(modal);
+
+            setTimeout(function() {
+                var m = document.getElementById('copy-warning-modal');
+                if (m) m.remove();
+            }, 3000);
+        }
+
+        // 1. Disable right-click context menu
         document.addEventListener('contextmenu', function(e) {
-            if (e.target.closest('.code-block')) {
+            if (e.target.closest('.code-block') || e.target.closest('pre') || e.target.closest('code')) {
                 e.preventDefault();
-                alert('⚠️ Copy tidak diizinkan!\nKetik manual untuk melatih pemahaman.');
+                showCopyWarning();
+                return false;
             }
         });
 
-        // Disable keyboard shortcuts for copying
+        // 2. Disable keyboard shortcuts for copying
         document.addEventListener('keydown', function(e) {
-            if (e.target.closest('.code-block')) {
-                if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'x')) {
+            var isInCodeBlock = e.target.closest('.code-block') || e.target.closest('pre') || e.target.closest('code');
+            var selection = window.getSelection().toString();
+            
+            // Cek apakah ada selection di code block
+            if (selection && isInCodeBlock) {
+                if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X')) {
                     e.preventDefault();
-                    alert('⚠️ Copy tidak diizinkan!\nKetik manual untuk melatih pemahaman.');
+                    showCopyWarning();
+                    return false;
+                }
+            }
+            
+            // Block Ctrl+U (view source) dan F12 (dev tools)
+            if ((e.ctrlKey && (e.key === 'u' || e.key === 'U')) || e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I'))) {
+                e.preventDefault();
+                showCopyWarning();
+                return false;
+            }
+        });
+
+        // 3. Disable copy event
+        document.addEventListener('copy', function(e) {
+            var selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                var range = selection.getRangeAt(0);
+                var container = range.commonAncestorContainer;
+                if (container.nodeType === 3) container = container.parentElement;
+                
+                if (container && (container.closest('.code-block') || container.closest('pre') || container.closest('code'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', '');
+                    showCopyWarning();
                 }
             }
         });
+
+        // 4. Disable cut event
+        document.addEventListener('cut', function(e) {
+            var selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                var range = selection.getRangeAt(0);
+                var container = range.commonAncestorContainer;
+                if (container.nodeType === 3) container = container.parentElement;
+                
+                if (container && (container.closest('.code-block') || container.closest('pre') || container.closest('code'))) {
+                    e.preventDefault();
+                    showCopyWarning();
+                }
+            }
+        });
+
+        // 5. Tambahkan CSS untuk disable selection
+        var style = document.createElement('style');
+        style.textContent = '.code-block, .code-block *, pre, pre *, code, code * { -webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; } .code-block::selection, .code-block *::selection, pre::selection, pre *::selection, code::selection, code *::selection { background: transparent !important; color: inherit !important; }';
+        document.head.appendChild(style);
+
+        // 6. Disable drag
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.code-block, pre, code').forEach(function(el) {
+                el.ondragstart = function() { return false; };
+                el.onselectstart = function() { return false; };
+            });
+        });
+
+        console.log('🔒 Anti-copy protection aktif');
 
         // Show section function
         function showSection(sectionId) {
@@ -1802,6 +1879,64 @@
             block.addEventListener('copy', function(e) {
                 e.preventDefault();
             });
+        });
+    </script>
+</body>
+</html>
+
+
+        // Show section function
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            window.scrollTo(0, 0);
+            if (window.innerWidth <= 768) {
+                var sidebar = document.getElementById('sidebar');
+                if (sidebar) sidebar.classList.remove('open');
+            }
+        }
+
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            if (sidebar) sidebar.classList.toggle('open');
+        }
+
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist-item input');
+            const checked = document.querySelectorAll('.checklist-item input:checked').length;
+            const total = checkboxes.length;
+            if (total > 0) {
+                const percentage = Math.round((checked / total) * 100);
+                var progressText = document.getElementById('progressText');
+                var progressFill = document.getElementById('progressFill');
+                if (progressText) progressText.textContent = percentage + '%';
+                if (progressFill) progressFill.style.width = percentage + '%';
+                checkboxes.forEach(cb => {
+                    if (cb.checked) {
+                        cb.parentElement.classList.add('checked');
+                    } else {
+                        cb.parentElement.classList.remove('checked');
+                    }
+                });
+                localStorage.setItem('praktikumProgress', JSON.stringify({checked: checked, total: total}));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const saved = localStorage.getItem('praktikumProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                const percentage = Math.round((progress.checked / progress.total) * 100);
+                var progressText = document.getElementById('progressText');
+                var progressFill = document.getElementById('progressFill');
+                if (progressText) progressText.textContent = percentage + '%';
+                if (progressFill) progressFill.style.width = percentage + '%';
+            }
         });
     </script>
 </body>
