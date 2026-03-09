@@ -1,0 +1,4043 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Android Kotlin - Dasar</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>Pemrograman Mobile</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#lingkungan" class="nav-link">Lingkungan Pengembangan</a>
+                <ul class="sub-menu">
+                    <li><a href="#instalasi">Instalasi Android Studio</a></li>
+                    <li><a href="#konfigurasi">Konfigurasi SDK</a></li>
+                    <li><a href="#emulator">Setup Emulator</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#helloworld" class="nav-link">Hello World</a>
+                <ul class="sub-menu">
+                    <li><a href="#membuat-project">Membuat Project Baru</a></li>
+                    <li><a href="#struktur-project">Struktur Project</a></li>
+                    <li><a href="#menjalankan-app">Menjalankan Aplikasi</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#ui-xml" class="nav-link">UI XML & Layout</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengenalan-xml">Pengenalan XML</a></li>
+                    <li><a href="#view-viewgroup">View dan ViewGroup</a></li>
+                    <li><a href="#linearlayout">LinearLayout</a></li>
+                    <li><a href="#relativelayout">RelativeLayout</a></li>
+                    <li><a href="#constraintlayout">ConstraintLayout</a></li>
+                    <li><a href="#framelayout">FrameLayout</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#widgets" class="nav-link">Basic Widgets</a>
+                <ul class="sub-menu">
+                    <li><a href="#textview">TextView</a></li>
+                    <li><a href="#edittext">EditText</a></li>
+                    <li><a href="#button">Button</a></li>
+                    <li><a href="#imageview">ImageView</a></li>
+                    <li><a href="#checkbox-radio">CheckBox & RadioButton</a></li>
+                    <li><a href="#switch-toggle">Switch & ToggleButton</a></li>
+                    <li><a href="#spinner">Spinner</a></li>
+                    <li><a href="#progressbar">ProgressBar</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#style-theme" class="nav-link">Style dan Theme</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengertian-style">Pengertian Style</a></li>
+                    <li><a href="#membuat-style">Membuat Style</a></li>
+                    <li><a href="#theme">Theme</a></li>
+                    <li><a href="#material-design">Material Design</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#localization" class="nav-link">Localization</a>
+                <ul class="sub-menu">
+                    <li><a href="#string-resources">String Resources</a></li>
+                    <li><a href="#multi-bahasa">Multi Bahasa</a></li>
+                    <li><a href="#format-string">Format String</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#activity" class="nav-link">Activity</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengertian-activity">Pengertian Activity</a></li>
+                    <li><a href="#lifecycle">Activity Lifecycle</a></li>
+                    <li><a href="#membuat-activity">Membuat Activity Baru</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#intent" class="nav-link">Intent</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengertian-intent">Pengertian Intent</a></li>
+                    <li><a href="#explicit-intent">Explicit Intent</a></li>
+                    <li><a href="#implicit-intent">Implicit Intent</a></li>
+                    <li><a href="#passing-data">Passing Data</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#tugas" class="nav-link">Tugas Praktikum</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Pendahuluan -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Pengenalan Android Development</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami lingkungan pengembangan Android</li>
+                    <li>Mampu membuat aplikasi Hello World</li>
+                    <li>Memahami struktur UI XML dan berbagai jenis Layout</li>
+                    <li>Mengenal dan menggunakan Basic Widgets</li>
+                    <li>Mampu membuat Style dan Theme</li>
+                    <li>Memahami konsep Localization</li>
+                    <li>Memahami konsep Activity dan Lifecycle</li>
+                    <li>Mampu mengimplementasikan Intent untuk navigasi</li>
+                </ul>
+            </div>
+            
+            <h2>Apa itu Android?</h2>
+            <p>Android adalah sistem operasi berbasis Linux yang dirancang untuk perangkat mobile seperti smartphone dan tablet. Android dikembangkan oleh Google dan merupakan sistem operasi mobile paling populer di dunia dengan pangsa pasar lebih dari 70%.</p>
+            
+            <h2>Mengapa Kotlin?</h2>
+            <p>Kotlin adalah bahasa pemrograman modern yang dikembangkan oleh JetBrains. Pada tahun 2019, Google mengumumkan Kotlin sebagai bahasa yang direkomendasikan untuk pengembangan Android. Beberapa kelebihan Kotlin:</p>
+            <ul>
+                <li><strong>Concise</strong> - Kode lebih ringkas dibanding Java, mengurangi boilerplate code</li>
+                <li><strong>Safe</strong> - Null safety bawaan untuk menghindari NullPointerException</li>
+                <li><strong>Interoperable</strong> - 100% kompatibel dengan Java, bisa menggunakan library Java</li>
+                <li><strong>Modern</strong> - Mendukung fitur pemrograman modern seperti coroutines, extension functions</li>
+            </ul>
+        </section>
+
+        <!-- Lingkungan Pengembangan -->
+        <section id="lingkungan" class="section">
+            <h1>Lingkungan Pengembangan</h1>
+            
+            <article id="instalasi">
+                <h2>Instalasi Android Studio</h2>
+                <p>Android Studio adalah Integrated Development Environment (IDE) resmi untuk pengembangan aplikasi Android. IDE ini berbasis IntelliJ IDEA dan menyediakan fitur lengkap untuk development Android.</p>
+                
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Download Android Studio</h4>
+                            <p>Kunjungi website resmi Android Developer di <code>developer.android.com/studio</code> dan download installer sesuai sistem operasi Anda (Windows, macOS, atau Linux).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Jalankan Installer</h4>
+                            <p>Jalankan file installer yang sudah didownload. Ikuti wizard instalasi dengan pengaturan default. Pada Windows, pastikan untuk mencentang opsi Android Virtual Device.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Setup Wizard</h4>
+                            <p>Saat pertama kali membuka Android Studio, akan muncul Setup Wizard. Pilih <strong>"Standard"</strong> installation untuk menginstall komponen yang diperlukan secara otomatis.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Download SDK Components</h4>
+                            <p>Android Studio akan mengunduh SDK, build tools, dan komponen lain yang diperlukan. Proses ini memerlukan koneksi internet dan bisa memakan waktu cukup lama tergantung kecepatan internet.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warning-box">
+                    <h4>Persyaratan Sistem Minimum</h4>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Komponen</th>
+                                <th>Minimum</th>
+                                <th>Disarankan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>RAM</td>
+                                <td>8 GB</td>
+                                <td>16 GB atau lebih</td>
+                            </tr>
+                            <tr>
+                                <td>Storage</td>
+                                <td>8 GB</td>
+                                <td>SSD dengan 16 GB+</td>
+                            </tr>
+                            <tr>
+                                <td>Resolusi Layar</td>
+                                <td>1280 x 800</td>
+                                <td>1920 x 1080</td>
+                            </tr>
+                            <tr>
+                                <td>OS</td>
+                                <td colspan="2">Windows 8/10/11 64-bit, macOS 10.14+, Linux 64-bit</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <article id="konfigurasi">
+                <h2>Konfigurasi SDK</h2>
+                <p>SDK (Software Development Kit) adalah kumpulan tools yang diperlukan untuk mengembangkan aplikasi Android. Konfigurasi SDK dapat dilakukan melalui SDK Manager.</p>
+                
+                <h3>Mengakses SDK Manager</h3>
+                <p>Buka Android Studio, kemudian pilih menu <strong>Tools → SDK Manager</strong> atau klik ikon SDK Manager di toolbar.</p>
+                
+                <h3>Komponen SDK yang Diperlukan</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Komponen</th>
+                            <th>Keterangan</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Android SDK Platform 34</td>
+                            <td>API level terbaru (Android 14)</td>
+                            <td>Wajib</td>
+                        </tr>
+                        <tr>
+                            <td>Android SDK Platform 24</td>
+                            <td>Minimum API yang didukung</td>
+                            <td>Wajib</td>
+                        </tr>
+                        <tr>
+                            <td>Android SDK Build-Tools</td>
+                            <td>Tools untuk kompilasi aplikasi</td>
+                            <td>Wajib</td>
+                        </tr>
+                        <tr>
+                            <td>Android Emulator</td>
+                            <td>Untuk menjalankan aplikasi tanpa device fisik</td>
+                            <td>Wajib</td>
+                        </tr>
+                        <tr>
+                            <td>Android SDK Platform-Tools</td>
+                            <td>ADB dan tools debugging</td>
+                            <td>Wajib</td>
+                        </tr>
+                        <tr>
+                            <td>Intel x86 Emulator Accelerator (HAXM)</td>
+                            <td>Mempercepat performa emulator</td>
+                            <td>Disarankan</td>
+                        </tr>
+                        <tr>
+                            <td>Google Play Services</td>
+                            <td>Untuk menggunakan API Google</td>
+                            <td>Opsional</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="emulator">
+                <h2>Setup Emulator (AVD)</h2>
+                <p>AVD (Android Virtual Device) adalah emulator yang mensimulasikan perangkat Android di komputer Anda. Dengan AVD, Anda bisa menguji aplikasi tanpa memerlukan device fisik.</p>
+                
+                <h3>Membuat AVD Baru</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Buka Device Manager melalui menu <strong>Tools → Device Manager</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Klik tombol <strong>"Create Device"</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Pilih kategori <strong>Phone</strong> dan pilih tipe perangkat (misalnya Pixel 6)</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Pilih system image. Download jika belum ada. Disarankan API 33 (Android 13) atau lebih baru</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <p>Konfigurasi AVD (nama, orientasi, RAM) dan klik <strong>"Finish"</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Tips Performa Emulator</h4>
+                    <ul>
+                        <li>Gunakan system image x86_64 untuk performa lebih baik</li>
+                        <li>Aktifkan Hardware Acceleration (HAXM untuk Intel, Hyper-V untuk AMD)</li>
+                        <li>Alokasikan RAM yang cukup untuk emulator (minimal 2GB)</li>
+                        <li>Gunakan GPU host untuk rendering grafis</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- Hello World -->
+        <section id="helloworld" class="section">
+            <h1>Membuat Aplikasi Hello World</h1>
+            
+            <article id="membuat-project">
+                <h2>Membuat Project Baru</h2>
+                
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buka Android Studio</h4>
+                            <p>Pilih <strong>"New Project"</strong> dari halaman Welcome, atau menu <strong>File → New → New Project</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Pilih Template</h4>
+                            <p>Pilih <strong>"Empty Views Activity"</strong> dari kategori Phone and Tablet, kemudian klik Next.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Konfigurasi Project</h4>
+                            <table class="data-table">
+                                <tr>
+                                    <td><strong>Name</strong></td>
+                                    <td>HelloWorld</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Package name</strong></td>
+                                    <td>com.example.helloworld</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Save location</strong></td>
+                                    <td>Pilih direktori penyimpanan</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Language</strong></td>
+                                    <td>Kotlin</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Minimum SDK</strong></td>
+                                    <td>API 24 (Android 7.0 Nougat)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Build configuration language</strong></td>
+                                    <td>Kotlin DSL</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Finish</h4>
+                            <p>Klik <strong>"Finish"</strong> dan tunggu proses Gradle sync selesai. Proses ini bisa memakan waktu beberapa menit.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="struktur-project">
+                <h2>Struktur Project Android</h2>
+                <p>Berikut adalah struktur folder penting dalam project Android:</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Struktur Project</span>
+                    </div>
+                    <pre class="no-copy">
+MyApplication/
+├── app/
+│   ├── manifests/
+│   │   └── AndroidManifest.xml          # Konfigurasi aplikasi
+│   │
+│   ├── kotlin+java/
+│   │   └── com.example.myapp/
+│   │       ├── MainActivity.kt          # Activity utama
+│   │       └── (other activities)
+│   │
+│   ├── res/
+│   │   ├── drawable/                    # Gambar dan drawable resources
+│   │   │   ├── ic_launcher_background.xml
+│   │   │   └── (other drawables)
+│   │   │
+│   │   ├── layout/                      # Layout XML files
+│   │   │   ├── activity_main.xml
+│   │   │   └── (other layouts)
+│   │   │
+│   │   ├── mipmap/                      # App launcher icons
+│   │   │   ├── ic_launcher/
+│   │   │   └── ic_launcher_round/
+│   │   │
+│   │   └── values/                      # Resource values
+│   │       ├── colors.xml               # Definisi warna
+│   │       ├── strings.xml              # String resources
+│   │       └── themes.xml               # Tema aplikasi
+│   │
+│   └── build.gradle.kts                 # Module-level build config
+│
+├── gradle/
+│   └── libs.versions.toml               # Version catalog
+│
+├── build.gradle.kts                     # Project-level build config
+└── settings.gradle.kts                  # Project settings</pre>
+                </div>
+
+                <h3>Penjelasan File Penting</h3>
+                
+                <h4>1. AndroidManifest.xml</h4>
+                <p>File manifest berisi informasi penting tentang aplikasi yang diperlukan oleh sistem Android. Setiap aplikasi harus memiliki file ini di root project.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"&gt;
+
+    &lt;application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.HelloWorld"
+        tools:targetApi="34"&gt;
+        
+        &lt;!-- Deklarasi Activity --&gt;
+        &lt;activity
+            android:name=".MainActivity"
+            android:exported="true"&gt;
+            &lt;!-- Intent filter untuk launcher --&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+        
+    &lt;/application&gt;
+
+&lt;/manifest&gt;</pre>
+                </div>
+
+                <h4>2. MainActivity.kt</h4>
+                <p>File Kotlin yang berisi logic dari Activity utama. Activity ini akan ditampilkan pertama kali saat aplikasi dibuka.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Menghubungkan Activity dengan layout XML
+        setContentView(R.layout.activity_main)
+    }
+}</pre>
+                </div>
+
+                <h4>3. activity_main.xml</h4>
+                <p>File XML yang mendefinisikan tampilan UI dari Activity. Layout ini akan di-inflate dan ditampilkan ke layar.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_main.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvHello"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello World!"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</pre>
+                </div>
+            </article>
+
+            <article id="menjalankan-app">
+                <h2>Menjalankan Aplikasi</h2>
+                
+                <h3>Menggunakan Emulator</h3>
+                <ol>
+                    <li>Pilih emulator dari dropdown device di toolbar</li>
+                    <li>Klik tombol <strong>Run</strong> (ikon play hijau) atau tekan <kbd>Shift</kbd> + <kbd>F10</kbd></li>
+                    <li>Tunggu emulator booting dan proses build selesai</li>
+                    <li>Aplikasi akan otomatis terinstall dan berjalan di emulator</li>
+                </ol>
+
+                <h3>Menggunakan Device Fisik</h3>
+                <ol>
+                    <li>Aktifkan <strong>Developer Options</strong> di perangkat Android</li>
+                    <li>Aktifkan <strong>USB Debugging</strong> di Developer Options</li>
+                    <li>Hubungkan perangkat dengan kabel USB ke komputer</li>
+                    <li>Izinkan debugging USB saat dialog muncul di device</li>
+                    <li>Pilih perangkat dari dropdown dan klik Run</li>
+                </ol>
+
+                <div class="info-box">
+                    <h4>Cara Mengaktifkan Developer Options</h4>
+                    <p>Buka <strong>Settings → About Phone</strong>, kemudian tap <strong>Build Number</strong> sebanyak 7 kali hingga muncul pesan "You are now a developer!"</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- UI XML & Layout -->
+        <section id="ui-xml" class="section">
+            <h1>UI XML dan Layout</h1>
+            
+            <article id="pengenalan-xml">
+                <h2>Pengenalan XML di Android</h2>
+                <p>XML (eXtensible Markup Language) adalah bahasa markup yang digunakan untuk mendefinisikan tampilan UI di Android. Dengan memisahkan UI dari kode Kotlin/Java, kita mendapatkan:</p>
+                
+                <ul>
+                    <li><strong>Separation of Concerns</strong> - Memisahkan tampilan dari logic</li>
+                    <li><strong>Visual Editor</strong> - Bisa mendesain UI secara visual</li>
+                    <li><strong>Multiple Layouts</strong> - Mendukung berbagai ukuran layar</li>
+                    <li><strong>Resource Management</strong> - Mudah mengelola resource UI</li>
+                </ul>
+
+                <h3>Struktur Dasar XML Layout</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Struktur Dasar XML</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RootLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;!-- Child views di sini --&gt;
+    &lt;ChildView
+        android:id="@+id/viewId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:attribute="value" /&gt;
+
+&lt;/RootLayout&gt;</pre>
+                </div>
+
+                <h3>Namespace XML</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Namespace</th>
+                            <th>Prefix</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>schemas.android.com/apk/res/android</td>
+                            <td>android:</td>
+                            <td>Atribut standar Android</td>
+                        </tr>
+                        <tr>
+                            <td>schemas.android.com/apk/res-auto</td>
+                            <td>app:</td>
+                            <td>Atribut custom dan library</td>
+                        </tr>
+                        <tr>
+                            <td>schemas.android.com/tools</td>
+                            <td>tools:</td>
+                            <td>Atribut untuk design time saja</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Atribut Layout Dasar</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Nilai</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:layout_width</td>
+                            <td>match_parent, wrap_content, atau dp</td>
+                            <td>Lebar view</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_height</td>
+                            <td>match_parent, wrap_content, atau dp</td>
+                            <td>Tinggi view</td>
+                        </tr>
+                        <tr>
+                            <td>android:id</td>
+                            <td>@+id/namaId</td>
+                            <td>Identifier unik untuk view</td>
+                        </tr>
+                        <tr>
+                            <td>android:padding</td>
+                            <td>dp value</td>
+                            <td>Jarak dalam view</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_margin</td>
+                            <td>dp value</td>
+                            <td>Jarak luar view</td>
+                        </tr>
+                        <tr>
+                            <td>android:background</td>
+                            <td>color atau drawable</td>
+                            <td>Background view</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <h4>Satuan Ukuran di Android</h4>
+                    <ul>
+                        <li><strong>dp (density-independent pixels)</strong> - Digunakan untuk dimensi layout, akan menyesuaikan dengan kepadatan layar</li>
+                        <li><strong>sp (scale-independent pixels)</strong> - Digunakan untuk ukuran teks, mengikuti preferensi ukuran font user</li>
+                        <li><strong>px (pixels)</strong> - Tidak disarankan karena tidak responsif</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="view-viewgroup">
+                <h2>View dan ViewGroup</h2>
+                
+                <h3>View</h3>
+                <p>View adalah class dasar untuk semua komponen UI di Android. View merepresentasikan area persegi di layar yang dapat menggambar sesuatu dan merespons interaksi user.</p>
+                
+                <h3>ViewGroup</h3>
+                <p>ViewGroup adalah View khusus yang dapat berisi View lain (child views). ViewGroup digunakan sebagai container untuk mengatur tata letak child views.</p>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        ViewGroup (Container)
+                    ┌─────────────────────────────┐
+                    │  ┌───────┐    ┌───────┐    │
+                    │  │ View  │    │ View  │    │
+                    │  │  (1)  │    │  (2)  │    │
+                    │  └───────┘    └───────┘    │
+                    │       ┌─────────────┐      │
+                    │       │  ViewGroup  │      │
+                    │       │ ┌───┐ ┌───┐ │      │
+                    │       │ │ V │ │ V │ │      │
+                    │       │ └───┘ └───┘ │      │
+                    │       └─────────────┘      │
+                    └─────────────────────────────┘
+                    </pre>
+                </div>
+            </article>
+
+            <article id="linearlayout">
+                <h2>LinearLayout</h2>
+                <p>LinearLayout menyusun child views dalam satu baris (horizontal) atau satu kolom (vertical). Ini adalah layout paling sederhana dan mudah dipahami.</p>
+                
+                <h3>Atribut Penting</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Nilai</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:orientation</td>
+                            <td>vertical | horizontal</td>
+                            <td>Arah susunan views</td>
+                        </tr>
+                        <tr>
+                            <td>android:gravity</td>
+                            <td>center, start, end, top, bottom</td>
+                            <td>Posisi content dalam layout</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_weight</td>
+                            <td>angka (float)</td>
+                            <td>Proporsi ruang yang digunakan</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Contoh LinearLayout Vertical</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>LinearLayout Vertical</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Judul"
+        android:textSize="24sp"
+        android:textStyle="bold" /&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Deskripsi di bawah judul"
+        android:layout_marginTop="8dp" /&gt;
+
+    &lt;Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tombol"
+        android:layout_marginTop="16dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Contoh LinearLayout Horizontal dengan Weight</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>LinearLayout dengan Weight</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"&gt;
+
+    &lt;!-- Tombol mengambil 1/3 ruang --&gt;
+    &lt;Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Batal" /&gt;
+
+    &lt;!-- Tombol mengambil 2/3 ruang --&gt;
+    &lt;Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="Simpan" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Tips Menggunakan Weight</h4>
+                    <p>Saat menggunakan <code>layout_weight</code>, set <code>layout_width="0dp"</code> untuk horizontal atau <code>layout_height="0dp"</code> untuk vertical agar weight bekerja dengan benar.</p>
+                </div>
+            </article>
+
+            <article id="relativelayout">
+                <h2>RelativeLayout</h2>
+                <p>RelativeLayout memposisikan child views relatif terhadap parent atau terhadap view lain. Layout ini fleksibel namun bisa kompleks untuk layout yang rumit.</p>
+                
+                <h3>Atribut Posisi Relatif terhadap Parent</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:layout_alignParentTop</td>
+                            <td>Menempel di atas parent</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_alignParentBottom</td>
+                            <td>Menempel di bawah parent</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_alignParentStart</td>
+                            <td>Menempel di kiri parent</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_alignParentEnd</td>
+                            <td>Menempel di kanan parent</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_centerInParent</td>
+                            <td>Tengah parent</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_centerHorizontal</td>
+                            <td>Tengah horizontal</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_centerVertical</td>
+                            <td>Tengah vertical</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Atribut Posisi Relatif terhadap View Lain</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:layout_above</td>
+                            <td>Di atas view tertentu</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_below</td>
+                            <td>Di bawah view tertentu</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_toStartOf</td>
+                            <td>Di kiri view tertentu</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_toEndOf</td>
+                            <td>Di kanan view tertentu</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_alignTop</td>
+                            <td>Sejajar atas dengan view tertentu</td>
+                        </tr>
+                        <tr>
+                            <td>android:layout_alignBottom</td>
+                            <td>Sejajar bawah dengan view tertentu</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Contoh RelativeLayout</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>RelativeLayout Example</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"&gt;
+
+    &lt;!-- Header di atas --&gt;
+    &lt;TextView
+        android:id="@+id/tvHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:text="Header"
+        android:textSize="20sp"
+        android:textStyle="bold" /&gt;
+
+    &lt;!-- Content di tengah --&gt;
+    &lt;TextView
+        android:id="@+id/tvContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvHeader"
+        android:layout_above="@id/btnSubmit"
+        android:layout_marginTop="16dp"
+        android:text="Content area" /&gt;
+
+    &lt;!-- Button di bawah --&gt;
+    &lt;Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Submit" /&gt;
+
+&lt;/RelativeLayout&gt;</pre>
+                </div>
+            </article>
+
+            <article id="constraintlayout">
+                <h2>ConstraintLayout</h2>
+                <p>ConstraintLayout adalah layout yang paling fleksibel dan powerful di Android. Layout ini memungkinkan pembuatan layout yang kompleks dan flat (tanpa nested layout) dengan sistem constraint (batasan).</p>
+                
+                <div class="info-box">
+                    <h4>Keunggulan ConstraintLayout</h4>
+                    <ul>
+                        <li>Flat view hierarchy - meningkatkan performa</li>
+                        <li>Visual editor yang powerful di Android Studio</li>
+                        <li>Responsive design dengan mudah</li>
+                        <li>Menggantikan nested LinearLayout dan RelativeLayout</li>
+                    </ul>
+                </div>
+
+                <h3>Konsep Constraint</h3>
+                <p>Setiap view harus memiliki minimal satu constraint horizontal dan satu constraint vertical. Constraint menghubungkan sisi view ke sisi view lain atau parent.</p>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+        Parent (ConstraintLayout)
+    ┌────────────────────────────────┐
+    │    constraint_top_to_top       │
+    │           ↓                    │
+    │    ┌─────────────┐             │
+    │ ←──│    View     │──→          │
+    │    └─────────────┘             │
+    │           ↓                    │
+    │  constraint_bottom_to_bottom   │
+    └────────────────────────────────┘
+    
+    constraint_start_to_start  constraint_end_to_end
+                    </pre>
+                </div>
+
+                <h3>Atribut Constraint Utama</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>app:layout_constraintTop_toTopOf</td>
+                            <td>Atas view ke atas target</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintBottom_toBottomOf</td>
+                            <td>Bawah view ke bawah target</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintStart_toStartOf</td>
+                            <td>Kiri view ke kiri target</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintEnd_toEndOf</td>
+                            <td>Kanan view ke kanan target</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintTop_toBottomOf</td>
+                            <td>Atas view ke bawah target</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintHorizontal_bias</td>
+                            <td>Posisi horizontal (0.0 - 1.0)</td>
+                        </tr>
+                        <tr>
+                            <td>app:layout_constraintVertical_bias</td>
+                            <td>Posisi vertical (0.0 - 1.0)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Contoh ConstraintLayout</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ConstraintLayout - Form Login</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"&gt;
+
+    &lt;!-- Logo di atas tengah --&gt;
+    &lt;ImageView
+        android:id="@+id/ivLogo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@mipmap/ic_launcher"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="48dp" /&gt;
+
+    &lt;!-- Title di bawah logo --&gt;
+    &lt;TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selamat Datang"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/ivLogo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" /&gt;
+
+    &lt;!-- Input Email --&gt;
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp" /&gt;
+
+    &lt;!-- Input Password --&gt;
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/etEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" /&gt;
+
+    &lt;!-- Tombol Login --&gt;
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        app:layout_constraintTop_toBottomOf="@id/etPassword"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp" /&gt;
+
+    &lt;!-- Link Register di bawah --&gt;
+    &lt;TextView
+        android:id="@+id/tvRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Belum punya akun? Daftar"
+        android:textColor="#1976D2"
+        app:layout_constraintTop_toBottomOf="@id/btnLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp" /&gt;
+
+&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</pre>
+                </div>
+
+                <h3>Chain dan Guideline</h3>
+                <p>ConstraintLayout juga mendukung fitur Chain untuk mendistribusikan views dan Guideline sebagai garis bantu invisible.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Horizontal Chain Example</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Tombol-tombol dalam horizontal chain --&gt;
+&lt;Button
+    android:id="@+id/btn1"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Btn 1"
+    app:layout_constraintHorizontal_chainStyle="spread"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/btn2"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;Button
+    android:id="@+id/btn2"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Btn 2"
+    app:layout_constraintStart_toEndOf="@id/btn1"
+    app:layout_constraintEnd_toStartOf="@id/btn3"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;Button
+    android:id="@+id/btn3"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Btn 3"
+    app:layout_constraintStart_toEndOf="@id/btn2"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" /&gt;</pre>
+                </div>
+            </article>
+
+            <article id="framelayout">
+                <h2>FrameLayout</h2>
+                <p>FrameLayout adalah layout sederhana yang menumpuk child views di atas satu sama lain. View yang dideklarasikan terakhir akan berada di paling atas.</p>
+                
+                <h3>Penggunaan Umum FrameLayout</h3>
+                <ul>
+                    <li>Container untuk Fragment</li>
+                    <li>Overlay satu view di atas view lain</li>
+                    <li>Placeholder untuk konten dinamis</li>
+                </ul>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>FrameLayout Example - Image dengan Badge</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"&gt;
+
+    &lt;!-- Gambar di belakang --&gt;
+    &lt;ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/profile_photo"
+        android:scaleType="centerCrop" /&gt;
+
+    &lt;!-- Badge notification di pojok kanan atas --&gt;
+    &lt;TextView
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/circle_red"
+        android:gravity="center"
+        android:text="5"
+        android:textColor="@android:color/white"
+        android:textSize="12sp" /&gt;
+
+&lt;/FrameLayout&gt;</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Basic Widgets -->
+        <section id="widgets" class="section">
+            <h1>Basic Widgets</h1>
+            <p>Widgets adalah komponen UI yang dapat dilihat dan berinteraksi dengan pengguna. Berikut adalah widgets dasar yang sering digunakan.</p>
+            
+            <article id="textview">
+                <h2>TextView</h2>
+                <p>TextView digunakan untuk menampilkan teks ke pengguna. Ini adalah widget paling dasar dan sering digunakan.</p>
+                
+                <h3>Atribut Penting TextView</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                            <th>Contoh Nilai</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:text</td>
+                            <td>Teks yang ditampilkan</td>
+                            <td>"Hello World"</td>
+                        </tr>
+                        <tr>
+                            <td>android:textSize</td>
+                            <td>Ukuran teks</td>
+                            <td>16sp, 24sp</td>
+                        </tr>
+                        <tr>
+                            <td>android:textColor</td>
+                            <td>Warna teks</td>
+                            <td>#000000, @color/black</td>
+                        </tr>
+                        <tr>
+                            <td>android:textStyle</td>
+                            <td>Style teks</td>
+                            <td>bold, italic, normal</td>
+                        </tr>
+                        <tr>
+                            <td>android:fontFamily</td>
+                            <td>Font family</td>
+                            <td>sans-serif, serif, monospace</td>
+                        </tr>
+                        <tr>
+                            <td>android:textAlignment</td>
+                            <td>Alignment teks</td>
+                            <td>center, textStart, textEnd</td>
+                        </tr>
+                        <tr>
+                            <td>android:maxLines</td>
+                            <td>Maksimal baris</td>
+                            <td>1, 2, 3</td>
+                        </tr>
+                        <tr>
+                            <td>android:ellipsize</td>
+                            <td>Teks terpotong</td>
+                            <td>end, start, marquee</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh TextView</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- TextView sederhana --&gt;
+&lt;TextView
+    android:id="@+id/tvTitle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Judul Artikel"
+    android:textSize="24sp"
+    android:textStyle="bold"
+    android:textColor="#212121" /&gt;
+
+&lt;!-- TextView dengan multiple lines --&gt;
+&lt;TextView
+    android:id="@+id/tvDescription"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/long_description"
+    android:textSize="14sp"
+    android:lineSpacingExtra="4dp"
+    android:maxLines="3"
+    android:ellipsize="end" /&gt;
+
+&lt;!-- TextView dengan background --&gt;
+&lt;TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Badge"
+    android:textColor="@android:color/white"
+    android:background="#4CAF50"
+    android:padding="8dp" /&gt;</pre>
+                </div>
+
+                <h3>Mengakses TextView dari Kotlin</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - TextView</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        // Cara 1: findViewById
+        val tvTitle = findViewById&lt;TextView&gt;(R.id.tvTitle)
+        tvTitle.text = "Judul Baru"
+        
+        // Mengubah properti
+        tvTitle.textSize = 20f
+        tvTitle.setTextColor(Color.BLUE)
+        tvTitle.setTypeface(null, Typeface.BOLD)
+        
+        // Set text dari string resource
+        tvTitle.setText(R.string.welcome_message)
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="edittext">
+                <h2>EditText</h2>
+                <p>EditText adalah widget untuk input teks dari pengguna. EditText merupakan subclass dari TextView dengan kemampuan editing.</p>
+                
+                <h3>Atribut Penting EditText</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                            <th>Contoh Nilai</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:hint</td>
+                            <td>Placeholder text</td>
+                            <td>"Masukkan nama"</td>
+                        </tr>
+                        <tr>
+                            <td>android:inputType</td>
+                            <td>Jenis keyboard</td>
+                            <td>text, textPassword, number, textEmailAddress, phone</td>
+                        </tr>
+                        <tr>
+                            <td>android:maxLength</td>
+                            <td>Panjang maksimum</td>
+                            <td>50, 100</td>
+                        </tr>
+                        <tr>
+                            <td>android:imeOptions</td>
+                            <td>Tombol action keyboard</td>
+                            <td>actionDone, actionNext, actionSearch</td>
+                        </tr>
+                        <tr>
+                            <td>android:digits</td>
+                            <td>Karakter yang diizinkan</td>
+                            <td>"0123456789"</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Jenis Input Type</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Berbagai Jenis EditText</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Input Nama --&gt;
+&lt;EditText
+    android:id="@+id/etName"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Nama Lengkap"
+    android:inputType="textPersonName"
+    android:maxLength="50" /&gt;
+
+&lt;!-- Input Email --&gt;
+&lt;EditText
+    android:id="@+id/etEmail"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Email"
+    android:inputType="textEmailAddress" /&gt;
+
+&lt;!-- Input Password --&gt;
+&lt;EditText
+    android:id="@+id/etPassword"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Password"
+    android:inputType="textPassword" /&gt;
+
+&lt;!-- Input Nomor Telepon --&gt;
+&lt;EditText
+    android:id="@+id/etPhone"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Nomor Telepon"
+    android:inputType="phone" /&gt;
+
+&lt;!-- Input Angka --&gt;
+&lt;EditText
+    android:id="@+id/etAge"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Usia"
+    android:inputType="number"
+    android:maxLength="3" /&gt;
+
+&lt;!-- Input Multiline --&gt;
+&lt;EditText
+    android:id="@+id/etBio"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Tentang Anda"
+    android:inputType="textMultiLine"
+    android:minLines="3"
+    android:maxLines="5"
+    android:gravity="top" /&gt;</pre>
+                </div>
+
+                <h3>Mengakses EditText dari Kotlin</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - EditText</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val etName = findViewById&lt;EditText&gt;(R.id.etName)
+        val etEmail = findViewById&lt;EditText&gt;(R.id.etEmail)
+        val btnSubmit = findViewById&lt;Button&gt;(R.id.btnSubmit)
+        
+        btnSubmit.setOnClickListener {
+            // Mengambil nilai dari EditText
+            val name = etName.text.toString().trim()
+            val email = etEmail.text.toString().trim()
+            
+            // Validasi input
+            if (name.isEmpty()) {
+                etName.error = "Nama tidak boleh kosong"
+                etName.requestFocus()
+                return@setOnClickListener
+            }
+            
+            if (email.isEmpty()) {
+                etEmail.error = "Email tidak boleh kosong"
+                etEmail.requestFocus()
+                return@setOnClickListener
+            }
+            
+            // Proses data
+            Toast.makeText(this, "Nama: $name, Email: $email", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Text watcher untuk real-time validation
+        etEmail.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(s.toString()).matches()) {
+                    etEmail.error = "Format email tidak valid"
+                }
+            }
+        })
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="button">
+                <h2>Button</h2>
+                <p>Button adalah widget yang dapat diklik untuk memicu aksi. Android menyediakan beberapa jenis button.</p>
+                
+                <h3>Jenis-jenis Button</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Berbagai Jenis Button</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Button biasa --&gt;
+&lt;Button
+    android:id="@+id/btnNormal"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Button Normal" /&gt;
+
+&lt;!-- Button dengan warna custom --&gt;
+&lt;Button
+    android:id="@+id/btnColored"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Colored Button"
+    android:backgroundTint="#4CAF50"
+    android:textColor="@android:color/white" /&gt;
+
+&lt;!-- Outlined Button (Material) --&gt;
+&lt;com.google.android.material.button.MaterialButton
+    android:id="@+id/btnOutlined"
+    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Outlined Button" /&gt;
+
+&lt;!-- Text Button (Material) --&gt;
+&lt;com.google.android.material.button.MaterialButton
+    android:id="@+id/btnText"
+    style="@style/Widget.MaterialComponents.Button.TextButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Text Button" /&gt;
+
+&lt;!-- ImageButton --&gt;
+&lt;ImageButton
+    android:id="@+id/btnImage"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/ic_add"
+    android:contentDescription="Add button"
+    android:background="?attr/selectableItemBackgroundBorderless" /&gt;</pre>
+                </div>
+
+                <h3>Handling Button Click</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Button Click Handling</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val btnSubmit = findViewById&lt;Button&gt;(R.id.btnSubmit)
+        val btnCancel = findViewById&lt;Button&gt;(R.id.btnCancel)
+        
+        // Cara 1: Lambda expression
+        btnSubmit.setOnClickListener {
+            Toast.makeText(this, "Submit clicked", Toast.LENGTH_SHORT).show()
+        }
+        
+        // Cara 2: Anonymous object
+        btnCancel.setOnClickListener(object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                Toast.makeText(this@MainActivity, "Cancel clicked", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+    
+    // Cara 3: Method reference (definisikan android:onClick="onButtonClick" di XML)
+    fun onButtonClick(view: View) {
+        when (view.id) {
+            R.id.btnSubmit -> handleSubmit()
+            R.id.btnCancel -> handleCancel()
+        }
+    }
+    
+    private fun handleSubmit() {
+        // Logic submit
+    }
+    
+    private fun handleCancel() {
+        // Logic cancel
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="imageview">
+                <h2>ImageView</h2>
+                <p>ImageView digunakan untuk menampilkan gambar. Gambar bisa berasal dari drawable resources, file, atau URL.</p>
+                
+                <h3>Atribut Penting ImageView</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>android:src</td>
+                            <td>Sumber gambar</td>
+                        </tr>
+                        <tr>
+                            <td>android:scaleType</td>
+                            <td>Cara scaling gambar</td>
+                        </tr>
+                        <tr>
+                            <td>android:contentDescription</td>
+                            <td>Deskripsi untuk accessibility</td>
+                        </tr>
+                        <tr>
+                            <td>android:adjustViewBounds</td>
+                            <td>Menyesuaikan bounds dengan aspect ratio</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Scale Type</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Scale Type</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>centerCrop</td>
+                            <td>Crop gambar agar memenuhi view, menjaga aspect ratio</td>
+                        </tr>
+                        <tr>
+                            <td>centerInside</td>
+                            <td>Scale gambar agar muat di dalam view</td>
+                        </tr>
+                        <tr>
+                            <td>fitCenter</td>
+                            <td>Scale gambar agar muat, posisi tengah</td>
+                        </tr>
+                        <tr>
+                            <td>fitXY</td>
+                            <td>Scale gambar agar memenuhi view (bisa distorsi)</td>
+                        </tr>
+                        <tr>
+                            <td>center</td>
+                            <td>Tidak scale, posisi tengah</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh ImageView</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- ImageView dari drawable --&gt;
+&lt;ImageView
+    android:id="@+id/ivPhoto"
+    android:layout_width="200dp"
+    android:layout_height="200dp"
+    android:src="@drawable/photo"
+    android:scaleType="centerCrop"
+    android:contentDescription="Profile photo" /&gt;
+
+&lt;!-- ImageView circular dengan Material --&gt;
+&lt;com.google.android.material.imageview.ShapeableImageView
+    android:id="@+id/ivAvatar"
+    android:layout_width="80dp"
+    android:layout_height="80dp"
+    android:src="@drawable/avatar"
+    android:scaleType="centerCrop"
+    app:shapeAppearanceOverlay="@style/CircleImageView" /&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - ImageView</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val ivPhoto = findViewById&lt;ImageView&gt;(R.id.ivPhoto)
+        
+        // Set image dari drawable resource
+        ivPhoto.setImageResource(R.drawable.new_photo)
+        
+        // Set image dari drawable
+        ivPhoto.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.photo))
+        
+        // Set scale type programmatically
+        ivPhoto.scaleType = ImageView.ScaleType.CENTER_CROP
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="checkbox-radio">
+                <h2>CheckBox dan RadioButton</h2>
+                <p>CheckBox dan RadioButton digunakan untuk pilihan. CheckBox untuk multiple selection, RadioButton untuk single selection.</p>
+                
+                <h3>CheckBox</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>CheckBox Example</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Layout XML --&gt;
+&lt;LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pilih Hobi:"
+        android:textStyle="bold" /&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbReading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Membaca" /&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbSports"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Olahraga" /&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbMusic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Musik"
+        android:checked="true" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>RadioButton dengan RadioGroup</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>RadioButton Example</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Layout XML --&gt;
+&lt;TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Jenis Kelamin:"
+    android:textStyle="bold" /&gt;
+
+&lt;RadioGroup
+    android:id="@+id/rgGender"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"&gt;
+
+    &lt;RadioButton
+        android:id="@+id/rbMale"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Laki-laki" /&gt;
+
+    &lt;RadioButton
+        android:id="@+id/rbFemale"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Perempuan" /&gt;
+
+&lt;/RadioGroup&gt;</pre>
+                </div>
+
+                <h3>Handling di Kotlin</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>CheckBox dan RadioButton Handling</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        // CheckBox
+        val cbReading = findViewById&lt;CheckBox&gt;(R.id.cbReading)
+        val cbSports = findViewById&lt;CheckBox&gt;(R.id.cbSports)
+        val cbMusic = findViewById&lt;CheckBox&gt;(R.id.cbMusic)
+        
+        cbReading.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                Toast.makeText(this, "Membaca dipilih", Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        // Mendapatkan semua checkbox yang dipilih
+        val btnSubmit = findViewById&lt;Button&gt;(R.id.btnSubmit)
+        btnSubmit.setOnClickListener {
+            val selectedHobbies = mutableListOf&lt;String&gt;()
+            if (cbReading.isChecked) selectedHobbies.add("Membaca")
+            if (cbSports.isChecked) selectedHobbies.add("Olahraga")
+            if (cbMusic.isChecked) selectedHobbies.add("Musik")
+            
+            Toast.makeText(this, "Hobi: ${selectedHobbies.joinToString()}", Toast.LENGTH_SHORT).show()
+        }
+        
+        // RadioGroup
+        val rgGender = findViewById&lt;RadioGroup&gt;(R.id.rgGender)
+        
+        rgGender.setOnCheckedChangeListener { _, checkedId ->
+            val gender = when (checkedId) {
+                R.id.rbMale -> "Laki-laki"
+                R.id.rbFemale -> "Perempuan"
+                else -> "Tidak dipilih"
+            }
+            Toast.makeText(this, "Gender: $gender", Toast.LENGTH_SHORT).show()
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="switch-toggle">
+                <h2>Switch dan ToggleButton</h2>
+                <p>Switch dan ToggleButton digunakan untuk pilihan on/off atau boolean.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Switch dan ToggleButton</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Switch (Material) --&gt;
+&lt;com.google.android.material.switchmaterial.SwitchMaterial
+    android:id="@+id/switchNotification"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Aktifkan Notifikasi"
+    android:checked="true" /&gt;
+
+&lt;!-- Switch biasa --&gt;
+&lt;Switch
+    android:id="@+id/switchDarkMode"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="Dark Mode" /&gt;
+
+&lt;!-- ToggleButton --&gt;
+&lt;ToggleButton
+    android:id="@+id/toggleWifi"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:textOn="WiFi ON"
+    android:textOff="WiFi OFF" /&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Handling Switch</span>
+                    </div>
+                    <pre class="no-copy">
+val switchNotification = findViewById&lt;SwitchMaterial&gt;(R.id.switchNotification)
+
+switchNotification.setOnCheckedChangeListener { _, isChecked ->
+    if (isChecked) {
+        // Enable notification
+        Toast.makeText(this, "Notifikasi diaktifkan", Toast.LENGTH_SHORT).show()
+    } else {
+        // Disable notification
+        Toast.makeText(this, "Notifikasi dinonaktifkan", Toast.LENGTH_SHORT).show()
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="spinner">
+                <h2>Spinner</h2>
+                <p>Spinner adalah dropdown menu untuk memilih satu item dari daftar.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Spinner Layout dan strings.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Layout XML --&gt;
+&lt;Spinner
+    android:id="@+id/spinnerCity"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:entries="@array/cities" /&gt;
+
+&lt;!-- res/values/strings.xml --&gt;
+&lt;resources&gt;
+    &lt;string-array name="cities"&gt;
+        &lt;item&gt;Pilih Kota&lt;/item&gt;
+        &lt;item&gt;Jakarta&lt;/item&gt;
+        &lt;item&gt;Surabaya&lt;/item&gt;
+        &lt;item&gt;Bandung&lt;/item&gt;
+        &lt;item&gt;Medan&lt;/item&gt;
+        &lt;item&gt;Semarang&lt;/item&gt;
+    &lt;/string-array&gt;
+&lt;/resources&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Spinner dengan Custom Adapter</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val spinnerCity = findViewById&lt;Spinner&gt;(R.id.spinnerCity)
+        
+        // Cara 1: Menggunakan entries dari XML (sudah otomatis)
+        
+        // Cara 2: Programmatic dengan ArrayAdapter
+        val cities = listOf("Pilih Kota", "Jakarta", "Surabaya", "Bandung", "Medan")
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, cities)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCity.adapter = adapter
+        
+        // Handling selection
+        spinnerCity.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView&lt;*&gt;?, view: View?, position: Int, id: Long) {
+                if (position > 0) { // Skip "Pilih Kota"
+                    val selectedCity = parent?.getItemAtPosition(position).toString()
+                    Toast.makeText(this@MainActivity, "Kota: $selectedCity", Toast.LENGTH_SHORT).show()
+                }
+            }
+            
+            override fun onNothingSelected(parent: AdapterView&lt;*&gt;?) {
+                // Do nothing
+            }
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="progressbar">
+                <h2>ProgressBar</h2>
+                <p>ProgressBar menampilkan indikator loading atau progress operasi.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Jenis ProgressBar</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Circular/Indeterminate ProgressBar --&gt;
+&lt;ProgressBar
+    android:id="@+id/progressCircular"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:visibility="gone" /&gt;
+
+&lt;!-- Horizontal ProgressBar --&gt;
+&lt;ProgressBar
+    android:id="@+id/progressHorizontal"
+    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:max="100"
+    android:progress="0" /&gt;
+
+&lt;!-- Linear Progress Indicator (Material) --&gt;
+&lt;com.google.android.material.progressindicator.LinearProgressIndicator
+    android:id="@+id/progressLinear"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:indeterminate="true" /&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ProgressBar Handling</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val progressCircular = findViewById&lt;ProgressBar&gt;(R.id.progressCircular)
+        val progressHorizontal = findViewById&lt;ProgressBar&gt;(R.id.progressHorizontal)
+        val btnStart = findViewById&lt;Button&gt;(R.id.btnStart)
+        
+        btnStart.setOnClickListener {
+            // Show loading
+            progressCircular.visibility = View.VISIBLE
+            
+            // Simulate progress
+            var progress = 0
+            val handler = Handler(Looper.getMainLooper())
+            
+            val runnable = object : Runnable {
+                override fun run() {
+                    progress += 10
+                    progressHorizontal.progress = progress
+                    
+                    if (progress < 100) {
+                        handler.postDelayed(this, 500)
+                    } else {
+                        progressCircular.visibility = View.GONE
+                        Toast.makeText(this@MainActivity, "Selesai!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            handler.post(runnable)
+        }
+    }
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Style dan Theme -->
+        <section id="style-theme" class="section">
+            <h1>Style dan Theme</h1>
+            
+            <article id="pengertian-style">
+                <h2>Pengertian Style</h2>
+                <p>Style adalah kumpulan atribut yang dapat diterapkan ke View atau ViewGroup. Dengan Style, kita bisa:</p>
+                <ul>
+                    <li>Menghindari duplikasi kode</li>
+                    <li>Menjaga konsistensi tampilan</li>
+                    <li>Memudahkan perubahan tampilan secara global</li>
+                    <li>Membuat kode XML lebih bersih</li>
+                </ul>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+    Tanpa Style:                    Dengan Style:
+    ┌─────────────────────┐         ┌─────────────────────┐
+    │ &lt;TextView           │         │ &lt;TextView           │
+    │   textSize="16sp"   │         │   style="@style/    │
+    │   textColor="#333"  │   →     │   BodyText" /&gt;      │
+    │   fontFamily="sans" │         └─────────────────────┘
+    │   lineSpacing="4dp" │         
+    │ /&gt;                  │         styles.xml:
+    │                     │         &lt;style name="BodyText"&gt;
+    │ &lt;TextView           │           textSize, textColor,
+    │   textSize="16sp"   │           fontFamily, lineSpacing
+    │   textColor="#333"  │         &lt;/style&gt;
+    │   ... (duplicate)   │         
+    └─────────────────────┘
+                    </pre>
+                </div>
+            </article>
+
+            <article id="membuat-style">
+                <h2>Membuat Style</h2>
+                <p>Style didefinisikan di file <code>res/values/styles.xml</code>.</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values/styles.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- Style untuk judul --&gt;
+    &lt;style name="TitleText"&gt;
+        &lt;item name="android:textSize"&gt;24sp&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;#212121&lt;/item&gt;
+        &lt;item name="android:textStyle"&gt;bold&lt;/item&gt;
+        &lt;item name="android:layout_marginBottom"&gt;8dp&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk subtitle --&gt;
+    &lt;style name="SubtitleText"&gt;
+        &lt;item name="android:textSize"&gt;18sp&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;#424242&lt;/item&gt;
+        &lt;item name="android:textStyle"&gt;bold&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk body text --&gt;
+    &lt;style name="BodyText"&gt;
+        &lt;item name="android:textSize"&gt;14sp&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;#616161&lt;/item&gt;
+        &lt;item name="android:lineSpacingExtra"&gt;4dp&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk caption --&gt;
+    &lt;style name="CaptionText"&gt;
+        &lt;item name="android:textSize"&gt;12sp&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;#9E9E9E&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk primary button --&gt;
+    &lt;style name="PrimaryButton"&gt;
+        &lt;item name="android:layout_width"&gt;match_parent&lt;/item&gt;
+        &lt;item name="android:layout_height"&gt;wrap_content&lt;/item&gt;
+        &lt;item name="android:backgroundTint"&gt;#1976D2&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;@android:color/white&lt;/item&gt;
+        &lt;item name="android:textAllCaps"&gt;false&lt;/item&gt;
+        &lt;item name="android:padding"&gt;12dp&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk secondary button --&gt;
+    &lt;style name="SecondaryButton"&gt;
+        &lt;item name="android:layout_width"&gt;wrap_content&lt;/item&gt;
+        &lt;item name="android:layout_height"&gt;wrap_content&lt;/item&gt;
+        &lt;item name="android:backgroundTint"&gt;#E0E0E0&lt;/item&gt;
+        &lt;item name="android:textColor"&gt;#212121&lt;/item&gt;
+        &lt;item name="android:textAllCaps"&gt;false&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style untuk input field --&gt;
+    &lt;style name="InputField"&gt;
+        &lt;item name="android:layout_width"&gt;match_parent&lt;/item&gt;
+        &lt;item name="android:layout_height"&gt;wrap_content&lt;/item&gt;
+        &lt;item name="android:layout_marginTop"&gt;8dp&lt;/item&gt;
+        &lt;item name="android:layout_marginBottom"&gt;8dp&lt;/item&gt;
+        &lt;item name="android:padding"&gt;12dp&lt;/item&gt;
+        &lt;item name="android:background"&gt;@drawable/input_background&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Style dengan inheritance --&gt;
+    &lt;style name="TitleText.Large"&gt;
+        &lt;item name="android:textSize"&gt;32sp&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;style name="TitleText.Small"&gt;
+        &lt;item name="android:textSize"&gt;18sp&lt;/item&gt;
+    &lt;/style&gt;
+
+&lt;/resources&gt;</pre>
+                </div>
+
+                <h3>Menggunakan Style</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menggunakan Style di Layout</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selamat Datang"
+        style="@style/TitleText" /&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Silakan login untuk melanjutkan"
+        style="@style/SubtitleText" /&gt;
+
+    &lt;EditText
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        style="@style/InputField" /&gt;
+
+    &lt;EditText
+        android:hint="Password"
+        android:inputType="textPassword"
+        style="@style/InputField" /&gt;
+
+    &lt;Button
+        android:text="Login"
+        style="@style/PrimaryButton" /&gt;
+
+    &lt;Button
+        android:text="Daftar"
+        style="@style/SecondaryButton"
+        android:layout_marginTop="8dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Style Inheritance</h4>
+                    <p>Style bisa mewarisi style lain dengan menggunakan notasi titik (parent.child) atau atribut <code>parent</code>:</p>
+                    <ul>
+                        <li><code>TitleText.Large</code> - mewarisi semua atribut TitleText</li>
+                        <li><code>parent="TitleText"</code> - cara alternatif inheritance</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="theme">
+                <h2>Theme</h2>
+                <p>Theme adalah Style yang diterapkan ke seluruh Activity atau Application. Theme mendefinisikan tampilan default untuk semua View.</p>
+                
+                <h3>File Theme</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values/themes.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- Light Theme --&gt;
+    &lt;style name="Theme.MyApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar"&gt;
+        &lt;!-- Primary brand color --&gt;
+        &lt;item name="colorPrimary"&gt;@color/purple_500&lt;/item&gt;
+        &lt;item name="colorPrimaryVariant"&gt;@color/purple_700&lt;/item&gt;
+        &lt;item name="colorOnPrimary"&gt;@color/white&lt;/item&gt;
+        
+        &lt;!-- Secondary brand color --&gt;
+        &lt;item name="colorSecondary"&gt;@color/teal_200&lt;/item&gt;
+        &lt;item name="colorSecondaryVariant"&gt;@color/teal_700&lt;/item&gt;
+        &lt;item name="colorOnSecondary"&gt;@color/black&lt;/item&gt;
+        
+        &lt;!-- Status bar color --&gt;
+        &lt;item name="android:statusBarColor"&gt;?attr/colorPrimaryVariant&lt;/item&gt;
+        
+        &lt;!-- Background color --&gt;
+        &lt;item name="android:windowBackground"&gt;@color/white&lt;/item&gt;
+        
+        &lt;!-- Default text appearance --&gt;
+        &lt;item name="android:textColorPrimary"&gt;#212121&lt;/item&gt;
+        &lt;item name="android:textColorSecondary"&gt;#757575&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Theme untuk Activity tanpa ActionBar --&gt;
+    &lt;style name="Theme.MyApp.NoActionBar"&gt;
+        &lt;item name="windowActionBar"&gt;false&lt;/item&gt;
+        &lt;item name="windowNoTitle"&gt;true&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- Theme untuk Splash Screen --&gt;
+    &lt;style name="Theme.MyApp.Splash" parent="Theme.SplashScreen"&gt;
+        &lt;item name="windowSplashScreenBackground"&gt;@color/purple_500&lt;/item&gt;
+        &lt;item name="postSplashScreenTheme"&gt;@style/Theme.MyApp&lt;/item&gt;
+    &lt;/style&gt;
+
+&lt;/resources&gt;</pre>
+                </div>
+
+                <h3>res/values/colors.xml</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values/colors.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+    &lt;color name="purple_200"&gt;#FFBB86FC&lt;/color&gt;
+    &lt;color name="purple_500"&gt;#FF6200EE&lt;/color&gt;
+    &lt;color name="purple_700"&gt;#FF3700B3&lt;/color&gt;
+    &lt;color name="teal_200"&gt;#FF03DAC5&lt;/color&gt;
+    &lt;color name="teal_700"&gt;#FF018786&lt;/color&gt;
+    &lt;color name="black"&gt;#FF000000&lt;/color&gt;
+    &lt;color name="white"&gt;#FFFFFFFF&lt;/color&gt;
+    
+    &lt;!-- Custom colors --&gt;
+    &lt;color name="colorSuccess"&gt;#4CAF50&lt;/color&gt;
+    &lt;color name="colorError"&gt;#F44336&lt;/color&gt;
+    &lt;color name="colorWarning"&gt;#FF9800&lt;/color&gt;
+    &lt;color name="colorInfo"&gt;#2196F3&lt;/color&gt;
+    
+    &lt;!-- Background colors --&gt;
+    &lt;color name="backgroundLight"&gt;#FAFAFA&lt;/color&gt;
+    &lt;color name="backgroundDark"&gt;#303030&lt;/color&gt;
+    &lt;color name="cardBackground"&gt;#FFFFFF&lt;/color&gt;
+&lt;/resources&gt;</pre>
+                </div>
+
+                <h3>Menerapkan Theme</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;application
+    android:theme="@style/Theme.MyApp"&gt;
+    
+    &lt;!-- Activity dengan theme default (dari application) --&gt;
+    &lt;activity android:name=".MainActivity" /&gt;
+    
+    &lt;!-- Activity dengan theme custom --&gt;
+    &lt;activity 
+        android:name=".LoginActivity"
+        android:theme="@style/Theme.MyApp.NoActionBar" /&gt;
+        
+&lt;/application&gt;</pre>
+                </div>
+            </article>
+
+            <article id="material-design">
+                <h2>Material Design</h2>
+                <p>Material Design adalah design system yang dikembangkan Google. Android menyediakan Material Components library untuk implementasi Material Design.</p>
+                
+                <h3>Menambahkan Material Components</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+dependencies {
+    implementation("com.google.android.material:material:1.11.0")
+}</pre>
+                </div>
+
+                <h3>Material Components yang Umum</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Material Components Examples</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;!-- Material Button --&gt;
+&lt;com.google.android.material.button.MaterialButton
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Material Button"
+    app:cornerRadius="8dp" /&gt;
+
+&lt;!-- Outlined Button --&gt;
+&lt;com.google.android.material.button.MaterialButton
+    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Outlined" /&gt;
+
+&lt;!-- Text Input Layout --&gt;
+&lt;com.google.android.material.textfield.TextInputLayout
+    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="Email"&gt;
+
+    &lt;com.google.android.material.textfield.TextInputEditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress" /&gt;
+
+&lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+&lt;!-- Material Card --&gt;
+&lt;com.google.android.material.card.MaterialCardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:layout_margin="8dp"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"&gt;
+
+        &lt;TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Card Title"
+            android:textSize="18sp"
+            android:textStyle="bold" /&gt;
+
+        &lt;TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Card content goes here"
+            android:layout_marginTop="8dp" /&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/com.google.android.material.card.MaterialCardView&gt;
+
+&lt;!-- Floating Action Button --&gt;
+&lt;com.google.android.material.floatingactionbutton.FloatingActionButton
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:src="@drawable/ic_add"
+    android:contentDescription="Add"
+    app:fabSize="normal" /&gt;</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Localization -->
+        <section id="localization" class="section">
+            <h1>Localization</h1>
+            <p>Localization adalah proses mengadaptasi aplikasi untuk berbagai bahasa dan wilayah. Android menyediakan sistem resource yang memudahkan localization.</p>
+            
+            <article id="string-resources">
+                <h2>String Resources</h2>
+                <p>Semua teks yang ditampilkan ke user sebaiknya disimpan di file <code>strings.xml</code>, bukan di-hardcode di layout atau kode.</p>
+                
+                <h3>Keuntungan Menggunakan String Resources</h3>
+                <ul>
+                    <li>Memudahkan translation ke bahasa lain</li>
+                    <li>Teks terpusat dan mudah dikelola</li>
+                    <li>Menghindari duplikasi teks</li>
+                    <li>Mendukung berbagai tipe string (plural, array, format)</li>
+                </ul>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values/strings.xml (Default - English/Indonesian)</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+    &lt;!-- App Info --&gt;
+    &lt;string name="app_name"&gt;My Application&lt;/string&gt;
+    
+    &lt;!-- Common --&gt;
+    &lt;string name="btn_submit"&gt;Submit&lt;/string&gt;
+    &lt;string name="btn_cancel"&gt;Cancel&lt;/string&gt;
+    &lt;string name="btn_save"&gt;Save&lt;/string&gt;
+    &lt;string name="btn_delete"&gt;Delete&lt;/string&gt;
+    &lt;string name="btn_edit"&gt;Edit&lt;/string&gt;
+    
+    &lt;!-- Login Screen --&gt;
+    &lt;string name="login_title"&gt;Welcome Back&lt;/string&gt;
+    &lt;string name="login_subtitle"&gt;Please login to continue&lt;/string&gt;
+    &lt;string name="hint_email"&gt;Email&lt;/string&gt;
+    &lt;string name="hint_password"&gt;Password&lt;/string&gt;
+    &lt;string name="btn_login"&gt;Login&lt;/string&gt;
+    &lt;string name="btn_register"&gt;Don\'t have account? Register&lt;/string&gt;
+    &lt;string name="btn_forgot_password"&gt;Forgot Password?&lt;/string&gt;
+    
+    &lt;!-- Validation Messages --&gt;
+    &lt;string name="error_email_required"&gt;Email is required&lt;/string&gt;
+    &lt;string name="error_email_invalid"&gt;Please enter a valid email&lt;/string&gt;
+    &lt;string name="error_password_required"&gt;Password is required&lt;/string&gt;
+    &lt;string name="error_password_min_length"&gt;Password must be at least 6 characters&lt;/string&gt;
+    
+    &lt;!-- Success Messages --&gt;
+    &lt;string name="success_login"&gt;Login successful&lt;/string&gt;
+    &lt;string name="success_register"&gt;Registration successful&lt;/string&gt;
+    &lt;string name="success_save"&gt;Data saved successfully&lt;/string&gt;
+    
+    &lt;!-- Dialogs --&gt;
+    &lt;string name="dialog_confirm_delete_title"&gt;Delete Item&lt;/string&gt;
+    &lt;string name="dialog_confirm_delete_message"&gt;Are you sure you want to delete this item?&lt;/string&gt;
+    &lt;string name="dialog_btn_yes"&gt;Yes&lt;/string&gt;
+    &lt;string name="dialog_btn_no"&gt;No&lt;/string&gt;
+
+&lt;/resources&gt;</pre>
+                </div>
+
+                <h3>Menggunakan String Resources</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Di Layout XML</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/login_title" /&gt;
+
+&lt;EditText
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/hint_email" /&gt;
+
+&lt;Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/btn_login" /&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Di Kotlin Code</span>
+                    </div>
+                    <pre class="no-copy">
+// Mengambil string
+val welcomeText = getString(R.string.login_title)
+textView.text = getString(R.string.success_login)
+
+// Menampilkan di Toast
+Toast.makeText(this, R.string.success_save, Toast.LENGTH_SHORT).show()
+
+// Menggunakan di EditText error
+editText.error = getString(R.string.error_email_required)</pre>
+                </div>
+            </article>
+
+            <article id="multi-bahasa">
+                <h2>Mendukung Multi Bahasa</h2>
+                <p>Untuk mendukung bahasa lain, buat folder values dengan qualifier bahasa, misalnya <code>values-id</code> untuk Bahasa Indonesia.</p>
+                
+                <h3>Struktur Folder</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Struktur Folder Localization</span>
+                    </div>
+                    <pre class="no-copy">
+res/
+├── values/
+│   └── strings.xml          # Default (English)
+├── values-id/
+│   └── strings.xml          # Indonesian
+├── values-ja/
+│   └── strings.xml          # Japanese
+├── values-zh/
+│   └── strings.xml          # Chinese
+└── values-ar/
+    └── strings.xml          # Arabic</pre>
+                </div>
+
+                <h3>Membuat File strings.xml untuk Bahasa Indonesia</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Klik kanan pada folder <strong>res</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Pilih <strong>New → Android Resource File</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>File name: <strong>strings.xml</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Tambahkan qualifier <strong>Locale</strong> dan pilih <strong>Indonesian (id)</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values-id/strings.xml (Bahasa Indonesia)</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+    &lt;!-- App Info --&gt;
+    &lt;string name="app_name"&gt;Aplikasi Saya&lt;/string&gt;
+    
+    &lt;!-- Common --&gt;
+    &lt;string name="btn_submit"&gt;Kirim&lt;/string&gt;
+    &lt;string name="btn_cancel"&gt;Batal&lt;/string&gt;
+    &lt;string name="btn_save"&gt;Simpan&lt;/string&gt;
+    &lt;string name="btn_delete"&gt;Hapus&lt;/string&gt;
+    &lt;string name="btn_edit"&gt;Ubah&lt;/string&gt;
+    
+    &lt;!-- Login Screen --&gt;
+    &lt;string name="login_title"&gt;Selamat Datang Kembali&lt;/string&gt;
+    &lt;string name="login_subtitle"&gt;Silakan login untuk melanjutkan&lt;/string&gt;
+    &lt;string name="hint_email"&gt;Email&lt;/string&gt;
+    &lt;string name="hint_password"&gt;Kata Sandi&lt;/string&gt;
+    &lt;string name="btn_login"&gt;Masuk&lt;/string&gt;
+    &lt;string name="btn_register"&gt;Belum punya akun? Daftar&lt;/string&gt;
+    &lt;string name="btn_forgot_password"&gt;Lupa Kata Sandi?&lt;/string&gt;
+    
+    &lt;!-- Validation Messages --&gt;
+    &lt;string name="error_email_required"&gt;Email wajib diisi&lt;/string&gt;
+    &lt;string name="error_email_invalid"&gt;Masukkan email yang valid&lt;/string&gt;
+    &lt;string name="error_password_required"&gt;Kata sandi wajib diisi&lt;/string&gt;
+    &lt;string name="error_password_min_length"&gt;Kata sandi minimal 6 karakter&lt;/string&gt;
+    
+    &lt;!-- Success Messages --&gt;
+    &lt;string name="success_login"&gt;Login berhasil&lt;/string&gt;
+    &lt;string name="success_register"&gt;Pendaftaran berhasil&lt;/string&gt;
+    &lt;string name="success_save"&gt;Data berhasil disimpan&lt;/string&gt;
+    
+    &lt;!-- Dialogs --&gt;
+    &lt;string name="dialog_confirm_delete_title"&gt;Hapus Item&lt;/string&gt;
+    &lt;string name="dialog_confirm_delete_message"&gt;Apakah Anda yakin ingin menghapus item ini?&lt;/string&gt;
+    &lt;string name="dialog_btn_yes"&gt;Ya&lt;/string&gt;
+    &lt;string name="dialog_btn_no"&gt;Tidak&lt;/string&gt;
+
+&lt;/resources&gt;</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Cara Kerja Localization</h4>
+                    <p>Android akan otomatis memilih file strings.xml berdasarkan pengaturan bahasa di device:</p>
+                    <ul>
+                        <li>Jika device berbahasa Indonesia → <code>values-id/strings.xml</code></li>
+                        <li>Jika bahasa tidak tersedia → <code>values/strings.xml</code> (default)</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="format-string">
+                <h2>Format String dan Plurals</h2>
+                
+                <h3>String dengan Parameter</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>strings.xml - Format String</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;resources&gt;
+    &lt;!-- String dengan parameter --&gt;
+    &lt;string name="welcome_user"&gt;Selamat datang, %1$s!&lt;/string&gt;
+    &lt;string name="item_count"&gt;Anda memiliki %1$d item&lt;/string&gt;
+    &lt;string name="price_format"&gt;Harga: Rp %1$,.0f&lt;/string&gt;
+    &lt;string name="greeting_time"&gt;Halo %1$s, sekarang jam %2$d&lt;/string&gt;
+&lt;/resources&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menggunakan Format String di Kotlin</span>
+                    </div>
+                    <pre class="no-copy">
+// String dengan satu parameter
+val userName = "John"
+tvWelcome.text = getString(R.string.welcome_user, userName)
+// Output: "Selamat datang, John!"
+
+// String dengan parameter angka
+val itemCount = 5
+tvCount.text = getString(R.string.item_count, itemCount)
+// Output: "Anda memiliki 5 item"
+
+// String dengan multiple parameter
+val name = "Budi"
+val hour = 10
+tvGreeting.text = getString(R.string.greeting_time, name, hour)
+// Output: "Halo Budi, sekarang jam 10"</pre>
+                </div>
+
+                <h3>Plurals</h3>
+                <p>Plurals digunakan untuk menangani perbedaan bentuk kata berdasarkan jumlah (singular/plural).</p>
+                
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>strings.xml - Plurals</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;resources&gt;
+    &lt;plurals name="notification_count"&gt;
+        &lt;item quantity="zero"&gt;Tidak ada notifikasi&lt;/item&gt;
+        &lt;item quantity="one"&gt;%d notifikasi baru&lt;/item&gt;
+        &lt;item quantity="other"&gt;%d notifikasi baru&lt;/item&gt;
+    &lt;/plurals&gt;
+    
+    &lt;plurals name="item_selected"&gt;
+        &lt;item quantity="one"&gt;%d item dipilih&lt;/item&gt;
+        &lt;item quantity="other"&gt;%d item dipilih&lt;/item&gt;
+    &lt;/plurals&gt;
+&lt;/resources&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menggunakan Plurals di Kotlin</span>
+                    </div>
+                    <pre class="no-copy">
+val count = 5
+val message = resources.getQuantityString(R.plurals.notification_count, count, count)
+tvNotification.text = message
+// Output: "5 notifikasi baru"
+
+val selectedCount = 1
+val selectedMessage = resources.getQuantityString(R.plurals.item_selected, selectedCount, selectedCount)
+tvSelected.text = selectedMessage
+// Output: "1 item dipilih"</pre>
+                </div>
+
+                <h3>String Array</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>strings.xml - String Array</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;resources&gt;
+    &lt;string-array name="days_of_week"&gt;
+        &lt;item&gt;Senin&lt;/item&gt;
+        &lt;item&gt;Selasa&lt;/item&gt;
+        &lt;item&gt;Rabu&lt;/item&gt;
+        &lt;item&gt;Kamis&lt;/item&gt;
+        &lt;item&gt;Jumat&lt;/item&gt;
+        &lt;item&gt;Sabtu&lt;/item&gt;
+        &lt;item&gt;Minggu&lt;/item&gt;
+    &lt;/string-array&gt;
+    
+    &lt;string-array name="provinces"&gt;
+        &lt;item&gt;DKI Jakarta&lt;/item&gt;
+        &lt;item&gt;Jawa Barat&lt;/item&gt;
+        &lt;item&gt;Jawa Tengah&lt;/item&gt;
+        &lt;item&gt;Jawa Timur&lt;/item&gt;
+    &lt;/string-array&gt;
+&lt;/resources&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menggunakan String Array</span>
+                    </div>
+                    <pre class="no-copy">
+// Mengambil string array
+val days = resources.getStringArray(R.array.days_of_week)
+
+// Menggunakan di Spinner
+val provinces = resources.getStringArray(R.array.provinces)
+val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, provinces)
+spinner.adapter = adapter</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Activity -->
+        <section id="activity" class="section">
+            <h1>Activity</h1>
+            
+            <article id="pengertian-activity">
+                <h2>Pengertian Activity</h2>
+                <p>Activity adalah komponen fundamental dalam aplikasi Android yang menyediakan layar (screen) untuk berinteraksi dengan pengguna. Setiap Activity merepresentasikan satu layar dengan user interface.</p>
+                
+                <div class="info-box">
+                    <h4>Karakteristik Activity</h4>
+                    <ul>
+                        <li>Setiap Activity adalah subclass dari <code>AppCompatActivity</code></li>
+                        <li>Setiap Activity harus didaftarkan di <code>AndroidManifest.xml</code></li>
+                        <li>Activity memiliki lifecycle yang dikelola oleh sistem Android</li>
+                        <li>Aplikasi bisa memiliki multiple Activities</li>
+                        <li>Activity bisa memiliki satu atau lebih layout</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="lifecycle">
+                <h2>Activity Lifecycle</h2>
+                <p>Activity memiliki siklus hidup (lifecycle) yang terdiri dari beberapa state. Memahami lifecycle penting untuk mengelola resource dengan benar.</p>
+                
+                <div class="lifecycle-diagram">
+                    <div class="lifecycle-state">onCreate()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStart()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onResume()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state running">RUNNING</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onPause()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStop()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onDestroy()</div>
+                </div>
+
+                <h3>Penjelasan Callback Methods</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Dipanggil Ketika</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>onCreate()</code></td>
+                            <td>Activity pertama kali dibuat</td>
+                            <td>Inisialisasi UI, binding view, setup data</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStart()</code></td>
+                            <td>Activity menjadi visible</td>
+                            <td>Persiapan untuk tampil ke user</td>
+                        </tr>
+                        <tr>
+                            <td><code>onResume()</code></td>
+                            <td>Activity siap berinteraksi</td>
+                            <td>Start animasi, acquire camera/sensor</td>
+                        </tr>
+                        <tr>
+                            <td><code>onPause()</code></td>
+                            <td>Activity kehilangan focus</td>
+                            <td>Pause animasi, save draft data</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStop()</code></td>
+                            <td>Activity tidak lagi visible</td>
+                            <td>Release heavy resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>onDestroy()</code></td>
+                            <td>Activity akan dihancurkan</td>
+                            <td>Final cleanup, release all resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>onRestart()</code></td>
+                            <td>Activity di-restart dari stopped</td>
+                            <td>Refresh data jika diperlukan</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Implementasi Lifecycle</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - Lifecycle Demo</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+    
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        Log.d(TAG, "onCreate: Activity created")
+        
+        // Inisialisasi UI components
+        // Setup data
+    }
+    
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart: Activity is visible")
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: Activity is interactive")
+        // Start animations, acquire resources
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause: Activity losing focus")
+        // Pause animations, save data
+    }
+    
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop: Activity not visible")
+        // Release resources
+    }
+    
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "onRestart: Activity restarting")
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy: Activity destroyed")
+        // Final cleanup
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="membuat-activity">
+                <h2>Membuat Activity Baru</h2>
+                
+                <h3>Cara Membuat Activity</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Masukkan nama Activity (contoh: <strong>SecondActivity</strong>)</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Pastikan <strong>"Generate Layout File"</strong> tercentang</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Klik <strong>Finish</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Android Studio akan otomatis membuat:</p>
+                <ul>
+                    <li>File <code>SecondActivity.kt</code></li>
+                    <li>File layout <code>activity_second.xml</code></li>
+                    <li>Mendaftarkan Activity di <code>AndroidManifest.xml</code></li>
+                </ul>
+            </article>
+        </section>
+
+        <!-- Intent -->
+        <section id="intent" class="section">
+            <h1>Intent</h1>
+            
+            <article id="pengertian-intent">
+                <h2>Pengertian Intent</h2>
+                <p>Intent adalah objek messaging yang digunakan untuk meminta aksi dari komponen lain. Intent dapat digunakan untuk:</p>
+                <ul>
+                    <li>Memulai Activity baru</li>
+                    <li>Memulai Service</li>
+                    <li>Mengirim Broadcast</li>
+                    <li>Berkomunikasi antar komponen</li>
+                </ul>
+
+                <h3>Jenis Intent</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Keterangan</th>
+                            <th>Contoh Penggunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Explicit Intent</strong></td>
+                            <td>Menentukan komponen target secara spesifik</td>
+                            <td>Berpindah ke Activity lain dalam aplikasi yang sama</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Implicit Intent</strong></td>
+                            <td>Mendeklarasikan aksi umum tanpa menentukan komponen</td>
+                            <td>Membuka browser, share content, kirim email</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="explicit-intent">
+                <h2>Explicit Intent</h2>
+                <p>Explicit Intent digunakan ketika kita tahu persis komponen mana yang ingin dipanggil. Biasanya digunakan untuk navigasi antar Activity dalam satu aplikasi.</p>
+                
+                <h3>Layout MainActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_main.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnGoToSecond"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_go_to_second"/&gt;
+
+        &lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>MainActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
+
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val btnGoToSecond = findViewById&lt;Button&gt;(R.id.btnGoToSecond)
+        
+        btnGoToSecond.setOnClickListener {
+            // Membuat Explicit Intent
+            val intent = Intent(this, SecondActivity::class.java)
+            startActivity(intent)
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Layout SecondActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_second.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="#E3F2FD"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Halaman Kedua"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Anda telah berhasil berpindah halaman!"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kembali"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>SecondActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>SecondActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
+
+class SecondActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_second)
+        
+        val btnBack = findViewById&lt;Button&gt;(R.id.btnBack)
+        
+        btnBack.setOnClickListener {
+            finish() // Kembali ke Activity sebelumnya
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="implicit-intent">
+                <h2>Implicit Intent</h2>
+                <p>Implicit Intent tidak menentukan komponen target secara langsung, melainkan mendeklarasikan aksi yang ingin dilakukan. Sistem Android akan mencari komponen yang dapat menangani Intent tersebut.</p>
+                
+                <h3>Layout untuk Implicit Intent Demo</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_implicit_intent.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contoh Implicit Intent"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnOpenBrowser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buka Website"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnDial"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Panggil Telepon"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSendEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kirim Email"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSendSms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kirim SMS"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Share Text"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnOpenMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buka Lokasi di Maps"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Implementasi Implicit Intent</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ImplicitIntentActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class ImplicitIntentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_implicit_intent)
+        
+        setupButtons()
+    }
+    
+    private fun setupButtons() {
+        // 1. Membuka URL di Browser
+        findViewById&lt;Button&gt;(R.id.btnOpenBrowser).setOnClickListener {
+            val url = "https://www.google.com"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            safeStartActivity(intent, "Tidak ada browser yang tersedia")
+        }
+        
+        // 2. Membuka Dialer untuk Panggilan Telepon
+        findViewById&lt;Button&gt;(R.id.btnDial).setOnClickListener {
+            val phoneNumber = "08123456789"
+            val intent = Intent(Intent.ACTION_DIAL)
+            intent.data = Uri.parse("tel:$phoneNumber")
+            safeStartActivity(intent, "Tidak ada aplikasi telepon")
+        }
+        
+        // 3. Mengirim Email
+        findViewById&lt;Button&gt;(R.id.btnSendEmail).setOnClickListener {
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("contoh@email.com"))
+                putExtra(Intent.EXTRA_SUBJECT, "Subject Email")
+                putExtra(Intent.EXTRA_TEXT, "Isi pesan email...")
+            }
+            safeStartActivity(intent, "Tidak ada aplikasi email")
+        }
+        
+        // 4. Mengirim SMS
+        findViewById&lt;Button&gt;(R.id.btnSendSms).setOnClickListener {
+            val phoneNumber = "08123456789"
+            val message = "Halo, ini pesan SMS!"
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("smsto:$phoneNumber")
+                putExtra("sms_body", message)
+            }
+            safeStartActivity(intent, "Tidak ada aplikasi SMS")
+        }
+        
+        // 5. Share Text
+        findViewById&lt;Button&gt;(R.id.btnShare).setOnClickListener {
+            val shareText = "Ini adalah teks yang akan dibagikan!"
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            startActivity(Intent.createChooser(intent, "Bagikan melalui"))
+        }
+        
+        // 6. Buka Lokasi di Maps
+        findViewById&lt;Button&gt;(R.id.btnOpenMap).setOnClickListener {
+            val latitude = -6.2088
+            val longitude = 106.8456
+            val label = "Jakarta"
+            val uri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            safeStartActivity(intent, "Tidak ada aplikasi maps")
+        }
+    }
+    
+    private fun safeStartActivity(intent: Intent, errorMessage: String) {
+        // Cek apakah ada aplikasi yang bisa menangani intent
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Perhatian</h4>
+                    <p>Saat menggunakan Implicit Intent, selalu gunakan <code>resolveActivity()</code> atau try-catch untuk mengecek apakah ada aplikasi yang dapat menangani intent. Jika tidak ada, aplikasi akan crash.</p>
+                </div>
+
+                <h3>Common Intent Actions</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ACTION_VIEW</code></td>
+                            <td>Menampilkan data (URL, lokasi, dll)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_SEND</code></td>
+                            <td>Mengirim/share data ke aplikasi lain</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_SENDTO</code></td>
+                            <td>Mengirim ke alamat tertentu (email, SMS)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_DIAL</code></td>
+                            <td>Membuka dialer dengan nomor tertentu</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_CALL</code></td>
+                            <td>Langsung melakukan panggilan (perlu permission)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_PICK</code></td>
+                            <td>Memilih data dari content provider</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_EDIT</code></td>
+                            <td>Mengedit data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="passing-data">
+                <h2>Passing Data dengan Intent</h2>
+                <p>Intent dapat digunakan untuk mengirim data dari satu Activity ke Activity lain menggunakan method <code>putExtra()</code>.</p>
+                
+                <h3>Layout Form Input</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_form.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Form Input Data"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nama Lengkap"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Usia"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="3"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jenis Kelamin:"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"/&gt;
+
+    &lt;RadioGroup
+        android:id="@+id/rgGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp"&gt;
+
+        &lt;RadioButton
+            android:id="@+id/rbMale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Laki-laki"
+            android:layout_marginEnd="16dp"/&gt;
+
+        &lt;RadioButton
+            android:id="@+id/rbFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Perempuan"/&gt;
+
+    &lt;/RadioGroup&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbAgree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Saya setuju dengan syarat dan ketentuan"
+        android:layout_marginBottom="16dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Data"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Mengirim Data dari FormActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>FormActivity.kt - Mengirim Data</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.RadioGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.textfield.TextInputEditText
+
+class FormActivity : AppCompatActivity() {
+    
+    private lateinit var etName: TextInputEditText
+    private lateinit var etEmail: TextInputEditText
+    private lateinit var etAge: TextInputEditText
+    private lateinit var rgGender: RadioGroup
+    private lateinit var cbAgree: CheckBox
+    private lateinit var btnSubmit: Button
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_form)
+        
+        initViews()
+        setupSubmitButton()
+    }
+    
+    private fun initViews() {
+        etName = findViewById(R.id.etName)
+        etEmail = findViewById(R.id.etEmail)
+        etAge = findViewById(R.id.etAge)
+        rgGender = findViewById(R.id.rgGender)
+        cbAgree = findViewById(R.id.cbAgree)
+        btnSubmit = findViewById(R.id.btnSubmit)
+    }
+    
+    private fun setupSubmitButton() {
+        btnSubmit.setOnClickListener {
+            if (validateInput()) {
+                sendDataToResultActivity()
+            }
+        }
+    }
+    
+    private fun validateInput(): Boolean {
+        val name = etName.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val age = etAge.text.toString().trim()
+        
+        // Validasi nama
+        if (name.isEmpty()) {
+            etName.error = "Nama tidak boleh kosong"
+            etName.requestFocus()
+            return false
+        }
+        
+        // Validasi email
+        if (email.isEmpty()) {
+            etEmail.error = "Email tidak boleh kosong"
+            etEmail.requestFocus()
+            return false
+        }
+        
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.error = "Format email tidak valid"
+            etEmail.requestFocus()
+            return false
+        }
+        
+        // Validasi usia
+        if (age.isEmpty()) {
+            etAge.error = "Usia tidak boleh kosong"
+            etAge.requestFocus()
+            return false
+        }
+        
+        // Validasi gender
+        if (rgGender.checkedRadioButtonId == -1) {
+            Toast.makeText(this, "Pilih jenis kelamin", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        // Validasi checkbox
+        if (!cbAgree.isChecked) {
+            Toast.makeText(this, "Anda harus menyetujui syarat dan ketentuan", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        return true
+    }
+    
+    private fun sendDataToResultActivity() {
+        val name = etName.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val age = etAge.text.toString().toInt()
+        val gender = when (rgGender.checkedRadioButtonId) {
+            R.id.rbMale -> "Laki-laki"
+            R.id.rbFemale -> "Perempuan"
+            else -> ""
+        }
+        
+        // Membuat intent dengan data
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra(ResultActivity.EXTRA_NAME, name)
+            putExtra(ResultActivity.EXTRA_EMAIL, email)
+            putExtra(ResultActivity.EXTRA_AGE, age)
+            putExtra(ResultActivity.EXTRA_GENDER, gender)
+        }
+        
+        startActivity(intent)
+    }
+}</pre>
+                </div>
+
+                <h3>Layout Hasil</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_result.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data yang Diterima"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="16dp"&gt;
+
+        &lt;LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"&gt;
+
+            &lt;TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvAge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvGender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"/&gt;
+
+        &lt;/LinearLayout&gt;
+
+    &lt;/com.google.android.material.card.MaterialCardView&gt;
+
+    &lt;Button
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kembali ke Form"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Menerima Data di ResultActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ResultActivity.kt - Menerima Data</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class ResultActivity : AppCompatActivity() {
+    
+    companion object {
+        const val EXTRA_NAME = "extra_name"
+        const val EXTRA_EMAIL = "extra_email"
+        const val EXTRA_AGE = "extra_age"
+        const val EXTRA_GENDER = "extra_gender"
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_result)
+        
+        // Menerima data dari Intent
+        val name = intent.getStringExtra(EXTRA_NAME) ?: "Tidak ada data"
+        val email = intent.getStringExtra(EXTRA_EMAIL) ?: "Tidak ada data"
+        val age = intent.getIntExtra(EXTRA_AGE, 0)
+        val gender = intent.getStringExtra(EXTRA_GENDER) ?: "Tidak ada data"
+        
+        // Menampilkan data
+        findViewById&lt;TextView&gt;(R.id.tvName).text = "Nama: $name"
+        findViewById&lt;TextView&gt;(R.id.tvEmail).text = "Email: $email"
+        findViewById&lt;TextView&gt;(R.id.tvAge).text = "Usia: $age tahun"
+        findViewById&lt;TextView&gt;(R.id.tvGender).text = "Jenis Kelamin: $gender"
+        
+        // Tombol kembali
+        findViewById&lt;Button&gt;(R.id.btnBack).setOnClickListener {
+            finish()
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Tipe Data yang Dapat Dikirim</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method putExtra</th>
+                            <th>Method getExtra</th>
+                            <th>Tipe Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>putExtra(key, String)</td>
+                            <td>getStringExtra(key)</td>
+                            <td>String</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Int)</td>
+                            <td>getIntExtra(key, defaultValue)</td>
+                            <td>Int</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Long)</td>
+                            <td>getLongExtra(key, defaultValue)</td>
+                            <td>Long</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Float)</td>
+                            <td>getFloatExtra(key, defaultValue)</td>
+                            <td>Float</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Double)</td>
+                            <td>getDoubleExtra(key, defaultValue)</td>
+                            <td>Double</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Boolean)</td>
+                            <td>getBooleanExtra(key, defaultValue)</td>
+                            <td>Boolean</td>
+                        </tr>
+                        <tr>
+                            <td>putStringArrayListExtra(key, ArrayList)</td>
+                            <td>getStringArrayListExtra(key)</td>
+                            <td>ArrayList&lt;String&gt;</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Parcelable)</td>
+                            <td>getParcelableExtra(key)</td>
+                            <td>Object (Parcelable)</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Serializable)</td>
+                            <td>getSerializableExtra(key)</td>
+                            <td>Object (Serializable)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Mengirim Object dengan Parcelable</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>User.kt - Data Class Parcelable</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class User(
+    val id: Int,
+    val name: String,
+    val email: String,
+    val age: Int,
+    val gender: String
+) : Parcelable</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mengirim dan Menerima Object Parcelable</span>
+                    </div>
+                    <pre class="no-copy">
+// Mengirim object
+val user = User(
+    id = 1,
+    name = "John Doe",
+    email = "john@email.com",
+    age = 25,
+    gender = "Laki-laki"
+)
+
+val intent = Intent(this, DetailActivity::class.java)
+intent.putExtra("USER_DATA", user)
+startActivity(intent)
+
+// =============================================
+
+// Menerima object di DetailActivity
+val user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    intent.getParcelableExtra("USER_DATA", User::class.java)
+} else {
+    @Suppress("DEPRECATION")
+    intent.getParcelableExtra("USER_DATA")
+}
+
+user?.let {
+    tvName.text = it.name
+    tvEmail.text = it.email
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Mengaktifkan Parcelize Plugin</h4>
+                    <p>Untuk menggunakan <code>@Parcelize</code>, tambahkan plugin di <code>build.gradle.kts</code>:</p>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize") // Tambahkan ini
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Tugas -->
+        <section id="tugas" class="section">
+            <h1>Tugas Praktikum</h1>
+            
+            <div class="task-box">
+                <h2>Tugas 1: Aplikasi Form Biodata</h2>
+                <p>Buatlah aplikasi dengan spesifikasi sebagai berikut:</p>
+                <ol>
+                    <li>Halaman pertama (MainActivity) berisi form input:
+                        <ul>
+                            <li>Nama lengkap (EditText)</li>
+                            <li>NIM (EditText dengan inputType number)</li>
+                            <li>Program Studi (Spinner dengan pilihan)</li>
+                            <li>Jenis Kelamin (RadioButton)</li>
+                            <li>Hobi (CheckBox - minimal 3 pilihan)</li>
+                        </ul>
+                    </li>
+                    <li>Implementasikan validasi input yang baik</li>
+                    <li>Gunakan Style untuk konsistensi tampilan</li>
+                    <li>Tombol "Tampilkan Profil" untuk berpindah ke halaman kedua</li>
+                    <li>Halaman kedua (ProfileActivity) menampilkan data yang diinput dengan tampilan yang menarik (gunakan CardView)</li>
+                    <li>Implementasikan localization (minimal 2 bahasa)</li>
+                </ol>
+                
+                <div class="info-box">
+                    <h4>Kriteria Penilaian</h4>
+                    <ul>
+                        <li>Implementasi Layout (ConstraintLayout) - 20%</li>
+                        <li>Penggunaan Widget yang tepat - 20%</li>
+                        <li>Validasi Input - 15%</li>
+                        <li>Style dan Theme - 15%</li>
+                        <li>Intent dan Data Passing - 20%</li>
+                        <li>Localization - 10%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 2: Aplikasi Kalkulator Sederhana</h2>
+                <p>Buatlah aplikasi kalkulator dengan spesifikasi:</p>
+                <ol>
+                    <li>Halaman pertama berisi:
+                        <ul>
+                            <li>Input angka pertama</li>
+                            <li>Input angka kedua</li>
+                            <li>Spinner untuk pilihan operasi (+, -, ×, ÷)</li>
+                            <li>Tombol Hitung</li>
+                        </ul>
+                    </li>
+                    <li>Halaman kedua menampilkan:
+                        <ul>
+                            <li>Angka pertama</li>
+                            <li>Operasi yang dipilih</li>
+                            <li>Angka kedua</li>
+                            <li>Hasil perhitungan</li>
+                        </ul>
+                    </li>
+                    <li>Implementasikan validasi:
+                        <ul>
+                            <li>Input tidak boleh kosong</li>
+                            <li>Pembagian dengan 0 harus ditangani</li>
+                        </ul>
+                    </li>
+                    <li>Gunakan Material Design components</li>
+                </ol>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 3: Aplikasi Intent Explorer</h2>
+                <p>Buatlah aplikasi yang mengeksplorasi berbagai jenis Intent:</p>
+                <ol>
+                    <li>Tombol untuk membuka website kampus</li>
+                    <li>Tombol untuk melakukan panggilan ke nomor kampus</li>
+                    <li>Tombol untuk mengirim email ke dosen</li>
+                    <li>Tombol untuk share text ke media sosial</li>
+                    <li>Tombol untuk membuka lokasi kampus di Maps</li>
+                    <li>Buat tampilan yang menarik dengan ikon untuk setiap tombol</li>
+                </ol>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 4: Mini Project - Aplikasi Catatan Sederhana</h2>
+                <p>Buatlah aplikasi catatan sederhana dengan fitur:</p>
+                <ol>
+                    <li>Halaman utama menampilkan daftar catatan (sementara bisa hardcode)</li>
+                    <li>Tombol untuk menambah catatan baru</li>
+                    <li>Halaman form untuk menambah catatan:
+                        <ul>
+                            <li>Judul catatan</li>
+                            <li>Isi catatan (multiline)</li>
+                            <li>Kategori (Spinner: Pekerjaan, Pribadi, Belajar)</li>
+                            <li>Prioritas (RadioButton: Tinggi, Sedang, Rendah)</li>
+                        </ul>
+                    </li>
+                    <li>Halaman detail catatan</li>
+                    <li>Implementasikan semua konsep yang telah dipelajari:
+                        <ul>
+                            <li>Layout yang baik (ConstraintLayout)</li>
+                            <li>Berbagai widget</li>
+                            <li>Style dan Theme</li>
+                            <li>Localization</li>
+                            <li>Activity dan Intent</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="info-box">
+                <h3>Ketentuan Pengumpulan</h3>
+                <ul>
+                    <li>Kumpulkan dalam format <strong>ZIP</strong> berisi project Android Studio lengkap</li>
+                    <li>Sertakan file <strong>README.md</strong> berisi:
+                        <ul>
+                            <li>Nama dan NIM</li>
+                            <li>Deskripsi singkat aplikasi</li>
+                            <li>Screenshot aplikasi (minimal 3 screenshot)</li>
+                            <li>Penjelasan fitur yang diimplementasikan</li>
+                        </ul>
+                    </li>
+                    <li>Pastikan project bisa di-build tanpa error</li>
+                    <li>Deadline: Pertemuan berikutnya</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>Catatan Penting</h3>
+                <ul>
+                    <li>Plagiasi akan mendapat nilai 0</li>
+                    <li>Ketik ulang kode, jangan copy-paste</li>
+                    <li>Pahami setiap baris kode yang Anda tulis</li>
+                    <li>Jangan ragu bertanya jika ada kesulitan</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Referensi -->
+        <section id="referensi" class="section">
+            <h1>Referensi</h1>
+            
+            <h2>Dokumentasi Resmi</h2>
+            <ul>
+                <li><strong>Android Developers</strong> - developer.android.com</li>
+                <li><strong>Kotlin Documentation</strong> - kotlinlang.org/docs</li>
+                <li><strong>Material Design</strong> - material.io</li>
+            </ul>
+
+            <h2>Codelabs</h2>
+            <ul>
+                <li>Android Basics in Kotlin - developer.android.com/courses/android-basics-kotlin/course</li>
+                <li>Jetpack Compose Basics - developer.android.com/jetpack/compose</li>
+            </ul>
+
+            <h2>Tools</h2>
+            <ul>
+                <li><strong>Android Studio</strong> - IDE resmi untuk pengembangan Android</li>
+                <li><strong>Figma</strong> - Untuk desain UI</li>
+                <li><strong>Git</strong> - Version control</li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Bergerak</strong></p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <!-- JavaScript untuk anti-copy dan section navigation -->
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const allSections = document.querySelectorAll('.section');
+            allSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // Scroll to top of main content
+                document.querySelector('.main-content').scrollTop = 0;
+                window.scrollTo(0, 0);
+            }
+            
+            // Update active state in navigation
+            updateActiveNav(sectionId);
+        }
+        
+        // Function to update active navigation link
+        function updateActiveNav(sectionId) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + sectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Initialize: Show first section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show pendahuluan section by default
+            showSection('pendahuluan');
+            
+            // Add click handlers to all navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // Check if it's a main section or sub-article
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        if (targetElement.classList.contains('section')) {
+                            // It's a main section, show only this section
+                            showSection(targetId);
+                        } else {
+                            // It's a sub-article, show parent section and scroll to article
+                            const parentSection = targetElement.closest('.section');
+                            if (parentSection) {
+                                showSection(parentSection.id);
+                                // Small delay to ensure section is visible before scrolling
+                                setTimeout(() => {
+                                    targetElement.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                }, 100);
+                            }
+                        }
+                    }
+                });
+            });
+        });
+        
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Disable keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Disable Ctrl+C, Ctrl+U, Ctrl+S, Ctrl+A, Ctrl+Shift+I, F12
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || 
+                              e.key === 'u' || e.key === 'U' ||
+                              e.key === 's' || e.key === 'S' ||
+                              e.key === 'a' || e.key === 'A')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable text selection on code blocks
+        document.querySelectorAll('.no-copy').forEach(function(element) {
+            element.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+            });
+            element.addEventListener('copy', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        // Disable drag
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
+
+        const sidebar = document.querySelector('.sidebar');
+        let touchStartX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchEndX - touchStartX;
+            
+            if (diff > 50 && touchStartX < 50) {
+                sidebar.classList.add('show');
+            } else if (diff < -50) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        console.log('%cPerhatian!', 'color: red; font-size: 30px; font-weight: bold;');
+        console.log('%cHalaman ini dilindungi. Silakan ketik ulang kode untuk belajar dengan lebih baik.', 'font-size: 16px;');
+    </script>
+</body>
+</html>
