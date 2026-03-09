@@ -541,553 +541,2305 @@ class MainActivity : AppCompatActivity() {
             </article>
         </section>
 
-        <!-- UI XML & Layout -->
-        <section id="ui-xml" class="section">
-            <h1>UI XML dan Layout</h1>
-            
-            <article id="pengenalan-xml">
-                <h2>Pengenalan XML di Android</h2>
-                <p>XML (eXtensible Markup Language) adalah bahasa markup yang digunakan untuk mendefinisikan tampilan UI di Android. Dengan memisahkan UI dari kode Kotlin/Java, kita mendapatkan:</p>
-                
-                <ul>
-                    <li><strong>Separation of Concerns</strong> - Memisahkan tampilan dari logic</li>
-                    <li><strong>Visual Editor</strong> - Bisa mendesain UI secara visual</li>
-                    <li><strong>Multiple Layouts</strong> - Mendukung berbagai ukuran layar</li>
-                    <li><strong>Resource Management</strong> - Mudah mengelola resource UI</li>
-                </ul>
+       <!-- UI XML & Layout -->
+<section id="ui-xml" class="section">
+    <h1>UI XML dan Layout</h1>
+    
+    <article id="pengenalan-xml">
+        <h2>Pengenalan XML di Android</h2>
+        <p>XML (eXtensible Markup Language) adalah bahasa markup yang digunakan untuk mendefinisikan tampilan UI di Android. Dengan memisahkan UI dari kode Kotlin/Java, kita mendapatkan:</p>
+        
+        <ul>
+            <li><strong>Separation of Concerns</strong> - Memisahkan tampilan dari logic bisnis</li>
+            <li><strong>Visual Editor</strong> - Bisa mendesain UI secara visual dengan drag-and-drop</li>
+            <li><strong>Multiple Layouts</strong> - Mendukung berbagai ukuran dan orientasi layar</li>
+            <li><strong>Resource Management</strong> - Mudah mengelola dan mengorganisir resource UI</li>
+            <li><strong>Reusability</strong> - Layout bisa digunakan ulang di berbagai Activity</li>
+        </ul>
+    </article>
 
-                <h3>Struktur Dasar XML Layout</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Struktur Dasar XML</span>
-                    </div>
-                    <pre class="no-copy">
-&lt;?xml version="1.0" encoding="utf-8"?&gt;
-&lt;RootLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"&gt;
+    <article id="struktur-folder-res">
+        <h2>Struktur Folder Resources (res)</h2>
+        <p>Folder <code>res</code> (resources) adalah tempat menyimpan semua resource non-code dalam aplikasi Android. Memahami struktur folder ini sangat penting untuk pengembangan aplikasi.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>Struktur Folder res/</span>
+            </div>
+            <pre class="no-copy">
+app/
+└── src/
+    └── main/
+        └── res/
+            ├── drawable/              # Gambar dan drawable resources
+            │   ├── ic_custom_icon.xml
+            │   ├── background_gradient.xml
+            │   ├── button_selector.xml
+            │   └── image_photo.png
+            │
+            ├── drawable-v24/          # Drawable untuk API 24+
+            │   └── ic_launcher_foreground.xml
+            │
+            ├── layout/                # Layout XML untuk UI
+            │   ├── activity_main.xml
+            │   ├── activity_second.xml
+            │   └── item_list.xml
+            │
+            ├── layout-land/           # Layout untuk orientasi landscape
+            │   └── activity_main.xml
+            │
+            ├── mipmap-mdpi/           # Icon launcher (medium density)
+            │   ├── ic_launcher.webp
+            │   └── ic_launcher_round.webp
+            │
+            ├── mipmap-hdpi/           # Icon launcher (high density)
+            │   ├── ic_launcher.webp
+            │   └── ic_launcher_round.webp
+            │
+            ├── mipmap-xhdpi/          # Icon launcher (extra high density)
+            │   ├── ic_launcher.webp
+            │   └── ic_launcher_round.webp
+            │
+            ├── mipmap-xxhdpi/         # Icon launcher (extra extra high)
+            │   ├── ic_launcher.webp
+            │   └── ic_launcher_round.webp
+            │
+            ├── mipmap-xxxhdpi/        # Icon launcher (extra extra extra high)
+            │   ├── ic_launcher.webp
+            │   └── ic_launcher_round.webp
+            │
+            ├── mipmap-anydpi-v26/     # Adaptive icon (API 26+)
+            │   ├── ic_launcher.xml
+            │   └── ic_launcher_round.xml
+            │
+            ├── values/                # Resource values default
+            │   ├── colors.xml         # Definisi warna
+            │   ├── strings.xml        # String/teks
+            │   ├── themes.xml         # Tema aplikasi
+            │   ├── dimens.xml         # Dimensi (ukuran)
+            │   └── styles.xml         # Style komponen
+            │
+            ├── values-night/          # Resource untuk dark mode
+            │   ├── colors.xml
+            │   └── themes.xml
+            │
+            ├── values-id/             # String bahasa Indonesia
+            │   └── strings.xml
+            │
+            ├── values-sw600dp/        # Values untuk tablet 7"
+            │   └── dimens.xml
+            │
+            ├── xml/                   # File XML konfigurasi lainnya
+            │   ├── backup_rules.xml
+            │   └── data_extraction_rules.xml
+            │
+            ├── menu/                  # Menu resources
+            │   └── main_menu.xml
+            │
+            ├── anim/                  # Animasi XML
+            │   ├── fade_in.xml
+            │   └── slide_up.xml
+            │
+            ├── font/                  # Custom fonts
+            │   └── custom_font.ttf
+            │
+            └── raw/                   # File raw (audio, video, dll)
+                └── notification_sound.mp3</pre>
+        </div>
 
-    &lt;!-- Child views di sini --&gt;
-    &lt;ChildView
-        android:id="@+id/viewId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:attribute="value" /&gt;
+        <h3>Penjelasan Detail Setiap Folder</h3>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Folder</th>
+                    <th>Fungsi</th>
+                    <th>Format File</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>drawable/</code></td>
+                    <td>Menyimpan gambar bitmap (PNG, JPG, GIF) dan drawable XML (shape, selector, layer-list)</td>
+                    <td>.png, .jpg, .gif, .xml, .webp</td>
+                </tr>
+                <tr>
+                    <td><code>layout/</code></td>
+                    <td>Menyimpan file layout XML yang mendefinisikan UI</td>
+                    <td>.xml</td>
+                </tr>
+                <tr>
+                    <td><code>mipmap/</code></td>
+                    <td>Menyimpan icon launcher aplikasi dalam berbagai resolusi</td>
+                    <td>.png, .webp, .xml</td>
+                </tr>
+                <tr>
+                    <td><code>values/</code></td>
+                    <td>Menyimpan resource values seperti string, color, dimension, style</td>
+                    <td>.xml</td>
+                </tr>
+                <tr>
+                    <td><code>menu/</code></td>
+                    <td>Menyimpan definisi menu (options menu, context menu)</td>
+                    <td>.xml</td>
+                </tr>
+                <tr>
+                    <td><code>anim/</code></td>
+                    <td>Menyimpan animasi tween (rotate, scale, translate, alpha)</td>
+                    <td>.xml</td>
+                </tr>
+                <tr>
+                    <td><code>font/</code></td>
+                    <td>Menyimpan file font custom</td>
+                    <td>.ttf, .otf</td>
+                </tr>
+                <tr>
+                    <td><code>raw/</code></td>
+                    <td>Menyimpan file raw yang tidak diproses (audio, video, dll)</td>
+                    <td>Any format</td>
+                </tr>
+                <tr>
+                    <td><code>xml/</code></td>
+                    <td>Menyimpan file XML konfigurasi arbitrary</td>
+                    <td>.xml</td>
+                </tr>
+            </tbody>
+        </table>
 
-&lt;/RootLayout&gt;</pre>
+        <h3>Resource Qualifiers (Folder dengan Suffix)</h3>
+        <p>Android mendukung <strong>resource qualifiers</strong> untuk menyediakan resource alternatif berdasarkan konfigurasi device.</p>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Qualifier</th>
+                    <th>Contoh Folder</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Bahasa</td>
+                    <td><code>values-id/</code>, <code>values-en/</code></td>
+                    <td>Resource berdasarkan bahasa device</td>
+                </tr>
+                <tr>
+                    <td>Orientasi</td>
+                    <td><code>layout-land/</code>, <code>layout-port/</code></td>
+                    <td>Layout berbeda untuk landscape/portrait</td>
+                </tr>
+                <tr>
+                    <td>Screen Size</td>
+                    <td><code>values-sw600dp/</code></td>
+                    <td>Untuk layar dengan smallest width 600dp (tablet 7")</td>
+                </tr>
+                <tr>
+                    <td>Screen Density</td>
+                    <td><code>drawable-hdpi/</code>, <code>drawable-xxhdpi/</code></td>
+                    <td>Gambar untuk kepadatan layar berbeda</td>
+                </tr>
+                <tr>
+                    <td>Night Mode</td>
+                    <td><code>values-night/</code></td>
+                    <td>Resource untuk dark mode</td>
+                </tr>
+                <tr>
+                    <td>API Level</td>
+                    <td><code>drawable-v24/</code>, <code>values-v31/</code></td>
+                    <td>Resource untuk API level tertentu</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <h4>Cara Kerja Resource Selection</h4>
+            <p>Android akan otomatis memilih resource yang paling sesuai dengan konfigurasi device. Contoh:</p>
+            <ul>
+                <li>Device bahasa Indonesia → <code>values-id/strings.xml</code></li>
+                <li>Device bahasa lain → <code>values/strings.xml</code> (default)</li>
+                <li>Device landscape → <code>layout-land/activity_main.xml</code></li>
+                <li>Device portrait → <code>layout/activity_main.xml</code></li>
+            </ul>
+        </div>
+    </article>
+
+    <article id="mengubah-icon">
+        <h2>Mengubah Icon Aplikasi</h2>
+        <p>Icon aplikasi adalah identitas visual yang muncul di launcher, recent apps, dan berbagai tempat lainnya. Android modern menggunakan <strong>Adaptive Icons</strong> yang terdiri dari foreground dan background layer.</p>
+        
+        <h3>Metode 1: Menggunakan Image Asset Studio (Recommended)</h3>
+        <div class="steps">
+            <div class="step">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                    <h4>Buka Image Asset Studio</h4>
+                    <p>Klik kanan pada folder <code>res</code> → <strong>New</strong> → <strong>Image Asset</strong></p>
                 </div>
-
-                <h3>Namespace XML</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Namespace</th>
-                            <th>Prefix</th>
-                            <th>Kegunaan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>schemas.android.com/apk/res/android</td>
-                            <td>android:</td>
-                            <td>Atribut standar Android</td>
-                        </tr>
-                        <tr>
-                            <td>schemas.android.com/apk/res-auto</td>
-                            <td>app:</td>
-                            <td>Atribut custom dan library</td>
-                        </tr>
-                        <tr>
-                            <td>schemas.android.com/tools</td>
-                            <td>tools:</td>
-                            <td>Atribut untuk design time saja</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <h3>Atribut Layout Dasar</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Atribut</th>
-                            <th>Nilai</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>android:layout_width</td>
-                            <td>match_parent, wrap_content, atau dp</td>
-                            <td>Lebar view</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_height</td>
-                            <td>match_parent, wrap_content, atau dp</td>
-                            <td>Tinggi view</td>
-                        </tr>
-                        <tr>
-                            <td>android:id</td>
-                            <td>@+id/namaId</td>
-                            <td>Identifier unik untuk view</td>
-                        </tr>
-                        <tr>
-                            <td>android:padding</td>
-                            <td>dp value</td>
-                            <td>Jarak dalam view</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_margin</td>
-                            <td>dp value</td>
-                            <td>Jarak luar view</td>
-                        </tr>
-                        <tr>
-                            <td>android:background</td>
-                            <td>color atau drawable</td>
-                            <td>Background view</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="info-box">
-                    <h4>Satuan Ukuran di Android</h4>
+            </div>
+            <div class="step">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                    <h4>Pilih Icon Type</h4>
+                    <p>Pilih <strong>"Launcher Icons (Adaptive and Legacy)"</strong> untuk membuat icon yang kompatibel dengan semua versi Android.</p>
+                </div>
+            </div>
+            <div class="step">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                    <h4>Konfigurasi Foreground Layer</h4>
                     <ul>
-                        <li><strong>dp (density-independent pixels)</strong> - Digunakan untuk dimensi layout, akan menyesuaikan dengan kepadatan layar</li>
-                        <li><strong>sp (scale-independent pixels)</strong> - Digunakan untuk ukuran teks, mengikuti preferensi ukuran font user</li>
-                        <li><strong>px (pixels)</strong> - Tidak disarankan karena tidak responsif</li>
+                        <li><strong>Source Asset:</strong> Pilih Image, Clip Art, atau Text</li>
+                        <li><strong>Path:</strong> Browse ke file gambar Anda (PNG/SVG)</li>
+                        <li><strong>Trim:</strong> Yes untuk menghilangkan whitespace</li>
+                        <li><strong>Resize:</strong> Sesuaikan ukuran dalam safe zone</li>
                     </ul>
                 </div>
-            </article>
-
-            <article id="view-viewgroup">
-                <h2>View dan ViewGroup</h2>
-                
-                <h3>View</h3>
-                <p>View adalah class dasar untuk semua komponen UI di Android. View merepresentasikan area persegi di layar yang dapat menggambar sesuatu dan merespons interaksi user.</p>
-                
-                <h3>ViewGroup</h3>
-                <p>ViewGroup adalah View khusus yang dapat berisi View lain (child views). ViewGroup digunakan sebagai container untuk mengatur tata letak child views.</p>
-
-                <div class="diagram-box">
-                    <pre class="diagram">
-                        ViewGroup (Container)
-                    ┌─────────────────────────────┐
-                    │  ┌───────┐    ┌───────┐    │
-                    │  │ View  │    │ View  │    │
-                    │  │  (1)  │    │  (2)  │    │
-                    │  └───────┘    └───────┘    │
-                    │       ┌─────────────┐      │
-                    │       │  ViewGroup  │      │
-                    │       │ ┌───┐ ┌───┐ │      │
-                    │       │ │ V │ │ V │ │      │
-                    │       │ └───┘ └───┘ │      │
-                    │       └─────────────┘      │
-                    └─────────────────────────────┘
-                    </pre>
+            </div>
+            <div class="step">
+                <span class="step-number">4</span>
+                <div class="step-content">
+                    <h4>Konfigurasi Background Layer</h4>
+                    <ul>
+                        <li><strong>Source Asset:</strong> Pilih Color atau Image</li>
+                        <li><strong>Color:</strong> Pilih warna background icon</li>
+                    </ul>
                 </div>
-            </article>
+            </div>
+            <div class="step">
+                <span class="step-number">5</span>
+                <div class="step-content">
+                    <h4>Preview dan Finish</h4>
+                    <p>Lihat preview di berbagai bentuk (Circle, Squircle, Square, dll), kemudian klik <strong>Next</strong> → <strong>Finish</strong></p>
+                </div>
+            </div>
+        </div>
 
-            <article id="linearlayout">
-                <h2>LinearLayout</h2>
-                <p>LinearLayout menyusun child views dalam satu baris (horizontal) atau satu kolom (vertical). Ini adalah layout paling sederhana dan mudah dipahami.</p>
-                
-                <h3>Atribut Penting</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Atribut</th>
-                            <th>Nilai</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>android:orientation</td>
-                            <td>vertical | horizontal</td>
-                            <td>Arah susunan views</td>
-                        </tr>
-                        <tr>
-                            <td>android:gravity</td>
-                            <td>center, start, end, top, bottom</td>
-                            <td>Posisi content dalam layout</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_weight</td>
-                            <td>angka (float)</td>
-                            <td>Proporsi ruang yang digunakan</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <h3>Metode 2: Manual (Memahami Struktur File)</h3>
+        <p>Jika ingin mengubah secara manual, pahami struktur file icon berikut:</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>Struktur File Icon Launcher</span>
+            </div>
+            <pre class="no-copy">
+res/
+├── mipmap-mdpi/
+│   ├── ic_launcher.webp          (48x48 px)
+│   └── ic_launcher_round.webp    (48x48 px)
+│
+├── mipmap-hdpi/
+│   ├── ic_launcher.webp          (72x72 px)
+│   └── ic_launcher_round.webp    (72x72 px)
+│
+├── mipmap-xhdpi/
+│   ├── ic_launcher.webp          (96x96 px)
+│   └── ic_launcher_round.webp    (96x96 px)
+│
+├── mipmap-xxhdpi/
+│   ├── ic_launcher.webp          (144x144 px)
+│   └── ic_launcher_round.webp    (144x144 px)
+│
+├── mipmap-xxxhdpi/
+│   ├── ic_launcher.webp          (192x192 px)
+│   └── ic_launcher_round.webp    (192x192 px)
+│
+└── mipmap-anydpi-v26/
+    ├── ic_launcher.xml           (Adaptive icon config)
+    └── ic_launcher_round.xml     (Adaptive icon config)</pre>
+        </div>
 
-                <h3>Contoh LinearLayout Vertical</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>LinearLayout Vertical</span>
-                    </div>
-                    <pre class="no-copy">
+        <h3>Struktur Adaptive Icon (API 26+)</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/mipmap-anydpi-v26/ic_launcher.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+    &lt;!-- Background layer (warna atau gambar) --&gt;
+    &lt;background android:drawable="@drawable/ic_launcher_background" /&gt;
+    
+    &lt;!-- Foreground layer (logo/icon) --&gt;
+    &lt;foreground android:drawable="@drawable/ic_launcher_foreground" /&gt;
+    
+    &lt;!-- Monochrome untuk themed icons (API 33+) --&gt;
+    &lt;monochrome android:drawable="@drawable/ic_launcher_monochrome" /&gt;
+&lt;/adaptive-icon&gt;</pre>
+        </div>
+
+        <h3>Contoh Background Drawable</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/drawable/ic_launcher_background.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;!-- Background dengan warna solid --&gt;
+&lt;shape xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+    &lt;solid android:color="#3F51B5" /&gt;
+&lt;/shape&gt;
+
+&lt;!-- ATAU background dengan gradient --&gt;
+&lt;shape xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+    &lt;gradient
+        android:startColor="#3F51B5"
+        android:endColor="#1A237E"
+        android:angle="45" /&gt;
+&lt;/shape&gt;</pre>
+        </div>
+
+        <h3>Referensi Icon di AndroidManifest.xml</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>AndroidManifest.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;application
+    android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:label="@string/app_name"
+    ... &gt;
+&lt;/application&gt;</pre>
+        </div>
+
+        <div class="warning-box">
+            <h4>Tips Membuat Icon yang Baik</h4>
+            <ul>
+                <li>Gunakan format <strong>PNG</strong> atau <strong>WebP</strong> untuk bitmap, <strong>SVG/Vector</strong> untuk vector</li>
+                <li>Pastikan icon tetap jelas dalam ukuran kecil (48x48 px)</li>
+                <li>Gunakan <strong>safe zone</strong> (area tengah 66%) untuk konten penting</li>
+                <li>Hindari teks dalam icon karena sulit dibaca di ukuran kecil</li>
+                <li>Test icon di berbagai bentuk launcher (circle, square, squircle)</li>
+            </ul>
+        </div>
+
+        <h3>Ukuran Icon untuk Berbagai Density</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Density</th>
+                    <th>DPI</th>
+                    <th>Launcher Icon</th>
+                    <th>Scale</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>mdpi</td>
+                    <td>~160 dpi</td>
+                    <td>48 x 48 px</td>
+                    <td>1x (baseline)</td>
+                </tr>
+                <tr>
+                    <td>hdpi</td>
+                    <td>~240 dpi</td>
+                    <td>72 x 72 px</td>
+                    <td>1.5x</td>
+                </tr>
+                <tr>
+                    <td>xhdpi</td>
+                    <td>~320 dpi</td>
+                    <td>96 x 96 px</td>
+                    <td>2x</td>
+                </tr>
+                <tr>
+                    <td>xxhdpi</td>
+                    <td>~480 dpi</td>
+                    <td>144 x 144 px</td>
+                    <td>3x</td>
+                </tr>
+                <tr>
+                    <td>xxxhdpi</td>
+                    <td>~640 dpi</td>
+                    <td>192 x 192 px</td>
+                    <td>4x</td>
+                </tr>
+            </tbody>
+        </table>
+    </article>
+
+    <article id="strings-resource">
+        <h2>String Resources (strings.xml)</h2>
+        <p>File <code>strings.xml</code> menyimpan semua teks yang digunakan dalam aplikasi. Menggunakan string resource adalah <strong>best practice</strong> yang wajib diikuti untuk:</p>
+        
+        <ul>
+            <li>Memudahkan localization (terjemahan ke bahasa lain)</li>
+            <li>Menghindari hardcoded string dalam layout dan kode</li>
+            <li>Mempermudah maintenance dan perubahan teks</li>
+            <li>Konsistensi penggunaan teks di seluruh aplikasi</li>
+        </ul>
+
+        <h3>Lokasi File</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>Lokasi strings.xml</span>
+            </div>
+            <pre class="no-copy">
+res/
+├── values/
+│   └── strings.xml          # Default (bahasa utama)
+├── values-id/
+│   └── strings.xml          # Bahasa Indonesia
+├── values-en/
+│   └── strings.xml          # Bahasa Inggris
+└── values-ja/
+    └── strings.xml          # Bahasa Jepang</pre>
+        </div>
+
+        <h3>Struktur dan Sintaks strings.xml</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values/strings.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- APP INFO --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="app_name"&gt;Aplikasi Saya&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- COMMON / GENERAL --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="btn_ok"&gt;OK&lt;/string&gt;
+    &lt;string name="btn_cancel"&gt;Batal&lt;/string&gt;
+    &lt;string name="btn_save"&gt;Simpan&lt;/string&gt;
+    &lt;string name="btn_delete"&gt;Hapus&lt;/string&gt;
+    &lt;string name="btn_edit"&gt;Edit&lt;/string&gt;
+    &lt;string name="btn_submit"&gt;Kirim&lt;/string&gt;
+    &lt;string name="btn_next"&gt;Selanjutnya&lt;/string&gt;
+    &lt;string name="btn_back"&gt;Kembali&lt;/string&gt;
+    &lt;string name="btn_close"&gt;Tutup&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- LOGIN SCREEN --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="login_title"&gt;Selamat Datang&lt;/string&gt;
+    &lt;string name="login_subtitle"&gt;Silakan masuk untuk melanjutkan&lt;/string&gt;
+    &lt;string name="hint_email"&gt;Alamat Email&lt;/string&gt;
+    &lt;string name="hint_password"&gt;Kata Sandi&lt;/string&gt;
+    &lt;string name="hint_username"&gt;Nama Pengguna&lt;/string&gt;
+    &lt;string name="btn_login"&gt;Masuk&lt;/string&gt;
+    &lt;string name="btn_register"&gt;Daftar&lt;/string&gt;
+    &lt;string name="link_forgot_password"&gt;Lupa kata sandi?&lt;/string&gt;
+    &lt;string name="link_no_account"&gt;Belum punya akun? Daftar&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- VALIDATION MESSAGES --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="error_field_required"&gt;Field ini wajib diisi&lt;/string&gt;
+    &lt;string name="error_email_invalid"&gt;Format email tidak valid&lt;/string&gt;
+    &lt;string name="error_password_short"&gt;Password minimal 6 karakter&lt;/string&gt;
+    &lt;string name="error_password_mismatch"&gt;Password tidak cocok&lt;/string&gt;
+    &lt;string name="error_network"&gt;Tidak ada koneksi internet&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- SUCCESS MESSAGES --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="success_login"&gt;Login berhasil!&lt;/string&gt;
+    &lt;string name="success_register"&gt;Pendaftaran berhasil!&lt;/string&gt;
+    &lt;string name="success_save"&gt;Data berhasil disimpan&lt;/string&gt;
+    &lt;string name="success_delete"&gt;Data berhasil dihapus&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- DIALOG --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="dialog_title_confirm"&gt;Konfirmasi&lt;/string&gt;
+    &lt;string name="dialog_title_warning"&gt;Peringatan&lt;/string&gt;
+    &lt;string name="dialog_title_error"&gt;Error&lt;/string&gt;
+    &lt;string name="dialog_message_delete"&gt;Apakah Anda yakin ingin menghapus item ini?&lt;/string&gt;
+    &lt;string name="dialog_message_logout"&gt;Apakah Anda yakin ingin keluar?&lt;/string&gt;
+    &lt;string name="dialog_message_unsaved"&gt;Ada perubahan yang belum disimpan. Lanjutkan?&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- FORMATTED STRINGS (dengan parameter) --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string name="welcome_user"&gt;Halo, %1$s!&lt;/string&gt;
+    &lt;string name="item_count"&gt;%1$d item&lt;/string&gt;
+    &lt;string name="price_format"&gt;Rp %1$,.0f&lt;/string&gt;
+    &lt;string name="date_format"&gt;%1$s, %2$d %3$s %4$d&lt;/string&gt;
+    &lt;string name="version_info"&gt;Versi %1$s (Build %2$d)&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- SPECIAL CHARACTERS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- Apostrof harus di-escape dengan backslash --&gt;
+    &lt;string name="dont_worry"&gt;Don\'t worry, be happy!&lt;/string&gt;
+    
+    &lt;!-- Atau gunakan CDATA --&gt;
+    &lt;string name="terms_conditions"&gt;&lt;![CDATA[
+        Syarat & Ketentuan berlaku. 
+        Klik "Setuju" untuk melanjutkan.
+    ]]&gt;&lt;/string&gt;
+    
+    &lt;!-- HTML formatting --&gt;
+    &lt;string name="styled_text"&gt;&lt;b&gt;Bold&lt;/b&gt; dan &lt;i&gt;Italic&lt;/i&gt;&lt;/string&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- STRING ARRAY --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;string-array name="gender_options"&gt;
+        &lt;item&gt;Pilih Jenis Kelamin&lt;/item&gt;
+        &lt;item&gt;Laki-laki&lt;/item&gt;
+        &lt;item&gt;Perempuan&lt;/item&gt;
+    &lt;/string-array&gt;
+    
+    &lt;string-array name="provinces"&gt;
+        &lt;item&gt;DKI Jakarta&lt;/item&gt;
+        &lt;item&gt;Jawa Barat&lt;/item&gt;
+        &lt;item&gt;Jawa Tengah&lt;/item&gt;
+        &lt;item&gt;Jawa Timur&lt;/item&gt;
+        &lt;item&gt;Bali&lt;/item&gt;
+    &lt;/string-array&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- PLURALS (singular/plural) --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;plurals name="notification_count"&gt;
+        &lt;item quantity="zero"&gt;Tidak ada notifikasi&lt;/item&gt;
+        &lt;item quantity="one"&gt;%d notifikasi baru&lt;/item&gt;
+        &lt;item quantity="other"&gt;%d notifikasi baru&lt;/item&gt;
+    &lt;/plurals&gt;
+    
+    &lt;plurals name="minutes_remaining"&gt;
+        &lt;item quantity="one"&gt;%d menit tersisa&lt;/item&gt;
+        &lt;item quantity="other"&gt;%d menit tersisa&lt;/item&gt;
+    &lt;/plurals&gt;
+
+&lt;/resources&gt;</pre>
+        </div>
+
+        <h3>Cara Menggunakan String Resources</h3>
+        
+        <h4>Di Layout XML</h4>
+        <div class="code-block">
+            <div class="code-header">
+                <span>Menggunakan string di XML Layout</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Menggunakan string resource --&gt;
+&lt;TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/login_title" /&gt;
+
+&lt;EditText
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:hint="@string/hint_email" /&gt;
+
+&lt;Button
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/btn_login" /&gt;
+
+&lt;!-- HINDARI hardcoded string seperti ini --&gt;
+&lt;TextView
+    android:text="Login" /&gt;  &lt;!-- TIDAK DISARANKAN --&gt;</pre>
+        </div>
+
+        <h4>Di Kode Kotlin</h4>
+        <div class="code-block">
+            <div class="code-header">
+                <span>Menggunakan string di Kotlin</span>
+            </div>
+            <pre class="no-copy">
+// Mengambil string sederhana
+val appName = getString(R.string.app_name)
+val welcomeText = getString(R.string.login_title)
+
+// Menggunakan langsung di view
+textView.text = getString(R.string.login_title)
+editText.hint = getString(R.string.hint_email)
+
+// Set text dengan resource ID langsung
+textView.setText(R.string.login_title)
+
+// String dengan parameter/format
+val userName = "Budi"
+val welcomeMessage = getString(R.string.welcome_user, userName)
+// Hasil: "Halo, Budi!"
+
+// String dengan multiple parameter
+val itemCount = 5
+val itemText = getString(R.string.item_count, itemCount)
+// Hasil: "5 item"
+
+// Menggunakan di Toast
+Toast.makeText(this, R.string.success_login, Toast.LENGTH_SHORT).show()
+// atau
+Toast.makeText(this, getString(R.string.success_login), Toast.LENGTH_SHORT).show()
+
+// Mengambil string array
+val provinces = resources.getStringArray(R.array.provinces)
+
+// Menggunakan plurals
+val count = 3
+val pluralString = resources.getQuantityString(R.plurals.notification_count, count, count)
+// Hasil: "3 notifikasi baru"
+
+// String dengan HTML formatting
+val styledText = getString(R.string.styled_text)
+textView.text = Html.fromHtml(styledText, Html.FROM_HTML_MODE_LEGACY)</pre>
+        </div>
+
+        <h3>Format Specifiers untuk String</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Specifier</th>
+                    <th>Tipe Data</th>
+                    <th>Contoh</th>
+                    <th>Hasil</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>%s</code> atau <code>%1$s</code></td>
+                    <td>String</td>
+                    <td>"Halo, %1$s!" dengan "Budi"</td>
+                    <td>Halo, Budi!</td>
+                </tr>
+                <tr>
+                    <td><code>%d</code> atau <code>%1$d</code></td>
+                    <td>Integer</td>
+                    <td>"%1$d item" dengan 5</td>
+                    <td>5 item</td>
+                </tr>
+                <tr>
+                    <td><code>%f</code> atau <code>%1$f</code></td>
+                    <td>Float/Double</td>
+                    <td>"%.2f" dengan 3.14159</td>
+                    <td>3.14</td>
+                </tr>
+                <tr>
+                    <td><code>%,.0f</code></td>
+                    <td>Number with separator</td>
+                    <td>"Rp %1$,.0f" dengan 1500000</td>
+                    <td>Rp 1,500,000</td>
+                </tr>
+                <tr>
+                    <td><code>%%</code></td>
+                    <td>Literal %</td>
+                    <td>"Diskon %1$d%%"</td>
+                    <td>Diskon 50%</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <h4>Best Practice untuk String Resources</h4>
+            <ul>
+                <li>Gunakan naming convention yang konsisten: <code>screen_component_description</code></li>
+                <li>Kelompokkan string berdasarkan screen/fitur dengan komentar</li>
+                <li>Jangan hardcode string di layout XML atau kode Kotlin</li>
+                <li>Gunakan parameter untuk string dinamis, bukan concatenation</li>
+                <li>Sediakan string default di <code>values/strings.xml</code></li>
+            </ul>
+        </div>
+    </article>
+
+    <article id="colors-resource">
+        <h2>Color Resources (colors.xml)</h2>
+        <p>File <code>colors.xml</code> menyimpan definisi warna yang digunakan dalam aplikasi. Menggunakan color resource memastikan konsistensi warna di seluruh aplikasi.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values/colors.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- PRIMARY COLORS (Material Design) --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="purple_200"&gt;#FFBB86FC&lt;/color&gt;
+    &lt;color name="purple_500"&gt;#FF6200EE&lt;/color&gt;
+    &lt;color name="purple_700"&gt;#FF3700B3&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- SECONDARY COLORS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="teal_200"&gt;#FF03DAC5&lt;/color&gt;
+    &lt;color name="teal_700"&gt;#FF018786&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- BASIC COLORS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="black"&gt;#FF000000&lt;/color&gt;
+    &lt;color name="white"&gt;#FFFFFFFF&lt;/color&gt;
+    &lt;color name="transparent"&gt;#00000000&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- BRAND COLORS (Warna identitas aplikasi) --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="colorPrimary"&gt;#1976D2&lt;/color&gt;
+    &lt;color name="colorPrimaryDark"&gt;#1565C0&lt;/color&gt;
+    &lt;color name="colorPrimaryLight"&gt;#42A5F5&lt;/color&gt;
+    &lt;color name="colorAccent"&gt;#FF5722&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- STATUS COLORS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="colorSuccess"&gt;#4CAF50&lt;/color&gt;
+    &lt;color name="colorError"&gt;#F44336&lt;/color&gt;
+    &lt;color name="colorWarning"&gt;#FF9800&lt;/color&gt;
+    &lt;color name="colorInfo"&gt;#2196F3&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- TEXT COLORS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="textPrimary"&gt;#212121&lt;/color&gt;
+    &lt;color name="textSecondary"&gt;#757575&lt;/color&gt;
+    &lt;color name="textHint"&gt;#BDBDBD&lt;/color&gt;
+    &lt;color name="textOnPrimary"&gt;#FFFFFF&lt;/color&gt;
+    &lt;color name="textLink"&gt;#1976D2&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- BACKGROUND COLORS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="bgPrimary"&gt;#FFFFFF&lt;/color&gt;
+    &lt;color name="bgSecondary"&gt;#F5F5F5&lt;/color&gt;
+    &lt;color name="bgCard"&gt;#FFFFFF&lt;/color&gt;
+    &lt;color name="bgDivider"&gt;#E0E0E0&lt;/color&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- COLORS WITH TRANSPARENCY (Alpha) --&gt;
+    &lt;!-- Format: #AARRGGBB (AA = Alpha/Opacity) --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;color name="overlay_dark"&gt;#80000000&lt;/color&gt;    &lt;!-- 50% black --&gt;
+    &lt;color name="overlay_light"&gt;#80FFFFFF&lt;/color&gt;   &lt;!-- 50% white --&gt;
+    &lt;color name="ripple_dark"&gt;#1F000000&lt;/color&gt;     &lt;!-- 12% black --&gt;
+    &lt;color name="ripple_light"&gt;#1FFFFFFF&lt;/color&gt;    &lt;!-- 12% white --&gt;
+    &lt;color name="shadow"&gt;#29000000&lt;/color&gt;          &lt;!-- 16% black --&gt;
+
+&lt;/resources&gt;</pre>
+        </div>
+
+        <h3>Format Warna di Android</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Format</th>
+                    <th>Contoh</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#RGB</td>
+                    <td>#F00</td>
+                    <td>3 digit hex (Red = FF, Green = 00, Blue = 00)</td>
+                </tr>
+                <tr>
+                    <td>#RRGGBB</td>
+                    <td>#FF0000</td>
+                    <td>6 digit hex (merah)</td>
+                </tr>
+                <tr>
+                    <td>#ARGB</td>
+                    <td>#8F00</td>
+                    <td>4 digit hex dengan alpha (50% merah)</td>
+                </tr>
+                <tr>
+                    <td>#AARRGGBB</td>
+                    <td>#80FF0000</td>
+                    <td>8 digit hex dengan alpha (50% merah)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Referensi Alpha (Transparency)</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Opacity</th>
+                    <th>Alpha Hex</th>
+                    <th>Opacity</th>
+                    <th>Alpha Hex</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>100%</td><td>FF</td><td>50%</td><td>80</td></tr>
+                <tr><td>95%</td><td>F2</td><td>45%</td><td>73</td></tr>
+                <tr><td>90%</td><td>E6</td><td>40%</td><td>66</td></tr>
+                <tr><td>85%</td><td>D9</td><td>35%</td><td>59</td></tr>
+                <tr><td>80%</td><td>CC</td><td>30%</td><td>4D</td></tr>
+                <tr><td>75%</td><td>BF</td><td>25%</td><td>40</td></tr>
+                <tr><td>70%</td><td>B3</td><td>20%</td><td>33</td></tr>
+                <tr><td>65%</td><td>A6</td><td>15%</td><td>26</td></tr>
+                <tr><td>60%</td><td>99</td><td>10%</td><td>1A</td></tr>
+                <tr><td>55%</td><td>8C</td><td>5%</td><td>0D</td></tr>
+            </tbody>
+        </table>
+
+        <h3>Cara Menggunakan Color Resources</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>Menggunakan color di XML dan Kotlin</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Di Layout XML --&gt;
+&lt;TextView
+    android:textColor="@color/textPrimary"
+    android:background="@color/bgSecondary" /&gt;
+
+&lt;Button
+    android:backgroundTint="@color/colorPrimary"
+    android:textColor="@color/textOnPrimary" /&gt;
+
+&lt;!-- ================================== --&gt;
+
+// Di Kotlin
+// Menggunakan ContextCompat (Recommended)
+val color = ContextCompat.getColor(this, R.color.colorPrimary)
+textView.setTextColor(color)
+
+// Menggunakan resources
+val color2 = resources.getColor(R.color.colorPrimary, theme)
+view.setBackgroundColor(color2)
+
+// Set background dengan color resource
+view.setBackgroundResource(R.color.bgSecondary)</pre>
+        </div>
+    </article>
+
+    <article id="themes-resource">
+        <h2>Themes (themes.xml)</h2>
+        <p>Theme adalah kumpulan style yang diterapkan ke seluruh Activity atau Application. Theme mendefinisikan warna, font, dan atribut visual default untuk semua view.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values/themes.xml (Light Theme)</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- BASE APPLICATION THEME --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;style name="Theme.MyApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar"&gt;
+        
+        &lt;!-- Primary brand color --&gt;
+        &lt;item name="colorPrimary"&gt;@color/colorPrimary&lt;/item&gt;
+        &lt;item name="colorPrimaryVariant"&gt;@color/colorPrimaryDark&lt;/item&gt;
+        &lt;item name="colorOnPrimary"&gt;@color/white&lt;/item&gt;
+        
+        &lt;!-- Secondary brand color --&gt;
+        &lt;item name="colorSecondary"&gt;@color/teal_200&lt;/item&gt;
+        &lt;item name="colorSecondaryVariant"&gt;@color/teal_700&lt;/item&gt;
+        &lt;item name="colorOnSecondary"&gt;@color/black&lt;/item&gt;
+        
+        &lt;!-- Status bar color --&gt;
+        &lt;item name="android:statusBarColor"&gt;?attr/colorPrimaryVariant&lt;/item&gt;
+        
+        &lt;!-- Navigation bar color --&gt;
+        &lt;item name="android:navigationBarColor"&gt;@color/white&lt;/item&gt;
+        
+        &lt;!-- Background color --&gt;
+        &lt;item name="android:windowBackground"&gt;@color/bgPrimary&lt;/item&gt;
+        
+        &lt;!-- Error color --&gt;
+        &lt;item name="colorError"&gt;@color/colorError&lt;/item&gt;
+        
+    &lt;/style&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- THEME TANPA ACTION BAR --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;style name="Theme.MyApp.NoActionBar"&gt;
+        &lt;item name="windowActionBar"&gt;false&lt;/item&gt;
+        &lt;item name="windowNoTitle"&gt;true&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- THEME FULLSCREEN --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;style name="Theme.MyApp.Fullscreen" parent="Theme.MyApp.NoActionBar"&gt;
+        &lt;item name="android:windowFullscreen"&gt;true&lt;/item&gt;
+        &lt;item name="android:windowContentOverlay"&gt;@null&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- THEME UNTUK SPLASH SCREEN --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;style name="Theme.MyApp.Splash" parent="Theme.SplashScreen"&gt;
+        &lt;item name="windowSplashScreenBackground"&gt;@color/colorPrimary&lt;/item&gt;
+        &lt;item name="windowSplashScreenAnimatedIcon"&gt;@drawable/ic_launcher_foreground&lt;/item&gt;
+        &lt;item name="postSplashScreenTheme"&gt;@style/Theme.MyApp&lt;/item&gt;
+    &lt;/style&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- THEME TRANSPARENT --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;style name="Theme.MyApp.Transparent" parent="Theme.MyApp.NoActionBar"&gt;
+        &lt;item name="android:windowIsTranslucent"&gt;true&lt;/item&gt;
+        &lt;item name="android:windowBackground"&gt;@android:color/transparent&lt;/item&gt;
+    &lt;/style&gt;
+
+&lt;/resources&gt;</pre>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values-night/themes.xml (Dark Theme)</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- Dark Theme --&gt;
+    &lt;style name="Theme.MyApp" parent="Theme.MaterialComponents.DayNight.DarkActionBar"&gt;
+        
+        &lt;!-- Primary brand color --&gt;
+        &lt;item name="colorPrimary"&gt;@color/purple_200&lt;/item&gt;
+        &lt;item name="colorPrimaryVariant"&gt;@color/purple_700&lt;/item&gt;
+        &lt;item name="colorOnPrimary"&gt;@color/black&lt;/item&gt;
+        
+        &lt;!-- Secondary brand color --&gt;
+        &lt;item name="colorSecondary"&gt;@color/teal_200&lt;/item&gt;
+        &lt;item name="colorSecondaryVariant"&gt;@color/teal_200&lt;/item&gt;
+        &lt;item name="colorOnSecondary"&gt;@color/black&lt;/item&gt;
+        
+        &lt;!-- Status bar color --&gt;
+        &lt;item name="android:statusBarColor"&gt;?attr/colorPrimaryVariant&lt;/item&gt;
+        
+        &lt;!-- Navigation bar color --&gt;
+        &lt;item name="android:navigationBarColor"&gt;#121212&lt;/item&gt;
+        
+        &lt;!-- Background color --&gt;
+        &lt;item name="android:windowBackground"&gt;#121212&lt;/item&gt;
+        
+    &lt;/style&gt;
+
+&lt;/resources&gt;</pre>
+        </div>
+
+        <h3>Menerapkan Theme</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>AndroidManifest.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Theme untuk seluruh aplikasi --&gt;
+&lt;application
+    android:theme="@style/Theme.MyApp"&gt;
+    
+    &lt;!-- Activity dengan theme default (dari application) --&gt;
+    &lt;activity android:name=".MainActivity" /&gt;
+    
+    &lt;!-- Activity dengan theme khusus --&gt;
+    &lt;activity 
+        android:name=".LoginActivity"
+        android:theme="@style/Theme.MyApp.NoActionBar" /&gt;
+    
+    &lt;!-- Activity fullscreen --&gt;
+    &lt;activity 
+        android:name=".SplashActivity"
+        android:theme="@style/Theme.MyApp.Splash" /&gt;
+        
+&lt;/application&gt;</pre>
+        </div>
+
+        <h3>Material Design Color System</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+┌─────────────────────────────────────────────────────────────┐
+│                    MATERIAL COLOR SYSTEM                     │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   colorPrimary          → Warna utama brand                 │
+│   colorPrimaryVariant   → Variasi gelap primary             │
+│   colorOnPrimary        → Warna teks di atas primary        │
+│                                                              │
+│   colorSecondary        → Warna sekunder/accent             │
+│   colorSecondaryVariant → Variasi gelap secondary           │
+│   colorOnSecondary      → Warna teks di atas secondary      │
+│                                                              │
+│   colorSurface          → Warna surface (card, sheet)       │
+│   colorOnSurface        → Warna teks di atas surface        │
+│                                                              │
+│   colorBackground       → Warna background                   │
+│   colorOnBackground     → Warna teks di atas background     │
+│                                                              │
+│   colorError            → Warna error/danger                │
+│   colorOnError          → Warna teks di atas error          │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+    </article>
+
+    <article id="dimens-resource">
+        <h2>Dimension Resources (dimens.xml)</h2>
+        <p>File <code>dimens.xml</code> menyimpan nilai dimensi (ukuran) yang digunakan dalam layout. Ini membantu menjaga konsistensi spacing dan sizing.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values/dimens.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- SPACING / MARGIN / PADDING --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="spacing_xs"&gt;4dp&lt;/dimen&gt;
+    &lt;dimen name="spacing_sm"&gt;8dp&lt;/dimen&gt;
+    &lt;dimen name="spacing_md"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="spacing_lg"&gt;24dp&lt;/dimen&gt;
+    &lt;dimen name="spacing_xl"&gt;32dp&lt;/dimen&gt;
+    &lt;dimen name="spacing_xxl"&gt;48dp&lt;/dimen&gt;
+    
+    &lt;!-- Screen padding --&gt;
+    &lt;dimen name="screen_padding"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="screen_padding_horizontal"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="screen_padding_vertical"&gt;24dp&lt;/dimen&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- TEXT SIZES --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="text_size_xs"&gt;10sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_sm"&gt;12sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_md"&gt;14sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_lg"&gt;16sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_xl"&gt;20sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_xxl"&gt;24sp&lt;/dimen&gt;
+    &lt;dimen name="text_size_title"&gt;32sp&lt;/dimen&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- COMPONENT SIZES --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="button_height"&gt;48dp&lt;/dimen&gt;
+    &lt;dimen name="button_min_width"&gt;120dp&lt;/dimen&gt;
+    &lt;dimen name="input_height"&gt;56dp&lt;/dimen&gt;
+    &lt;dimen name="toolbar_height"&gt;56dp&lt;/dimen&gt;
+    &lt;dimen name="bottom_nav_height"&gt;56dp&lt;/dimen&gt;
+    
+    &lt;!-- Avatar/Image sizes --&gt;
+    &lt;dimen name="avatar_size_sm"&gt;32dp&lt;/dimen&gt;
+    &lt;dimen name="avatar_size_md"&gt;48dp&lt;/dimen&gt;
+    &lt;dimen name="avatar_size_lg"&gt;64dp&lt;/dimen&gt;
+    &lt;dimen name="avatar_size_xl"&gt;96dp&lt;/dimen&gt;
+    
+    &lt;!-- Icon sizes --&gt;
+    &lt;dimen name="icon_size_sm"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="icon_size_md"&gt;24dp&lt;/dimen&gt;
+    &lt;dimen name="icon_size_lg"&gt;32dp&lt;/dimen&gt;
+    &lt;dimen name="icon_size_xl"&gt;48dp&lt;/dimen&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- CORNER RADIUS --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="corner_radius_sm"&gt;4dp&lt;/dimen&gt;
+    &lt;dimen name="corner_radius_md"&gt;8dp&lt;/dimen&gt;
+    &lt;dimen name="corner_radius_lg"&gt;12dp&lt;/dimen&gt;
+    &lt;dimen name="corner_radius_xl"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="corner_radius_pill"&gt;50dp&lt;/dimen&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- ELEVATION --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="elevation_sm"&gt;2dp&lt;/dimen&gt;
+    &lt;dimen name="elevation_md"&gt;4dp&lt;/dimen&gt;
+    &lt;dimen name="elevation_lg"&gt;8dp&lt;/dimen&gt;
+    &lt;dimen name="elevation_xl"&gt;16dp&lt;/dimen&gt;
+    
+    &lt;!-- ============================================ --&gt;
+    &lt;!-- CARD --&gt;
+    &lt;!-- ============================================ --&gt;
+    &lt;dimen name="card_padding"&gt;16dp&lt;/dimen&gt;
+    &lt;dimen name="card_margin"&gt;8dp&lt;/dimen&gt;
+    &lt;dimen name="card_corner_radius"&gt;12dp&lt;/dimen&gt;
+    &lt;dimen name="card_elevation"&gt;4dp&lt;/dimen&gt;
+
+&lt;/resources&gt;</pre>
+        </div>
+
+        <h3>Dimens untuk Tablet (values-sw600dp)</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>res/values-sw600dp/dimens.xml</span>
+            </div>
+            <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;resources&gt;
+    &lt;!-- Ukuran lebih besar untuk tablet --&gt;
+    &lt;dimen name="screen_padding"&gt;24dp&lt;/dimen&gt;
+    &lt;dimen name="text_size_title"&gt;40sp&lt;/dimen&gt;
+    &lt;dimen name="spacing_md"&gt;24dp&lt;/dimen&gt;
+&lt;/resources&gt;</pre>
+        </div>
+
+        <h3>Penggunaan Dimens</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>Menggunakan dimens di XML dan Kotlin</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Di Layout XML --&gt;
+&lt;LinearLayout
+    android:padding="@dimen/screen_padding"&gt;
+    
+    &lt;TextView
+        android:textSize="@dimen/text_size_lg"
+        android:layout_marginBottom="@dimen/spacing_md" /&gt;
+    
+    &lt;Button
+        android:layout_height="@dimen/button_height"
+        android:layout_marginTop="@dimen/spacing_lg" /&gt;
+        
+&lt;/LinearLayout&gt;
+
+&lt;!-- ================================== --&gt;
+
+// Di Kotlin
+val padding = resources.getDimensionPixelSize(R.dimen.screen_padding)
+view.setPadding(padding, padding, padding, padding)
+
+val textSize = resources.getDimension(R.dimen.text_size_lg)
+textView.textSize = textSize / resources.displayMetrics.scaledDensity</pre>
+        </div>
+
+        <h3>Satuan Ukuran di Android</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Satuan</th>
+                    <th>Nama</th>
+                    <th>Penggunaan</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>dp</strong></td>
+                    <td>Density-independent Pixels</td>
+                    <td>Dimensi layout (margin, padding, size)</td>
+                    <td>Menyesuaikan dengan kepadatan layar. 1dp = 1px pada layar 160dpi</td>
+                </tr>
+                <tr>
+                    <td><strong>sp</strong></td>
+                    <td>Scale-independent Pixels</td>
+                    <td>Ukuran teks</td>
+                    <td>Seperti dp, tapi juga mengikuti preferensi ukuran font user</td>
+                </tr>
+                <tr>
+                    <td><strong>px</strong></td>
+                    <td>Pixels</td>
+                    <td>Tidak disarankan</td>
+                    <td>Pixel asli layar, tidak responsif</td>
+                </tr>
+                <tr>
+                    <td><strong>pt</strong></td>
+                    <td>Points</td>
+                    <td>Jarang digunakan</td>
+                    <td>1/72 inch berdasarkan ukuran fisik layar</td>
+                </tr>
+                <tr>
+                    <td><strong>mm</strong></td>
+                    <td>Millimeters</td>
+                    <td>Jarang digunakan</td>
+                    <td>Berdasarkan ukuran fisik layar</td>
+                </tr>
+                <tr>
+                    <td><strong>in</strong></td>
+                    <td>Inches</td>
+                    <td>Jarang digunakan</td>
+                    <td>Berdasarkan ukuran fisik layar</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <h4>Best Practice untuk Dimensi</h4>
+            <ul>
+                <li>Gunakan <strong>dp</strong> untuk semua dimensi layout</li>
+                <li>Gunakan <strong>sp</strong> hanya untuk ukuran teks</li>
+                <li>Hindari <strong>px</strong> kecuali untuk kasus khusus (seperti garis 1px)</li>
+                <li>Buat sistem spacing yang konsisten (4dp, 8dp, 16dp, 24dp, 32dp)</li>
+                <li>Sediakan nilai berbeda untuk tablet di <code>values-sw600dp</code></li>
+            </ul>
+        </div>
+    </article>
+
+    <article id="view-viewgroup">
+        <h2>View dan ViewGroup</h2>
+        
+        <h3>View</h3>
+        <p>View adalah class dasar untuk semua komponen UI di Android. View merepresentasikan area persegi di layar yang dapat menggambar sesuatu dan merespons interaksi user. Semua widget (Button, TextView, ImageView, dll) adalah subclass dari View.</p>
+        
+        <h3>ViewGroup</h3>
+        <p>ViewGroup adalah View khusus yang dapat berisi View lain (child views). ViewGroup digunakan sebagai container atau layout untuk mengatur tata letak child views. Semua layout (LinearLayout, RelativeLayout, ConstraintLayout, dll) adalah subclass dari ViewGroup.</p>
+
+        <div class="diagram-box">
+            <pre class="diagram">
+                    ┌─────────────────────────────────────────┐
+                    │                  View                    │
+                    │        (Base class untuk semua UI)       │
+                    └─────────────────┬───────────────────────┘
+                                      │
+              ┌───────────────────────┼───────────────────────┐
+              │                       │                       │
+              ▼                       ▼                       ▼
+        ┌───────────┐           ┌───────────┐           ┌───────────┐
+        │  TextView │           │  Button   │           │ ViewGroup │
+        └───────────┘           └───────────┘           └─────┬─────┘
+                                                              │
+                                    ┌─────────────────────────┼─────────────────────────┐
+                                    │                         │                         │
+                                    ▼                         ▼                         ▼
+                              ┌────────────┐           ┌──────────────┐         ┌────────────────┐
+                              │LinearLayout│           │RelativeLayout│         │ConstraintLayout│
+                              └────────────┘           └──────────────┘         └────────────────┘
+            </pre>
+        </div>
+
+        <h3>Hierarki View dalam Layout</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+                        ViewGroup (Container/Layout)
+                    ┌─────────────────────────────────────┐
+                    │                                      │
+                    │   ┌───────────┐    ┌───────────┐    │
+                    │   │   View    │    │   View    │    │
+                    │   │(TextView) │    │ (Button)  │    │
+                    │   └───────────┘    └───────────┘    │
+                    │                                      │
+                    │   ┌──────────────────────────────┐  │
+                    │   │  ViewGroup (Nested Layout)    │  │
+                    │   │  ┌─────────┐  ┌─────────┐    │  │
+                    │   │  │  View   │  │  View   │    │  │
+                    │   │  └─────────┘  └─────────┘    │  │
+                    │   └──────────────────────────────┘  │
+                    │                                      │
+                    └─────────────────────────────────────┘
+
+            Catatan: Hindari nested layout yang terlalu dalam (max 3-4 level)
+            karena akan mempengaruhi performa rendering.
+            </pre>
+        </div>
+
+        <h3>Atribut Umum View</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Nilai</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>android:id</code></td>
+                    <td>@+id/namaId</td>
+                    <td>Identifier unik untuk mengakses view dari kode</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_width</code></td>
+                    <td>match_parent | wrap_content | [size]dp</td>
+                    <td>Lebar view</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_height</code></td>
+                    <td>match_parent | wrap_content | [size]dp</td>
+                    <td>Tinggi view</td>
+                </tr>
+                <tr>
+                    <td><code>android:padding</code></td>
+                    <td>[size]dp</td>
+                    <td>Jarak dalam (antara border dan content)</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_margin</code></td>
+                    <td>[size]dp</td>
+                    <td>Jarak luar (antara view dengan view lain)</td>
+                </tr>
+                <tr>
+                    <td><code>android:background</code></td>
+                    <td>@color/... | @drawable/...</td>
+                    <td>Warna atau drawable background</td>
+                </tr>
+                <tr>
+                    <td><code>android:visibility</code></td>
+                    <td>visible | invisible | gone</td>
+                    <td>Visibilitas view</td>
+                </tr>
+                <tr>
+                    <td><code>android:enabled</code></td>
+                    <td>true | false</td>
+                    <td>Apakah view bisa diinteraksi</td>
+                </tr>
+                <tr>
+                    <td><code>android:clickable</code></td>
+                    <td>true | false</td>
+                    <td>Apakah view bisa diklik</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Perbedaan match_parent, wrap_content, dan fixed size</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+    ┌────────────────────────────────────────────────────────────┐
+    │ PARENT CONTAINER                                            │
+    │                                                             │
+    │  ┌─────────────────────────────────────────────────────┐   │
+    │  │ match_parent                                         │   │
+    │  │ (Mengisi seluruh lebar/tinggi parent)               │   │
+    │  └─────────────────────────────────────────────────────┘   │
+    │                                                             │
+    │  ┌─────────────┐                                           │
+    │  │wrap_content │                                           │
+    │  │(Sesuai isi) │                                           │
+    │  └─────────────┘                                           │
+    │                                                             │
+    │  ┌────────────────────┐                                    │
+    │  │ 200dp              │                                    │
+    │  │ (Fixed size)       │                                    │
+    │  └────────────────────┘                                    │
+    │                                                             │
+    └────────────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <h3>Perbedaan Padding dan Margin</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+                    margin (jarak luar)
+                    ↓     ↓     ↓
+              ┌─────┬───────────┬─────┐
+              │     │  BORDER   │     │
+              │  ←  ├───────────┤  →  │
+              │     │ padding   │     │   ← margin
+              │     │ (jarak    │     │
+              │     │  dalam)   │     │
+              │     │ ┌───────┐ │     │
+              │     │ │CONTENT│ │     │
+              │     │ └───────┘ │     │
+              │     │           │     │
+              │  ←  ├───────────┤  →  │
+              │     │  BORDER   │     │
+              └─────┴───────────┴─────┘
+                    ↑     ↑     ↑
+                    margin (jarak luar)
+
+    padding: Jarak antara border view dengan content di dalamnya
+    margin:  Jarak antara view dengan view lain di luarnya
+            </pre>
+        </div>
+    </article>
+
+    <article id="linearlayout">
+        <h2>LinearLayout</h2>
+        <p>LinearLayout menyusun child views dalam satu baris (horizontal) atau satu kolom (vertical). Ini adalah layout paling sederhana dan mudah dipahami, cocok untuk layout yang simpel dan linear.</p>
+        
+        <h3>Kapan Menggunakan LinearLayout?</h3>
+        <ul>
+            <li>Layout sederhana dengan susunan satu arah</li>
+            <li>Pembagian ruang proporsional dengan weight</li>
+            <li>Form input sederhana</li>
+            <li>Nested layout kecil (hati-hati dengan performa)</li>
+        </ul>
+
+        <h3>Atribut Penting LinearLayout</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Nilai</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>android:orientation</code></td>
+                    <td>vertical | horizontal</td>
+                    <td>Arah susunan children</td>
+                </tr>
+                <tr>
+                    <td><code>android:gravity</code></td>
+                    <td>center, start, end, top, bottom, center_horizontal, center_vertical</td>
+                    <td>Posisi content dalam layout</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_gravity</code></td>
+                    <td>(sama dengan gravity)</td>
+                    <td>Posisi view dalam parent (untuk child)</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_weight</code></td>
+                    <td>angka (float)</td>
+                    <td>Proporsi ruang yang digunakan (untuk child)</td>
+                </tr>
+                <tr>
+                    <td><code>android:weightSum</code></td>
+                    <td>angka (float)</td>
+                    <td>Total weight untuk pembagian (opsional)</td>
+                </tr>
+                <tr>
+                    <td><code>android:baselineAligned</code></td>
+                    <td>true | false</td>
+                    <td>Align baseline text (set false untuk performa)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Contoh LinearLayout Vertical</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>LinearLayout Vertical - Form Sederhana</span>
+            </div>
+            <pre class="no-copy">
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"&gt;
+    android:padding="@dimen/screen_padding"&gt;
+
+    &lt;!-- Header --&gt;
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Form Pendaftaran"
+        android:textSize="@dimen/text_size_xl"
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary" /&gt;
 
     &lt;TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Judul"
-        android:textSize="24sp"
-        android:textStyle="bold" /&gt;
+        android:text="Silakan isi data di bawah ini"
+        android:textSize="@dimen/text_size_md"
+        android:textColor="@color/textSecondary"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginBottom="@dimen/spacing_lg" /&gt;
 
-    &lt;TextView
+    &lt;!-- Input Fields --&gt;
+    &lt;EditText
+        android:id="@+id/etName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Deskripsi di bawah judul"
-        android:layout_marginTop="8dp" /&gt;
+        android:hint="Nama Lengkap"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="@dimen/spacing_sm" /&gt;
 
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="@dimen/spacing_sm" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nomor Telepon"
+        android:inputType="phone"
+        android:layout_marginBottom="@dimen/spacing_lg" /&gt;
+
+    &lt;!-- Button --&gt;
     &lt;Button
-        android:layout_width="wrap_content"
+        android:id="@+id/btnSubmit"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tombol"
-        android:layout_marginTop="16dp" /&gt;
+        android:text="Daftar" /&gt;
 
 &lt;/LinearLayout&gt;</pre>
-                </div>
+        </div>
 
-                <h3>Contoh LinearLayout Horizontal dengan Weight</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>LinearLayout dengan Weight</span>
-                    </div>
-                    <pre class="no-copy">
+        <h3>Visualisasi LinearLayout Vertical</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+    LinearLayout (orientation="vertical")
+    ┌────────────────────────────────┐
+    │ ┌────────────────────────────┐ │
+    │ │        TextView 1          │ │  ← Child 1
+    │ └────────────────────────────┘ │
+    │ ┌────────────────────────────┐ │
+    │ │        TextView 2          │ │  ← Child 2
+    │ └────────────────────────────┘ │
+    │ ┌────────────────────────────┐ │
+    │ │         EditText           │ │  ← Child 3
+    │ └────────────────────────────┘ │
+    │ ┌────────────────────────────┐ │
+    │ │          Button            │ │  ← Child 4
+    │ └────────────────────────────┘ │
+    │                                │
+    └────────────────────────────────┘
+            </pre>
+        </div>
+
+        <h3>Contoh LinearLayout Horizontal</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>LinearLayout Horizontal - Button Row</span>
+            </div>
+            <pre class="no-copy">
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/spacing_md"&gt;
+
+    &lt;Button
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Batal"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton" /&gt;
+
+    &lt;!-- Spacer untuk mendorong button ke kanan --&gt;
+    &lt;View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Simpan" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+        </div>
+
+        <h3>Visualisasi LinearLayout Horizontal</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+    LinearLayout (orientation="horizontal")
+    ┌──────────────────────────────────────────────────┐
+    │ ┌────────┐                           ┌────────┐  │
+    │ │ Button │    ← Spacer (weight=1) → │ Button │  │
+    │ │ Batal  │                           │ Simpan │  │
+    │ └────────┘                           └────────┘  │
+    └──────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <h3>Layout Weight</h3>
+        <p><code>layout_weight</code> digunakan untuk membagi ruang secara proporsional antar child views.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>LinearLayout dengan Weight</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Pembagian 50:50 --&gt;
+&lt;LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"&gt;
 
-    &lt;!-- Tombol mengambil 1/3 ruang --&gt;
     &lt;Button
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Batal" /&gt;
+        android:text="Kiri" /&gt;
 
-    &lt;!-- Tombol mengambil 2/3 ruang --&gt;
+    &lt;Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Kanan" /&gt;
+
+&lt;/LinearLayout&gt;
+
+&lt;!-- Pembagian 1:2:1 --&gt;
+&lt;LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"&gt;
+
+    &lt;View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" /&gt;
+
     &lt;Button
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:text="Simpan" /&gt;
+        android:text="Center Button" /&gt;
+
+    &lt;View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" /&gt;
+
+&lt;/LinearLayout&gt;
+
+&lt;!-- Pembagian dengan weightSum --&gt;
+&lt;LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:weightSum="10"&gt;
+
+    &lt;Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:text="30%" /&gt;
+
+    &lt;Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="7"
+        android:text="70%" /&gt;
 
 &lt;/LinearLayout&gt;</pre>
-                </div>
+        </div>
 
-                <div class="info-box">
-                    <h4>Tips Menggunakan Weight</h4>
-                    <p>Saat menggunakan <code>layout_weight</code>, set <code>layout_width="0dp"</code> untuk horizontal atau <code>layout_height="0dp"</code> untuk vertical agar weight bekerja dengan benar.</p>
-                </div>
-            </article>
+        <h3>Visualisasi Weight</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+    Weight 1:1 (50%:50%)
+    ┌─────────────────────┬─────────────────────┐
+    │     weight=1        │     weight=1        │
+    │       (50%)         │       (50%)         │
+    └─────────────────────┴─────────────────────┘
 
-            <article id="relativelayout">
-                <h2>RelativeLayout</h2>
-                <p>RelativeLayout memposisikan child views relatif terhadap parent atau terhadap view lain. Layout ini fleksibel namun bisa kompleks untuk layout yang rumit.</p>
-                
-                <h3>Atribut Posisi Relatif terhadap Parent</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Atribut</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>android:layout_alignParentTop</td>
-                            <td>Menempel di atas parent</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_alignParentBottom</td>
-                            <td>Menempel di bawah parent</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_alignParentStart</td>
-                            <td>Menempel di kiri parent</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_alignParentEnd</td>
-                            <td>Menempel di kanan parent</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_centerInParent</td>
-                            <td>Tengah parent</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_centerHorizontal</td>
-                            <td>Tengah horizontal</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_centerVertical</td>
-                            <td>Tengah vertical</td>
-                        </tr>
-                    </tbody>
-                </table>
+    Weight 1:2 (33%:67%)
+    ┌──────────────┬──────────────────────────────┐
+    │   weight=1   │         weight=2             │
+    │    (33%)     │          (67%)               │
+    └──────────────┴──────────────────────────────┘
 
-                <h3>Atribut Posisi Relatif terhadap View Lain</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Atribut</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>android:layout_above</td>
-                            <td>Di atas view tertentu</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_below</td>
-                            <td>Di bawah view tertentu</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_toStartOf</td>
-                            <td>Di kiri view tertentu</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_toEndOf</td>
-                            <td>Di kanan view tertentu</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_alignTop</td>
-                            <td>Sejajar atas dengan view tertentu</td>
-                        </tr>
-                        <tr>
-                            <td>android:layout_alignBottom</td>
-                            <td>Sejajar bawah dengan view tertentu</td>
-                        </tr>
-                    </tbody>
-                </table>
+    Weight 1:2:1 dengan weightSum=4
+    ┌──────────┬────────────────────┬──────────┐
+    │ weight=1 │     weight=2       │ weight=1 │
+    │   (25%)  │       (50%)        │   (25%)  │
+    └──────────┴────────────────────┴──────────┘
+            </pre>
+        </div>
 
-                <h3>Contoh RelativeLayout</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>RelativeLayout Example</span>
-                    </div>
-                    <pre class="no-copy">
+        <div class="warning-box">
+            <h4>Tips Performa LinearLayout</h4>
+            <ul>
+                <li>Set <code>android:baselineAligned="false"</code> jika tidak perlu align baseline</li>
+                <li>Hindari nested LinearLayout yang dalam (lebih dari 2-3 level)</li>
+                <li>Untuk layout kompleks, gunakan ConstraintLayout</li>
+                <li>Saat menggunakan weight, set width/height ke <code>0dp</code></li>
+            </ul>
+        </div>
+    </article>
+
+    <article id="relativelayout">
+        <h2>RelativeLayout</h2>
+        <p>RelativeLayout memposisikan child views relatif terhadap parent atau terhadap view lain. Layout ini fleksibel untuk membuat layout yang tidak bisa dicapai dengan LinearLayout biasa.</p>
+        
+        <h3>Kapan Menggunakan RelativeLayout?</h3>
+        <ul>
+            <li>Posisi view bergantung pada view lain</li>
+            <li>Menghindari nested LinearLayout</li>
+            <li>Layout dengan overlap views</li>
+            <li>Layout dengan posisi yang spesifik</li>
+        </ul>
+
+        <h3>Atribut Posisi Relatif terhadap Parent</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>android:layout_alignParentTop</code></td>
+                    <td>Menempel di sisi atas parent</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignParentBottom</code></td>
+                    <td>Menempel di sisi bawah parent</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignParentStart</code></td>
+                    <td>Menempel di sisi kiri parent (RTL aware)</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignParentEnd</code></td>
+                    <td>Menempel di sisi kanan parent (RTL aware)</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_centerInParent</code></td>
+                    <td>Posisi tengah parent (horizontal & vertical)</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_centerHorizontal</code></td>
+                    <td>Posisi tengah horizontal</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_centerVertical</code></td>
+                    <td>Posisi tengah vertical</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Atribut Posisi Relatif terhadap View Lain</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>android:layout_above</code></td>
+                    <td>Posisi di atas view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_below</code></td>
+                    <td>Posisi di bawah view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_toStartOf</code></td>
+                    <td>Posisi di kiri view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_toEndOf</code></td>
+                    <td>Posisi di kanan view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignTop</code></td>
+                    <td>Sejajar sisi atas dengan view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignBottom</code></td>
+                    <td>Sejajar sisi bawah dengan view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignStart</code></td>
+                    <td>Sejajar sisi kiri dengan view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignEnd</code></td>
+                    <td>Sejajar sisi kanan dengan view tertentu</td>
+                </tr>
+                <tr>
+                    <td><code>android:layout_alignBaseline</code></td>
+                    <td>Sejajar baseline text dengan view tertentu</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Contoh RelativeLayout</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>RelativeLayout - Card Layout</span>
+            </div>
+            <pre class="no-copy">
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp"&gt;
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_md"
+    android:background="@color/bgCard"&gt;
 
-    &lt;!-- Header di atas --&gt;
+    &lt;!-- Avatar di kiri --&gt;
+    &lt;ImageView
+        android:id="@+id/ivAvatar"
+        android:layout_width="@dimen/avatar_size_lg"
+        android:layout_height="@dimen/avatar_size_lg"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/avatar_placeholder"
+        android:scaleType="centerCrop" /&gt;
+
+    &lt;!-- Nama di kanan avatar --&gt;
     &lt;TextView
-        android:id="@+id/tvHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:text="Header"
-        android:textSize="20sp"
-        android:textStyle="bold" /&gt;
-
-    &lt;!-- Content di tengah --&gt;
-    &lt;TextView
-        android:id="@+id/tvContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/tvHeader"
-        android:layout_above="@id/btnSubmit"
-        android:layout_marginTop="16dp"
-        android:text="Content area" /&gt;
-
-    &lt;!-- Button di bawah --&gt;
-    &lt;Button
-        android:id="@+id/btnSubmit"
+        android:id="@+id/tvName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/ivAvatar"
+        android:layout_alignTop="@id/ivAvatar"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:text="John Doe"
+        android:textSize="@dimen/text_size_lg"
+        android:textStyle="bold"
+        android:textColor="@color/textPrimary" /&gt;
+
+    &lt;!-- Email di bawah nama --&gt;
+    &lt;TextView
+        android:id="@+id/tvEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/ivAvatar"
+        android:layout_below="@id/tvName"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:text="john@email.com"
+        android:textSize="@dimen/text_size_md"
+        android:textColor="@color/textSecondary" /&gt;
+
+    &lt;!-- Tombol di kanan atas --&gt;
+    &lt;ImageButton
+        android:id="@+id/btnMore"
+        android:layout_width="@dimen/icon_size_lg"
+        android:layout_height="@dimen/icon_size_lg"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/ic_more_vert"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="More options" /&gt;
+
+    &lt;!-- Status di kanan bawah --&gt;
+    &lt;TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="Submit" /&gt;
+        android:text="Online"
+        android:textSize="@dimen/text_size_sm"
+        android:textColor="@color/colorSuccess" /&gt;
 
 &lt;/RelativeLayout&gt;</pre>
-                </div>
-            </article>
+        </div>
 
-            <article id="constraintlayout">
-                <h2>ConstraintLayout</h2>
-                <p>ConstraintLayout adalah layout yang paling fleksibel dan powerful di Android. Layout ini memungkinkan pembuatan layout yang kompleks dan flat (tanpa nested layout) dengan sistem constraint (batasan).</p>
+        <h3>Visualisasi RelativeLayout</h3>
+        <div class="diagram-box">
+            <pre class="diagram">
+    RelativeLayout
+    ┌──────────────────────────────────────────────────────┐
+    │                                              [More]  │  ← alignParentEnd, alignParentTop
+    │  ┌────────┐  ┌─────────────────────────────┐         │
+    │  │        │  │ John Doe                    │         │  ← toEndOf avatar, alignTop avatar
+    │  │ Avatar │  ├─────────────────────────────┤         │
+    │  │        │  │ john@email.com              │         │  ← toEndOf avatar, below nama
+    │  └────────┘  └─────────────────────────────┘         │
+    │  ↑ alignParentStart, centerVertical                  │
+    │                                            [Online]  │  ← alignParentEnd, alignParentBottom
+    └──────────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <h3>Contoh Lain: Fixed Header dan Footer</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>RelativeLayout - Header, Content, Footer</span>
+            </div>
+            <pre class="no-copy">
+&lt;RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;!-- Header fixed di atas --&gt;
+    &lt;LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_alignParentTop="true"
+        android:background="@color/colorPrimary"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="@dimen/spacing_md"&gt;
+        
+        &lt;TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Header"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_size_lg" /&gt;
+            
+    &lt;/LinearLayout&gt;
+
+    &lt;!-- Footer fixed di bawah --&gt;
+    &lt;LinearLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_nav_height"
+        android:layout_alignParentBottom="true"
+        android:background="@color/bgSecondary"
+        android:gravity="center"&gt;
+        
+        &lt;Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Action" /&gt;
+            
+    &lt;/LinearLayout&gt;
+
+    &lt;!-- Content di antara header dan footer --&gt;
+    &lt;ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/header"
+        android:layout_above="@id/footer"&gt;
+        
+        &lt;LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_md"&gt;
+            
+            &lt;!-- Content here --&gt;
+            &lt;TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scrollable content area" /&gt;
                 
-                <div class="info-box">
-                    <h4>Keunggulan ConstraintLayout</h4>
-                    <ul>
-                        <li>Flat view hierarchy - meningkatkan performa</li>
-                        <li>Visual editor yang powerful di Android Studio</li>
-                        <li>Responsive design dengan mudah</li>
-                        <li>Menggantikan nested LinearLayout dan RelativeLayout</li>
-                    </ul>
-                </div>
+        &lt;/LinearLayout&gt;
+        
+    &lt;/ScrollView&gt;
 
-                <h3>Konsep Constraint</h3>
-                <p>Setiap view harus memiliki minimal satu constraint horizontal dan satu constraint vertical. Constraint menghubungkan sisi view ke sisi view lain atau parent.</p>
+&lt;/RelativeLayout&gt;</pre>
+        </div>
 
-                <div class="diagram-box">
-                    <pre class="diagram">
-        Parent (ConstraintLayout)
-    ┌────────────────────────────────┐
-    │    constraint_top_to_top       │
-    │           ↓                    │
-    │    ┌─────────────┐             │
-    │ ←──│    View     │──→          │
-    │    └─────────────┘             │
-    │           ↓                    │
-    │  constraint_bottom_to_bottom   │
-    └────────────────────────────────┘
-    
-    constraint_start_to_start  constraint_end_to_end
-                    </pre>
-                </div>
+        <div class="warning-box">
+            <h4>Catatan Penting</h4>
+            <ul>
+                <li>Gunakan <code>toStartOf/toEndOf</code> daripada <code>toLeftOf/toRightOf</code> untuk RTL support</li>
+                <li>View yang direferensikan harus sudah dideklarasikan (atau gunakan @+id)</li>
+                <li>Hindari circular dependency (A depends on B, B depends on A)</li>
+                <li>Untuk layout kompleks, pertimbangkan ConstraintLayout</li>
+            </ul>
+        </div>
+    </article>
 
-                <h3>Atribut Constraint Utama</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Atribut</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>app:layout_constraintTop_toTopOf</td>
-                            <td>Atas view ke atas target</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintBottom_toBottomOf</td>
-                            <td>Bawah view ke bawah target</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintStart_toStartOf</td>
-                            <td>Kiri view ke kiri target</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintEnd_toEndOf</td>
-                            <td>Kanan view ke kanan target</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintTop_toBottomOf</td>
-                            <td>Atas view ke bawah target</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintHorizontal_bias</td>
-                            <td>Posisi horizontal (0.0 - 1.0)</td>
-                        </tr>
-                        <tr>
-                            <td>app:layout_constraintVertical_bias</td>
-                            <td>Posisi vertical (0.0 - 1.0)</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <article id="constraintlayout">
+        <h2>ConstraintLayout</h2>
+        <p>ConstraintLayout adalah layout yang paling fleksibel dan powerful di Android. Layout ini memungkinkan pembuatan layout yang kompleks dan flat (tanpa nested layout) menggunakan sistem constraint (batasan).</p>
+        
+        <div class="info-box">
+            <h4>Keunggulan ConstraintLayout</h4>
+            <ul>
+                <li><strong>Flat hierarchy</strong> - Menghindari nested layout, meningkatkan performa</li>
+                <li><strong>Visual editor</strong> - Drag-and-drop yang powerful di Android Studio</li>
+                <li><strong>Responsive</strong> - Mudah membuat layout yang adaptif</li>
+                <li><strong>Feature-rich</strong> - Guidelines, barriers, chains, ratio, dll</li>
+                <li><strong>Recommended</strong> - Layout yang direkomendasikan Google untuk sebagian besar kasus</li>
+            </ul>
+        </div>
 
-                <h3>Contoh ConstraintLayout</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>ConstraintLayout - Form Login</span>
-                    </div>
-                    <pre class="no-copy">
+        <h3>Konsep Dasar Constraint</h3>
+        <p>Setiap view dalam ConstraintLayout harus memiliki minimal:</p>
+        <ul>
+            <li><strong>Satu constraint horizontal</strong> (start/end ke parent atau view lain)</li>
+            <li><strong>Satu constraint vertical</strong> (top/bottom ke parent atau view lain)</li>
+        </ul>
+
+        <div class="diagram-box">
+            <pre class="diagram">
+    Constraint menghubungkan SISI view ke SISI target (parent atau view lain)
+
+                        constraint ke TOP parent
+                               ↓
+                    ┌──────────●──────────┐
+                    │                     │
+    constraint   ●──│       VIEW          │──●  constraint
+    ke START        │                     │     ke END
+                    │                     │
+                    └──────────●──────────┘
+                               ↓
+                        constraint ke BOTTOM
+
+    ● = anchor point (titik constraint)
+            </pre>
+        </div>
+
+        <h3>Atribut Constraint Dasar</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>app:layout_constraintTop_toTopOf</code></td>
+                    <td>Top view ke top target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintTop_toBottomOf</code></td>
+                    <td>Top view ke bottom target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintBottom_toBottomOf</code></td>
+                    <td>Bottom view ke bottom target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintBottom_toTopOf</code></td>
+                    <td>Bottom view ke top target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintStart_toStartOf</code></td>
+                    <td>Start view ke start target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintStart_toEndOf</code></td>
+                    <td>Start view ke end target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintEnd_toEndOf</code></td>
+                    <td>End view ke end target</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintEnd_toStartOf</code></td>
+                    <td>End view ke start target</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Atribut Tambahan</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Atribut</th>
+                    <th>Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>app:layout_constraintHorizontal_bias</code></td>
+                    <td>Posisi horizontal (0.0 = start, 0.5 = center, 1.0 = end)</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintVertical_bias</code></td>
+                    <td>Posisi vertical (0.0 = top, 0.5 = center, 1.0 = bottom)</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintDimensionRatio</code></td>
+                    <td>Rasio width:height (contoh: "16:9", "1:1")</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintWidth_percent</code></td>
+                    <td>Lebar sebagai persentase parent (0.0 - 1.0)</td>
+                </tr>
+                <tr>
+                    <td><code>app:layout_constraintHeight_percent</code></td>
+                    <td>Tinggi sebagai persentase parent (0.0 - 1.0)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Contoh ConstraintLayout - Login Screen</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>ConstraintLayout - Login Form</span>
+            </div>
+            <pre class="no-copy">
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"&gt;
+    android:padding="@dimen/screen_padding"&gt;
 
     &lt;!-- Logo di atas tengah --&gt;
     &lt;ImageView
         android:id="@+id/ivLogo"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:src="@mipmap/ic_launcher"
+        android:contentDescription="Logo"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="48dp" /&gt;
 
-    &lt;!-- Title di bawah logo --&gt;
+    &lt;!-- Judul di bawah logo --&gt;
     &lt;TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Selamat Datang"
-        android:textSize="24sp"
+        android:text="@string/login_title"
+        android:textSize="@dimen/text_size_xxl"
         android:textStyle="bold"
+        android:textColor="@color/textPrimary"
         app:layout_constraintTop_toBottomOf="@id/ivLogo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" /&gt;
+        android:layout_marginTop="@dimen/spacing_lg" /&gt;
 
-    &lt;!-- Input Email --&gt;
-    &lt;EditText
-        android:id="@+id/etEmail"
-        android:layout_width="0dp"
+    &lt;!-- Subtitle --&gt;
+    &lt;TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="Email"
-        android:inputType="textEmailAddress"
+        android:text="@string/login_subtitle"
+        android:textSize="@dimen/text_size_md"
+        android:textColor="@color/textSecondary"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" /&gt;
+        android:layout_marginTop="@dimen/spacing_xs" /&gt;
 
-    &lt;!-- Input Password --&gt;
-    &lt;EditText
-        android:id="@+id/etPassword"
+    &lt;!-- Input Email --&gt;
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEmail"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Password"
-        android:inputType="textPassword"
-        app:layout_constraintTop_toBottomOf="@id/etEmail"
+        android:hint="@string/hint_email"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" /&gt;
+        android:layout_marginTop="@dimen/spacing_xl"&gt;
 
-    &lt;!-- Tombol Login --&gt;
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;!-- Input Password --&gt;
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPassword"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_password"
+        app:passwordToggleEnabled="true"
+        app:layout_constraintTop_toBottomOf="@id/tilEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/spacing_md"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;!-- Forgot Password Link --&gt;
+    &lt;TextView
+        android:id="@+id/tvForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/link_forgot_password"
+        android:textColor="@color/textLink"
+        app:layout_constraintTop_toBottomOf="@id/tilPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="@dimen/spacing_sm" /&gt;
+
+    &lt;!-- Button Login --&gt;
     &lt;Button
         android:id="@+id/btnLogin"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Login"
-        app:layout_constraintTop_toBottomOf="@id/etPassword"
+        android:layout_height="@dimen/button_height"
+        android:text="@string/btn_login"
+        app:layout_constraintTop_toBottomOf="@id/tvForgotPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="24dp" /&gt;
+        android:layout_marginTop="@dimen/spacing_lg" /&gt;
 
-    &lt;!-- Link Register di bawah --&gt;
+    &lt;!-- Register Link di bawah --&gt;
     &lt;TextView
         android:id="@+id/tvRegister"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Belum punya akun? Daftar"
-        android:textColor="#1976D2"
-        app:layout_constraintTop_toBottomOf="@id/btnLogin"
+        android:text="@string/link_no_account"
+        android:textColor="@color/textLink"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" /&gt;
+        android:layout_marginBottom="@dimen/spacing_lg" /&gt;
 
 &lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</pre>
-                </div>
+        </div>
 
-                <h3>Chain dan Guideline</h3>
-                <p>ConstraintLayout juga mendukung fitur Chain untuk mendistribusikan views dan Guideline sebagai garis bantu invisible.</p>
-                
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Horizontal Chain Example</span>
-                    </div>
-                    <pre class="no-copy">
-&lt;!-- Tombol-tombol dalam horizontal chain --&gt;
+        <h3>Guideline</h3>
+        <p>Guideline adalah garis bantu invisible yang bisa digunakan sebagai anchor untuk constraint. Berguna untuk membuat layout dengan proporsi tertentu.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>Contoh Penggunaan Guideline</span>
+            </div>
+            <pre class="no-copy">
+&lt;androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;!-- Vertical guideline di 30% dari kiri --&gt;
+    &lt;androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineVertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.3" /&gt;
+
+    &lt;!-- Horizontal guideline di 50% dari atas --&gt;
+    &lt;androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guidelineHorizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.5" /&gt;
+
+    &lt;!-- View menggunakan guideline sebagai constraint --&gt;
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Di kanan guideline"
+        app:layout_constraintStart_toEndOf="@id/guidelineVertical"
+        app:layout_constraintTop_toTopOf="@id/guidelineHorizontal" /&gt;
+
+&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;</pre>
+        </div>
+
+        <h3>Chain</h3>
+        <p>Chain digunakan untuk mendistribusikan beberapa views secara horizontal atau vertical. Ada 3 jenis chain style:</p>
+        
+        <div class="diagram-box">
+            <pre class="diagram">
+    SPREAD (default) - Views didistribusikan merata
+    ┌────────────────────────────────────────────────┐
+    │    ┌────┐        ┌────┐        ┌────┐         │
+    │    │ A  │        │ B  │        │ C  │         │
+    │    └────┘        └────┘        └────┘         │
+    └────────────────────────────────────────────────┘
+
+    SPREAD_INSIDE - Views merata, pinggir menempel
+    ┌────────────────────────────────────────────────┐
+    │ ┌────┐           ┌────┐           ┌────┐      │
+    │ │ A  │           │ B  │           │ C  │      │
+    │ └────┘           └────┘           └────┘      │
+    └────────────────────────────────────────────────┘
+
+    PACKED - Views berkumpul di tengah
+    ┌────────────────────────────────────────────────┐
+    │           ┌────┐┌────┐┌────┐                  │
+    │           │ A  ││ B  ││ C  │                  │
+    │           └────┘└────┘└────┘                  │
+    └────────────────────────────────────────────────┘
+
+    WEIGHTED - Menggunakan weight seperti LinearLayout
+    ┌────────────────────────────────────────────────┐
+    │ ┌────┐    ┌────────────────┐    ┌────┐        │
+    │ │w=1 │    │     w=2        │    │w=1 │        │
+    │ └────┘    └────────────────┘    └────┘        │
+    └────────────────────────────────────────────────┘
+            </pre>
+        </div>
+
+        <div class="code-block">
+            <div class="code-header">
+                <span>Contoh Horizontal Chain</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Horizontal Chain - 3 buttons --&gt;
 &lt;Button
     android:id="@+id/btn1"
     android:layout_width="wrap_content"
@@ -1114,54 +2866,355 @@ class MainActivity : AppCompatActivity() {
     android:text="Btn 3"
     app:layout_constraintStart_toEndOf="@id/btn2"
     app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;!-- Weighted Chain --&gt;
+&lt;Button
+    android:id="@+id/btnLeft"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:text="30%"
+    app:layout_constraintHorizontal_weight="3"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toStartOf="@id/btnRight"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;Button
+    android:id="@+id/btnRight"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:text="70%"
+    app:layout_constraintHorizontal_weight="7"
+    app:layout_constraintStart_toEndOf="@id/btnLeft"
+    app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintTop_toTopOf="parent" /&gt;</pre>
-                </div>
-            </article>
+        </div>
 
-            <article id="framelayout">
-                <h2>FrameLayout</h2>
-                <p>FrameLayout adalah layout sederhana yang menumpuk child views di atas satu sama lain. View yang dideklarasikan terakhir akan berada di paling atas.</p>
-                
-                <h3>Penggunaan Umum FrameLayout</h3>
-                <ul>
-                    <li>Container untuk Fragment</li>
-                    <li>Overlay satu view di atas view lain</li>
-                    <li>Placeholder untuk konten dinamis</li>
-                </ul>
+        <h3>Dimension Ratio</h3>
+        <p>Mempertahankan aspect ratio view, berguna untuk image dan video.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>Contoh Dimension Ratio</span>
+            </div>
+            <pre class="no-copy">
+&lt;!-- Image dengan ratio 16:9 --&gt;
+&lt;ImageView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:scaleType="centerCrop"
+    app:layout_constraintDimensionRatio="16:9"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>FrameLayout Example - Image dengan Badge</span>
-                    </div>
-                    <pre class="no-copy">
-&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;!-- Image dengan ratio 1:1 (square) --&gt;
+&lt;ImageView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:scaleType="centerCrop"
+    app:layout_constraintDimensionRatio="1:1"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" /&gt;
+
+&lt;!-- Menentukan dimension mana yang dihitung --&gt;
+&lt;!-- W,16:9 = width ditentukan, height dihitung berdasarkan ratio --&gt;
+&lt;!-- H,16:9 = height ditentukan, width dihitung berdasarkan ratio --&gt;
+&lt;ImageView
+    android:layout_width="0dp"
+    android:layout_height="200dp"
+    app:layout_constraintDimensionRatio="W,16:9"
+    ... /&gt;</pre>
+        </div>
+    </article>
+
+    <article id="framelayout">
+        <h2>FrameLayout</h2>
+        <p>FrameLayout adalah layout sederhana yang menumpuk (stack) child views di atas satu sama lain. View yang dideklarasikan terakhir akan berada di paling atas (z-order).</p>
+        
+        <h3>Kapan Menggunakan FrameLayout?</h3>
+        <ul>
+            <li>Container untuk satu child view</li>
+            <li>Container untuk Fragment</li>
+            <li>Overlay satu view di atas view lain</li>
+            <li>Badge/counter di atas icon</li>
+            <li>Loading overlay</li>
+        </ul>
+
+        <div class="diagram-box">
+            <pre class="diagram">
+    FrameLayout - Views ditumpuk (stacked)
+    
+    Deklarasi di XML:           Visual Result:
+    ┌──────────────┐           ┌──────────────────────┐
+    │ View 1       │           │ ████████████████████ │ ← View 1 (paling bawah)
+    │ View 2       │    →      │ ████ View 2 ████████ │ ← View 2 (di atas View 1)
+    │ View 3       │           │ ██ View 3 ██████████ │ ← View 3 (paling atas)
+    └──────────────┘           └──────────────────────┘
+    
+    View yang dideklarasikan terakhir = paling atas (z-order tertinggi)
+            </pre>
+        </div>
+
+        <h3>Contoh FrameLayout - Image dengan Badge</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>FrameLayout - Avatar dengan Badge Notification</span>
+            </div>
+            <pre class="no-copy">
 &lt;FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"&gt;
 
-    &lt;!-- Gambar di belakang --&gt;
+    &lt;!-- Avatar (layer bawah) --&gt;
     &lt;ImageView
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:src="@drawable/profile_photo"
+        android:id="@+id/ivAvatar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/avatar"
         android:scaleType="centerCrop" /&gt;
 
-    &lt;!-- Badge notification di pojok kanan atas --&gt;
+    &lt;!-- Badge notification (layer atas, pojok kanan atas) --&gt;
     &lt;TextView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:id="@+id/tvBadge"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
         android:layout_gravity="top|end"
-        android:background="@drawable/circle_red"
+        android:background="@drawable/bg_circle_red"
         android:gravity="center"
         android:text="5"
         android:textColor="@android:color/white"
-        android:textSize="12sp" /&gt;
+        android:textSize="10sp"
+        android:textStyle="bold" /&gt;
 
 &lt;/FrameLayout&gt;</pre>
-                </div>
-            </article>
-        </section>
+        </div>
+
+        <h3>Contoh FrameLayout - Loading Overlay</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>FrameLayout - Content dengan Loading Overlay</span>
+            </div>
+            <pre class="no-copy">
+&lt;FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;!-- Content utama --&gt;
+    &lt;LinearLayout
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"&gt;
+        
+        &lt;!-- Content views here --&gt;
+        
+    &lt;/LinearLayout&gt;
+
+    &lt;!-- Loading overlay (ditampilkan saat loading) --&gt;
+    &lt;FrameLayout
+        android:id="@+id/loadingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/overlay_dark"
+        android:visibility="gone"&gt;
+
+        &lt;ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" /&gt;
+
+    &lt;/FrameLayout&gt;
+
+&lt;/FrameLayout&gt;</pre>
+        </div>
+
+        <h3>Contoh FrameLayout - Container untuk Fragment</h3>
+        <div class="code-block">
+            <div class="code-header">
+                <span>FrameLayout sebagai Fragment Container</span>
+            </div>
+            <pre class="no-copy">
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;!-- Toolbar --&gt;
+    &lt;androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary" /&gt;
+
+    &lt;!-- Fragment container --&gt;
+    &lt;FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+    &lt;!-- Bottom navigation --&gt;
+    &lt;com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+        </div>
+
+        <h3>Atribut layout_gravity</h3>
+        <p>Dalam FrameLayout, gunakan <code>layout_gravity</code> untuk memposisikan child view.</p>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Nilai</th>
+                    <th>Posisi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>top</td><td>Atas tengah</td></tr>
+                <tr><td>bottom</td><td>Bawah tengah</td></tr>
+                <tr><td>start</td><td>Kiri tengah</td></tr>
+                <tr><td>end</td><td>Kanan tengah</td></tr>
+                <tr><td>center</td><td>Tengah</td></tr>
+                <tr><td>center_horizontal</td><td>Tengah horizontal</td></tr>
+                <tr><td>center_vertical</td><td>Tengah vertical</td></tr>
+                <tr><td>top|start</td><td>Pojok kiri atas</td></tr>
+                <tr><td>top|end</td><td>Pojok kanan atas</td></tr>
+                <tr><td>bottom|start</td><td>Pojok kiri bawah</td></tr>
+                <tr><td>bottom|end</td><td>Pojok kanan bawah</td></tr>
+            </tbody>
+        </table>
+    </article>
+
+    <article id="scrollview">
+        <h2>ScrollView dan NestedScrollView</h2>
+        <p>ScrollView memungkinkan content yang lebih besar dari layar untuk di-scroll secara vertical. Hanya boleh memiliki satu direct child.</p>
+        
+        <div class="code-block">
+            <div class="code-header">
+                <span>ScrollView Example</span>
+            </div>
+            <pre class="no-copy">
+&lt;ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"&gt;
+
+    &lt;!-- Hanya satu child langsung --&gt;
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding"&gt;
+
+        &lt;!-- Content yang panjang --&gt;
+        &lt;TextView android:text="Item 1" ... /&gt;
+        &lt;TextView android:text="Item 2" ... /&gt;
+        &lt;!-- ... banyak item lainnya --&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/ScrollView&gt;
+
+&lt;!-- NestedScrollView untuk nested scrolling (misal dalam CoordinatorLayout) --&gt;
+&lt;androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;LinearLayout ... &gt;
+        &lt;!-- Content --&gt;
+    &lt;/LinearLayout&gt;
+
+&lt;/androidx.core.widget.NestedScrollView&gt;
+
+&lt;!-- HorizontalScrollView untuk scroll horizontal --&gt;
+&lt;HorizontalScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"&gt;
+
+        &lt;!-- Horizontal content --&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/HorizontalScrollView&gt;</pre>
+        </div>
+
+        <div class="info-box">
+            <h4>Tips ScrollView</h4>
+            <ul>
+                <li>Gunakan <code>android:fillViewport="true"</code> agar content pendek tetap mengisi layar</li>
+                <li>Gunakan <code>NestedScrollView</code> jika berada dalam CoordinatorLayout</li>
+                <li>ScrollView hanya untuk vertical, gunakan <code>HorizontalScrollView</code> untuk horizontal</li>
+                <li>Untuk list data yang banyak, gunakan <code>RecyclerView</code> bukan ScrollView</li>
+            </ul>
+        </div>
+    </article>
+
+    <article id="layout-comparison">
+        <h2>Perbandingan Layout</h2>
+        
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Layout</th>
+                    <th>Kelebihan</th>
+                    <th>Kekurangan</th>
+                    <th>Kapan Digunakan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>LinearLayout</strong></td>
+                    <td>Simple, mudah dipahami, weight system</td>
+                    <td>Perlu nested untuk layout kompleks</td>
+                    <td>Layout sederhana, form, distribusi proporsional</td>
+                </tr>
+                <tr>
+                    <td><strong>RelativeLayout</strong></td>
+                    <td>Flexible positioning, mengurangi nesting</td>
+                    <td>Bisa kompleks, digantikan ConstraintLayout</td>
+                    <td>Layout dengan posisi relatif sederhana</td>
+                </tr>
+                <tr>
+                    <td><strong>ConstraintLayout</strong></td>
+                    <td>Paling flexible, flat hierarchy, visual editor</td>
+                    <td>Learning curve lebih tinggi</td>
+                    <td>Hampir semua kasus, terutama layout kompleks</td>
+                </tr>
+                <tr>
+                    <td><strong>FrameLayout</strong></td>
+                    <td>Simple, perfect untuk stacking</td>
+                    <td>Terbatas untuk satu child atau stacking</td>
+                    <td>Fragment container, overlay, badge</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-box">
+            <h4>Rekomendasi</h4>
+            <ul>
+                <li><strong>Default choice:</strong> ConstraintLayout untuk sebagian besar layout</li>
+                <li><strong>Simple vertical/horizontal list:</strong> LinearLayout</li>
+                <li><strong>Fragment container:</strong> FrameLayout</li>
+                <li><strong>Overlay/stacking:</strong> FrameLayout</li>
+                <li><strong>Hindari:</strong> Nested layout lebih dari 3-4 level</li>
+            </ul>
+        </div>
+    </article>
+</section>
 
         <!-- Basic Widgets -->
         <section id="widgets" class="section">
