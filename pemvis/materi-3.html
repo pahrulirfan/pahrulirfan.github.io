@@ -1,0 +1,2638 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - QMainWindow & Dialog</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>QMainWindow & Dialog</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Materi Pembelajaran</div>
+                    <a href="#qwidget-vs-qmainwindow" class="nav-link active">
+                        <span class="nav-number">1</span>QWidget vs QMainWindow
+                    </a>
+                    <a href="#struktur-mainwindow" class="nav-link">
+                        <span class="nav-number">2</span>Struktur QMainWindow
+                    </a>
+                    <a href="#qaction" class="nav-link">
+                        <span class="nav-number">3</span>QAction
+                    </a>
+                    <a href="#icon-action" class="nav-link">
+                        <span class="nav-number">4</span>Icon pada Action
+                    </a>
+                    <a href="#dialog-bawaan" class="nav-link">
+                        <span class="nav-number">5</span>Dialog Bawaan
+                    </a>
+                    <a href="#custom-dialog" class="nav-link">
+                        <span class="nav-number">6</span>Custom Dialog
+                    </a>
+                    <a href="#file-operations" class="nav-link">
+                        <span class="nav-number">7</span>Operasi File
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1>QMainWindow & Dialog di PySide6</h1>
+                <p class="subtitle">Membangun aplikasi desktop profesional dengan menu, toolbar, dan dialog</p>
+            </header>
+
+            <!-- Indikator Pembelajaran -->
+            <section class="section">
+                <h2>Indikator Pembelajaran</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan materi ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Membuat QMainWindow lengkap dengan semua komponen</li>
+                        <li>Mengimplementasikan QAction dengan shortcut dan icon</li>
+                        <li>Menggunakan dialog bawaan dan membuat custom dialog</li>
+                        <li>Melakukan operasi file open/save</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Section 1: QWidget vs QMainWindow -->
+            <section class="section" id="qwidget-vs-qmainwindow">
+                <h2>1. QWidget vs QMainWindow</h2>
+                
+                <p>Dalam PySide6, ada dua pilihan utama untuk membuat window aplikasi: <strong>QWidget</strong> dan <strong>QMainWindow</strong>. Pemilihan yang tepat sangat penting untuk membangun aplikasi yang sesuai kebutuhan.</p>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">QWidget</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Base class untuk semua UI objects</li>
+                                <li>Ringan dan sederhana</li>
+                                <li>Cocok untuk dialog atau window kecil</li>
+                                <li>Tidak ada built-in menu/toolbar</li>
+                                <li>Layout harus diatur manual</li>
+                                <li>Contoh: form input, dialog kustom</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">QMainWindow</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Framework untuk main window</li>
+                                <li>Built-in MenuBar, ToolBar, StatusBar</li>
+                                <li>Support DockWidget</li>
+                                <li>Central widget area</li>
+                                <li>Cocok untuk aplikasi utama</li>
+                                <li>Contoh: text editor, IDE, browser</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Kapan Menggunakan Masing-masing?</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kriteria</th>
+                                <th>Gunakan QWidget</th>
+                                <th>Gunakan QMainWindow</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Aplikasi sederhana</td>
+                                <td>✓ Ya</td>
+                                <td>Tidak perlu</td>
+                            </tr>
+                            <tr>
+                                <td>Butuh menu bar</td>
+                                <td>Bisa, tapi manual</td>
+                                <td>✓ Built-in</td>
+                            </tr>
+                            <tr>
+                                <td>Butuh toolbar</td>
+                                <td>Bisa, tapi manual</td>
+                                <td>✓ Built-in</td>
+                            </tr>
+                            <tr>
+                                <td>Butuh status bar</td>
+                                <td>Bisa, tapi manual</td>
+                                <td>✓ Built-in</td>
+                            </tr>
+                            <tr>
+                                <td>Aplikasi profesional</td>
+                                <td>Tidak ideal</td>
+                                <td>✓ Sangat cocok</td>
+                            </tr>
+                            <tr>
+                                <td>Dialog/popup</td>
+                                <td>✓ Ideal</td>
+                                <td>Tidak cocok</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Contoh Perbandingan Kode</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qwidget_example.py</span>
+                        <span class="code-badge">QWidget</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QApplication, QWidget, QVBoxLayout, QLabel, QPushButton
+
+<span class="keyword">class</span> <span class="class-name">SimpleWindow</span>(QWidget):
+    <span class="string">"""Window sederhana menggunakan QWidget"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QWidget Example"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>, <span class="number">200</span>)
+        
+        <span class="comment"># Layout harus dibuat manual</span>
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        label = QLabel(<span class="string">"Ini adalah QWidget sederhana"</span>)
+        button = QPushButton(<span class="string">"Klik Saya"</span>)
+        
+        layout.addWidget(label)
+        layout.addWidget(button)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = SimpleWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qmainwindow_example.py</span>
+                        <span class="code-badge">QMainWindow</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, 
+    QVBoxLayout, QLabel, QPushButton
+)
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="string">"""Window profesional menggunakan QMainWindow"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QMainWindow Example"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">400</span>)
+        
+        <span class="comment"># Central widget diperlukan untuk QMainWindow</span>
+        central_widget = QWidget()
+        <span class="self">self</span>.setCentralWidget(central_widget)
+        
+        layout = QVBoxLayout(central_widget)
+        
+        label = QLabel(<span class="string">"Ini adalah QMainWindow"</span>)
+        button = QPushButton(<span class="string">"Klik Saya"</span>)
+        
+        layout.addWidget(label)
+        layout.addWidget(button)
+        
+        <span class="comment"># Built-in StatusBar</span>
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Penting!</div>
+                    <p>QMainWindow memerlukan <span class="inline-code">setCentralWidget()</span> untuk menampung konten utama. Tanpa central widget, konten tidak akan ditampilkan dengan benar.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Struktur QMainWindow -->
+            <section class="section" id="struktur-mainwindow">
+                <h2>2. Struktur QMainWindow</h2>
+
+                <p>QMainWindow memiliki struktur yang sudah terdefinisi dengan area-area khusus untuk berbagai komponen UI.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Anatomi QMainWindow</div>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 20px; text-align: center;">
+                        <div style="background: #3498db; padding: 10px; margin-bottom: 5px; border-radius: 4px;">Menu Bar</div>
+                        <div style="background: #9b59b6; padding: 10px; margin-bottom: 5px; border-radius: 4px;">Tool Bar(s)</div>
+                        <div style="display: flex; gap: 5px; margin-bottom: 5px;">
+                            <div style="background: #e67e22; padding: 30px 15px; border-radius: 4px; writing-mode: vertical-rl;">Dock</div>
+                            <div style="background: #27ae60; padding: 40px; flex: 1; border-radius: 4px;">Central Widget</div>
+                            <div style="background: #e67e22; padding: 30px 15px; border-radius: 4px; writing-mode: vertical-rl;">Dock</div>
+                        </div>
+                        <div style="background: #34495e; padding: 10px; border-radius: 4px;">Status Bar</div>
+                    </div>
+                </div>
+
+                <h3>Komponen-komponen QMainWindow</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Komponen</th>
+                                <th>Method</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Menu Bar</strong></td>
+                                <td><span class="table-code">menuBar()</span></td>
+                                <td>Bar menu di bagian atas (File, Edit, View, dll)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tool Bar</strong></td>
+                                <td><span class="table-code">addToolBar()</span></td>
+                                <td>Bar dengan tombol-tombol aksi cepat</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status Bar</strong></td>
+                                <td><span class="table-code">statusBar()</span></td>
+                                <td>Bar status di bagian bawah</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dock Widget</strong></td>
+                                <td><span class="table-code">addDockWidget()</span></td>
+                                <td>Panel yang bisa di-dock/undock</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Central Widget</strong></td>
+                                <td><span class="table-code">setCentralWidget()</span></td>
+                                <td>Area konten utama aplikasi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Implementasi Lengkap Struktur QMainWindow</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">mainwindow_structure.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QTextEdit, QLabel, QDockWidget, QListWidget
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Struktur QMainWindow"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">800</span>, <span class="number">600</span>)
+        
+        <span class="self">self</span>.setup_central_widget()
+        <span class="self">self</span>.setup_menu_bar()
+        <span class="self">self</span>.setup_toolbars()
+        <span class="self">self</span>.setup_status_bar()
+        <span class="self">self</span>.setup_dock_widgets()
+    
+    <span class="keyword">def</span> <span class="function">setup_central_widget</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat central widget - area konten utama"""</span>
+        <span class="self">self</span>.text_edit = QTextEdit()
+        <span class="self">self</span>.text_edit.setPlaceholderText(<span class="string">"Ketik teks di sini..."</span>)
+        <span class="self">self</span>.setCentralWidget(<span class="self">self</span>.text_edit)
+    
+    <span class="keyword">def</span> <span class="function">setup_menu_bar</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat menu bar"""</span>
+        menu_bar = <span class="self">self</span>.menuBar()
+        
+        <span class="comment"># Menu File</span>
+        file_menu = menu_bar.addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="string">"New"</span>)
+        file_menu.addAction(<span class="string">"Open"</span>)
+        file_menu.addAction(<span class="string">"Save"</span>)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="string">"Exit"</span>)
+        
+        <span class="comment"># Menu Edit</span>
+        edit_menu = menu_bar.addMenu(<span class="string">"&amp;Edit"</span>)
+        edit_menu.addAction(<span class="string">"Undo"</span>)
+        edit_menu.addAction(<span class="string">"Redo"</span>)
+        edit_menu.addSeparator()
+        edit_menu.addAction(<span class="string">"Cut"</span>)
+        edit_menu.addAction(<span class="string">"Copy"</span>)
+        edit_menu.addAction(<span class="string">"Paste"</span>)
+        
+        <span class="comment"># Menu View</span>
+        view_menu = menu_bar.addMenu(<span class="string">"&amp;View"</span>)
+        view_menu.addAction(<span class="string">"Zoom In"</span>)
+        view_menu.addAction(<span class="string">"Zoom Out"</span>)
+        
+        <span class="comment"># Menu Help</span>
+        help_menu = menu_bar.addMenu(<span class="string">"&amp;Help"</span>)
+        help_menu.addAction(<span class="string">"About"</span>)
+    
+    <span class="keyword">def</span> <span class="function">setup_toolbars</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat toolbar"""</span>
+        <span class="comment"># Toolbar File</span>
+        file_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"File"</span>)
+        file_toolbar.addAction(<span class="string">"New"</span>)
+        file_toolbar.addAction(<span class="string">"Open"</span>)
+        file_toolbar.addAction(<span class="string">"Save"</span>)
+        
+        <span class="comment"># Toolbar Edit</span>
+        edit_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"Edit"</span>)
+        edit_toolbar.addAction(<span class="string">"Cut"</span>)
+        edit_toolbar.addAction(<span class="string">"Copy"</span>)
+        edit_toolbar.addAction(<span class="string">"Paste"</span>)
+    
+    <span class="keyword">def</span> <span class="function">setup_status_bar</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat status bar"""</span>
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+        
+        <span class="comment"># Menambahkan widget permanen ke status bar</span>
+        <span class="self">self</span>.status_label = QLabel(<span class="string">"Ln 1, Col 1"</span>)
+        <span class="self">self</span>.statusBar().addPermanentWidget(<span class="self">self</span>.status_label)
+    
+    <span class="keyword">def</span> <span class="function">setup_dock_widgets</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat dock widgets"""</span>
+        <span class="comment"># Dock kiri - File Explorer</span>
+        file_dock = QDockWidget(<span class="string">"File Explorer"</span>, <span class="self">self</span>)
+        file_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        
+        file_list = QListWidget()
+        file_list.addItems([<span class="string">"document.txt"</span>, <span class="string">"image.png"</span>, <span class="string">"data.csv"</span>])
+        file_dock.setWidget(file_list)
+        
+        <span class="self">self</span>.addDockWidget(Qt.LeftDockWidgetArea, file_dock)
+        
+        <span class="comment"># Dock kanan - Properties</span>
+        prop_dock = QDockWidget(<span class="string">"Properties"</span>, <span class="self">self</span>)
+        prop_dock.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        
+        prop_widget = QWidget()
+        prop_layout = QVBoxLayout(prop_widget)
+        prop_layout.addWidget(QLabel(<span class="string">"File: document.txt"</span>))
+        prop_layout.addWidget(QLabel(<span class="string">"Size: 1.2 KB"</span>))
+        prop_layout.addWidget(QLabel(<span class="string">"Modified: 2024-01-15"</span>))
+        prop_layout.addStretch()
+        prop_dock.setWidget(prop_widget)
+        
+        <span class="self">self</span>.addDockWidget(Qt.RightDockWidgetArea, prop_dock)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Tentang Ampersand (&amp;) pada Menu</div>
+                    <p>Karakter <span class="inline-code">&amp;</span> sebelum huruf pada nama menu (seperti <span class="inline-code">"&amp;File"</span>) membuat huruf tersebut menjadi <strong>mnemonic/accelerator</strong>. User bisa mengakses menu dengan Alt+F untuk File, Alt+E untuk Edit, dll.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: QAction -->
+            <section class="section" id="qaction">
+                <h2>3. QAction: Menu + Toolbar + Shortcut</h2>
+
+                <p><strong>QAction</strong> adalah abstraksi untuk aksi yang bisa dipicu dari berbagai tempat: menu, toolbar, atau keyboard shortcut. Ini memungkinkan satu definisi aksi untuk multiple UI elements.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Satu QAction, Multiple Triggers</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Menu Item</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">QAction</div>
+                        <span class="flow-arrow">←</span>
+                        <div class="flow-box">Toolbar Button</div>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px;">
+                        <span class="flow-arrow">↑</span>
+                    </div>
+                    <div style="text-align: center;">
+                        <div class="flow-box" style="display: inline-block;">Keyboard Shortcut</div>
+                    </div>
+                </div>
+
+                <h3>Properti Penting QAction</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Properti/Method</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">setText()</span></td>
+                                <td>Teks yang ditampilkan</td>
+                                <td>"Save"</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setShortcut()</span></td>
+                                <td>Keyboard shortcut</td>
+                                <td>QKeySequence.Save</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setIcon()</span></td>
+                                <td>Icon untuk action</td>
+                                <td>QIcon("save.png")</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setStatusTip()</span></td>
+                                <td>Teks di status bar saat hover</td>
+                                <td>"Save the document"</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setCheckable()</span></td>
+                                <td>Bisa di-toggle on/off</td>
+                                <td>True/False</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setEnabled()</span></td>
+                                <td>Aktif/nonaktif</td>
+                                <td>True/False</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">triggered</span></td>
+                                <td>Signal saat action dipicu</td>
+                                <td>connect(slot)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Standard Shortcuts</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>QKeySequence</th>
+                                <th>Windows/Linux</th>
+                                <th>macOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.New</span></td>
+                                <td>Ctrl+N</td>
+                                <td>Cmd+N</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Open</span></td>
+                                <td>Ctrl+O</td>
+                                <td>Cmd+O</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Save</span></td>
+                                <td>Ctrl+S</td>
+                                <td>Cmd+S</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.SaveAs</span></td>
+                                <td>Ctrl+Shift+S</td>
+                                <td>Cmd+Shift+S</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Cut</span></td>
+                                <td>Ctrl+X</td>
+                                <td>Cmd+X</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Copy</span></td>
+                                <td>Ctrl+C</td>
+                                <td>Cmd+C</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Paste</span></td>
+                                <td>Ctrl+V</td>
+                                <td>Cmd+V</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Undo</span></td>
+                                <td>Ctrl+Z</td>
+                                <td>Cmd+Z</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">QKeySequence.Redo</span></td>
+                                <td>Ctrl+Y</td>
+                                <td>Cmd+Shift+Z</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Implementasi QAction</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qaction_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QTextEdit, QMessageBox
+)
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence
+
+<span class="keyword">class</span> <span class="class-name">TextEditor</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QAction Demo - Text Editor"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">700</span>, <span class="number">500</span>)
+        
+        <span class="comment"># Central widget</span>
+        <span class="self">self</span>.text_edit = QTextEdit()
+        <span class="self">self</span>.setCentralWidget(<span class="self">self</span>.text_edit)
+        
+        <span class="comment"># Buat actions</span>
+        <span class="self">self</span>.create_actions()
+        
+        <span class="comment"># Buat menu dan toolbar</span>
+        <span class="self">self</span>.create_menus()
+        <span class="self">self</span>.create_toolbars()
+        
+        <span class="comment"># Status bar</span>
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+    
+    <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat semua QAction"""</span>
+        
+        <span class="comment"># === FILE ACTIONS ===</span>
+        
+        <span class="comment"># New Action</span>
+        <span class="self">self</span>.new_action = QAction(<span class="string">"&amp;New"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.new_action.setShortcut(QKeySequence.New)
+        <span class="self">self</span>.new_action.setStatusTip(<span class="string">"Create a new document"</span>)
+        <span class="self">self</span>.new_action.triggered.connect(<span class="self">self</span>.new_document)
+        
+        <span class="comment"># Open Action</span>
+        <span class="self">self</span>.open_action = QAction(<span class="string">"&amp;Open..."</span>, <span class="self">self</span>)
+        <span class="self">self</span>.open_action.setShortcut(QKeySequence.Open)
+        <span class="self">self</span>.open_action.setStatusTip(<span class="string">"Open an existing document"</span>)
+        <span class="self">self</span>.open_action.triggered.connect(<span class="self">self</span>.open_document)
+        
+        <span class="comment"># Save Action</span>
+        <span class="self">self</span>.save_action = QAction(<span class="string">"&amp;Save"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.save_action.setShortcut(QKeySequence.Save)
+        <span class="self">self</span>.save_action.setStatusTip(<span class="string">"Save the document"</span>)
+        <span class="self">self</span>.save_action.triggered.connect(<span class="self">self</span>.save_document)
+        
+        <span class="comment"># Exit Action</span>
+        <span class="self">self</span>.exit_action = QAction(<span class="string">"E&amp;xit"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.exit_action.setShortcut(<span class="string">"Ctrl+Q"</span>)
+        <span class="self">self</span>.exit_action.setStatusTip(<span class="string">"Exit the application"</span>)
+        <span class="self">self</span>.exit_action.triggered.connect(<span class="self">self</span>.close)
+        
+        <span class="comment"># === EDIT ACTIONS ===</span>
+        
+        <span class="comment"># Undo Action</span>
+        <span class="self">self</span>.undo_action = QAction(<span class="string">"&amp;Undo"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.undo_action.setShortcut(QKeySequence.Undo)
+        <span class="self">self</span>.undo_action.setStatusTip(<span class="string">"Undo the last action"</span>)
+        <span class="self">self</span>.undo_action.triggered.connect(<span class="self">self</span>.text_edit.undo)
+        
+        <span class="comment"># Redo Action</span>
+        <span class="self">self</span>.redo_action = QAction(<span class="string">"&amp;Redo"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.redo_action.setShortcut(QKeySequence.Redo)
+        <span class="self">self</span>.redo_action.setStatusTip(<span class="string">"Redo the last undone action"</span>)
+        <span class="self">self</span>.redo_action.triggered.connect(<span class="self">self</span>.text_edit.redo)
+        
+        <span class="comment"># Cut Action</span>
+        <span class="self">self</span>.cut_action = QAction(<span class="string">"Cu&amp;t"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.cut_action.setShortcut(QKeySequence.Cut)
+        <span class="self">self</span>.cut_action.setStatusTip(<span class="string">"Cut selected text"</span>)
+        <span class="self">self</span>.cut_action.triggered.connect(<span class="self">self</span>.text_edit.cut)
+        
+        <span class="comment"># Copy Action</span>
+        <span class="self">self</span>.copy_action = QAction(<span class="string">"&amp;Copy"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.copy_action.setShortcut(QKeySequence.Copy)
+        <span class="self">self</span>.copy_action.setStatusTip(<span class="string">"Copy selected text"</span>)
+        <span class="self">self</span>.copy_action.triggered.connect(<span class="self">self</span>.text_edit.copy)
+        
+        <span class="comment"># Paste Action</span>
+        <span class="self">self</span>.paste_action = QAction(<span class="string">"&amp;Paste"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.paste_action.setShortcut(QKeySequence.Paste)
+        <span class="self">self</span>.paste_action.setStatusTip(<span class="string">"Paste from clipboard"</span>)
+        <span class="self">self</span>.paste_action.triggered.connect(<span class="self">self</span>.text_edit.paste)
+        
+        <span class="comment"># === VIEW ACTIONS (Checkable) ===</span>
+        
+        <span class="comment"># Word Wrap Action (Checkable)</span>
+        <span class="self">self</span>.wordwrap_action = QAction(<span class="string">"&amp;Word Wrap"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.wordwrap_action.setCheckable(<span class="keyword">True</span>)
+        <span class="self">self</span>.wordwrap_action.setChecked(<span class="keyword">True</span>)
+        <span class="self">self</span>.wordwrap_action.setStatusTip(<span class="string">"Toggle word wrap"</span>)
+        <span class="self">self</span>.wordwrap_action.triggered.connect(<span class="self">self</span>.toggle_word_wrap)
+    
+    <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat menu bar dengan actions"""</span>
+        menu_bar = <span class="self">self</span>.menuBar()
+        
+        <span class="comment"># File Menu</span>
+        file_menu = menu_bar.addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="self">self</span>.new_action)
+        file_menu.addAction(<span class="self">self</span>.open_action)
+        file_menu.addAction(<span class="self">self</span>.save_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.exit_action)
+        
+        <span class="comment"># Edit Menu</span>
+        edit_menu = menu_bar.addMenu(<span class="string">"&amp;Edit"</span>)
+        edit_menu.addAction(<span class="self">self</span>.undo_action)
+        edit_menu.addAction(<span class="self">self</span>.redo_action)
+        edit_menu.addSeparator()
+        edit_menu.addAction(<span class="self">self</span>.cut_action)
+        edit_menu.addAction(<span class="self">self</span>.copy_action)
+        edit_menu.addAction(<span class="self">self</span>.paste_action)
+        
+        <span class="comment"># View Menu</span>
+        view_menu = menu_bar.addMenu(<span class="string">"&amp;View"</span>)
+        view_menu.addAction(<span class="self">self</span>.wordwrap_action)
+    
+    <span class="keyword">def</span> <span class="function">create_toolbars</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat toolbar dengan actions yang sama"""</span>
+        <span class="comment"># File Toolbar</span>
+        file_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"File"</span>)
+        file_toolbar.addAction(<span class="self">self</span>.new_action)
+        file_toolbar.addAction(<span class="self">self</span>.open_action)
+        file_toolbar.addAction(<span class="self">self</span>.save_action)
+        
+        <span class="comment"># Edit Toolbar</span>
+        edit_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"Edit"</span>)
+        edit_toolbar.addAction(<span class="self">self</span>.cut_action)
+        edit_toolbar.addAction(<span class="self">self</span>.copy_action)
+        edit_toolbar.addAction(<span class="self">self</span>.paste_action)
+    
+    <span class="comment"># === SLOT METHODS ===</span>
+    
+    <span class="keyword">def</span> <span class="function">new_document</span>(<span class="self">self</span>):
+        <span class="self">self</span>.text_edit.clear()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"New document created"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">open_document</span>(<span class="self">self</span>):
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Open dialog would appear here"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">save_document</span>(<span class="self">self</span>):
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Document saved"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">toggle_word_wrap</span>(<span class="self">self</span>, <span class="parameter">checked</span>):
+        <span class="keyword">if</span> checked:
+            <span class="self">self</span>.text_edit.setLineWrapMode(QTextEdit.WidgetWidth)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap enabled"</span>, <span class="number">2000</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.text_edit.setLineWrapMode(QTextEdit.NoWrap)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap disabled"</span>, <span class="number">2000</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = TextEditor()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Keuntungan Menggunakan QAction</div>
+                    <ul>
+                        <li><strong>Reusability:</strong> Satu action bisa dipakai di menu dan toolbar</li>
+                        <li><strong>Consistency:</strong> Shortcut, icon, dan text selalu konsisten</li>
+                        <li><strong>Easy Management:</strong> Enable/disable dari satu tempat</li>
+                        <li><strong>State Management:</strong> Checkable actions untuk toggle state</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 4: Icon pada Action -->
+            <section class="section" id="icon-action">
+                <h2>4. Icon pada Action</h2>
+
+                <p>Icon membuat aplikasi lebih profesional dan user-friendly. Ada beberapa cara untuk menambahkan icon pada QAction.</p>
+
+                <h3>Sumber Icon</h3>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">File Icon</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Menggunakan file gambar (.png, .svg)</li>
+                                <li>Fleksibel untuk custom design</li>
+                                <li>Perlu menyertakan file</li>
+                                <li>Ukuran: 16x16, 24x24, 32x32 px</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Built-in Icons</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Menggunakan QStyle.StandardPixmap</li>
+                                <li>Selalu tersedia</li>
+                                <li>Tampilan native sesuai OS</li>
+                                <li>Terbatas pada icon standar</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Daftar Standard Icons (QStyle.StandardPixmap)</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Konstanta</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">SP_FileIcon</span></td>
+                                <td>Icon file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_DirIcon</span></td>
+                                <td>Icon folder</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_DialogOpenButton</span></td>
+                                <td>Icon open</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_DialogSaveButton</span></td>
+                                <td>Icon save</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_TrashIcon</span></td>
+                                <td>Icon trash/delete</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_MessageBoxInformation</span></td>
+                                <td>Icon info</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_MessageBoxWarning</span></td>
+                                <td>Icon warning</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_MessageBoxCritical</span></td>
+                                <td>Icon error</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">SP_MessageBoxQuestion</span></td>
+                                <td>Icon question</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">icon_action_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QTextEdit, QStyle
+)
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence, QIcon
+
+<span class="keyword">class</span> <span class="class-name">IconDemo</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Icon Action Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">700</span>, <span class="number">500</span>)
+        
+        <span class="self">self</span>.text_edit = QTextEdit()
+        <span class="self">self</span>.setCentralWidget(<span class="self">self</span>.text_edit)
+        
+        <span class="self">self</span>.create_actions()
+        <span class="self">self</span>.create_menus()
+        <span class="self">self</span>.create_toolbars()
+        
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+    
+    <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
+        <span class="comment"># Mendapatkan style untuk standard icons</span>
+        style = <span class="self">self</span>.style()
+        
+        <span class="comment"># === MENGGUNAKAN STANDARD ICONS ===</span>
+        
+        <span class="comment"># New Action dengan standard icon</span>
+        <span class="self">self</span>.new_action = QAction(<span class="string">"&amp;New"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.new_action.setIcon(style.standardIcon(QStyle.SP_FileIcon))
+        <span class="self">self</span>.new_action.setShortcut(QKeySequence.New)
+        <span class="self">self</span>.new_action.setStatusTip(<span class="string">"Create new document"</span>)
+        <span class="self">self</span>.new_action.triggered.connect(<span class="self">self</span>.new_file)
+        
+        <span class="comment"># Open Action</span>
+        <span class="self">self</span>.open_action = QAction(<span class="string">"&amp;Open"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.open_action.setIcon(style.standardIcon(QStyle.SP_DialogOpenButton))
+        <span class="self">self</span>.open_action.setShortcut(QKeySequence.Open)
+        <span class="self">self</span>.open_action.setStatusTip(<span class="string">"Open existing document"</span>)
+        <span class="self">self</span>.open_action.triggered.connect(<span class="self">self</span>.open_file)
+        
+        <span class="comment"># Save Action</span>
+        <span class="self">self</span>.save_action = QAction(<span class="string">"&amp;Save"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.save_action.setIcon(style.standardIcon(QStyle.SP_DialogSaveButton))
+        <span class="self">self</span>.save_action.setShortcut(QKeySequence.Save)
+        <span class="self">self</span>.save_action.setStatusTip(<span class="string">"Save document"</span>)
+        <span class="self">self</span>.save_action.triggered.connect(<span class="self">self</span>.save_file)
+        
+        <span class="comment"># Delete Action</span>
+        <span class="self">self</span>.delete_action = QAction(<span class="string">"&amp;Delete"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.delete_action.setIcon(style.standardIcon(QStyle.SP_TrashIcon))
+        <span class="self">self</span>.delete_action.setShortcut(QKeySequence.Delete)
+        <span class="self">self</span>.delete_action.setStatusTip(<span class="string">"Delete content"</span>)
+        <span class="self">self</span>.delete_action.triggered.connect(<span class="self">self</span>.delete_content)
+        
+        <span class="comment"># Info Action</span>
+        <span class="self">self</span>.info_action = QAction(<span class="string">"&amp;About"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.info_action.setIcon(style.standardIcon(QStyle.SP_MessageBoxInformation))
+        <span class="self">self</span>.info_action.setStatusTip(<span class="string">"About this application"</span>)
+        <span class="self">self</span>.info_action.triggered.connect(<span class="self">self</span>.show_about)
+        
+        <span class="comment"># === MENGGUNAKAN FILE ICON ===</span>
+        <span class="comment"># Uncomment jika punya file icon</span>
+        <span class="comment"># self.custom_action = QAction("Custom", self)</span>
+        <span class="comment"># self.custom_action.setIcon(QIcon("icons/custom.png"))</span>
+        
+        <span class="comment"># === MENGGUNAKAN ICON DARI THEME (Linux) ===</span>
+        <span class="comment"># self.edit_action = QAction("Edit", self)</span>
+        <span class="comment"># self.edit_action.setIcon(QIcon.fromTheme("document-edit"))</span>
+    
+    <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
+        menu_bar = <span class="self">self</span>.menuBar()
+        
+        <span class="comment"># File Menu</span>
+        file_menu = menu_bar.addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="self">self</span>.new_action)
+        file_menu.addAction(<span class="self">self</span>.open_action)
+        file_menu.addAction(<span class="self">self</span>.save_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.delete_action)
+        
+        <span class="comment"># Help Menu</span>
+        help_menu = menu_bar.addMenu(<span class="string">"&amp;Help"</span>)
+        help_menu.addAction(<span class="self">self</span>.info_action)
+    
+    <span class="keyword">def</span> <span class="function">create_toolbars</span>(<span class="self">self</span>):
+        <span class="comment"># Main Toolbar</span>
+        toolbar = <span class="self">self</span>.addToolBar(<span class="string">"Main"</span>)
+        toolbar.addAction(<span class="self">self</span>.new_action)
+        toolbar.addAction(<span class="self">self</span>.open_action)
+        toolbar.addAction(<span class="self">self</span>.save_action)
+        toolbar.addSeparator()
+        toolbar.addAction(<span class="self">self</span>.delete_action)
+        toolbar.addSeparator()
+        toolbar.addAction(<span class="self">self</span>.info_action)
+    
+    <span class="comment"># Slot methods</span>
+    <span class="keyword">def</span> <span class="function">new_file</span>(<span class="self">self</span>):
+        <span class="self">self</span>.text_edit.clear()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"New file created"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">open_file</span>(<span class="self">self</span>):
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Open file..."</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">save_file</span>(<span class="self">self</span>):
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"File saved"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">delete_content</span>(<span class="self">self</span>):
+        <span class="self">self</span>.text_edit.clear()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Content deleted"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_about</span>(<span class="self">self</span>):
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"About dialog"</span>, <span class="number">3000</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = IconDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Tips Menggunakan Icon</div>
+                    <ul>
+                        <li>Gunakan format <strong>PNG</strong> atau <strong>SVG</strong> untuk kualitas terbaik</li>
+                        <li>Sediakan multiple ukuran (16x16, 24x24, 32x32, 48x48) untuk berbagai DPI</li>
+                        <li>Standard icons mengikuti theme OS, tampilannya berbeda di Windows, macOS, dan Linux</li>
+                        <li>Gunakan <span class="inline-code">QIcon.fromTheme()</span> untuk icon theme di Linux</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 5: Dialog Bawaan -->
+            <section class="section" id="dialog-bawaan">
+                <h2>5. Dialog Bawaan: QMessageBox, QFileDialog, QInputDialog</h2>
+
+                <p>PySide6 menyediakan berbagai dialog bawaan untuk keperluan umum seperti menampilkan pesan, memilih file, atau meminta input dari user.</p>
+
+                <h3>QMessageBox</h3>
+
+                <p>Dialog untuk menampilkan pesan informatif, peringatan, error, atau pertanyaan kepada user.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipe</th>
+                                <th>Method</th>
+                                <th>Kegunaan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Information</td>
+                                <td><span class="table-code">QMessageBox.information()</span></td>
+                                <td>Pesan informasi umum</td>
+                            </tr>
+                            <tr>
+                                <td>Warning</td>
+                                <td><span class="table-code">QMessageBox.warning()</span></td>
+                                <td>Pesan peringatan</td>
+                            </tr>
+                            <tr>
+                                <td>Critical</td>
+                                <td><span class="table-code">QMessageBox.critical()</span></td>
+                                <td>Pesan error/kritis</td>
+                            </tr>
+                            <tr>
+                                <td>Question</td>
+                                <td><span class="table-code">QMessageBox.question()</span></td>
+                                <td>Pertanyaan Yes/No</td>
+                            </tr>
+                            <tr>
+                                <td>About</td>
+                                <td><span class="table-code">QMessageBox.about()</span></td>
+                                <td>Dialog about aplikasi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>QFileDialog</h3>
+
+                <p>Dialog untuk membuka atau menyimpan file.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Return</th>
+                                <th>Kegunaan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">getOpenFileName()</span></td>
+                                <td>(path, filter)</td>
+                                <td>Pilih satu file untuk dibuka</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getOpenFileNames()</span></td>
+                                <td>(paths, filter)</td>
+                                <td>Pilih multiple files</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getSaveFileName()</span></td>
+                                <td>(path, filter)</td>
+                                <td>Pilih lokasi save file</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getExistingDirectory()</span></td>
+                                <td>path</td>
+                                <td>Pilih folder</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>QInputDialog</h3>
+
+                <p>Dialog untuk meminta input sederhana dari user.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Return</th>
+                                <th>Kegunaan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">getText()</span></td>
+                                <td>(text, ok)</td>
+                                <td>Input teks</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getInt()</span></td>
+                                <td>(value, ok)</td>
+                                <td>Input integer</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getDouble()</span></td>
+                                <td>(value, ok)</td>
+                                <td>Input decimal</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">getItem()</span></td>
+                                <td>(item, ok)</td>
+                                <td>Pilih dari list</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">builtin_dialogs_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QMessageBox, QFileDialog, QInputDialog
+)
+
+<span class="keyword">class</span> <span class="class-name">DialogDemo</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Built-in Dialogs Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">400</span>, <span class="number">500</span>)
+        
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Result label</span>
+        <span class="self">self</span>.result_label = QLabel(<span class="string">"Hasil akan ditampilkan di sini..."</span>)
+        <span class="self">self</span>.result_label.setWordWrap(<span class="keyword">True</span>)
+        <span class="self">self</span>.result_label.setStyleSheet(<span class="string">"""
+            QLabel {
+                background-color: #f0f0f0;
+                padding: 15px;
+                border-radius: 5px;
+                min-height: 60px;
+            }
+        """</span>)
+        layout.addWidget(<span class="self">self</span>.result_label)
+        
+        <span class="comment"># === QMESSAGEBOX BUTTONS ===</span>
+        layout.addWidget(QLabel(<span class="string">"&lt;b&gt;QMessageBox:&lt;/b&gt;"</span>))
+        
+        btn_info = QPushButton(<span class="string">"Information Dialog"</span>)
+        btn_info.clicked.connect(<span class="self">self</span>.show_info)
+        layout.addWidget(btn_info)
+        
+        btn_warning = QPushButton(<span class="string">"Warning Dialog"</span>)
+        btn_warning.clicked.connect(<span class="self">self</span>.show_warning)
+        layout.addWidget(btn_warning)
+        
+        btn_critical = QPushButton(<span class="string">"Critical Dialog"</span>)
+        btn_critical.clicked.connect(<span class="self">self</span>.show_critical)
+        layout.addWidget(btn_critical)
+        
+        btn_question = QPushButton(<span class="string">"Question Dialog"</span>)
+        btn_question.clicked.connect(<span class="self">self</span>.show_question)
+        layout.addWidget(btn_question)
+        
+        <span class="comment"># === QFILEDIALOG BUTTONS ===</span>
+        layout.addWidget(QLabel(<span class="string">"&lt;b&gt;QFileDialog:&lt;/b&gt;"</span>))
+        
+        btn_open = QPushButton(<span class="string">"Open File Dialog"</span>)
+        btn_open.clicked.connect(<span class="self">self</span>.open_file_dialog)
+        layout.addWidget(btn_open)
+        
+        btn_save = QPushButton(<span class="string">"Save File Dialog"</span>)
+        btn_save.clicked.connect(<span class="self">self</span>.save_file_dialog)
+        layout.addWidget(btn_save)
+        
+        btn_folder = QPushButton(<span class="string">"Select Folder Dialog"</span>)
+        btn_folder.clicked.connect(<span class="self">self</span>.select_folder_dialog)
+        layout.addWidget(btn_folder)
+        
+        <span class="comment"># === QINPUTDIALOG BUTTONS ===</span>
+        layout.addWidget(QLabel(<span class="string">"&lt;b&gt;QInputDialog:&lt;/b&gt;"</span>))
+        
+        btn_text = QPushButton(<span class="string">"Input Text Dialog"</span>)
+        btn_text.clicked.connect(<span class="self">self</span>.input_text_dialog)
+        layout.addWidget(btn_text)
+        
+        btn_int = QPushButton(<span class="string">"Input Integer Dialog"</span>)
+        btn_int.clicked.connect(<span class="self">self</span>.input_int_dialog)
+        layout.addWidget(btn_int)
+        
+        btn_item = QPushButton(<span class="string">"Select Item Dialog"</span>)
+        btn_item.clicked.connect(<span class="self">self</span>.select_item_dialog)
+        layout.addWidget(btn_item)
+        
+        layout.addStretch()
+    
+    <span class="comment"># === QMESSAGEBOX METHODS ===</span>
+    
+    <span class="keyword">def</span> <span class="function">show_info</span>(<span class="self">self</span>):
+        QMessageBox.information(
+            <span class="self">self</span>,
+            <span class="string">"Informasi"</span>,
+            <span class="string">"Ini adalah pesan informasi.\nOperasi berhasil dilakukan!"</span>
+        )
+        <span class="self">self</span>.result_label.setText(<span class="string">"Information dialog ditampilkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_warning</span>(<span class="self">self</span>):
+        QMessageBox.warning(
+            <span class="self">self</span>,
+            <span class="string">"Peringatan"</span>,
+            <span class="string">"Ini adalah pesan peringatan!\nHarap perhatikan."</span>
+        )
+        <span class="self">self</span>.result_label.setText(<span class="string">"Warning dialog ditampilkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_critical</span>(<span class="self">self</span>):
+        QMessageBox.critical(
+            <span class="self">self</span>,
+            <span class="string">"Error"</span>,
+            <span class="string">"Terjadi kesalahan kritis!\nAplikasi tidak dapat melanjutkan."</span>
+        )
+        <span class="self">self</span>.result_label.setText(<span class="string">"Critical dialog ditampilkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_question</span>(<span class="self">self</span>):
+        reply = QMessageBox.question(
+            <span class="self">self</span>,
+            <span class="string">"Konfirmasi"</span>,
+            <span class="string">"Apakah Anda yakin ingin melanjutkan?"</span>,
+            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+            QMessageBox.No  <span class="comment"># Default button</span>
+        )
+        
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Anda memilih: YES"</span>)
+        <span class="keyword">elif</span> reply == QMessageBox.No:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Anda memilih: NO"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Anda memilih: CANCEL"</span>)
+    
+    <span class="comment"># === QFILEDIALOG METHODS ===</span>
+    
+    <span class="keyword">def</span> <span class="function">open_file_dialog</span>(<span class="self">self</span>):
+        file_path, selected_filter = QFileDialog.getOpenFileName(
+            <span class="self">self</span>,
+            <span class="string">"Open File"</span>,
+            <span class="string">""</span>,  <span class="comment"># Start directory</span>
+            <span class="string">"Text Files (*.txt);;Python Files (*.py);;All Files (*)"</span>
+        )
+        
+        <span class="keyword">if</span> file_path:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"File dipilih:\n</span>{file_path}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Tidak ada file yang dipilih"</span>)
+    
+    <span class="keyword">def</span> <span class="function">save_file_dialog</span>(<span class="self">self</span>):
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            <span class="self">self</span>,
+            <span class="string">"Save File"</span>,
+            <span class="string">"untitled.txt"</span>,  <span class="comment"># Default filename</span>
+            <span class="string">"Text Files (*.txt);;All Files (*)"</span>
+        )
+        
+        <span class="keyword">if</span> file_path:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"Save ke:\n</span>{file_path}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Save dibatalkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">select_folder_dialog</span>(<span class="self">self</span>):
+        folder_path = QFileDialog.getExistingDirectory(
+            <span class="self">self</span>,
+            <span class="string">"Select Folder"</span>,
+            <span class="string">""</span>
+        )
+        
+        <span class="keyword">if</span> folder_path:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"Folder dipilih:\n</span>{folder_path}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Tidak ada folder yang dipilih"</span>)
+    
+    <span class="comment"># === QINPUTDIALOG METHODS ===</span>
+    
+    <span class="keyword">def</span> <span class="function">input_text_dialog</span>(<span class="self">self</span>):
+        text, ok = QInputDialog.getText(
+            <span class="self">self</span>,
+            <span class="string">"Input Teks"</span>,
+            <span class="string">"Masukkan nama Anda:"</span>
+        )
+        
+        <span class="keyword">if</span> ok <span class="keyword">and</span> text:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"Nama: </span>{text}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Input dibatalkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">input_int_dialog</span>(<span class="self">self</span>):
+        value, ok = QInputDialog.getInt(
+            <span class="self">self</span>,
+            <span class="string">"Input Angka"</span>,
+            <span class="string">"Masukkan umur Anda:"</span>,
+            value=<span class="number">25</span>,      <span class="comment"># Default value</span>
+            min=<span class="number">1</span>,         <span class="comment"># Minimum</span>
+            max=<span class="number">120</span>,       <span class="comment"># Maximum</span>
+            step=<span class="number">1</span>         <span class="comment"># Step</span>
+        )
+        
+        <span class="keyword">if</span> ok:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"Umur: </span>{value}<span class="string"> tahun"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Input dibatalkan"</span>)
+    
+    <span class="keyword">def</span> <span class="function">select_item_dialog</span>(<span class="self">self</span>):
+        items = [<span class="string">"Python"</span>, <span class="string">"Java"</span>, <span class="string">"C++"</span>, <span class="string">"JavaScript"</span>, <span class="string">"Go"</span>]
+        
+        item, ok = QInputDialog.getItem(
+            <span class="self">self</span>,
+            <span class="string">"Pilih Item"</span>,
+            <span class="string">"Bahasa pemrograman favorit:"</span>,
+            items,
+            current=<span class="number">0</span>,       <span class="comment"># Default index</span>
+            editable=<span class="keyword">False</span>   <span class="comment"># Tidak bisa diedit</span>
+        )
+        
+        <span class="keyword">if</span> ok <span class="keyword">and</span> item:
+            <span class="self">self</span>.result_label.setText(<span class="string">f"Bahasa favorit: </span>{item}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result_label.setText(<span class="string">"Pilihan dibatalkan"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = DialogDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: Custom Dialog -->
+            <section class="section" id="custom-dialog">
+                <h2>6. Custom Dialog dengan QDialog</h2>
+
+                <p>Ketika dialog bawaan tidak mencukupi kebutuhan, kita bisa membuat custom dialog dengan mewarisi <strong>QDialog</strong>.</p>
+
+                <h3>Konsep Penting QDialog</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method/Property</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">exec()</span></td>
+                                <td>Menampilkan dialog secara modal (blocking)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">show()</span></td>
+                                <td>Menampilkan dialog secara non-modal</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">accept()</span></td>
+                                <td>Menutup dialog dengan status Accepted</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">reject()</span></td>
+                                <td>Menutup dialog dengan status Rejected</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">result()</span></td>
+                                <td>Mendapatkan hasil dialog (QDialog.Accepted/Rejected)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">setModal(True)</span></td>
+                                <td>Mengatur dialog sebagai modal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Modal vs Non-Modal Dialog</div>
+                    <p><strong>Modal:</strong> User harus menutup dialog sebelum bisa berinteraksi dengan window utama (exec())</p>
+                    <p><strong>Non-Modal:</strong> User bisa berinteraksi dengan window utama meskipun dialog terbuka (show())</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">custom_dialog_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QDialog, QDialogButtonBox, QPushButton, QLabel,
+    QLineEdit, QComboBox, QSpinBox, QFormLayout, QTextEdit
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># CUSTOM DIALOG: Form Input Mahasiswa</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">StudentDialog</span>(QDialog):
+    <span class="string">"""Custom dialog untuk input data mahasiswa"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">parent</span>=<span class="keyword">None</span>):
+        <span class="builtin">super</span>().__init__(parent)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Input Data Mahasiswa"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">350</span>)
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Form layout untuk input</span>
+        form_layout = QFormLayout()
+        
+        <span class="comment"># NIM</span>
+        <span class="self">self</span>.nim_input = QLineEdit()
+        <span class="self">self</span>.nim_input.setPlaceholderText(<span class="string">"Contoh: 12345678"</span>)
+        form_layout.addRow(<span class="string">"NIM:"</span>, <span class="self">self</span>.nim_input)
+        
+        <span class="comment"># Nama</span>
+        <span class="self">self</span>.nama_input = QLineEdit()
+        <span class="self">self</span>.nama_input.setPlaceholderText(<span class="string">"Nama lengkap"</span>)
+        form_layout.addRow(<span class="string">"Nama:"</span>, <span class="self">self</span>.nama_input)
+        
+        <span class="comment"># Jurusan</span>
+        <span class="self">self</span>.jurusan_combo = QComboBox()
+        <span class="self">self</span>.jurusan_combo.addItems([
+            <span class="string">"Teknik Informatika"</span>,
+            <span class="string">"Sistem Informasi"</span>,
+            <span class="string">"Teknik Komputer"</span>,
+            <span class="string">"Manajemen Informatika"</span>
+        ])
+        form_layout.addRow(<span class="string">"Jurusan:"</span>, <span class="self">self</span>.jurusan_combo)
+        
+        <span class="comment"># Semester</span>
+        <span class="self">self</span>.semester_spin = QSpinBox()
+        <span class="self">self</span>.semester_spin.setRange(<span class="number">1</span>, <span class="number">14</span>)
+        <span class="self">self</span>.semester_spin.setValue(<span class="number">1</span>)
+        form_layout.addRow(<span class="string">"Semester:"</span>, <span class="self">self</span>.semester_spin)
+        
+        layout.addLayout(form_layout)
+        
+        <span class="comment"># Standard button box (OK dan Cancel)</span>
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        button_box.accepted.connect(<span class="self">self</span>.validate_and_accept)
+        button_box.rejected.connect(<span class="self">self</span>.reject)
+        
+        layout.addWidget(button_box)
+    
+    <span class="keyword">def</span> <span class="function">validate_and_accept</span>(<span class="self">self</span>):
+        <span class="string">"""Validasi input sebelum accept"""</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.nim_input.text().strip():
+            <span class="self">self</span>.nim_input.setFocus()
+            <span class="self">self</span>.nim_input.setStyleSheet(<span class="string">"border: 2px solid red;"</span>)
+            <span class="keyword">return</span>
+        
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.nama_input.text().strip():
+            <span class="self">self</span>.nama_input.setFocus()
+            <span class="self">self</span>.nama_input.setStyleSheet(<span class="string">"border: 2px solid red;"</span>)
+            <span class="keyword">return</span>
+        
+        <span class="self">self</span>.accept()
+    
+    <span class="keyword">def</span> <span class="function">get_data</span>(<span class="self">self</span>):
+        <span class="string">"""Mengembalikan data yang diinput"""</span>
+        <span class="keyword">return</span> {
+            <span class="string">'nim'</span>: <span class="self">self</span>.nim_input.text().strip(),
+            <span class="string">'nama'</span>: <span class="self">self</span>.nama_input.text().strip(),
+            <span class="string">'jurusan'</span>: <span class="self">self</span>.jurusan_combo.currentText(),
+            <span class="string">'semester'</span>: <span class="self">self</span>.semester_spin.value()
+        }
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># CUSTOM DIALOG: Settings</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">SettingsDialog</span>(QDialog):
+    <span class="string">"""Custom dialog untuk pengaturan aplikasi"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">current_settings</span>=<span class="keyword">None</span>, <span class="parameter">parent</span>=<span class="keyword">None</span>):
+        <span class="builtin">super</span>().__init__(parent)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Pengaturan"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">300</span>)
+        <span class="self">self</span>.current_settings = current_settings <span class="keyword">or</span> {}
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.load_settings()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        form = QFormLayout()
+        
+        <span class="comment"># Theme</span>
+        <span class="self">self</span>.theme_combo = QComboBox()
+        <span class="self">self</span>.theme_combo.addItems([<span class="string">"Light"</span>, <span class="string">"Dark"</span>, <span class="string">"System"</span>])
+        form.addRow(<span class="string">"Theme:"</span>, <span class="self">self</span>.theme_combo)
+        
+        <span class="comment"># Font Size</span>
+        <span class="self">self</span>.fontsize_spin = QSpinBox()
+        <span class="self">self</span>.fontsize_spin.setRange(<span class="number">8</span>, <span class="number">24</span>)
+        <span class="self">self</span>.fontsize_spin.setValue(<span class="number">12</span>)
+        form.addRow(<span class="string">"Font Size:"</span>, <span class="self">self</span>.fontsize_spin)
+        
+        <span class="comment"># Auto Save</span>
+        <span class="self">self</span>.autosave_combo = QComboBox()
+        <span class="self">self</span>.autosave_combo.addItems([<span class="string">"Off"</span>, <span class="string">"1 menit"</span>, <span class="string">"5 menit"</span>, <span class="string">"10 menit"</span>])
+        form.addRow(<span class="string">"Auto Save:"</span>, <span class="self">self</span>.autosave_combo)
+        
+        layout.addLayout(form)
+        
+        <span class="comment"># Buttons</span>
+        button_layout = QHBoxLayout()
+        
+        reset_btn = QPushButton(<span class="string">"Reset Default"</span>)
+        reset_btn.clicked.connect(<span class="self">self</span>.reset_defaults)
+        button_layout.addWidget(reset_btn)
+        
+        button_layout.addStretch()
+        
+        cancel_btn = QPushButton(<span class="string">"Cancel"</span>)
+        cancel_btn.clicked.connect(<span class="self">self</span>.reject)
+        button_layout.addWidget(cancel_btn)
+        
+        save_btn = QPushButton(<span class="string">"Save"</span>)
+        save_btn.setDefault(<span class="keyword">True</span>)
+        save_btn.clicked.connect(<span class="self">self</span>.accept)
+        button_layout.addWidget(save_btn)
+        
+        layout.addLayout(button_layout)
+    
+    <span class="keyword">def</span> <span class="function">load_settings</span>(<span class="self">self</span>):
+        <span class="string">"""Load current settings ke form"""</span>
+        <span class="keyword">if</span> <span class="string">'theme'</span> <span class="keyword">in</span> <span class="self">self</span>.current_settings:
+            index = <span class="self">self</span>.theme_combo.findText(<span class="self">self</span>.current_settings[<span class="string">'theme'</span>])
+            <span class="keyword">if</span> index >= <span class="number">0</span>:
+                <span class="self">self</span>.theme_combo.setCurrentIndex(index)
+        
+        <span class="keyword">if</span> <span class="string">'font_size'</span> <span class="keyword">in</span> <span class="self">self</span>.current_settings:
+            <span class="self">self</span>.fontsize_spin.setValue(<span class="self">self</span>.current_settings[<span class="string">'font_size'</span>])
+    
+    <span class="keyword">def</span> <span class="function">reset_defaults</span>(<span class="self">self</span>):
+        <span class="string">"""Reset ke nilai default"""</span>
+        <span class="self">self</span>.theme_combo.setCurrentIndex(<span class="number">0</span>)
+        <span class="self">self</span>.fontsize_spin.setValue(<span class="number">12</span>)
+        <span class="self">self</span>.autosave_combo.setCurrentIndex(<span class="number">0</span>)
+    
+    <span class="keyword">def</span> <span class="function">get_settings</span>(<span class="self">self</span>):
+        <span class="string">"""Mengembalikan settings yang dipilih"""</span>
+        <span class="keyword">return</span> {
+            <span class="string">'theme'</span>: <span class="self">self</span>.theme_combo.currentText(),
+            <span class="string">'font_size'</span>: <span class="self">self</span>.fontsize_spin.value(),
+            <span class="string">'autosave'</span>: <span class="self">self</span>.autosave_combo.currentText()
+        }
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># MAIN WINDOW</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Custom Dialog Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">500</span>, <span class="number">400</span>)
+        
+        <span class="self">self</span>.settings = {}
+        <span class="self">self</span>.students = []
+        
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Buttons</span>
+        add_student_btn = QPushButton(<span class="string">"Tambah Mahasiswa"</span>)
+        add_student_btn.clicked.connect(<span class="self">self</span>.show_student_dialog)
+        layout.addWidget(add_student_btn)
+        
+        settings_btn = QPushButton(<span class="string">"Pengaturan"</span>)
+        settings_btn.clicked.connect(<span class="self">self</span>.show_settings_dialog)
+        layout.addWidget(settings_btn)
+        
+        <span class="comment"># Display area</span>
+        <span class="self">self</span>.display = QTextEdit()
+        <span class="self">self</span>.display.setReadOnly(<span class="keyword">True</span>)
+        layout.addWidget(<span class="self">self</span>.display)
+        
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_student_dialog</span>(<span class="self">self</span>):
+        dialog = StudentDialog(<span class="self">self</span>)
+        
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            data = dialog.get_data()
+            <span class="self">self</span>.students.append(data)
+            <span class="self">self</span>.update_display()
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Mahasiswa </span>{data[<span class="string">'nama'</span>]}<span class="string"> ditambahkan"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_settings_dialog</span>(<span class="self">self</span>):
+        dialog = SettingsDialog(<span class="self">self</span>.settings, <span class="self">self</span>)
+        
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            <span class="self">self</span>.settings = dialog.get_settings()
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Pengaturan disimpan"</span>, <span class="number">3000</span>)
+            <span class="self">self</span>.update_display()
+    
+    <span class="keyword">def</span> <span class="function">update_display</span>(<span class="self">self</span>):
+        text = <span class="string">"=== DATA MAHASISWA ===\n\n"</span>
+        
+        <span class="keyword">for</span> i, student <span class="keyword">in</span> <span class="builtin">enumerate</span>(<span class="self">self</span>.students, <span class="number">1</span>):
+            text += <span class="string">f"</span>{i}<span class="string">. </span>{student[<span class="string">'nama'</span>]}<span class="string"> (</span>{student[<span class="string">'nim'</span>]}<span class="string">)\n"</span>
+            text += <span class="string">f"   Jurusan: </span>{student[<span class="string">'jurusan'</span>]}<span class="string">\n"</span>
+            text += <span class="string">f"   Semester: </span>{student[<span class="string">'semester'</span>]}<span class="string">\n\n"</span>
+        
+        <span class="keyword">if</span> <span class="self">self</span>.settings:
+            text += <span class="string">"\n=== PENGATURAN ===\n\n"</span>
+            <span class="keyword">for</span> key, value <span class="keyword">in</span> <span class="self">self</span>.settings.items():
+                text += <span class="string">f"</span>{key}<span class="string">: </span>{value}<span class="string">\n"</span>
+        
+        <span class="self">self</span>.display.setText(text)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Operasi File -->
+            <section class="section" id="file-operations">
+                <h2>7. Operasi Open & Save File</h2>
+
+                <p>Operasi file adalah fitur esensial untuk aplikasi yang bekerja dengan dokumen. Di Python, kita menggunakan fungsi built-in <span class="inline-code">open()</span> untuk membaca dan menulis file, dikombinasikan dengan <span class="inline-code">QFileDialog</span> untuk memilih file.</p>
+
+                <h3>Konsep Dasar Operasi File di Python</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mode</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">'r'</span></td>
+                                <td>Read - Membaca file (default)</td>
+                                <td>open("file.txt", "r")</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">'w'</span></td>
+                                <td>Write - Menulis file (overwrite)</td>
+                                <td>open("file.txt", "w")</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">'a'</span></td>
+                                <td>Append - Menambah ke akhir file</td>
+                                <td>open("file.txt", "a")</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">'x'</span></td>
+                                <td>Create - Membuat file baru (error jika sudah ada)</td>
+                                <td>open("file.txt", "x")</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Statement "with" untuk File Handling</div>
+                    <p>Selalu gunakan statement <span class="inline-code">with</span> saat bekerja dengan file. Statement ini akan otomatis menutup file setelah selesai digunakan, bahkan jika terjadi error.</p>
+                </div>
+
+                <!-- ============ CONTOH SEDERHANA OPEN FILE ============ -->
+                <h3>Contoh Sederhana: Membuka File (Open)</h3>
+
+                <p>Berikut adalah contoh paling sederhana untuk membuka dan membaca file teks:</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Open File</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Klik Tombol Open</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">QFileDialog Muncul</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Baca File</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Tampilkan Isi</div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">open_file_simple.py</span>
+                        <span class="code-badge">Sederhana</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QTextEdit, QFileDialog, QLabel
+)
+
+<span class="keyword">class</span> <span class="class-name">OpenFileDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Contoh Open File Sederhana"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">500</span>, <span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Label info</span>
+        <span class="self">self</span>.info_label = QLabel(<span class="string">"Klik tombol untuk membuka file teks"</span>)
+        layout.addWidget(<span class="self">self</span>.info_label)
+        
+        <span class="comment"># Tombol Open</span>
+        <span class="self">self</span>.open_btn = QPushButton(<span class="string">"Open File"</span>)
+        <span class="self">self</span>.open_btn.clicked.connect(<span class="self">self</span>.open_file)
+        layout.addWidget(<span class="self">self</span>.open_btn)
+        
+        <span class="comment"># Text area untuk menampilkan isi file</span>
+        <span class="self">self</span>.text_area = QTextEdit()
+        <span class="self">self</span>.text_area.setPlaceholderText(<span class="string">"Isi file akan tampil di sini..."</span>)
+        layout.addWidget(<span class="self">self</span>.text_area)
+    
+    <span class="keyword">def</span> <span class="function">open_file</span>(<span class="self">self</span>):
+        <span class="string">"""Membuka file dan menampilkan isinya"""</span>
+        
+        <span class="comment"># LANGKAH 1: Tampilkan dialog untuk memilih file</span>
+        file_path, _ = QFileDialog.getOpenFileName(
+            <span class="self">self</span>,                          <span class="comment"># Parent widget</span>
+            <span class="string">"Pilih File"</span>,                  <span class="comment"># Judul dialog</span>
+            <span class="string">""</span>,                             <span class="comment"># Direktori awal (kosong = default)</span>
+            <span class="string">"Text Files (*.txt);;All Files (*)"</span>  <span class="comment"># Filter file</span>
+        )
+        
+        <span class="comment"># LANGKAH 2: Cek apakah user memilih file (tidak cancel)</span>
+        <span class="keyword">if</span> file_path:
+            <span class="comment"># LANGKAH 3: Buka dan baca file</span>
+            <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'r'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                content = file.read()
+            
+            <span class="comment"># LANGKAH 4: Tampilkan isi file ke text area</span>
+            <span class="self">self</span>.text_area.setText(content)
+            
+            <span class="comment"># Update label info</span>
+            <span class="self">self</span>.info_label.setText(<span class="string">f"File: </span>{file_path}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = OpenFileDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Tampilkan QFileDialog</h4>
+                            <p><span class="inline-code">QFileDialog.getOpenFileName()</span> menampilkan dialog pemilihan file. Method ini mengembalikan tuple: (path_file, filter_yang_dipilih).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Cek Apakah User Memilih File</h4>
+                            <p>Jika user menekan Cancel, <span class="inline-code">file_path</span> akan kosong. Pastikan untuk mengecek ini sebelum melanjutkan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Baca Isi File</h4>
+                            <p>Gunakan <span class="inline-code">with open()</span> untuk membuka file dengan mode 'r' (read). Method <span class="inline-code">file.read()</span> membaca seluruh isi file.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Tampilkan ke Widget</h4>
+                            <p>Gunakan <span class="inline-code">setText()</span> atau <span class="inline-code">setPlainText()</span> untuk menampilkan konten ke QTextEdit.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ CONTOH SEDERHANA SAVE FILE ============ -->
+                <h3>Contoh Sederhana: Menyimpan File (Save)</h3>
+
+                <p>Berikut adalah contoh sederhana untuk menyimpan teks ke file:</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Save File</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Klik Tombol Save</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">QFileDialog Muncul</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Tulis ke File</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Selesai</div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">save_file_simple.py</span>
+                        <span class="code-badge">Sederhana</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QTextEdit, QFileDialog, QLabel, QMessageBox
+)
+
+<span class="keyword">class</span> <span class="class-name">SaveFileDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Contoh Save File Sederhana"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">500</span>, <span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Label info</span>
+        <span class="self">self</span>.info_label = QLabel(<span class="string">"Ketik sesuatu, lalu klik Save untuk menyimpan"</span>)
+        layout.addWidget(<span class="self">self</span>.info_label)
+        
+        <span class="comment"># Text area untuk menulis</span>
+        <span class="self">self</span>.text_area = QTextEdit()
+        <span class="self">self</span>.text_area.setPlaceholderText(<span class="string">"Ketik teks di sini..."</span>)
+        layout.addWidget(<span class="self">self</span>.text_area)
+        
+        <span class="comment"># Tombol Save</span>
+        <span class="self">self</span>.save_btn = QPushButton(<span class="string">"Save File"</span>)
+        <span class="self">self</span>.save_btn.clicked.connect(<span class="self">self</span>.save_file)
+        layout.addWidget(<span class="self">self</span>.save_btn)
+    
+    <span class="keyword">def</span> <span class="function">save_file</span>(<span class="self">self</span>):
+        <span class="string">"""Menyimpan isi text area ke file"""</span>
+        
+        <span class="comment"># LANGKAH 1: Tampilkan dialog untuk memilih lokasi save</span>
+        file_path, _ = QFileDialog.getSaveFileName(
+            <span class="self">self</span>,                          <span class="comment"># Parent widget</span>
+            <span class="string">"Simpan File"</span>,                 <span class="comment"># Judul dialog</span>
+            <span class="string">"dokumen.txt"</span>,                 <span class="comment"># Nama file default</span>
+            <span class="string">"Text Files (*.txt);;All Files (*)"</span>  <span class="comment"># Filter file</span>
+        )
+        
+        <span class="comment"># LANGKAH 2: Cek apakah user memilih lokasi (tidak cancel)</span>
+        <span class="keyword">if</span> file_path:
+            <span class="comment"># LANGKAH 3: Ambil konten dari text area</span>
+            content = <span class="self">self</span>.text_area.toPlainText()
+            
+            <span class="comment"># LANGKAH 4: Tulis konten ke file</span>
+            <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'w'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                file.write(content)
+            
+            <span class="comment"># LANGKAH 5: Tampilkan pesan sukses</span>
+            <span class="self">self</span>.info_label.setText(<span class="string">f"File disimpan: </span>{file_path}<span class="string">"</span>)
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"File berhasil disimpan!"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = SaveFileDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Perbedaan getOpenFileName vs getSaveFileName</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Aspek</th>
+                                    <th>getOpenFileName</th>
+                                    <th>getSaveFileName</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Kegunaan</td>
+                                    <td>Memilih file yang sudah ada</td>
+                                    <td>Memilih lokasi dan nama file baru</td>
+                                </tr>
+                                <tr>
+                                    <td>File harus ada?</td>
+                                    <td>Ya, harus sudah ada</td>
+                                    <td>Tidak, bisa file baru</td>
+                                </tr>
+                                <tr>
+                                    <td>Konfirmasi overwrite</td>
+                                    <td>Tidak ada</td>
+                                    <td>Ada, jika file sudah ada</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ============ CONTOH KOMBINASI OPEN & SAVE ============ -->
+                <h3>Contoh Kombinasi: Open dan Save dalam Satu Aplikasi</h3>
+
+                <p>Berikut adalah contoh yang menggabungkan operasi Open dan Save dalam satu aplikasi sederhana:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">open_save_combined.py</span>
+                        <span class="code-badge">Kombinasi</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QTextEdit, QFileDialog, QLabel, QMessageBox
+)
+
+<span class="keyword">class</span> <span class="class-name">SimpleEditor</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Editor Sederhana"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">450</span>)
+        
+        <span class="comment"># Variabel untuk menyimpan path file saat ini</span>
+        <span class="self">self</span>.current_file = <span class="keyword">None</span>
+        
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Label untuk menampilkan nama file</span>
+        <span class="self">self</span>.file_label = QLabel(<span class="string">"File: Belum ada file yang dibuka"</span>)
+        layout.addWidget(<span class="self">self</span>.file_label)
+        
+        <span class="comment"># Tombol-tombol dalam layout horizontal</span>
+        btn_layout = QHBoxLayout()
+        
+        <span class="self">self</span>.new_btn = QPushButton(<span class="string">"New"</span>)
+        <span class="self">self</span>.new_btn.clicked.connect(<span class="self">self</span>.new_file)
+        btn_layout.addWidget(<span class="self">self</span>.new_btn)
+        
+        <span class="self">self</span>.open_btn = QPushButton(<span class="string">"Open"</span>)
+        <span class="self">self</span>.open_btn.clicked.connect(<span class="self">self</span>.open_file)
+        btn_layout.addWidget(<span class="self">self</span>.open_btn)
+        
+        <span class="self">self</span>.save_btn = QPushButton(<span class="string">"Save"</span>)
+        <span class="self">self</span>.save_btn.clicked.connect(<span class="self">self</span>.save_file)
+        btn_layout.addWidget(<span class="self">self</span>.save_btn)
+        
+        <span class="self">self</span>.saveas_btn = QPushButton(<span class="string">"Save As"</span>)
+        <span class="self">self</span>.saveas_btn.clicked.connect(<span class="self">self</span>.save_file_as)
+        btn_layout.addWidget(<span class="self">self</span>.saveas_btn)
+        
+        layout.addLayout(btn_layout)
+        
+        <span class="comment"># Text area</span>
+        <span class="self">self</span>.text_area = QTextEdit()
+        <span class="self">self</span>.text_area.setPlaceholderText(<span class="string">"Ketik teks di sini..."</span>)
+        layout.addWidget(<span class="self">self</span>.text_area)
+    
+    <span class="keyword">def</span> <span class="function">new_file</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat dokumen baru (kosongkan text area)"""</span>
+        <span class="self">self</span>.text_area.clear()
+        <span class="self">self</span>.current_file = <span class="keyword">None</span>
+        <span class="self">self</span>.file_label.setText(<span class="string">"File: Dokumen Baru"</span>)
+    
+    <span class="keyword">def</span> <span class="function">open_file</span>(<span class="self">self</span>):
+        <span class="string">"""Membuka file yang sudah ada"""</span>
+        file_path, _ = QFileDialog.getOpenFileName(
+            <span class="self">self</span>,
+            <span class="string">"Buka File"</span>,
+            <span class="string">""</span>,
+            <span class="string">"Text Files (*.txt);;All Files (*)"</span>
+        )
+        
+        <span class="keyword">if</span> file_path:
+            <span class="keyword">try</span>:
+                <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'r'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                    content = file.read()
+                
+                <span class="self">self</span>.text_area.setText(content)
+                <span class="self">self</span>.current_file = file_path
+                <span class="self">self</span>.file_label.setText(<span class="string">f"File: </span>{file_path}<span class="string">"</span>)
+            
+            <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+                QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">f"Gagal membuka file:\n</span>{e}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">save_file</span>(<span class="self">self</span>):
+        <span class="string">"""Menyimpan file (ke file yang sama jika sudah ada)"""</span>
+        <span class="keyword">if</span> <span class="self">self</span>.current_file:
+            <span class="comment"># Jika sudah ada file yang dibuka, simpan langsung</span>
+            <span class="self">self</span>.write_to_file(<span class="self">self</span>.current_file)
+        <span class="keyword">else</span>:
+            <span class="comment"># Jika belum ada file, tampilkan Save As</span>
+            <span class="self">self</span>.save_file_as()
+    
+    <span class="keyword">def</span> <span class="function">save_file_as</span>(<span class="self">self</span>):
+        <span class="string">"""Menyimpan file dengan nama baru"""</span>
+        file_path, _ = QFileDialog.getSaveFileName(
+            <span class="self">self</span>,
+            <span class="string">"Simpan File Sebagai"</span>,
+            <span class="self">self</span>.current_file <span class="keyword">or</span> <span class="string">"dokumen.txt"</span>,
+            <span class="string">"Text Files (*.txt);;All Files (*)"</span>
+        )
+        
+        <span class="keyword">if</span> file_path:
+            <span class="self">self</span>.write_to_file(file_path)
+    
+    <span class="keyword">def</span> <span class="function">write_to_file</span>(<span class="self">self</span>, <span class="parameter">file_path</span>):
+        <span class="string">"""Method helper untuk menulis ke file"""</span>
+        <span class="keyword">try</span>:
+            content = <span class="self">self</span>.text_area.toPlainText()
+            
+            <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'w'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                file.write(content)
+            
+            <span class="self">self</span>.current_file = file_path
+            <span class="self">self</span>.file_label.setText(<span class="string">f"File: </span>{file_path}<span class="string">"</span>)
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"File berhasil disimpan!"</span>)
+        
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">f"Gagal menyimpan file:\n</span>{e}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = SimpleEditor()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Penjelasan Logika Save vs Save As</div>
+                    <ul>
+                        <li><strong>Save:</strong> Jika file sudah pernah dibuka/disimpan (current_file ada), langsung simpan ke file tersebut. Jika belum, panggil Save As.</li>
+                        <li><strong>Save As:</strong> Selalu menampilkan dialog untuk memilih nama dan lokasi file baru.</li>
+                        <li><strong>current_file:</strong> Variabel untuk menyimpan path file yang sedang aktif, digunakan untuk Save tanpa dialog.</li>
+                    </ul>
+                </div>
+
+                <!-- ============ CONTOH KOMPLEKS ============ -->
+                <h3>Contoh Lengkap: Text Editor dengan Fitur Profesional</h3>
+
+                <p>Setelah memahami konsep dasar, berikut adalah implementasi text editor yang lebih lengkap dengan fitur-fitur profesional:</p>
+
+                <h4>Fitur yang Akan Diimplementasikan:</h4>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">File Management</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>New, Open, Save, Save As</li>
+                                <li>Track perubahan (modified flag)</li>
+                                <li>Konfirmasi sebelum menutup</li>
+                                <li>Update judul window</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">UI Profesional</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Menu Bar dengan shortcut</li>
+                                <li>Toolbar dengan icon</li>
+                                <li>Status Bar informatif</li>
+                                <li>Error handling yang baik</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Lengkap dengan Modified Tracking</div>
+                    <div class="flow-container">
+                        <div class="flow-box">User Edit Teks</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Set Modified = True</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Update Title (*)</div>
+                    </div>
+                    <div style="margin-top: 15px;"></div>
+                    <div class="flow-container">
+                        <div class="flow-box">User Klik Close</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Cek Modified?</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Konfirmasi Save</div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">text_editor_complete.py</span>
+                        <span class="code-badge">Lengkap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> os
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QTextEdit, 
+    QFileDialog, QMessageBox, QStyle
+)
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence
+
+<span class="keyword">class</span> <span class="class-name">TextEditor</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Text Editor"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">800</span>, <span class="number">600</span>)
+        
+        <span class="comment"># ===== STATE TRACKING =====</span>
+        <span class="self">self</span>.current_file = <span class="keyword">None</span>    <span class="comment"># Path file saat ini</span>
+        <span class="self">self</span>.is_modified = <span class="keyword">False</span>   <span class="comment"># Flag perubahan</span>
+        
+        <span class="comment"># Setup UI</span>
+        <span class="self">self</span>.text_edit = QTextEdit()
+        <span class="self">self</span>.setCentralWidget(<span class="self">self</span>.text_edit)
+        
+        <span class="comment"># Connect signal untuk tracking perubahan</span>
+        <span class="self">self</span>.text_edit.textChanged.connect(<span class="self">self</span>.on_text_changed)
+        
+        <span class="self">self</span>.create_actions()
+        <span class="self">self</span>.create_menus()
+        <span class="self">self</span>.create_toolbars()
+        
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+        <span class="self">self</span>.update_title()
+    
+    <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat semua actions dengan icon dan shortcut"""</span>
+        style = <span class="self">self</span>.style()
+        
+        <span class="comment"># New Action</span>
+        <span class="self">self</span>.new_action = QAction(<span class="string">"&amp;New"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.new_action.setIcon(style.standardIcon(QStyle.SP_FileIcon))
+        <span class="self">self</span>.new_action.setShortcut(QKeySequence.New)
+        <span class="self">self</span>.new_action.setStatusTip(<span class="string">"Create new file"</span>)
+        <span class="self">self</span>.new_action.triggered.connect(<span class="self">self</span>.new_file)
+        
+        <span class="comment"># Open Action</span>
+        <span class="self">self</span>.open_action = QAction(<span class="string">"&amp;Open..."</span>, <span class="self">self</span>)
+        <span class="self">self</span>.open_action.setIcon(style.standardIcon(QStyle.SP_DialogOpenButton))
+        <span class="self">self</span>.open_action.setShortcut(QKeySequence.Open)
+        <span class="self">self</span>.open_action.setStatusTip(<span class="string">"Open existing file"</span>)
+        <span class="self">self</span>.open_action.triggered.connect(<span class="self">self</span>.open_file)
+        
+        <span class="comment"># Save Action</span>
+        <span class="self">self</span>.save_action = QAction(<span class="string">"&amp;Save"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.save_action.setIcon(style.standardIcon(QStyle.SP_DialogSaveButton))
+        <span class="self">self</span>.save_action.setShortcut(QKeySequence.Save)
+        <span class="self">self</span>.save_action.setStatusTip(<span class="string">"Save file"</span>)
+        <span class="self">self</span>.save_action.triggered.connect(<span class="self">self</span>.save_file)
+        
+        <span class="comment"># Save As Action</span>
+        <span class="self">self</span>.saveas_action = QAction(<span class="string">"Save &amp;As..."</span>, <span class="self">self</span>)
+        <span class="self">self</span>.saveas_action.setShortcut(QKeySequence.SaveAs)
+        <span class="self">self</span>.saveas_action.setStatusTip(<span class="string">"Save file with new name"</span>)
+        <span class="self">self</span>.saveas_action.triggered.connect(<span class="self">self</span>.save_file_as)
+        
+        <span class="comment"># Exit Action</span>
+        <span class="self">self</span>.exit_action = QAction(<span class="string">"E&amp;xit"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.exit_action.setShortcut(<span class="string">"Ctrl+Q"</span>)
+        <span class="self">self</span>.exit_action.setStatusTip(<span class="string">"Exit application"</span>)
+        <span class="self">self</span>.exit_action.triggered.connect(<span class="self">self</span>.close)
+    
+    <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat menu bar"""</span>
+        file_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="self">self</span>.new_action)
+        file_menu.addAction(<span class="self">self</span>.open_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.save_action)
+        file_menu.addAction(<span class="self">self</span>.saveas_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.exit_action)
+    
+    <span class="keyword">def</span> <span class="function">create_toolbars</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat toolbar"""</span>
+        toolbar = <span class="self">self</span>.addToolBar(<span class="string">"File"</span>)
+        toolbar.addAction(<span class="self">self</span>.new_action)
+        toolbar.addAction(<span class="self">self</span>.open_action)
+        toolbar.addAction(<span class="self">self</span>.save_action)
+    
+    <span class="comment"># ===== FILE OPERATIONS =====</span>
+    
+    <span class="keyword">def</span> <span class="function">new_file</span>(<span class="self">self</span>):
+        <span class="string">"""Membuat file baru"""</span>
+        <span class="comment"># Cek dulu apakah ada perubahan yang belum disimpan</span>
+        <span class="keyword">if</span> <span class="self">self</span>.maybe_save():
+            <span class="self">self</span>.text_edit.clear()
+            <span class="self">self</span>.current_file = <span class="keyword">None</span>
+            <span class="self">self</span>.is_modified = <span class="keyword">False</span>
+            <span class="self">self</span>.update_title()
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"New file created"</span>, <span class="number">3000</span>)
+    
+    <span class="keyword">def</span> <span class="function">open_file</span>(<span class="self">self</span>):
+        <span class="string">"""Membuka file yang sudah ada"""</span>
+        <span class="comment"># Cek dulu apakah ada perubahan yang belum disimpan</span>
+        <span class="keyword">if</span> <span class="self">self</span>.maybe_save():
+            file_path, _ = QFileDialog.getOpenFileName(
+                <span class="self">self</span>,
+                <span class="string">"Open File"</span>,
+                <span class="string">""</span>,
+                <span class="string">"Text Files (*.txt);;Python Files (*.py);;All Files (*)"</span>
+            )
+            
+            <span class="keyword">if</span> file_path:
+                <span class="self">self</span>.load_file(file_path)
+    
+    <span class="keyword">def</span> <span class="function">load_file</span>(<span class="self">self</span>, <span class="parameter">file_path</span>):
+        <span class="string">"""Load file ke text editor"""</span>
+        <span class="keyword">try</span>:
+            <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'r'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                content = file.read()
+            
+            <span class="self">self</span>.text_edit.setPlainText(content)
+            <span class="self">self</span>.current_file = file_path
+            <span class="self">self</span>.is_modified = <span class="keyword">False</span>
+            <span class="self">self</span>.update_title()
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Loaded: </span>{file_path}<span class="string">"</span>, <span class="number">3000</span>)
+        
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(
+                <span class="self">self</span>,
+                <span class="string">"Error"</span>,
+                <span class="string">f"Cannot open file:\n</span>{<span class="builtin">str</span>(e)}<span class="string">"</span>
+            )
+    
+    <span class="keyword">def</span> <span class="function">save_file</span>(<span class="self">self</span>):
+        <span class="string">"""Menyimpan file"""</span>
+        <span class="keyword">if</span> <span class="self">self</span>.current_file:
+            <span class="comment"># Jika sudah ada file, simpan langsung</span>
+            <span class="self">self</span>.write_file(<span class="self">self</span>.current_file)
+        <span class="keyword">else</span>:
+            <span class="comment"># Jika belum ada file, tampilkan Save As</span>
+            <span class="self">self</span>.save_file_as()
+    
+    <span class="keyword">def</span> <span class="function">save_file_as</span>(<span class="self">self</span>):
+        <span class="string">"""Menyimpan file dengan nama baru"""</span>
+        file_path, _ = QFileDialog.getSaveFileName(
+            <span class="self">self</span>,
+            <span class="string">"Save File"</span>,
+            <span class="self">self</span>.current_file <span class="keyword">or</span> <span class="string">"untitled.txt"</span>,
+            <span class="string">"Text Files (*.txt);;Python Files (*.py);;All Files (*)"</span>
+        )
+        
+        <span class="keyword">if</span> file_path:
+            <span class="self">self</span>.write_file(file_path)
+    
+    <span class="keyword">def</span> <span class="function">write_file</span>(<span class="self">self</span>, <span class="parameter">file_path</span>):
+        <span class="string">"""Menulis konten ke file"""</span>
+        <span class="keyword">try</span>:
+            content = <span class="self">self</span>.text_edit.toPlainText()
+            
+            <span class="keyword">with</span> <span class="builtin">open</span>(file_path, <span class="string">'w'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+                file.write(content)
+            
+            <span class="self">self</span>.current_file = file_path
+            <span class="self">self</span>.is_modified = <span class="keyword">False</span>
+            <span class="self">self</span>.update_title()
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Saved: </span>{file_path}<span class="string">"</span>, <span class="number">3000</span>)
+        
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(
+                <span class="self">self</span>,
+                <span class="string">"Error"</span>,
+                <span class="string">f"Cannot save file:\n</span>{<span class="builtin">str</span>(e)}<span class="string">"</span>
+            )
+    
+    <span class="comment"># ===== HELPER METHODS =====</span>
+    
+    <span class="keyword">def</span> <span class="function">maybe_save</span>(<span class="self">self</span>):
+        <span class="string">"""
+        Cek apakah perlu menyimpan perubahan.
+        Return True jika boleh melanjutkan (sudah disimpan/discard).
+        Return False jika user memilih Cancel.
+        """</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.is_modified:
+            <span class="keyword">return</span> <span class="keyword">True</span>
+        
+        reply = QMessageBox.question(
+            <span class="self">self</span>,
+            <span class="string">"Unsaved Changes"</span>,
+            <span class="string">"Document has been modified.\nDo you want to save changes?"</span>,
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Save
+        )
+        
+        <span class="keyword">if</span> reply == QMessageBox.Save:
+            <span class="self">self</span>.save_file()
+            <span class="comment"># Return True hanya jika berhasil disimpan</span>
+            <span class="keyword">return</span> <span class="keyword">not</span> <span class="self">self</span>.is_modified
+        <span class="keyword">elif</span> reply == QMessageBox.Discard:
+            <span class="keyword">return</span> <span class="keyword">True</span>
+        <span class="keyword">else</span>:  <span class="comment"># Cancel</span>
+            <span class="keyword">return</span> <span class="keyword">False</span>
+    
+    <span class="keyword">def</span> <span class="function">on_text_changed</span>(<span class="self">self</span>):
+        <span class="string">"""Handler saat text berubah"""</span>
+        <span class="self">self</span>.is_modified = <span class="keyword">True</span>
+        <span class="self">self</span>.update_title()
+    
+    <span class="keyword">def</span> <span class="function">update_title</span>(<span class="self">self</span>):
+        <span class="string">"""Update window title dengan nama file dan status modified"""</span>
+        <span class="keyword">if</span> <span class="self">self</span>.current_file:
+            filename = os.path.basename(<span class="self">self</span>.current_file)
+        <span class="keyword">else</span>:
+            filename = <span class="string">"Untitled"</span>
+        
+        <span class="comment"># Tambahkan asterisk (*) jika ada perubahan</span>
+        modified_marker = <span class="string">" *"</span> <span class="keyword">if</span> <span class="self">self</span>.is_modified <span class="keyword">else</span> <span class="string">""</span>
+        <span class="self">self</span>.setWindowTitle(<span class="string">f"</span>{filename}{modified_marker}<span class="string"> - Text Editor"</span>)
+    
+    <span class="keyword">def</span> <span class="function">closeEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>):
+        <span class="string">"""Override closeEvent untuk konfirmasi sebelum tutup"""</span>
+        <span class="keyword">if</span> <span class="self">self</span>.maybe_save():
+            event.accept()
+        <span class="keyword">else</span>:
+            event.ignore()
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    editor = TextEditor()
+    editor.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <h4>Penjelasan Fitur-fitur Penting</h4>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>State Tracking (current_file & is_modified)</h4>
+                            <p><span class="inline-code">current_file</span> menyimpan path file yang sedang aktif. <span class="inline-code">is_modified</span> adalah flag untuk mendeteksi apakah ada perubahan yang belum disimpan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>on_text_changed Handler</h4>
+                            <p>Setiap kali user mengetik, signal <span class="inline-code">textChanged</span> dipancarkan. Kita gunakan ini untuk set <span class="inline-code">is_modified = True</span> dan update judul window.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>maybe_save() Method</h4>
+                            <p>Method ini dipanggil sebelum New, Open, atau Close. Fungsinya untuk menanyakan user apakah ingin menyimpan perubahan. Return <span class="inline-code">True</span> jika boleh melanjutkan, <span class="inline-code">False</span> jika dibatalkan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>update_title() Method</h4>
+                            <p>Update judul window dengan format: <span class="inline-code">filename * - Text Editor</span>. Asterisk (*) muncul jika ada perubahan yang belum disimpan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>closeEvent Override</h4>
+                            <p>Override method <span class="inline-code">closeEvent</span> untuk mencegah window ditutup jika ada perubahan yang belum disimpan. User akan ditanya dulu.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Ringkasan Fitur yang Diimplementasikan</div>
+                    <ul>
+                        <li><strong>New File:</strong> Membuat dokumen baru dengan pengecekan unsaved changes</li>
+                        <li><strong>Open File:</strong> Membuka file dengan QFileDialog dan filter tipe file</li>
+                        <li><strong>Save File:</strong> Menyimpan ke file yang sama jika sudah ada, atau Save As jika baru</li>
+                        <li><strong>Save As:</strong> Selalu menampilkan dialog untuk memilih nama/lokasi baru</li>
+                        <li><strong>Modified Tracking:</strong> Mendeteksi perubahan dan menandai dengan asterisk (*)</li>
+                        <li><strong>Close Protection:</strong> Konfirmasi sebelum menutup jika ada perubahan</li>
+                        <li><strong>Error Handling:</strong> Menampilkan pesan error jika gagal baca/tulis file</li>
+                    </ul>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Best Practices File Operations</div>
+                    <ul>
+                        <li>Selalu gunakan <span class="inline-code">encoding='utf-8'</span> untuk mendukung karakter internasional</li>
+                        <li>Gunakan <span class="inline-code">with</span> statement untuk memastikan file selalu ditutup</li>
+                        <li>Tangani exception dengan try-except dan tampilkan pesan error yang jelas</li>
+                        <li>Implementasikan "dirty flag" (is_modified) untuk tracking perubahan</li>
+                        <li>Konfirmasi sebelum menutup atau membuat file baru jika ada perubahan</li>
+                        <li>Update window title dengan status file dan modified indicator</li>
+                        <li>Gunakan <span class="inline-code">os.path.basename()</span> untuk menampilkan nama file saja di judul</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum</h2>
+
+                <div class="exercise-box">
+                    <h3>Tugas 1: Notepad Clone</h3>
+                    <p>Buatlah aplikasi Notepad sederhana dengan fitur lengkap:</p>
+                    <ol>
+                        <li>QMainWindow dengan MenuBar (File, Edit, Format, Help)</li>
+                        <li>Toolbar dengan icon untuk aksi utama</li>
+                        <li>StatusBar menampilkan jumlah baris dan karakter</li>
+                        <li>Operasi file: New, Open, Save, Save As</li>
+                        <li>Edit: Undo, Redo, Cut, Copy, Paste, Select All</li>
+                        <li>Format: Font dialog, Word Wrap toggle</li>
+                        <li>Find & Replace dengan custom dialog</li>
+                        <li>Recent files di menu File</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>Tugas 2: Image Viewer</h3>
+                    <p>Buatlah aplikasi image viewer dengan fitur:</p>
+                    <ol>
+                        <li>QMainWindow dengan struktur lengkap</li>
+                        <li>Dock widget untuk file browser (list gambar)</li>
+                        <li>Open image dengan QFileDialog (filter: jpg, png, gif)</li>
+                        <li>Zoom In, Zoom Out, Fit to Window</li>
+                        <li>Rotate image (90°, 180°, 270°)</li>
+                        <li>Save As dengan format berbeda</li>
+                        <li>Slideshow mode dengan timer</li>
+                        <li>Image properties dialog (ukuran, format, dll)</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>Tugas 3: Task Manager</h3>
+                    <p>Buatlah aplikasi task manager dengan fitur:</p>
+                    <ol>
+                        <li>QMainWindow dengan MenuBar dan Toolbar</li>
+                        <li>Table/List untuk menampilkan tasks</li>
+                        <li>Custom dialog untuk Add/Edit task</li>
+                        <li>Task properties: title, description, priority, due date</li>
+                        <li>Filter tasks berdasarkan priority atau status</li>
+                        <li>Save/Load tasks ke file JSON</li>
+                        <li>Export tasks ke file TXT</li>
+                        <li>Konfirmasi sebelum delete task</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Ketentuan Pengumpulan</div>
+                    <ul>
+                        <li>Pilih dan kerjakan <strong>minimal 1 tugas</strong> dari pilihan di atas</li>
+                        <li>Aplikasi harus memiliki QMainWindow dengan MenuBar, Toolbar, dan StatusBar</li>
+                        <li>Implementasikan minimal 3 QAction dengan icon dan shortcut</li>
+                        <li>Gunakan minimal 1 built-in dialog dan 1 custom dialog</li>
+                        <li>Implementasikan operasi Save dan Open file</li>
+                        <li>Berikan komentar yang jelas pada setiap fungsi</li>
+                        <li>upload ke github dan link github kumpulkan di Ber</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen</th>
+                                    <th>Bobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>QMainWindow lengkap (Menu, Toolbar, StatusBar)</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>QAction dengan shortcut dan icon</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Dialog bawaan dan custom</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>Operasi file (open/save)</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Kualitas kode dan dokumentasi</td>
+                                    <td>10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Hide all sections except the target one
+        function showSection(sectionId) {
+            const sections = document.querySelectorAll('.section');
+            const pageHeader = document.querySelector('.page-header');
+            const learningIndicator = document.querySelector('.section:first-of-type');
+            
+            sections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show page header and learning indicator
+            if (pageHeader) pageHeader.style.display = 'block';
+            
+            // Show target section
+            if (sectionId === 'indikator') {
+                if (learningIndicator) learningIndicator.style.display = 'block';
+            } else {
+                const targetSection = document.getElementById(sectionId);
+                if (targetSection) {
+                    targetSection.style.display = 'block';
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Skip if it's an external link
+                if (href.endsWith('.html')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                const sectionId = href.substring(1); // Remove # from href
+                
+                // Show only the target section
+                showSection(sectionId);
+
+                // Update active class
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                // Close sidebar on mobile
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        // Show first section on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('qwidget-vs-qmainwindow');
+            document.querySelector('.nav-link').classList.add('active');
+        });
+
+        // Disable right-click on code blocks
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+                return false;
+            });
+        });
+
+        // Disable copy (Ctrl+C) on code blocks
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                const selection = window.getSelection();
+                const codeBlock = selection.anchorNode?.parentElement?.closest('.code-block');
+                
+                if (codeBlock) {
+                    e.preventDefault();
+                    alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+                }
+            }
+        });
+
+        // Disable drag selection on code blocks
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            block.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+        });
+
+        // Disable copy event
+        document.querySelectorAll('.code-block, .table-code, .inline-code').forEach(element => {
+            element.addEventListener('copy', function(e) {
+                e.preventDefault();
+                alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+            });
+        });
+
+        // Update active nav on scroll
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Console warning
+        console.log('%c⚠️ PERHATIAN!', 'color: red; font-size: 24px; font-weight: bold;');
+        console.log('%cKode di halaman ini dilindungi. Silakan ketik manual untuk belajar lebih efektif!', 'font-size: 14px;');
+    </script>
+</body>
+</html>

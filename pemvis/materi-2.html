@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - Event & Signal Handling</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+    <style>
+        /* Hide all sections by default, will be shown by JavaScript */
+        .section {
+            display: none;
+        }
+        .section:first-of-type {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Event & Signal Handling</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Materi Pembelajaran</div>
+                    <a href="#event-driven" class="nav-link active">
+                        <span class="nav-number">1</span>Event-Driven Programming
+                    </a>
+                    <a href="#signals-slots" class="nav-link">
+                        <span class="nav-number">2</span>Signals & Slots
+                    </a>
+                    <a href="#builtin-signals" class="nav-link">
+                        <span class="nav-number">3</span>Built-in Signals
+                    </a>
+                    <a href="#custom-signals" class="nav-link">
+                        <span class="nav-number">4</span>Custom Signals
+                    </a>
+                    <a href="#event-handling" class="nav-link">
+                        <span class="nav-number">5</span>Event Handling
+                    </a>
+                    <a href="#validasi-input" class="nav-link">
+                        <span class="nav-number">6</span>Validasi Input Real-time
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1>Event & Signal Handling di PySide6</h1>
+                <p class="subtitle">Memahami konsep Event-Driven Programming dan implementasi Signals & Slots</p>
+            </header>
+
+            <!-- Section 1: Event-Driven Programming -->
+            <section class="section" id="event-driven">
+                <h2>1. Konsep Event-Driven Programming</h2>
+                
+                <p>Event-Driven Programming adalah paradigma pemrograman di mana alur program ditentukan oleh <strong>events</strong> (kejadian) seperti aksi pengguna, sensor output, atau pesan dari program lain.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Definisi Event</div>
+                    <p>Event adalah setiap aksi atau kejadian yang terdeteksi oleh program yang mungkin ditangani oleh program tersebut. Contoh: klik mouse, penekanan tombol keyboard, perubahan nilai input, dll.</p>
+                </div>
+
+                <h3>Perbandingan Paradigma Pemrograman</h3>
+                
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Pemrograman Prosedural</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Eksekusi berjalan secara linear</li>
+                                <li>Program mengontrol alur eksekusi</li>
+                                <li>Input diminta secara eksplisit</li>
+                                <li>Cocok untuk batch processing</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Event-Driven Programming</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Eksekusi berdasarkan event</li>
+                                <li>User mengontrol alur program</li>
+                                <li>Program menunggu dan merespon event</li>
+                                <li>Cocok untuk GUI application</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Komponen Utama Event-Driven</h3>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Event-Driven Programming</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Event Source<br><small>(Button, Input)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Event Loop<br><small>(Mendeteksi)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Event Handler<br><small>(Memproses)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Response<br><small>(Aksi)</small></div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">event_driven_basic.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QApplication, QMainWindow, QPushButton
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Event-Driven Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>, <span class="number">200</span>)
+        
+        <span class="comment"># Membuat button sebagai event source</span>
+        <span class="self">self</span>.button = QPushButton(<span class="string">"Klik Saya!"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.button.setGeometry(<span class="number">100</span>, <span class="number">80</span>, <span class="number">100</span>, <span class="number">30</span>)
+        
+        <span class="comment"># Menghubungkan event (signal) ke handler (slot)</span>
+        <span class="self">self</span>.button.clicked.connect(<span class="self">self</span>.on_button_click)
+    
+    <span class="keyword">def</span> <span class="function">on_button_click</span>(<span class="self">self</span>):
+        <span class="comment"># Event handler - dipanggil saat button diklik</span>
+        <span class="builtin">print</span>(<span class="string">"Button telah diklik!"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)  <span class="comment"># Event loop dimulai</span>
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())  <span class="comment"># Menjalankan event loop</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Penting!</div>
+                    <p><span class="inline-code">app.exec()</span> memulai event loop yang akan terus berjalan dan menunggu event hingga aplikasi ditutup. Tanpa event loop, aplikasi GUI tidak akan merespon interaksi user.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Signals & Slots -->
+            <section class="section" id="signals-slots">
+                <h2>2. Signals & Slots (Observer Pattern)</h2>
+
+                <p>Signals dan Slots adalah mekanisme inti Qt/PySide6 untuk komunikasi antar objek. Ini merupakan implementasi dari <strong>Observer Pattern</strong> yang memungkinkan loose coupling antar komponen.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Observer Pattern</div>
+                    <p>Design pattern di mana sebuah objek (Subject/Observable) memelihara daftar dependennya (Observers) dan memberitahu mereka secara otomatis ketika terjadi perubahan state.</p>
+                </div>
+
+                <h3>Anatomi Signal & Slot</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Komponen</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Signal</strong></td>
+                                <td>Notifikasi yang dipancarkan ketika event terjadi</td>
+                                <td><span class="table-code">clicked</span>, <span class="table-code">textChanged</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Slot</strong></td>
+                                <td>Fungsi yang dipanggil sebagai respon terhadap signal</td>
+                                <td><span class="table-code">def on_click(self)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Connect</strong></td>
+                                <td>Menghubungkan signal ke slot</td>
+                                <td><span class="table-code">signal.connect(slot)</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Emit</strong></td>
+                                <td>Memancarkan signal</td>
+                                <td><span class="table-code">signal.emit()</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Mekanisme Signal-Slot</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Sender Object<br><small>(QPushButton)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Signal<br><small>(clicked)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">connect()</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Slot<br><small>(handler)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Receiver Object</div>
+                    </div>
+                </div>
+
+                <h3>Cara Menghubungkan Signal ke Slot</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">signal_slot_connection.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, 
+    QPushButton, QLabel, QLineEdit
+)
+
+<span class="keyword">class</span> <span class="class-name">SignalSlotDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Signal-Slot Demo"</span>)
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Label untuk menampilkan hasil</span>
+        <span class="self">self</span>.label = QLabel(<span class="string">"Ketik sesuatu di bawah..."</span>)
+        layout.addWidget(<span class="self">self</span>.label)
+        
+        <span class="comment"># Input field</span>
+        <span class="self">self</span>.input_field = QLineEdit()
+        <span class="self">self</span>.input_field.setPlaceholderText(<span class="string">"Ketik di sini..."</span>)
+        layout.addWidget(<span class="self">self</span>.input_field)
+        
+        <span class="comment"># Button</span>
+        <span class="self">self</span>.button = QPushButton(<span class="string">"Reset"</span>)
+        layout.addWidget(<span class="self">self</span>.button)
+        
+        <span class="comment"># ===== MENGHUBUNGKAN SIGNALS KE SLOTS =====</span>
+        
+        <span class="comment"># Cara 1: Signal ke method</span>
+        <span class="self">self</span>.button.clicked.connect(<span class="self">self</span>.reset_text)
+        
+        <span class="comment"># Cara 2: Signal ke lambda (inline function)</span>
+        <span class="self">self</span>.input_field.textChanged.connect(
+            <span class="keyword">lambda</span> text: <span class="self">self</span>.label.setText(<span class="string">f"Anda mengetik: </span>{text}<span class="string">"</span>)
+        )
+        
+        <span class="comment"># Cara 3: Satu signal ke banyak slot</span>
+        <span class="self">self</span>.button.clicked.connect(<span class="keyword">lambda</span>: <span class="builtin">print</span>(<span class="string">"Button diklik!"</span>))
+    
+    <span class="keyword">def</span> <span class="function">reset_text</span>(<span class="self">self</span>):
+        <span class="self">self</span>.input_field.clear()
+        <span class="self">self</span>.label.setText(<span class="string">"Text telah direset!"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Keuntungan Signal-Slot</div>
+                    <ul>
+                        <li><strong>Loose Coupling:</strong> Sender tidak perlu tahu siapa yang menerima signal</li>
+                        <li><strong>Multiple Connections:</strong> Satu signal bisa terhubung ke banyak slot</li>
+                        <li><strong>Type Safety:</strong> Qt memvalidasi tipe parameter signal dan slot</li>
+                        <li><strong>Thread Safety:</strong> Signal-slot aman digunakan antar thread</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 3: Built-in Signals -->
+            <section class="section" id="builtin-signals">
+                <h2>3. Built-in Signals</h2>
+
+                <p>PySide6 menyediakan banyak signal bawaan untuk berbagai widget. Berikut adalah signal yang paling sering digunakan:</p>
+
+                <h3>Tabel Built-in Signals</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Widget</th>
+                                <th>Signal</th>
+                                <th>Parameter</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>QPushButton</td>
+                                <td><span class="table-code">clicked</span></td>
+                                <td>bool (checked)</td>
+                                <td>Saat button diklik</td>
+                            </tr>
+                            <tr>
+                                <td>QLineEdit</td>
+                                <td><span class="table-code">textChanged</span></td>
+                                <td>str (text)</td>
+                                <td>Saat text berubah</td>
+                            </tr>
+                            <tr>
+                                <td>QLineEdit</td>
+                                <td><span class="table-code">returnPressed</span></td>
+                                <td>-</td>
+                                <td>Saat Enter ditekan</td>
+                            </tr>
+                            <tr>
+                                <td>QSpinBox</td>
+                                <td><span class="table-code">valueChanged</span></td>
+                                <td>int (value)</td>
+                                <td>Saat nilai berubah</td>
+                            </tr>
+                            <tr>
+                                <td>QSlider</td>
+                                <td><span class="table-code">valueChanged</span></td>
+                                <td>int (value)</td>
+                                <td>Saat slider digeser</td>
+                            </tr>
+                            <tr>
+                                <td>QCheckBox</td>
+                                <td><span class="table-code">stateChanged</span></td>
+                                <td>int (state)</td>
+                                <td>Saat state berubah</td>
+                            </tr>
+                            <tr>
+                                <td>QComboBox</td>
+                                <td><span class="table-code">currentIndexChanged</span></td>
+                                <td>int (index)</td>
+                                <td>Saat item dipilih</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Contoh Implementasi Built-in Signals</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">builtin_signals_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QLineEdit, QSlider, 
+    QSpinBox, QCheckBox, QComboBox
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+<span class="keyword">class</span> <span class="class-name">BuiltinSignalsDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Built-in Signals Demo"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># === CLICKED SIGNAL ===</span>
+        <span class="self">self</span>.click_label = QLabel(<span class="string">"Jumlah klik: 0"</span>)
+        <span class="self">self</span>.click_count = <span class="number">0</span>
+        <span class="self">self</span>.click_btn = QPushButton(<span class="string">"Klik Saya!"</span>)
+        <span class="self">self</span>.click_btn.clicked.connect(<span class="self">self</span>.on_button_clicked)
+        layout.addWidget(<span class="self">self</span>.click_label)
+        layout.addWidget(<span class="self">self</span>.click_btn)
+        
+        <span class="comment"># === TEXTCHANGED SIGNAL ===</span>
+        <span class="self">self</span>.text_label = QLabel(<span class="string">"Text: -"</span>)
+        <span class="self">self</span>.text_input = QLineEdit()
+        <span class="self">self</span>.text_input.setPlaceholderText(<span class="string">"Ketik sesuatu..."</span>)
+        <span class="self">self</span>.text_input.textChanged.connect(<span class="self">self</span>.on_text_changed)
+        layout.addWidget(<span class="self">self</span>.text_label)
+        layout.addWidget(<span class="self">self</span>.text_input)
+        
+        <span class="comment"># === VALUECHANGED SIGNAL (Slider + SpinBox) ===</span>
+        slider_layout = QHBoxLayout()
+        <span class="self">self</span>.slider = QSlider(Qt.Horizontal)
+        <span class="self">self</span>.slider.setRange(<span class="number">0</span>, <span class="number">100</span>)
+        <span class="self">self</span>.spinbox = QSpinBox()
+        <span class="self">self</span>.spinbox.setRange(<span class="number">0</span>, <span class="number">100</span>)
+        
+        <span class="comment"># Sinkronisasi slider dan spinbox</span>
+        <span class="self">self</span>.slider.valueChanged.connect(<span class="self">self</span>.spinbox.setValue)
+        <span class="self">self</span>.spinbox.valueChanged.connect(<span class="self">self</span>.slider.setValue)
+        
+        slider_layout.addWidget(QLabel(<span class="string">"Nilai:"</span>))
+        slider_layout.addWidget(<span class="self">self</span>.slider)
+        slider_layout.addWidget(<span class="self">self</span>.spinbox)
+        layout.addLayout(slider_layout)
+        
+        <span class="comment"># === STATECHANGED SIGNAL ===</span>
+        <span class="self">self</span>.checkbox = QCheckBox(<span class="string">"Aktifkan Fitur"</span>)
+        <span class="self">self</span>.feature_label = QLabel(<span class="string">"Status: Nonaktif"</span>)
+        <span class="self">self</span>.checkbox.stateChanged.connect(<span class="self">self</span>.on_checkbox_changed)
+        layout.addWidget(<span class="self">self</span>.checkbox)
+        layout.addWidget(<span class="self">self</span>.feature_label)
+        
+        <span class="comment"># === CURRENTINDEXCHANGED SIGNAL ===</span>
+        <span class="self">self</span>.combo = QComboBox()
+        <span class="self">self</span>.combo.addItems([<span class="string">"Pilih Warna"</span>, <span class="string">"Merah"</span>, <span class="string">"Hijau"</span>, <span class="string">"Biru"</span>])
+        <span class="self">self</span>.color_label = QLabel(<span class="string">"Warna: -"</span>)
+        <span class="self">self</span>.combo.currentIndexChanged.connect(<span class="self">self</span>.on_combo_changed)
+        layout.addWidget(<span class="self">self</span>.combo)
+        layout.addWidget(<span class="self">self</span>.color_label)
+    
+    <span class="comment"># === SLOT METHODS ===</span>
+    <span class="keyword">def</span> <span class="function">on_button_clicked</span>(<span class="self">self</span>):
+        <span class="self">self</span>.click_count += <span class="number">1</span>
+        <span class="self">self</span>.click_label.setText(<span class="string">f"Jumlah klik: </span>{<span class="self">self</span>.click_count}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">on_text_changed</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        <span class="self">self</span>.text_label.setText(<span class="string">f"Text: </span>{text}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">on_checkbox_changed</span>(<span class="self">self</span>, <span class="parameter">state</span>):
+        status = <span class="string">"Aktif"</span> <span class="keyword">if</span> state == Qt.Checked <span class="keyword">else</span> <span class="string">"Nonaktif"</span>
+        <span class="self">self</span>.feature_label.setText(<span class="string">f"Status: </span>{status}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">on_combo_changed</span>(<span class="self">self</span>, <span class="parameter">index</span>):
+        <span class="keyword">if</span> index > <span class="number">0</span>:
+            warna = <span class="self">self</span>.combo.currentText()
+            <span class="self">self</span>.color_label.setText(<span class="string">f"Warna: </span>{warna}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = BuiltinSignalsDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Custom Signals -->
+            <section class="section" id="custom-signals">
+                <h2>4. Custom Signals dengan Signal()</h2>
+
+                <p>Selain signal bawaan, kita bisa membuat custom signal untuk komunikasi antar komponen sesuai kebutuhan aplikasi.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kapan Menggunakan Custom Signal?</div>
+                    <ul>
+                        <li>Komunikasi antar class/widget yang berbeda</li>
+                        <li>Membuat komponen yang reusable</li>
+                        <li>Mengirim data spesifik saat event terjadi</li>
+                        <li>Implementasi arsitektur MVC/MVP</li>
+                    </ul>
+                </div>
+
+                <h3>Membuat Custom Signal</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Import Signal dari PySide6.QtCore</h4>
+                            <p>Pastikan mengimport class Signal untuk membuat custom signal.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Definisikan Signal sebagai Class Attribute</h4>
+                            <p>Signal didefinisikan di level class, bukan di dalam method.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Emit Signal saat diperlukan</h4>
+                            <p>Gunakan method emit() untuk memancarkan signal.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">custom_signals_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QLineEdit, QProgressBar
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Signal, QObject
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># CONTOH 1: Custom Signal Sederhana</span>
+<span class="comment"># ==========================================</span>
+
+<span class="keyword">class</span> <span class="class-name">Counter</span>(QObject):
+    <span class="comment"># Definisi custom signals</span>
+    count_changed = Signal(<span class="builtin">int</span>)       <span class="comment"># Signal dengan parameter int</span>
+    limit_reached = Signal()           <span class="comment"># Signal tanpa parameter</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">limit</span>=<span class="number">10</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>._count = <span class="number">0</span>
+        <span class="self">self</span>._limit = limit
+    
+    <span class="keyword">def</span> <span class="function">increment</span>(<span class="self">self</span>):
+        <span class="self">self</span>._count += <span class="number">1</span>
+        <span class="self">self</span>.count_changed.emit(<span class="self">self</span>._count)  <span class="comment"># Emit signal dengan nilai</span>
+        
+        <span class="keyword">if</span> <span class="self">self</span>._count >= <span class="self">self</span>._limit:
+            <span class="self">self</span>.limit_reached.emit()  <span class="comment"># Emit signal tanpa parameter</span>
+    
+    <span class="keyword">def</span> <span class="function">reset</span>(<span class="self">self</span>):
+        <span class="self">self</span>._count = <span class="number">0</span>
+        <span class="self">self</span>.count_changed.emit(<span class="self">self</span>._count)
+
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># CONTOH 2: Signal dengan Multiple Parameters</span>
+<span class="comment"># ==========================================</span>
+
+<span class="keyword">class</span> <span class="class-name">LoginManager</span>(QObject):
+    <span class="comment"># Signal dengan multiple parameters</span>
+    login_attempted = Signal(<span class="builtin">str</span>, <span class="builtin">str</span>)      <span class="comment"># username, password</span>
+    login_success = Signal(<span class="builtin">str</span>)              <span class="comment"># username</span>
+    login_failed = Signal(<span class="builtin">str</span>)               <span class="comment"># error message</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.valid_users = {<span class="string">"admin"</span>: <span class="string">"admin123"</span>, <span class="string">"user"</span>: <span class="string">"user123"</span>}
+    
+    <span class="keyword">def</span> <span class="function">attempt_login</span>(<span class="self">self</span>, <span class="parameter">username</span>, <span class="parameter">password</span>):
+        <span class="self">self</span>.login_attempted.emit(username, password)
+        
+        <span class="keyword">if</span> username <span class="keyword">in</span> <span class="self">self</span>.valid_users:
+            <span class="keyword">if</span> <span class="self">self</span>.valid_users[username] == password:
+                <span class="self">self</span>.login_success.emit(username)
+            <span class="keyword">else</span>:
+                <span class="self">self</span>.login_failed.emit(<span class="string">"Password salah!"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.login_failed.emit(<span class="string">"Username tidak ditemukan!"</span>)
+
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># APLIKASI UTAMA</span>
+<span class="comment"># ==========================================</span>
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Custom Signals Demo"</span>)
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.setup_connections()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="comment"># Counter Section</span>
+        layout.addWidget(QLabel(<span class="string">"&lt;b&gt;Counter Demo:&lt;/b&gt;"</span>))
+        <span class="self">self</span>.counter = Counter(limit=<span class="number">10</span>)
+        <span class="self">self</span>.progress = QProgressBar()
+        <span class="self">self</span>.progress.setRange(<span class="number">0</span>, <span class="number">10</span>)
+        <span class="self">self</span>.count_label = QLabel(<span class="string">"Count: 0"</span>)
+        <span class="self">self</span>.increment_btn = QPushButton(<span class="string">"Increment"</span>)
+        <span class="self">self</span>.reset_btn = QPushButton(<span class="string">"Reset"</span>)
+        
+        counter_layout = QHBoxLayout()
+        counter_layout.addWidget(<span class="self">self</span>.increment_btn)
+        counter_layout.addWidget(<span class="self">self</span>.reset_btn)
+        
+        layout.addWidget(<span class="self">self</span>.count_label)
+        layout.addWidget(<span class="self">self</span>.progress)
+        layout.addLayout(counter_layout)
+        
+        <span class="comment"># Login Section</span>
+        layout.addWidget(QLabel(<span class="string">"&lt;br&gt;&lt;b&gt;Login Demo:&lt;/b&gt;"</span>))
+        <span class="self">self</span>.login_manager = LoginManager()
+        <span class="self">self</span>.username_input = QLineEdit()
+        <span class="self">self</span>.username_input.setPlaceholderText(<span class="string">"Username"</span>)
+        <span class="self">self</span>.password_input = QLineEdit()
+        <span class="self">self</span>.password_input.setPlaceholderText(<span class="string">"Password"</span>)
+        <span class="self">self</span>.password_input.setEchoMode(QLineEdit.Password)
+        <span class="self">self</span>.login_btn = QPushButton(<span class="string">"Login"</span>)
+        <span class="self">self</span>.status_label = QLabel(<span class="string">"Status: Belum login"</span>)
+        
+        layout.addWidget(<span class="self">self</span>.username_input)
+        layout.addWidget(<span class="self">self</span>.password_input)
+        layout.addWidget(<span class="self">self</span>.login_btn)
+        layout.addWidget(<span class="self">self</span>.status_label)
+    
+    <span class="keyword">def</span> <span class="function">setup_connections</span>(<span class="self">self</span>):
+        <span class="comment"># Counter connections</span>
+        <span class="self">self</span>.increment_btn.clicked.connect(<span class="self">self</span>.counter.increment)
+        <span class="self">self</span>.reset_btn.clicked.connect(<span class="self">self</span>.counter.reset)
+        <span class="self">self</span>.counter.count_changed.connect(<span class="self">self</span>.update_count)
+        <span class="self">self</span>.counter.limit_reached.connect(<span class="self">self</span>.show_limit_message)
+        
+        <span class="comment"># Login connections</span>
+        <span class="self">self</span>.login_btn.clicked.connect(<span class="self">self</span>.do_login)
+        <span class="self">self</span>.login_manager.login_success.connect(<span class="self">self</span>.on_login_success)
+        <span class="self">self</span>.login_manager.login_failed.connect(<span class="self">self</span>.on_login_failed)
+    
+    <span class="keyword">def</span> <span class="function">update_count</span>(<span class="self">self</span>, <span class="parameter">value</span>):
+        <span class="self">self</span>.count_label.setText(<span class="string">f"Count: </span>{value}<span class="string">"</span>)
+        <span class="self">self</span>.progress.setValue(value)
+    
+    <span class="keyword">def</span> <span class="function">show_limit_message</span>(<span class="self">self</span>):
+        <span class="self">self</span>.count_label.setText(<span class="string">"Limit tercapai! Reset untuk mulai lagi."</span>)
+        <span class="self">self</span>.increment_btn.setEnabled(<span class="keyword">False</span>)
+    
+    <span class="keyword">def</span> <span class="function">do_login</span>(<span class="self">self</span>):
+        username = <span class="self">self</span>.username_input.text()
+        password = <span class="self">self</span>.password_input.text()
+        <span class="self">self</span>.login_manager.attempt_login(username, password)
+    
+    <span class="keyword">def</span> <span class="function">on_login_success</span>(<span class="self">self</span>, <span class="parameter">username</span>):
+        <span class="self">self</span>.status_label.setText(<span class="string">f"Selamat datang, </span>{username}<span class="string">!"</span>)
+        <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"color: green;"</span>)
+    
+    <span class="keyword">def</span> <span class="function">on_login_failed</span>(<span class="self">self</span>, <span class="parameter">message</span>):
+        <span class="self">self</span>.status_label.setText(<span class="string">f"Error: </span>{message}<span class="string">"</span>)
+        <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"color: red;"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Perhatian!</div>
+                    <p>Signal harus didefinisikan sebagai <strong>class attribute</strong>, bukan instance attribute. Signal tidak bisa didefinisikan di dalam <span class="inline-code">__init__</span> method.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Event Handling -->
+            <section class="section" id="event-handling">
+                <h2>5. Event Handling: Mouse, Keyboard, Close</h2>
+
+                <p>Selain menggunakan signals, kita bisa menangani event secara langsung dengan meng-override method event handler dari QWidget.</p>
+
+                <h3>Perbedaan Event vs Signal</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Signal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Low-level, langsung dari sistem</td>
+                                <td>High-level, abstraksi dari event</td>
+                            </tr>
+                            <tr>
+                                <td>Override method (inheritance)</td>
+                                <td>Connect ke slot (composition)</td>
+                            </tr>
+                            <tr>
+                                <td>Bisa difilter/diabaikan</td>
+                                <td>Selalu diteruskan ke slot</td>
+                            </tr>
+                            <tr>
+                                <td>Contoh: mousePressEvent</td>
+                                <td>Contoh: clicked</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Daftar Event Handler Penting</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Method</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="4"><strong>Mouse</strong></td>
+                                <td><span class="table-code">mousePressEvent</span></td>
+                                <td>Saat tombol mouse ditekan</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">mouseReleaseEvent</span></td>
+                                <td>Saat tombol mouse dilepas</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">mouseMoveEvent</span></td>
+                                <td>Saat mouse bergerak</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">mouseDoubleClickEvent</span></td>
+                                <td>Saat double click</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2"><strong>Keyboard</strong></td>
+                                <td><span class="table-code">keyPressEvent</span></td>
+                                <td>Saat tombol keyboard ditekan</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">keyReleaseEvent</span></td>
+                                <td>Saat tombol keyboard dilepas</td>
+                            </tr>
+                            <tr>
+                                <td rowspan="2"><strong>Window</strong></td>
+                                <td><span class="table-code">closeEvent</span></td>
+                                <td>Saat window akan ditutup</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">resizeEvent</span></td>
+                                <td>Saat window di-resize</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">event_handling_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QLabel, QMessageBox
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QMouseEvent, QKeyEvent, QCloseEvent
+
+<span class="keyword">class</span> <span class="class-name">EventHandlingDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Event Handling Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">400</span>, <span class="number">300</span>)
+        <span class="self">self</span>.setMouseTracking(<span class="keyword">True</span>)  <span class="comment"># Enable mouse tracking</span>
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        
+        <span class="self">self</span>.info_label = QLabel(<span class="string">"Gerakkan mouse, tekan keyboard, atau klik!"</span>)
+        <span class="self">self</span>.mouse_label = QLabel(<span class="string">"Mouse: -"</span>)
+        <span class="self">self</span>.key_label = QLabel(<span class="string">"Keyboard: -"</span>)
+        <span class="self">self</span>.click_label = QLabel(<span class="string">"Click: -"</span>)
+        
+        layout.addWidget(<span class="self">self</span>.info_label)
+        layout.addWidget(<span class="self">self</span>.mouse_label)
+        layout.addWidget(<span class="self">self</span>.key_label)
+        layout.addWidget(<span class="self">self</span>.click_label)
+        layout.addStretch()
+    
+    <span class="comment"># ============ MOUSE EVENTS ============</span>
+    
+    <span class="keyword">def</span> <span class="function">mouseMoveEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>: QMouseEvent):
+        x = event.position().x()
+        y = event.position().y()
+        <span class="self">self</span>.mouse_label.setText(<span class="string">f"Mouse Position: (</span>{x:.0f}<span class="string">, </span>{y:.0f}<span class="string">)"</span>)
+    
+    <span class="keyword">def</span> <span class="function">mousePressEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>: QMouseEvent):
+        button = <span class="string">"Left"</span> <span class="keyword">if</span> event.button() == Qt.LeftButton <span class="keyword">else</span> <span class="string">"Right"</span>
+        x = event.position().x()
+        y = event.position().y()
+        <span class="self">self</span>.click_label.setText(<span class="string">f"</span>{button}<span class="string"> Click at (</span>{x:.0f}<span class="string">, </span>{y:.0f}<span class="string">)"</span>)
+    
+    <span class="keyword">def</span> <span class="function">mouseDoubleClickEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>: QMouseEvent):
+        <span class="self">self</span>.click_label.setText(<span class="string">"Double Click Detected!"</span>)
+    
+    <span class="comment"># ============ KEYBOARD EVENTS ============</span>
+    
+    <span class="keyword">def</span> <span class="function">keyPressEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>: QKeyEvent):
+        key = event.key()
+        text = event.text()
+        
+        <span class="comment"># Cek modifier keys</span>
+        modifiers = []
+        <span class="keyword">if</span> event.modifiers() & Qt.ControlModifier:
+            modifiers.append(<span class="string">"Ctrl"</span>)
+        <span class="keyword">if</span> event.modifiers() & Qt.ShiftModifier:
+            modifiers.append(<span class="string">"Shift"</span>)
+        <span class="keyword">if</span> event.modifiers() & Qt.AltModifier:
+            modifiers.append(<span class="string">"Alt"</span>)
+        
+        mod_str = <span class="string">" + "</span>.join(modifiers) + <span class="string">" + "</span> <span class="keyword">if</span> modifiers <span class="keyword">else</span> <span class="string">""</span>
+        
+        <span class="comment"># Handle special keys</span>
+        <span class="keyword">if</span> key == Qt.Key_Escape:
+            <span class="self">self</span>.key_label.setText(<span class="string">"Key: ESC pressed"</span>)
+        <span class="keyword">elif</span> key == Qt.Key_Return:
+            <span class="self">self</span>.key_label.setText(<span class="string">"Key: ENTER pressed"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.key_label.setText(<span class="string">f"Key: </span>{mod_str}{text}<span class="string"> (Code: </span>{key}<span class="string">)"</span>)
+    
+    <span class="comment"># ============ CLOSE EVENT ============</span>
+    
+    <span class="keyword">def</span> <span class="function">closeEvent</span>(<span class="self">self</span>, <span class="parameter">event</span>: QCloseEvent):
+        reply = QMessageBox.question(
+            <span class="self">self</span>,
+            <span class="string">"Konfirmasi"</span>,
+            <span class="string">"Apakah Anda yakin ingin keluar?"</span>,
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+        
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            event.accept()  <span class="comment"># Izinkan window ditutup</span>
+        <span class="keyword">else</span>:
+            event.ignore()  <span class="comment"># Batalkan penutupan</span>
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = EventHandlingDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Tips Event Handling</div>
+                    <ul>
+                        <li>Gunakan <span class="inline-code">event.accept()</span> untuk menerima event</li>
+                        <li>Gunakan <span class="inline-code">event.ignore()</span> untuk meneruskan event ke parent</li>
+                        <li>Aktifkan <span class="inline-code">setMouseTracking(True)</span> untuk mendeteksi mouse move tanpa klik</li>
+                        <li>Selalu panggil method parent jika ingin behavior default tetap berjalan</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 6: Validasi Input Real-time -->
+            <section class="section" id="validasi-input">
+                <h2>6. Validasi Input Real-time</h2>
+
+                <p>Validasi input real-time memberikan feedback langsung kepada user saat mereka mengetik, meningkatkan user experience dan mencegah error submission.</p>
+
+                <h3>Pendekatan Validasi</h3>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Validasi Saat Submit</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>User mengisi semua field</li>
+                                <li>Klik submit button</li>
+                                <li>Menampilkan semua error sekaligus</li>
+                                <li>User harus memperbaiki dan submit lagi</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Validasi Real-time</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Validasi saat user mengetik</li>
+                                <li>Feedback visual langsung</li>
+                                <li>User langsung tahu kesalahan</li>
+                                <li>Submit button diaktifkan saat valid</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Contoh: Form Registrasi dengan Validasi Real-time</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">realtime_validation.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> re
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QLineEdit, QPushButton, QFormLayout, QMessageBox
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Signal
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QRegularExpressionValidator
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QRegularExpression
+
+<span class="keyword">class</span> <span class="class-name">ValidatedLineEdit</span>(QLineEdit):
+    <span class="string">"""Custom QLineEdit dengan validasi real-time"""</span>
+    
+    validation_changed = Signal(<span class="builtin">bool</span>)  <span class="comment"># Signal untuk status validasi</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">validator_func</span>=<span class="keyword">None</span>, <span class="parameter">error_message</span>=<span class="string">""</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.validator_func = validator_func
+        <span class="self">self</span>.error_message = error_message
+        <span class="self">self</span>.is_valid = <span class="keyword">False</span>
+        
+        <span class="comment"># Connect textChanged ke validasi</span>
+        <span class="self">self</span>.textChanged.connect(<span class="self">self</span>.validate)
+    
+    <span class="keyword">def</span> <span class="function">validate</span>(<span class="self">self</span>):
+        <span class="keyword">if</span> <span class="self">self</span>.validator_func:
+            <span class="self">self</span>.is_valid = <span class="self">self</span>.validator_func(<span class="self">self</span>.text())
+            <span class="self">self</span>.update_style()
+            <span class="self">self</span>.validation_changed.emit(<span class="self">self</span>.is_valid)
+    
+    <span class="keyword">def</span> <span class="function">update_style</span>(<span class="self">self</span>):
+        <span class="keyword">if</span> <span class="builtin">len</span>(<span class="self">self</span>.text()) == <span class="number">0</span>:
+            <span class="self">self</span>.setStyleSheet(<span class="string">""</span>)
+        <span class="keyword">elif</span> <span class="self">self</span>.is_valid:
+            <span class="self">self</span>.setStyleSheet(<span class="string">"""
+                QLineEdit {
+                    border: 2px solid #27ae60;
+                    border-radius: 5px;
+                    padding: 5px;
+                    background-color: #e8f8f0;
+                }
+            """</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.setStyleSheet(<span class="string">"""
+                QLineEdit {
+                    border: 2px solid #e74c3c;
+                    border-radius: 5px;
+                    padding: 5px;
+                    background-color: #fdeaea;
+                }
+            """</span>)
+
+
+<span class="keyword">class</span> <span class="class-name">RegistrationForm</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Form Registrasi - Validasi Real-time"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.setup_connections()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        form_layout = QFormLayout()
+        
+        <span class="comment"># Username field</span>
+        <span class="self">self</span>.username_input = ValidatedLineEdit(
+            validator_func=<span class="self">self</span>.validate_username,
+            error_message=<span class="string">"Username minimal 4 karakter, hanya huruf dan angka"</span>
+        )
+        <span class="self">self</span>.username_input.setPlaceholderText(<span class="string">"Minimal 4 karakter"</span>)
+        <span class="self">self</span>.username_error = QLabel()
+        <span class="self">self</span>.username_error.setStyleSheet(<span class="string">"color: #e74c3c; font-size: 11px;"</span>)
+        
+        <span class="comment"># Email field</span>
+        <span class="self">self</span>.email_input = ValidatedLineEdit(
+            validator_func=<span class="self">self</span>.validate_email,
+            error_message=<span class="string">"Format email tidak valid"</span>
+        )
+        <span class="self">self</span>.email_input.setPlaceholderText(<span class="string">"contoh@email.com"</span>)
+        <span class="self">self</span>.email_error = QLabel()
+        <span class="self">self</span>.email_error.setStyleSheet(<span class="string">"color: #e74c3c; font-size: 11px;"</span>)
+        
+        <span class="comment"># Password field</span>
+        <span class="self">self</span>.password_input = ValidatedLineEdit(
+            validator_func=<span class="self">self</span>.validate_password,
+            error_message=<span class="string">"Password minimal 8 karakter, harus ada huruf dan angka"</span>
+        )
+        <span class="self">self</span>.password_input.setPlaceholderText(<span class="string">"Minimal 8 karakter"</span>)
+        <span class="self">self</span>.password_input.setEchoMode(QLineEdit.Password)
+        <span class="self">self</span>.password_error = QLabel()
+        <span class="self">self</span>.password_error.setStyleSheet(<span class="string">"color: #e74c3c; font-size: 11px;"</span>)
+        
+        <span class="comment"># Password strength indicator</span>
+        <span class="self">self</span>.strength_label = QLabel(<span class="string">"Kekuatan: -"</span>)
+        
+        <span class="comment"># Confirm password field</span>
+        <span class="self">self</span>.confirm_input = ValidatedLineEdit(
+            validator_func=<span class="self">self</span>.validate_confirm,
+            error_message=<span class="string">"Password tidak cocok"</span>
+        )
+        <span class="self">self</span>.confirm_input.setPlaceholderText(<span class="string">"Ulangi password"</span>)
+        <span class="self">self</span>.confirm_input.setEchoMode(QLineEdit.Password)
+        <span class="self">self</span>.confirm_error = QLabel()
+        <span class="self">self</span>.confirm_error.setStyleSheet(<span class="string">"color: #e74c3c; font-size: 11px;"</span>)
+        
+        <span class="comment"># Add to form layout</span>
+        form_layout.addRow(<span class="string">"Username:"</span>, <span class="self">self</span>.username_input)
+        form_layout.addRow(<span class="string">""</span>, <span class="self">self</span>.username_error)
+        form_layout.addRow(<span class="string">"Email:"</span>, <span class="self">self</span>.email_input)
+        form_layout.addRow(<span class="string">""</span>, <span class="self">self</span>.email_error)
+        form_layout.addRow(<span class="string">"Password:"</span>, <span class="self">self</span>.password_input)
+        form_layout.addRow(<span class="string">""</span>, <span class="self">self</span>.password_error)
+        form_layout.addRow(<span class="string">""</span>, <span class="self">self</span>.strength_label)
+        form_layout.addRow(<span class="string">"Konfirmasi:"</span>, <span class="self">self</span>.confirm_input)
+        form_layout.addRow(<span class="string">""</span>, <span class="self">self</span>.confirm_error)
+        
+        layout.addLayout(form_layout)
+        
+        <span class="comment"># Submit button</span>
+        <span class="self">self</span>.submit_btn = QPushButton(<span class="string">"Daftar"</span>)
+        <span class="self">self</span>.submit_btn.setEnabled(<span class="keyword">False</span>)
+        <span class="self">self</span>.submit_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                padding: 10px;
+                border: none;
+                border-radius: 5px;
+                font-weight: bold;
+            }
+            QPushButton:disabled {
+                background-color: #bdc3c7;
+            }
+            QPushButton:hover:!disabled {
+                background-color: #2980b9;
+            }
+        """</span>)
+        layout.addWidget(<span class="self">self</span>.submit_btn)
+    
+    <span class="keyword">def</span> <span class="function">setup_connections</span>(<span class="self">self</span>):
+        <span class="comment"># Connect validation signals</span>
+        <span class="self">self</span>.username_input.validation_changed.connect(<span class="self">self</span>.check_form)
+        <span class="self">self</span>.email_input.validation_changed.connect(<span class="self">self</span>.check_form)
+        <span class="self">self</span>.password_input.validation_changed.connect(<span class="self">self</span>.check_form)
+        <span class="self">self</span>.confirm_input.validation_changed.connect(<span class="self">self</span>.check_form)
+        
+        <span class="comment"># Password strength checker</span>
+        <span class="self">self</span>.password_input.textChanged.connect(<span class="self">self</span>.check_password_strength)
+        
+        <span class="comment"># Re-validate confirm when password changes</span>
+        <span class="self">self</span>.password_input.textChanged.connect(<span class="self">self</span>.confirm_input.validate)
+        
+        <span class="comment"># Error message display</span>
+        <span class="self">self</span>.username_input.validation_changed.connect(
+            <span class="keyword">lambda</span> valid: <span class="self">self</span>.show_error(<span class="self">self</span>.username_error, <span class="self">self</span>.username_input, valid)
+        )
+        <span class="self">self</span>.email_input.validation_changed.connect(
+            <span class="keyword">lambda</span> valid: <span class="self">self</span>.show_error(<span class="self">self</span>.email_error, <span class="self">self</span>.email_input, valid)
+        )
+        <span class="self">self</span>.password_input.validation_changed.connect(
+            <span class="keyword">lambda</span> valid: <span class="self">self</span>.show_error(<span class="self">self</span>.password_error, <span class="self">self</span>.password_input, valid)
+        )
+        <span class="self">self</span>.confirm_input.validation_changed.connect(
+            <span class="keyword">lambda</span> valid: <span class="self">self</span>.show_error(<span class="self">self</span>.confirm_error, <span class="self">self</span>.confirm_input, valid)
+        )
+        
+        <span class="comment"># Submit action</span>
+        <span class="self">self</span>.submit_btn.clicked.connect(<span class="self">self</span>.submit_form)
+    
+    <span class="comment"># ============ VALIDATOR FUNCTIONS ============</span>
+    
+    <span class="keyword">def</span> <span class="function">validate_username</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        <span class="keyword">return</span> <span class="builtin">len</span>(text) >= <span class="number">4</span> <span class="keyword">and</span> text.isalnum()
+    
+    <span class="keyword">def</span> <span class="function">validate_email</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        pattern = <span class="string">r'^[\w\.-]+@[\w\.-]+\.\w+$'</span>
+        <span class="keyword">return</span> <span class="builtin">bool</span>(re.match(pattern, text))
+    
+    <span class="keyword">def</span> <span class="function">validate_password</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        has_letter = <span class="builtin">any</span>(c.isalpha() <span class="keyword">for</span> c <span class="keyword">in</span> text)
+        has_digit = <span class="builtin">any</span>(c.isdigit() <span class="keyword">for</span> c <span class="keyword">in</span> text)
+        <span class="keyword">return</span> <span class="builtin">len</span>(text) >= <span class="number">8</span> <span class="keyword">and</span> has_letter <span class="keyword">and</span> has_digit
+    
+    <span class="keyword">def</span> <span class="function">validate_confirm</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        <span class="keyword">return</span> text == <span class="self">self</span>.password_input.text() <span class="keyword">and</span> <span class="builtin">len</span>(text) > <span class="number">0</span>
+    
+    <span class="keyword">def</span> <span class="function">check_password_strength</span>(<span class="self">self</span>, <span class="parameter">text</span>):
+        <span class="keyword">if</span> <span class="builtin">len</span>(text) == <span class="number">0</span>:
+            <span class="self">self</span>.strength_label.setText(<span class="string">"Kekuatan: -"</span>)
+            <span class="self">self</span>.strength_label.setStyleSheet(<span class="string">""</span>)
+            <span class="keyword">return</span>
+        
+        score = <span class="number">0</span>
+        <span class="keyword">if</span> <span class="builtin">len</span>(text) >= <span class="number">8</span>: score += <span class="number">1</span>
+        <span class="keyword">if</span> <span class="builtin">len</span>(text) >= <span class="number">12</span>: score += <span class="number">1</span>
+        <span class="keyword">if</span> <span class="builtin">any</span>(c.isupper() <span class="keyword">for</span> c <span class="keyword">in</span> text): score += <span class="number">1</span>
+        <span class="keyword">if</span> <span class="builtin">any</span>(c.islower() <span class="keyword">for</span> c <span class="keyword">in</span> text): score += <span class="number">1</span>
+        <span class="keyword">if</span> <span class="builtin">any</span>(c.isdigit() <span class="keyword">for</span> c <span class="keyword">in</span> text): score += <span class="number">1</span>
+        <span class="keyword">if</span> <span class="builtin">any</span>(c <span class="keyword">in</span> <span class="string">"!@#$%^&*"</span> <span class="keyword">for</span> c <span class="keyword">in</span> text): score += <span class="number">1</span>
+        
+        <span class="keyword">if</span> score <= <span class="number">2</span>:
+            <span class="self">self</span>.strength_label.setText(<span class="string">"Kekuatan: Lemah"</span>)
+            <span class="self">self</span>.strength_label.setStyleSheet(<span class="string">"color: #e74c3c;"</span>)
+        <span class="keyword">elif</span> score <= <span class="number">4</span>:
+            <span class="self">self</span>.strength_label.setText(<span class="string">"Kekuatan: Sedang"</span>)
+            <span class="self">self</span>.strength_label.setStyleSheet(<span class="string">"color: #f39c12;"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.strength_label.setText(<span class="string">"Kekuatan: Kuat"</span>)
+            <span class="self">self</span>.strength_label.setStyleSheet(<span class="string">"color: #27ae60;"</span>)
+    
+    <span class="keyword">def</span> <span class="function">show_error</span>(<span class="self">self</span>, <span class="parameter">label</span>, <span class="parameter">input_field</span>, <span class="parameter">is_valid</span>):
+        <span class="keyword">if</span> <span class="builtin">len</span>(input_field.text()) == <span class="number">0</span>:
+            label.setText(<span class="string">""</span>)
+        <span class="keyword">elif</span> <span class="keyword">not</span> is_valid:
+            label.setText(input_field.error_message)
+        <span class="keyword">else</span>:
+            label.setText(<span class="string">""</span>)
+    
+    <span class="keyword">def</span> <span class="function">check_form</span>(<span class="self">self</span>):
+        all_valid = (
+            <span class="self">self</span>.username_input.is_valid <span class="keyword">and</span>
+            <span class="self">self</span>.email_input.is_valid <span class="keyword">and</span>
+            <span class="self">self</span>.password_input.is_valid <span class="keyword">and</span>
+            <span class="self">self</span>.confirm_input.is_valid
+        )
+        <span class="self">self</span>.submit_btn.setEnabled(all_valid)
+    
+    <span class="keyword">def</span> <span class="function">submit_form</span>(<span class="self">self</span>):
+        QMessageBox.information(
+            <span class="self">self</span>,
+            <span class="string">"Berhasil"</span>,
+            <span class="string">f"Registrasi berhasil!\n\nUsername: </span>{<span class="self">self</span>.username_input.text()}<span class="string">\nEmail: </span>{<span class="self">self</span>.email_input.text()}<span class="string">"</span>
+        )
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = RegistrationForm()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Fitur Validasi yang Diimplementasikan</div>
+                    <ul>
+                        <li><strong>Visual Feedback:</strong> Border dan background berubah sesuai status validasi</li>
+                        <li><strong>Error Messages:</strong> Pesan error muncul di bawah field yang bermasalah</li>
+                        <li><strong>Password Strength:</strong> Indikator kekuatan password real-time</li>
+                        <li><strong>Smart Submit:</strong> Button hanya aktif jika semua field valid</li>
+                        <li><strong>Custom Signals:</strong> Signal untuk mengkomunikasikan status validasi</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum (Kerjakan 1 dari 3 soal tugas berikut)</h2>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Pengumpulan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li><strong>Simpan file Python</strong> dengan nama yang sesuai</li>
+                        <li><strong>Test program</strong> dan pastikan berjalan tanpa error</li>
+                        <li><strong>Ambil screenshot</strong> pada setiap aplikasi yang dijalan</li>
+                        <li><strong>Upload ke GitHub</strong> (file .py dan screenshot)</li>
+                        <li><strong>Submit link GitHub</strong> ke platform Berajah</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Tambahan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li>Tambahkan komentar <strong>Nama, NIM, dan Kelas</strong> di awal file</li>
+                        <li>Pastikan kode <strong>rapi dan mudah dibaca</strong></li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>1: Kalkulator dengan Event Handling</h3>
+                    <p>Buatlah aplikasi kalkulator sederhana dengan fitur:</p>
+                    <ol>
+                        <li>Input angka pertama dan kedua menggunakan QLineEdit</li>
+                        <li>Pilihan operasi (+, -, ×, ÷) menggunakan QComboBox</li>
+                        <li>Validasi real-time bahwa input adalah angka</li>
+                        <li>Tombol "Hitung" yang hanya aktif jika input valid</li>
+                        <li>Keyboard shortcut: Enter untuk menghitung, Escape untuk clear</li>
+                        <li>Konfirmasi saat window akan ditutup</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>2: Drawing Canvas</h3>
+                    <p>Buatlah aplikasi canvas sederhana dengan fitur:</p>
+                    <ol>
+                        <li>Area kanvas yang bisa menggambar dengan mouse drag</li>
+                        <li>Pilihan warna menggunakan custom signal</li>
+                        <li>Pilihan ukuran brush dengan QSlider</li>
+                        <li>Tampilkan koordinat mouse di status bar</li>
+                        <li>Double click untuk clear canvas</li>
+                        <li>Tombol "Clear" dengan konfirmasi</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>3: Form Multi-Step</h3>
+                    <p>Buatlah form registrasi multi-step dengan fitur:</p>
+                    <ol>
+                        <li>Step 1: Data Pribadi (nama, tanggal lahir, jenis kelamin)</li>
+                        <li>Step 2: Kontak (email, telepon, alamat)</li>
+                        <li>Step 3: Akun (username, password, confirm password)</li>
+                        <li>Validasi real-time di setiap step</li>
+                        <li>Custom signal untuk notifikasi perpindahan step</li>
+                        <li>Progress indicator menggunakan signal</li>
+                        <li>Review data sebelum submit</li>
+                    </ol>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // SECTION VISIBILITY MANAGEMENT
+        // ============================================
+        
+        // Function to show only selected section
+        function showSection(sectionId) {
+            // Hide all sections
+            const allSections = document.querySelectorAll('.section');
+            allSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // Scroll to top of content area
+                document.querySelector('.main-content').scrollTop = 0;
+                window.scrollTo(0, 0);
+            }
+            
+            // Update active state in sidebar
+            updateActiveSidebar(sectionId);
+        }
+        
+        // Function to update active sidebar link
+        function updateActiveSidebar(sectionId) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + sectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show first section by default (event-driven)
+            showSection('event-driven');
+            
+            // Add click handlers to all sidebar links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showSection(targetId);
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 992) {
+                        document.getElementById('sidebar').classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // ============================================
+        // ANTI-COPY PROTECTION untuk elemen <pre> dan <code>
+        // ============================================
+        (function() {
+            'use strict';
+            
+            // 1. Disable right-click pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+            });
+
+            // 2. Disable text selection pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.msUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+            });
+
+            // 3. Disable copy keyboard shortcut (Ctrl+C, Ctrl+A)
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault();
+                        showCopyWarning();
+                        return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // 4. Disable drag pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            });
+
+            // 5. Override copy event
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+
+            // Function untuk menampilkan warning
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.7);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 99999;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 30px;
+                            border-radius: 10px;
+                            text-align: center;
+                            max-width: 400px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        ">
+                            
+                            <h3 style="color: #e74c3c; margin-bottom: 10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color: #555; margin-bottom: 20px;">
+                                Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.
+                            </p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="
+                                background: #e74c3c;
+                                color: white;
+                                border: none;
+                                padding: 10px 30px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">Mengerti</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                setTimeout(function() {
+                    if (document.getElementById('copy-warning-modal')) {
+                        document.getElementById('copy-warning-modal').remove();
+                    }
+                }, 3000);
+            }
+
+        })();
+    </script>
+</body>
+</html>
