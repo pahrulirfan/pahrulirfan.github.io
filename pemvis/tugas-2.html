@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event & Signal - Tugas</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+    <style>
+        /* Hide all sections by default, will be shown by JavaScript */
+        .section {
+            display: none;
+        }
+        .section:first-of-type {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PemVis</h2>
+                <p>Event & Signal Lanjutan</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link active">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <header class="page-header">
+                <h1>Event & Signal Handling</h1>
+                <p class="subtitle">Materi lanjutan terkait Event-Driven Programming dan implementasi Signals & Slots</p>
+            </header>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum (Kerjakan 1 dari 3 soal tugas berikut)</h2>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Pengumpulan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li><strong>Simpan file Python</strong> dengan nama yang sesuai</li>
+                        <li><strong>Test program</strong> dan pastikan berjalan tanpa error</li>
+                        <li><strong>Ambil screenshot</strong> pada setiap aplikasi yang dijalan</li>
+                        <li><strong>Upload ke GitHub</strong>, buat repository dengan nama T3-Week4 (upload file .py dan screenshot aplikasi berjalan)</li>
+                        <li><strong>Submit link GitHub</strong> ke platform Berajah</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Tambahan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li>Tambahkan komentar <strong>Nama, NIM, dan Kelas</strong> di awal file</li>
+                        <li>Pastikan kode <strong>rapi dan mudah dibaca</strong></li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>1: Kalkulator dengan Event Handling</h3>
+                    <p>Buatlah aplikasi kalkulator sederhana dengan fitur:</p>
+                    <ol>
+                        <li>Input angka pertama dan kedua menggunakan QLineEdit</li>
+                        <li>Pilihan operasi (+, -, ×, ÷) menggunakan QComboBox</li>
+                        <li>Validasi real-time bahwa input adalah angka</li>
+                        <li>Tombol "Hitung" yang hanya aktif jika input valid</li>
+                        <li>Keyboard shortcut: Enter untuk menghitung, Escape untuk clear</li>
+                        <li>Konfirmasi saat window akan ditutup</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>2: Drawing Canvas</h3>
+                    <p>Buatlah aplikasi canvas sederhana dengan fitur:</p>
+                    <ol>
+                        <li>Area kanvas yang bisa menggambar dengan mouse drag</li>
+                        <li>Pilihan warna menggunakan custom signal</li>
+                        <li>Pilihan ukuran brush dengan QSlider</li>
+                        <li>Tampilkan koordinat mouse di status bar</li>
+                        <li>Double click untuk clear canvas</li>
+                        <li>Tombol "Clear" dengan konfirmasi</li>
+                    </ol>
+                </div>
+
+                <div class="exercise-box">
+                    <h3>3: Form Multi-Step</h3>
+                    <p>Buatlah form registrasi multi-step dengan fitur:</p>
+                    <ol>
+                        <li>Step 1: Data Pribadi (nama, tanggal lahir, jenis kelamin)</li>
+                        <li>Step 2: Kontak (email, telepon, alamat)</li>
+                        <li>Step 3: Akun (username, password, confirm password)</li>
+                        <li>Validasi real-time di setiap step</li>
+                        <li>Custom signal untuk notifikasi perpindahan step</li>
+                        <li>Progress indicator menggunakan signal</li>
+                        <li>Review data sebelum submit</li>
+                    </ol>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // SECTION VISIBILITY MANAGEMENT
+        // ============================================
+        
+        // Function to show only selected section
+        function showSection(sectionId) {
+            // Hide all sections
+            const allSections = document.querySelectorAll('.section');
+            allSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // Scroll to top of content area
+                document.querySelector('.main-content').scrollTop = 0;
+                window.scrollTo(0, 0);
+            }
+            
+            // Update active state in sidebar
+            updateActiveSidebar(sectionId);
+        }
+        
+        // Function to update active sidebar link
+        function updateActiveSidebar(sectionId) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + sectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Toggle sidebar for mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show first section by default (event-driven)
+            showSection('latihan');
+            
+            // Add click handlers to all sidebar links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showSection(targetId);
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth <= 992) {
+                        document.getElementById('sidebar').classList.remove('active');
+                    }
+                });
+            });
+        });
+
+        // ============================================
+        // ANTI-COPY PROTECTION untuk elemen <pre> dan <code>
+        // ============================================
+        (function() {
+            'use strict';
+            
+            // 1. Disable right-click pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+            });
+
+            // 2. Disable text selection pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.msUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+            });
+
+            // 3. Disable copy keyboard shortcut (Ctrl+C, Ctrl+A)
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault();
+                        showCopyWarning();
+                        return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // 4. Disable drag pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            });
+
+            // 5. Override copy event
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+
+            // Function untuk menampilkan warning
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.7);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 99999;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 30px;
+                            border-radius: 10px;
+                            text-align: center;
+                            max-width: 400px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        ">
+                            
+                            <h3 style="color: #e74c3c; margin-bottom: 10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color: #555; margin-bottom: 20px;">
+                                Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.
+                            </p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="
+                                background: #e74c3c;
+                                color: white;
+                                border: none;
+                                padding: 10px 30px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">Mengerti</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                setTimeout(function() {
+                    if (document.getElementById('copy-warning-modal')) {
+                        document.getElementById('copy-warning-modal').remove();
+                    }
+                }, 3000);
+            }
+
+        })();
+    </script>
+</body>
+</html>
