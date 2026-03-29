@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 3 - QMainWindow, Dialog & QSS</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Tugas 3 — QMainWindow & QSS</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="#ketentuan" class="nav-link active">
+                        <span class="nav-number">★</span>Rubrik Penilaian
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Tugas Praktikum</div>
+                    <a href="#tugas-1" class="nav-link">
+                        <span class="nav-number">1</span>Notepad Clone
+                    </a>
+                    <a href="#tugas-2" class="nav-link">
+                        <span class="nav-number">2</span>Image Viewer
+                    </a>
+                    <a href="#tugas-3" class="nav-link">
+                        <span class="nav-number">3</span>Task Manager
+                    </a>
+                </div>
+                
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Tugas 3 — QMainWindow, Dialog & QSS</h1>
+                <p class="subtitle">Implementasikan aplikasi desktop profesional dengan menu, toolbar, dialog, dan styling QSS</p>
+            </header>
+
+            <section class="section">
+                <h2>Indikator Penilaian</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan tugas ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Membangun QMainWindow lengkap dengan MenuBar, Toolbar, dan StatusBar</li>
+                        <li>Mengimplementasikan QAction dengan shortcut dan icon</li>
+                        <li>Menggunakan dialog bawaan dan membuat custom dialog</li>
+                        <li>Melakukan operasi file open/save</li>
+                        <li>Menerapkan QSS untuk styling tampilan aplikasi</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Ketentuan Pengumpulan -->
+            <section class="section">
+                <h2>Tugas Praktikum (Kerjakan 1 dari 3 soal tugas berikut)</h2>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Perhatian</div>
+                    <p>Kerjakan <strong>hanya salah satu</strong> dari 3 tugas di bawah ini. Pilih tugas yang paling sesuai dengan kemampuan dan minat kamu. Tidak perlu mengerjakan semuanya.</p>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Pengumpulan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li><strong>Simpan file Python</strong> dengan nama yang sesuai</li>
+                        <li><strong>Test program</strong> dan pastikan berjalan tanpa error</li>
+                        <li><strong>Ambil screenshot</strong> pada setiap aplikasi yang dijalankan</li>
+                        <li><strong>Upload ke GitHub</strong>, buat repository dengan nama <strong>T3-week6</strong> (upload file .py dan screenshot aplikasi berjalan)</li>
+                        <li><strong>Submit link GitHub</strong> ke platform Berajah</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Tambahan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li>Tambahkan komentar <strong>Nama, NIM, dan Kelas</strong> di awal file</li>
+                        <li>Pastikan kode <strong>rapi dan mudah dibaca</strong></li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Tugas 1 -->
+            <section class="section" id="tugas-1">
+                <h2>Tugas 1: Notepad Clone</h2>
+
+                <p>Buatlah aplikasi Notepad sederhana dengan fitur lengkap menggunakan QMainWindow dan QSS untuk styling.</p>
+
+                <!-- Mockup -->
+                <h3>Contoh Tampilan Aplikasi</h3>
+                <div style="border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin: 15px 0; font-family: monospace; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <!-- Title bar -->
+                    <div style="background: #2c3e50; color: white; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>📄 dokumen.txt * — Notepad</span>
+                        <span style="color: #aaa;">— □ ✕</span>
+                    </div>
+                    <!-- Menu bar -->
+                    <div style="background: #34495e; color: #ecf0f1; padding: 5px 10px; display: flex; gap: 20px; font-size: 12px;">
+                        <span style="cursor:pointer; padding: 2px 6px; border-radius: 3px; background: rgba(255,255,255,0.1);">File</span>
+                        <span style="cursor:pointer; padding: 2px 6px;">Edit</span>
+                        <span style="cursor:pointer; padding: 2px 6px;">Format</span>
+                        <span style="cursor:pointer; padding: 2px 6px;">Help</span>
+                    </div>
+                    <!-- Toolbar -->
+                    <div style="background: #ecf0f1; padding: 5px 10px; display: flex; gap: 6px; border-bottom: 1px solid #ddd; align-items: center;">
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">📄 New</button>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">📂 Open</button>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">💾 Save</button>
+                        <span style="color: #bdc3c7; margin: 0 4px;">|</span>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">✂️ Cut</button>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">📋 Copy</button>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">📌 Paste</button>
+                        <span style="color: #bdc3c7; margin: 0 4px;">|</span>
+                        <button style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 3px; background: white; cursor: pointer; font-size: 12px;">🔍 Find</button>
+                    </div>
+                    <!-- Text area -->
+                    <div style="background: white; padding: 15px; min-height: 140px; color: #333; line-height: 1.8; font-family: 'Courier New', monospace; font-size: 13px;">
+                        <span style="color: #7f8c8d;"># Nama: Budi Santoso</span><br>
+                        <span style="color: #7f8c8d;"># NIM: 12345678</span><br>
+                        <br>
+                        Ini adalah contoh teks di dalam Notepad Clone.<br>
+                        Aplikasi ini mendukung fitur open, save, dan edit.<br>
+                        <span style="background: #3498db; color: white; padding: 0 2px;">Teks yang diseleksi tampil seperti ini.</span>
+                    </div>
+                    <!-- Status bar -->
+                    <div style="background: #ecf0f1; padding: 4px 12px; font-size: 11px; color: #7f8c8d; display: flex; justify-content: space-between; border-top: 1px solid #ddd;">
+                        <span>Baris: 5 | Karakter: 128</span>
+                        <span>UTF-8 | Word Wrap: ON</span>
+                    </div>
+                </div>
+
+                <h3>Fitur yang Harus Diimplementasikan</h3>
+                <ul style="line-height: 2; padding-left: 20px;">
+                    <li>QMainWindow dengan MenuBar (File, Edit, Format, Help), Toolbar, dan StatusBar</li>
+                    <li>Operasi file: New, Open, Save, Save As menggunakan QFileDialog</li>
+                    <li>Tracking perubahan — judul window menampilkan tanda <code>*</code> jika ada perubahan belum disimpan</li>
+                    <li>Menu Edit: Undo, Redo, Cut, Copy, Paste, Select All dengan shortcut standar</li>
+                    <li>Menu Format: Font dialog (QFontDialog) dan Word Wrap toggle</li>
+                    <li>Custom dialog Find &amp; Replace (QDialog) dengan tombol Find Next, Replace, Replace All</li>
+                    <li>StatusBar menampilkan jumlah baris dan karakter secara real-time</li>
+                    <li>Konfirmasi QMessageBox sebelum menutup jika ada perubahan belum disimpan</li>
+                    <li>Styling QSS untuk tampilan yang menarik</li>
+                </ul>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Fitur</th><th>Widget/Class yang Digunakan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Window utama</td><td>QMainWindow, QTextEdit</td></tr>
+                            <tr><td>Menu &amp; aksi</td><td>QMenuBar, QAction, QKeySequence</td></tr>
+                            <tr><td>Toolbar</td><td>addToolBar(), QStyle.StandardPixmap</td></tr>
+                            <tr><td>File dialog</td><td>QFileDialog.getOpenFileName / getSaveFileName</td></tr>
+                            <tr><td>Font dialog</td><td>QFontDialog.getFont()</td></tr>
+                            <tr><td>Find &amp; Replace</td><td>QDialog, QDialogButtonBox, QLineEdit</td></tr>
+                            <tr><td>Konfirmasi</td><td>QMessageBox.question()</td></tr>
+                            <tr><td>Styling</td><td>setStyleSheet(), QSS</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tugas 2 -->
+            <section class="section" id="tugas-2">
+                <h2>Tugas 2: Image Viewer</h2>
+
+                <p>Buatlah aplikasi image viewer dengan tampilan profesional menggunakan QMainWindow, DockWidget, dan QSS.</p>
+
+                <!-- Mockup -->
+                <h3>Contoh Tampilan Aplikasi</h3>
+                <div style="border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin: 15px 0; font-family: monospace; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <!-- Title bar -->
+                    <div style="background: #1a1a2e; color: white; padding: 8px 12px; display: flex; justify-content: space-between;">
+                        <span>🖼️ photo.jpg — Image Viewer</span>
+                        <span style="color: #aaa;">— □ ✕</span>
+                    </div>
+                    <!-- Menu bar -->
+                    <div style="background: #16213e; color: #e0e0e0; padding: 5px 10px; display: flex; gap: 20px; font-size: 12px;">
+                        <span style="padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px;">File</span>
+                        <span style="padding: 2px 6px;">View</span>
+                        <span style="padding: 2px 6px;">Image</span>
+                        <span style="padding: 2px 6px;">Help</span>
+                    </div>
+                    <!-- Toolbar -->
+                    <div style="background: #0f3460; padding: 5px 10px; display: flex; gap: 6px; align-items: center;">
+                        <button style="padding: 3px 8px; border: 1px solid #e94560; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">📂 Open</button>
+                        <span style="color: #555; margin: 0 4px;">|</span>
+                        <button style="padding: 3px 8px; border: 1px solid #555; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">🔍+</button>
+                        <button style="padding: 3px 8px; border: 1px solid #555; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">🔍-</button>
+                        <button style="padding: 3px 8px; border: 1px solid #555; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">⊡ Fit</button>
+                        <span style="color: #555; margin: 0 4px;">|</span>
+                        <button style="padding: 3px 8px; border: 1px solid #555; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">↻ 90°</button>
+                        <button style="padding: 3px 8px; border: 1px solid #555; border-radius: 3px; background: transparent; color: #e0e0e0; font-size: 12px;">ℹ️ Info</button>
+                    </div>
+                    <!-- Body: dock + image area -->
+                    <div style="display: flex; min-height: 150px;">
+                        <!-- Dock kiri -->
+                        <div style="width: 130px; background: #16213e; color: #ccc; padding: 8px; border-right: 1px solid #0f3460; font-size: 11px;">
+                            <div style="color: #e94560; font-weight: bold; margin-bottom: 6px;">📁 File Browser</div>
+                            <div style="padding: 4px 6px; background: #0f3460; border-radius: 3px; margin-bottom: 3px; color: white;">🖼 photo.jpg</div>
+                            <div style="padding: 4px 6px; margin-bottom: 3px;">🖼 sunset.png</div>
+                            <div style="padding: 4px 6px; margin-bottom: 3px;">🖼 avatar.png</div>
+                            <div style="padding: 4px 6px;">🖼 logo.gif</div>
+                        </div>
+                        <!-- Image area -->
+                        <div style="flex: 1; background: #1a1a2e; display: flex; align-items: center; justify-content: center; padding: 15px;">
+                            <div style="width: 160px; height: 110px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; text-align: center;">
+                                🖼️<br><span style="font-size: 10px; opacity: 0.8;">photo.jpg<br>800 × 600 px</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Status bar -->
+                    <div style="background: #16213e; padding: 4px 12px; font-size: 11px; color: #7f8c8d; display: flex; justify-content: space-between; border-top: 1px solid #0f3460;">
+                        <span>photo.jpg | 800×600 px | 245 KB</span>
+                        <span>Zoom: 100%</span>
+                    </div>
+                </div>
+
+                <h3>Fitur yang Harus Diimplementasikan</h3>
+                <ul style="line-height: 2; padding-left: 20px;">
+                    <li>QMainWindow dengan MenuBar, Toolbar, dan StatusBar</li>
+                    <li>Dock widget (QDockWidget) di sisi kiri berisi QListWidget untuk daftar file gambar</li>
+                    <li>Central widget menampilkan gambar menggunakan QLabel + QPixmap + QScrollArea</li>
+                    <li>Open image dengan QFileDialog (filter: jpg, png, gif, bmp)</li>
+                    <li>Zoom In / Zoom Out (shortcut Ctrl++ / Ctrl+-) dan Fit to Window</li>
+                    <li>Rotate gambar 90°, 180°, 270° menggunakan QTransform</li>
+                    <li>Custom dialog Image Properties menampilkan nama file, ukuran (px), format, dan ukuran file (KB)</li>
+                    <li>StatusBar menampilkan info gambar dan persentase zoom</li>
+                    <li>Styling QSS tema dark/modern</li>
+                </ul>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Fitur</th><th>Widget/Class yang Digunakan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Tampilan gambar</td><td>QLabel, QPixmap, QScrollArea</td></tr>
+                            <tr><td>File browser</td><td>QDockWidget, QListWidget</td></tr>
+                            <tr><td>Open file</td><td>QFileDialog.getOpenFileName()</td></tr>
+                            <tr><td>Zoom &amp; Rotate</td><td>QPixmap.scaled(), QTransform</td></tr>
+                            <tr><td>Properties dialog</td><td>QDialog, QFormLayout, QLabel</td></tr>
+                            <tr><td>Styling</td><td>setStyleSheet(), QSS</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tugas 3 -->
+            <section class="section" id="tugas-3">
+                <h2>Tugas 3: Task Manager</h2>
+
+                <p>Buatlah aplikasi task manager dengan QTableWidget untuk menampilkan data, custom dialog untuk input, dan QSS untuk styling modern.</p>
+
+                <!-- Mockup -->
+                <h3>Contoh Tampilan Aplikasi</h3>
+                <div style="border: 2px solid #ddd; border-radius: 10px; overflow: hidden; margin: 15px 0; font-family: sans-serif; font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <!-- Title bar -->
+                    <div style="background: #2c3e50; color: white; padding: 8px 12px; display: flex; justify-content: space-between;">
+                        <span>✅ Task Manager</span>
+                        <span style="color: #aaa;">— □ ✕</span>
+                    </div>
+                    <!-- Menu bar -->
+                    <div style="background: #34495e; color: #ecf0f1; padding: 5px 10px; display: flex; gap: 20px; font-size: 12px;">
+                        <span style="padding: 2px 6px; background: rgba(255,255,255,0.1); border-radius: 3px;">File</span>
+                        <span style="padding: 2px 6px;">Task</span>
+                        <span style="padding: 2px 6px;">Help</span>
+                    </div>
+                    <!-- Toolbar -->
+                    <div style="background: #ecf0f1; padding: 6px 10px; display: flex; gap: 6px; align-items: center; border-bottom: 1px solid #ddd; flex-wrap: wrap;">
+                        <button style="padding: 4px 10px; border: none; border-radius: 4px; background: #27ae60; color: white; font-size: 12px; cursor: pointer;">+ Add Task</button>
+                        <button style="padding: 4px 10px; border: none; border-radius: 4px; background: #3498db; color: white; font-size: 12px; cursor: pointer;">✏️ Edit</button>
+                        <button style="padding: 4px 10px; border: none; border-radius: 4px; background: #e74c3c; color: white; font-size: 12px; cursor: pointer;">🗑 Delete</button>
+                        <span style="color: #bdc3c7; margin: 0 4px;">|</span>
+                        <span style="font-size: 12px; color: #7f8c8d;">Filter:</span>
+                        <select style="padding: 3px 6px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px;">
+                            <option>Semua</option><option>High</option><option>Medium</option>
+                        </select>
+                        <input type="text" placeholder="🔍 Cari task..." style="padding: 3px 8px; border: 1px solid #bdc3c7; border-radius: 4px; font-size: 12px; width: 120px;">
+                    </div>
+                    <!-- Table -->
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #2c3e50; color: white;">
+                                    <th style="padding: 8px 10px; text-align: left;">No</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Judul Task</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Prioritas</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Status</th>
+                                    <th style="padding: 8px 10px; text-align: left;">Due Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background: #fdecea;">
+                                    <td style="padding: 7px 10px;">1</td>
+                                    <td style="padding: 7px 10px;">Buat laporan praktikum</td>
+                                    <td style="padding: 7px 10px;"><span style="background: #e74c3c; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">High</span></td>
+                                    <td style="padding: 7px 10px;">In Progress</td>
+                                    <td style="padding: 7px 10px;">2026-04-01</td>
+                                </tr>
+                                <tr style="background: #fef9e7;">
+                                    <td style="padding: 7px 10px;">2</td>
+                                    <td style="padding: 7px 10px;">Review materi PySide6</td>
+                                    <td style="padding: 7px 10px;"><span style="background: #f39c12; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">Medium</span></td>
+                                    <td style="padding: 7px 10px;">Todo</td>
+                                    <td style="padding: 7px 10px;">2026-04-05</td>
+                                </tr>
+                                <tr style="background: #eafaf1;">
+                                    <td style="padding: 7px 10px;">3</td>
+                                    <td style="padding: 7px 10px;">Push code ke GitHub</td>
+                                    <td style="padding: 7px 10px;"><span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;">Low</span></td>
+                                    <td style="padding: 7px 10px;">Done ✓</td>
+                                    <td style="padding: 7px 10px;">2026-03-30</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Status bar -->
+                    <div style="background: #ecf0f1; padding: 4px 12px; font-size: 11px; color: #7f8c8d; display: flex; justify-content: space-between; border-top: 1px solid #ddd;">
+                        <span>Total: 3 tasks | Done: 1 | In Progress: 1 | Todo: 1</span>
+                        <span>tasks.json</span>
+                    </div>
+                </div>
+
+                <h3>Fitur yang Harus Diimplementasikan</h3>
+                <ul style="line-height: 2; padding-left: 20px;">
+                    <li>QMainWindow dengan MenuBar, Toolbar, dan StatusBar</li>
+                    <li>QTableWidget dengan kolom: No, Judul, Prioritas, Status, Due Date</li>
+                    <li>Toolbar berisi tombol Add, Edit, Delete, filter QComboBox, dan search QLineEdit</li>
+                    <li>Custom dialog Add/Edit Task: QLineEdit (judul), QComboBox (prioritas &amp; status), QDateEdit (due date)</li>
+                    <li>Warna baris tabel berbeda per prioritas — merah (High), kuning (Medium), hijau (Low)</li>
+                    <li>Filter real-time berdasarkan prioritas atau status</li>
+                    <li>Konfirmasi QMessageBox sebelum menghapus task</li>
+                    <li>StatusBar menampilkan ringkasan jumlah task</li>
+                    <li>Styling QSS untuk tampilan yang konsisten</li>
+                </ul>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Fitur</th><th>Widget/Class yang Digunakan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Tabel data</td><td>QTableWidget, QTableWidgetItem</td></tr>
+                            <tr><td>Form input</td><td>QDialog, QFormLayout, QLineEdit, QComboBox, QDateEdit</td></tr>
+                            <tr><td>Filter &amp; Search</td><td>QComboBox, QLineEdit</td></tr>
+                            <tr><td>Konfirmasi</td><td>QMessageBox.question()</td></tr>
+                            <tr><td>Warna prioritas</td><td>QTableWidgetItem.setBackground()</td></tr>
+                            <tr><td>Styling</td><td>setStyleSheet(), QSS</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Ketentuan -->
+            <section class="section" id="ketentuan">
+                <h2>Tugas Praktikum (Kerjakan 1 dari 3 soal tugas berikut)</h2>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Perhatian</div>
+                    <p>Kerjakan <strong>hanya salah satu</strong> dari 3 tugas di bawah ini. Pilih tugas yang paling sesuai dengan kemampuan dan minat kamu. Tidak perlu mengerjakan semuanya.</p>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Pengumpulan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li><strong>Simpan file Python</strong> dengan nama yang sesuai</li>
+                        <li><strong>Test program</strong> dan pastikan berjalan tanpa error</li>
+                        <li><strong>Ambil screenshot</strong> pada setiap aplikasi yang dijalankan</li>
+                        <li><strong>Upload ke GitHub</strong>, buat repository dengan nama <strong>T4-week6</strong> (upload file .py dan screenshot aplikasi berjalan)</li>
+                        <li><strong>Submit link GitHub</strong> ke platform Berajah</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Tambahan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li>Tambahkan komentar <strong>Nama, NIM, dan Kelas</strong> di awal file</li>
+                        <li>Pastikan kode <strong>rapi dan mudah dibaca</strong></li>
+                    </ol>
+                </div>
+                <hr>
+                <h2>Rubrik Penilaian</h2>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Komponen</th><th>Bobot</th><th>Kriteria</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>QMainWindow lengkap (Menu, Toolbar, StatusBar)</td>
+                                    <td>20%</td>
+                                    <td>Semua komponen berfungsi dengan baik</td>
+                                </tr>
+                                <tr>
+                                    <td>QAction dengan shortcut dan icon</td>
+                                    <td>20%</td>
+                                    <td>Minimal 3 action, shortcut berfungsi</td>
+                                </tr>
+                                <tr>
+                                    <td>Dialog bawaan dan custom</td>
+                                    <td>20%</td>
+                                    <td>Dialog tampil dan mengembalikan data dengan benar</td>
+                                </tr>
+                                <tr>
+                                    <td>Operasi file (open/save)</td>
+                                    <td>20%</td>
+                                    <td>File terbaca dan tersimpan dengan benar</td>
+                                </tr>
+                                <tr>
+                                    <td>Styling QSS</td>
+                                    <td>10%</td>
+                                    <td>Tampilan konsisten dan menarik</td>
+                                </tr>
+                                <tr>
+                                    <td>Kualitas kode dan dokumentasi</td>
+                                    <td>10%</td>
+                                    <td>Kode bersih, ada komentar, struktur rapi</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Excellent (85-100)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Semua fitur berjalan sempurna</li>
+                                <li>QSS styling konsisten dan menarik</li>
+                                <li>Ada fitur bonus (dark mode, dll)</li>
+                                <li>Kode terdokumentasi dengan baik</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Good (70-84)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Fitur utama berjalan dengan baik</li>
+                                <li>Ada styling QSS dasar</li>
+                                <li>Operasi file berfungsi</li>
+                                <li>Komentar kode cukup</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const header = document.querySelector('.page-header');
+            if (header) header.style.display = 'block';
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                showSection(href.substring(1));
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('ketentuan');
+            document.querySelector('.nav-link').classList.add('active');
+        });
+    </script>
+</body>
+</html>

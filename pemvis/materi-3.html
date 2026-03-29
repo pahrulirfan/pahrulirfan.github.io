@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Praktikum PySide6 - QMainWindow & Dialog</title>
+    <title>Praktikum PySide6 - QMainWindow, Dialog & QSS</title>
     <link rel="stylesheet" href="assets/css/style-2.css">
 </head>
 <body>
@@ -15,11 +15,11 @@
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>Praktikum PySide6</h2>
-                <p>QMainWindow & Dialog</p>
+                <p>QMainWindow, Dialog & QSS</p>
             </div>
             <nav class="sidebar-nav">
                 <div class="nav-section">
-                    <div class="nav-section-title">Materi Pembelajaran</div>
+                    <div class="nav-section-title">Pertemuan 4 — QMainWindow</div>
                     <a href="#qwidget-vs-qmainwindow" class="nav-link active">
                         <span class="nav-number">1</span>QWidget vs QMainWindow
                     </a>
@@ -43,9 +43,24 @@
                     </a>
                 </div>
                 <div class="nav-section">
-                    <div class="nav-section-title">Latihan</div>
-                    <a href="#latihan" class="nav-link">
-                        <span class="nav-number">★</span>Tugas Praktikum
+                    <div class="nav-section-title">Pertemuan 5 — Widget & QSS</div>
+                    <a href="#widget-display" class="nav-link">
+                        <span class="nav-number">8</span>Widget Data Display
+                    </a>
+                    <a href="#qss-dasar" class="nav-link">
+                        <span class="nav-number">9</span>QSS Dasar
+                    </a>
+                    <a href="#qss-selector" class="nav-link">
+                        <span class="nav-number">10</span>Selector & Property
+                    </a>
+                    <a href="#qss-pseudo" class="nav-link">
+                        <span class="nav-number">11</span>Pseudo-states
+                    </a>
+                    <a href="#qss-file" class="nav-link">
+                        <span class="nav-number">12</span>Load QSS dari File
+                    </a>
+                    <a href="#tema-light-dark" class="nav-link">
+                        <span class="nav-number">13</span>Tema Light/Dark
                     </a>
                 </div>
             </nav>
@@ -55,8 +70,8 @@
         <main class="main-content">
             <!-- Page Header -->
             <header class="page-header">
-                <h1>QMainWindow & Dialog di PySide6</h1>
-                <p class="subtitle">Membangun aplikasi desktop profesional dengan menu, toolbar, dan dialog</p>
+                <h1>QMainWindow, Dialog & QSS di PySide6</h1>
+                <p class="subtitle">Membangun aplikasi desktop profesional dengan menu, toolbar, dialog, dan styling QSS</p>
             </header>
 
             <!-- Indikator Pembelajaran -->
@@ -2400,239 +2415,983 @@
                 </div>
             </section>
 
-            <!-- Latihan -->
-            <section class="section" id="latihan">
-                <h2>Tugas Praktikum</h2>
 
-                <div class="exercise-box">
-                    <h3>Tugas 1: Notepad Clone</h3>
-                    <p>Buatlah aplikasi Notepad sederhana dengan fitur lengkap:</p>
-                    <ol>
-                        <li>QMainWindow dengan MenuBar (File, Edit, Format, Help)</li>
-                        <li>Toolbar dengan icon untuk aksi utama</li>
-                        <li>StatusBar menampilkan jumlah baris dan karakter</li>
-                        <li>Operasi file: New, Open, Save, Save As</li>
-                        <li>Edit: Undo, Redo, Cut, Copy, Paste, Select All</li>
-                        <li>Format: Font dialog, Word Wrap toggle</li>
-                        <li>Find & Replace dengan custom dialog</li>
-                        <li>Recent files di menu File</li>
-                    </ol>
+            <!-- Section 8: Widget Data Display -->
+            <section class="section" id="widget-display">
+                <h2>8. Widget Data Display: QTableWidget, QListWidget, QTreeWidget</h2>
+
+                <p>PySide6 menyediakan widget khusus untuk menampilkan data dalam berbagai format: tabel, list, dan tree.</p>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">QListWidget</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Menampilkan data satu kolom</li>
+                                <li>Cocok untuk daftar sederhana</li>
+                                <li>Mendukung icon per item</li>
+                                <li>Bisa single/multi selection</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">QTableWidget</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Menampilkan data baris & kolom</li>
+                                <li>Cocok untuk data tabular</li>
+                                <li>Header baris dan kolom</li>
+                                <li>Bisa embed widget di cell</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="exercise-box">
-                    <h3>Tugas 2: Image Viewer</h3>
-                    <p>Buatlah aplikasi image viewer dengan fitur:</p>
-                    <ol>
-                        <li>QMainWindow dengan struktur lengkap</li>
-                        <li>Dock widget untuk file browser (list gambar)</li>
-                        <li>Open image dengan QFileDialog (filter: jpg, png, gif)</li>
-                        <li>Zoom In, Zoom Out, Fit to Window</li>
-                        <li>Rotate image (90°, 180°, 270°)</li>
-                        <li>Save As dengan format berbeda</li>
-                        <li>Slideshow mode dengan timer</li>
-                        <li>Image properties dialog (ukuran, format, dll)</li>
-                    </ol>
+                <h3>QListWidget</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qlistwidget_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QHBoxLayout, QListWidget, QListWidgetItem, QPushButton,
+    QLineEdit, QLabel, QMessageBox
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+<span class="keyword">class</span> <span class="class-name">ListDemo</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QListWidget Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">400</span>, <span class="number">500</span>)
+        <span class="self">self</span>.setup_ui()
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        <span class="comment"># Input area</span>
+        input_layout = QHBoxLayout()
+        <span class="self">self</span>.input_field = QLineEdit()
+        <span class="self">self</span>.input_field.setPlaceholderText(<span class="string">"Ketik item baru..."</span>)
+        add_btn = QPushButton(<span class="string">"Tambah"</span>)
+        add_btn.clicked.connect(<span class="self">self</span>.add_item)
+        input_layout.addWidget(<span class="self">self</span>.input_field)
+        input_layout.addWidget(add_btn)
+        layout.addLayout(input_layout)
+
+        <span class="comment"># List widget</span>
+        <span class="self">self</span>.list_widget = QListWidget()
+        <span class="self">self</span>.list_widget.addItems([<span class="string">"Python"</span>, <span class="string">"Java"</span>, <span class="string">"C++"</span>, <span class="string">"JavaScript"</span>])
+        <span class="self">self</span>.list_widget.itemClicked.connect(<span class="self">self</span>.on_item_clicked)
+        layout.addWidget(<span class="self">self</span>.list_widget)
+
+        <span class="comment"># Buttons</span>
+        btn_layout = QHBoxLayout()
+        del_btn = QPushButton(<span class="string">"Hapus Terpilih"</span>)
+        del_btn.clicked.connect(<span class="self">self</span>.delete_item)
+        clear_btn = QPushButton(<span class="string">"Hapus Semua"</span>)
+        clear_btn.clicked.connect(<span class="self">self</span>.list_widget.clear)
+        btn_layout.addWidget(del_btn)
+        btn_layout.addWidget(clear_btn)
+        layout.addLayout(btn_layout)
+
+        <span class="self">self</span>.status_label = QLabel(<span class="string">"Pilih item dari list"</span>)
+        layout.addWidget(<span class="self">self</span>.status_label)
+
+    <span class="keyword">def</span> <span class="function">add_item</span>(<span class="self">self</span>):
+        text = <span class="self">self</span>.input_field.text().strip()
+        <span class="keyword">if</span> text:
+            <span class="self">self</span>.list_widget.addItem(text)
+            <span class="self">self</span>.input_field.clear()
+
+    <span class="keyword">def</span> <span class="function">delete_item</span>(<span class="self">self</span>):
+        current = <span class="self">self</span>.list_widget.currentRow()
+        <span class="keyword">if</span> current >= <span class="number">0</span>:
+            <span class="self">self</span>.list_widget.takeItem(current)
+
+    <span class="keyword">def</span> <span class="function">on_item_clicked</span>(<span class="self">self</span>, <span class="parameter">item</span>):
+        <span class="self">self</span>.status_label.setText(<span class="string">f"Dipilih: </span>{item.text()}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = ListDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
                 </div>
 
-                <div class="exercise-box">
-                    <h3>Tugas 3: Task Manager</h3>
-                    <p>Buatlah aplikasi task manager dengan fitur:</p>
-                    <ol>
-                        <li>QMainWindow dengan MenuBar dan Toolbar</li>
-                        <li>Table/List untuk menampilkan tasks</li>
-                        <li>Custom dialog untuk Add/Edit task</li>
-                        <li>Task properties: title, description, priority, due date</li>
-                        <li>Filter tasks berdasarkan priority atau status</li>
-                        <li>Save/Load tasks ke file JSON</li>
-                        <li>Export tasks ke file TXT</li>
-                        <li>Konfirmasi sebelum delete task</li>
-                    </ol>
-                </div>
+                <h3>QTableWidget</h3>
 
-                <div class="info-box warning">
-                    <div class="info-box-title">Ketentuan Pengumpulan</div>
-                    <ul>
-                        <li>Pilih dan kerjakan <strong>minimal 1 tugas</strong> dari pilihan di atas</li>
-                        <li>Aplikasi harus memiliki QMainWindow dengan MenuBar, Toolbar, dan StatusBar</li>
-                        <li>Implementasikan minimal 3 QAction dengan icon dan shortcut</li>
-                        <li>Gunakan minimal 1 built-in dialog dan 1 custom dialog</li>
-                        <li>Implementasikan operasi Save dan Open file</li>
-                        <li>Berikan komentar yang jelas pada setiap fungsi</li>
-                        <li>upload ke github dan link github kumpulkan di Ber</li>
-                    </ul>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qtablewidget_demo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QTableWidget, QTableWidgetItem, QPushButton, QHBoxLayout
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+<span class="keyword">class</span> <span class="class-name">TableDemo</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QTableWidget Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        <span class="comment"># Buat tabel: 4 baris, 3 kolom</span>
+        <span class="self">self</span>.table = QTableWidget(<span class="number">4</span>, <span class="number">3</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">"Nama"</span>, <span class="string">"Jurusan"</span>, <span class="string">"Nilai"</span>])
+
+        <span class="comment"># Isi data</span>
+        data = [
+            (<span class="string">"Andi"</span>, <span class="string">"Informatika"</span>, <span class="string">"85"</span>),
+            (<span class="string">"Budi"</span>, <span class="string">"Sistem Informasi"</span>, <span class="string">"90"</span>),
+            (<span class="string">"Citra"</span>, <span class="string">"Informatika"</span>, <span class="string">"78"</span>),
+            (<span class="string">"Dina"</span>, <span class="string">"Teknik Komputer"</span>, <span class="string">"92"</span>),
+        ]
+        <span class="keyword">for</span> row, (nama, jurusan, nilai) <span class="keyword">in</span> <span class="builtin">enumerate</span>(data):
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(nama))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(jurusan))
+            item = QTableWidgetItem(nilai)
+            item.setTextAlignment(Qt.AlignCenter)
+            <span class="self">self</span>.table.setItem(row, <span class="number">2</span>, item)
+
+        <span class="comment"># Stretch kolom terakhir</span>
+        <span class="self">self</span>.table.horizontalHeader().setStretchLastSection(<span class="keyword">True</span>)
+        layout.addWidget(<span class="self">self</span>.table)
+
+        <span class="comment"># Tombol sorting</span>
+        sort_btn = QPushButton(<span class="string">"Sort by Nama"</span>)
+        sort_btn.clicked.connect(<span class="keyword">lambda</span>: <span class="self">self</span>.table.sortItems(<span class="number">0</span>))
+        layout.addWidget(sort_btn)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = TableDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
                 </div>
 
                 <div class="info-box concept">
-                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="info-box-title">Method Penting QTableWidget</div>
                     <div class="table-container">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Komponen</th>
-                                    <th>Bobot</th>
-                                </tr>
+                                <tr><th>Method</th><th>Deskripsi</th></tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>QMainWindow lengkap (Menu, Toolbar, StatusBar)</td>
-                                    <td>25%</td>
-                                </tr>
-                                <tr>
-                                    <td>QAction dengan shortcut dan icon</td>
-                                    <td>20%</td>
-                                </tr>
-                                <tr>
-                                    <td>Dialog bawaan dan custom</td>
-                                    <td>25%</td>
-                                </tr>
-                                <tr>
-                                    <td>Operasi file (open/save)</td>
-                                    <td>20%</td>
-                                </tr>
-                                <tr>
-                                    <td>Kualitas kode dan dokumentasi</td>
-                                    <td>10%</td>
-                                </tr>
+                                <tr><td><span class="table-code">setItem(row, col, item)</span></td><td>Set item di posisi tertentu</td></tr>
+                                <tr><td><span class="table-code">item(row, col)</span></td><td>Ambil item di posisi tertentu</td></tr>
+                                <tr><td><span class="table-code">rowCount()</span></td><td>Jumlah baris</td></tr>
+                                <tr><td><span class="table-code">insertRow(row)</span></td><td>Sisipkan baris baru</td></tr>
+                                <tr><td><span class="table-code">removeRow(row)</span></td><td>Hapus baris</td></tr>
+                                <tr><td><span class="table-code">sortItems(col)</span></td><td>Sort berdasarkan kolom</td></tr>
+                                <tr><td><span class="table-code">currentRow()</span></td><td>Baris yang sedang dipilih</td></tr>
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </section>
+
+            <!-- Section 9: QSS Dasar -->
+            <section class="section" id="qss-dasar">
+                <h2>9. QSS Dasar (Qt Style Sheets)</h2>
+
+                <p>QSS adalah mekanisme styling di PySide6 yang mirip dengan CSS di web. Dengan QSS kita bisa mengubah tampilan widget secara visual tanpa mengubah logika program.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">QSS vs CSS</div>
+                    <p>Sintaks QSS sangat mirip CSS, namun bekerja pada widget Qt. Property dan selector-nya disesuaikan dengan sistem widget Qt.</p>
+                </div>
+
+                <h3>Cara Menerapkan QSS</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Cara</th><th>Method</th><th>Scope</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Per widget</td>
+                                <td><span class="table-code">widget.setStyleSheet("...")</span></td>
+                                <td>Hanya widget tersebut + child-nya</td>
+                            </tr>
+                            <tr>
+                                <td>Global (app)</td>
+                                <td><span class="table-code">app.setStyleSheet("...")</span></td>
+                                <td>Seluruh aplikasi</td>
+                            </tr>
+                            <tr>
+                                <td>Dari file .qss</td>
+                                <td><span class="table-code">open("style.qss")</span></td>
+                                <td>Bisa per widget atau global</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qss_basic.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QLineEdit
+)
+
+<span class="keyword">class</span> <span class="class-name">QSSBasicDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QSS Basic Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">400</span>, <span class="number">300</span>)
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.apply_styles()
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        <span class="self">self</span>.title_label = QLabel(<span class="string">"Judul Aplikasi"</span>)
+        <span class="self">self</span>.input_field = QLineEdit()
+        <span class="self">self</span>.input_field.setPlaceholderText(<span class="string">"Masukkan teks..."</span>)
+        <span class="self">self</span>.primary_btn = QPushButton(<span class="string">"Tombol Primary"</span>)
+        <span class="self">self</span>.danger_btn = QPushButton(<span class="string">"Tombol Danger"</span>)
+
+        layout.addWidget(<span class="self">self</span>.title_label)
+        layout.addWidget(<span class="self">self</span>.input_field)
+        layout.addWidget(<span class="self">self</span>.primary_btn)
+        layout.addWidget(<span class="self">self</span>.danger_btn)
+
+    <span class="keyword">def</span> <span class="function">apply_styles</span>(<span class="self">self</span>):
+        <span class="comment"># Style untuk window utama</span>
+        <span class="self">self</span>.setStyleSheet(<span class="string">"""
+            QWidget {
+                background-color: #f5f6fa;
+                font-family: Segoe UI, Arial;
+                font-size: 14px;
+            }
+        """</span>)
+
+        <span class="comment"># Style per widget</span>
+        <span class="self">self</span>.title_label.setStyleSheet(<span class="string">"""
+            QLabel {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+                padding: 10px;
+            }
+        """</span>)
+
+        <span class="self">self</span>.input_field.setStyleSheet(<span class="string">"""
+            QLineEdit {
+                border: 2px solid #bdc3c7;
+                border-radius: 6px;
+                padding: 8px 12px;
+                font-size: 14px;
+                background: white;
+            }
+            QLineEdit:focus {
+                border-color: #3498db;
+            }
+        """</span>)
+
+        <span class="self">self</span>.primary_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #2980b9;
+            }
+            QPushButton:pressed {
+                background-color: #1f6fa8;
+            }
+        """</span>)
+
+        <span class="self">self</span>.danger_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            QPushButton:hover { background-color: #c0392b; }
+            QPushButton:pressed { background-color: #a93226; }
+        """</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = QSSBasicDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 10: Selector & Property -->
+            <section class="section" id="qss-selector">
+                <h2>10. Selector & Property QSS</h2>
+
+                <p>QSS mendukung berbagai jenis selector untuk menarget widget secara spesifik.</p>
+
+                <h3>Jenis-jenis Selector</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Selector</th><th>Contoh</th><th>Deskripsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Type</td>
+                                <td><span class="table-code">QPushButton { }</span></td>
+                                <td>Semua widget tipe tersebut</td>
+                            </tr>
+                            <tr>
+                                <td>Class</td>
+                                <td><span class="table-code">QWidget[class="danger"] { }</span></td>
+                                <td>Widget dengan property tertentu</td>
+                            </tr>
+                            <tr>
+                                <td>Object Name</td>
+                                <td><span class="table-code">QPushButton#saveBtn { }</span></td>
+                                <td>Widget dengan objectName tertentu</td>
+                            </tr>
+                            <tr>
+                                <td>Descendant</td>
+                                <td><span class="table-code">QDialog QPushButton { }</span></td>
+                                <td>Widget di dalam widget lain</td>
+                            </tr>
+                            <tr>
+                                <td>Child</td>
+                                <td><span class="table-code">QDialog > QPushButton { }</span></td>
+                                <td>Child langsung dari widget</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Property QSS yang Sering Digunakan</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Property</th><th>Nilai Contoh</th><th>Deskripsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="table-code">background-color</span></td><td>#3498db, rgb(52,152,219)</td><td>Warna latar</td></tr>
+                            <tr><td><span class="table-code">color</span></td><td>white, #333</td><td>Warna teks</td></tr>
+                            <tr><td><span class="table-code">border</span></td><td>2px solid #ccc</td><td>Border widget</td></tr>
+                            <tr><td><span class="table-code">border-radius</span></td><td>6px</td><td>Sudut melengkung</td></tr>
+                            <tr><td><span class="table-code">padding</span></td><td>8px 12px</td><td>Jarak dalam</td></tr>
+                            <tr><td><span class="table-code">margin</span></td><td>5px</td><td>Jarak luar</td></tr>
+                            <tr><td><span class="table-code">font-size</span></td><td>14px</td><td>Ukuran font</td></tr>
+                            <tr><td><span class="table-code">font-weight</span></td><td>bold, 600</td><td>Ketebalan font</td></tr>
+                            <tr><td><span class="table-code">min-width / min-height</span></td><td>100px</td><td>Ukuran minimum</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qss_selector.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QPushButton, QLabel
+)
+
+<span class="keyword">class</span> <span class="class-name">SelectorDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QSS Selector Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">350</span>, <span class="number">300</span>)
+        <span class="self">self</span>.setup_ui()
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        <span class="comment"># Tombol dengan objectName berbeda</span>
+        btn_primary = QPushButton(<span class="string">"Primary"</span>)
+        btn_primary.setObjectName(<span class="string">"primaryBtn"</span>)
+
+        btn_success = QPushButton(<span class="string">"Success"</span>)
+        btn_success.setObjectName(<span class="string">"successBtn"</span>)
+
+        btn_danger = QPushButton(<span class="string">"Danger"</span>)
+        btn_danger.setObjectName(<span class="string">"dangerBtn"</span>)
+
+        btn_disabled = QPushButton(<span class="string">"Disabled"</span>)
+        btn_disabled.setEnabled(<span class="keyword">False</span>)
+
+        layout.addWidget(QLabel(<span class="string">"Contoh Selector berdasarkan objectName:"</span>))
+        layout.addWidget(btn_primary)
+        layout.addWidget(btn_success)
+        layout.addWidget(btn_danger)
+        layout.addWidget(btn_disabled)
+
+        <span class="comment"># Terapkan QSS dengan selector objectName (#)</span>
+        <span class="self">self</span>.setStyleSheet(<span class="string">"""
+            QWidget {
+                background: #f0f0f0;
+                font-size: 14px;
+            }
+
+            QPushButton {
+                padding: 10px 20px;
+                border-radius: 6px;
+                border: none;
+                font-weight: bold;
+                color: white;
+            }
+
+            QPushButton#primaryBtn {
+                background-color: #3498db;
+            }
+            QPushButton#primaryBtn:hover {
+                background-color: #2980b9;
+            }
+
+            QPushButton#successBtn {
+                background-color: #27ae60;
+            }
+            QPushButton#successBtn:hover {
+                background-color: #219a52;
+            }
+
+            QPushButton#dangerBtn {
+                background-color: #e74c3c;
+            }
+            QPushButton#dangerBtn:hover {
+                background-color: #c0392b;
+            }
+
+            QPushButton:disabled {
+                background-color: #bdc3c7;
+                color: #7f8c8d;
+            }
+        """</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = SelectorDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 11: Pseudo-states -->
+            <section class="section" id="qss-pseudo">
+                <h2>11. Pseudo-states QSS</h2>
+
+                <p>Pseudo-states memungkinkan styling berbeda berdasarkan kondisi/state widget saat ini.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Pseudo-state</th><th>Kondisi</th><th>Contoh Penggunaan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="table-code">:hover</span></td><td>Mouse di atas widget</td><td>Efek highlight saat hover</td></tr>
+                            <tr><td><span class="table-code">:pressed</span></td><td>Widget sedang diklik</td><td>Efek tekan tombol</td></tr>
+                            <tr><td><span class="table-code">:disabled</span></td><td>Widget tidak aktif</td><td>Tampilan abu-abu</td></tr>
+                            <tr><td><span class="table-code">:checked</span></td><td>Widget dalam kondisi checked</td><td>Checkbox/RadioButton aktif</td></tr>
+                            <tr><td><span class="table-code">:focus</span></td><td>Widget mendapat fokus</td><td>Border highlight pada input</td></tr>
+                            <tr><td><span class="table-code">:selected</span></td><td>Item terpilih di list/table</td><td>Highlight baris terpilih</td></tr>
+                            <tr><td><span class="table-code">:enabled</span></td><td>Widget aktif</td><td>Kebalikan dari :disabled</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qss_pseudo.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QPushButton,
+    QCheckBox, QLineEdit, QListWidget
+)
+
+<span class="keyword">class</span> <span class="class-name">PseudoDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Pseudo-states Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">400</span>, <span class="number">400</span>)
+        <span class="self">self</span>.setup_ui()
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        btn = QPushButton(<span class="string">"Hover & Press Me"</span>)
+        checkbox = QCheckBox(<span class="string">"Centang saya"</span>)
+        line_edit = QLineEdit()
+        line_edit.setPlaceholderText(<span class="string">"Klik untuk fokus..."</span>)
+        list_widget = QListWidget()
+        list_widget.addItems([<span class="string">"Item 1"</span>, <span class="string">"Item 2"</span>, <span class="string">"Item 3"</span>])
+
+        layout.addWidget(btn)
+        layout.addWidget(checkbox)
+        layout.addWidget(line_edit)
+        layout.addWidget(list_widget)
+
+        <span class="self">self</span>.setStyleSheet(<span class="string">"""
+            QWidget { background: #fff; font-size: 14px; padding: 5px; }
+
+            /* Button pseudo-states */
+            QPushButton {
+                background: #3498db;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px;
+            }
+            QPushButton:hover {
+                background: #2980b9;
+                border: 2px solid #1a6fa8;
+            }
+            QPushButton:pressed {
+                background: #1f6fa8;
+                padding-top: 12px;  /* efek "tertekan" */
+            }
+
+            /* Checkbox pseudo-states */
+            QCheckBox { spacing: 8px; }
+            QCheckBox::indicator {
+                width: 18px; height: 18px;
+                border: 2px solid #bdc3c7;
+                border-radius: 3px;
+            }
+            QCheckBox::indicator:checked {
+                background: #27ae60;
+                border-color: #27ae60;
+            }
+            QCheckBox::indicator:hover {
+                border-color: #3498db;
+            }
+
+            /* LineEdit focus */
+            QLineEdit {
+                border: 2px solid #bdc3c7;
+                border-radius: 6px;
+                padding: 8px;
+            }
+            QLineEdit:focus {
+                border-color: #3498db;
+                background: #eaf4fd;
+            }
+
+            /* List selection */
+            QListWidget::item { padding: 8px; }
+            QListWidget::item:selected {
+                background: #3498db;
+                color: white;
+                border-radius: 4px;
+            }
+            QListWidget::item:hover {
+                background: #d6eaf8;
+            }
+        """</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = PseudoDemo()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 12: Load QSS dari File -->
+            <section class="section" id="qss-file">
+                <h2>12. Load QSS dari File .qss</h2>
+
+                <p>Untuk proyek yang lebih besar, lebih baik memisahkan QSS ke file tersendiri agar kode Python tetap bersih dan style mudah dikelola.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Struktur Proyek dengan File QSS</div>
+                    <div class="flow-container">
+                        <div class="flow-box">main.py</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">load style.qss</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">app.setStyleSheet()</div>
+                    </div>
+                </div>
+
+                <h3>Contoh File style.qss</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">style.qss</span>
+                        <span class="code-badge">QSS</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment">/* style.qss - File stylesheet terpisah */</span>
+
+QWidget {
+    <span class="keyword">background-color</span>: <span class="string">#f5f6fa</span>;
+    <span class="keyword">font-family</span>: <span class="string">"Segoe UI", Arial, sans-serif</span>;
+    <span class="keyword">font-size</span>: <span class="number">14px</span>;
+    <span class="keyword">color</span>: <span class="string">#2c3e50</span>;
+}
+
+QPushButton {
+    <span class="keyword">background-color</span>: <span class="string">#3498db</span>;
+    <span class="keyword">color</span>: <span class="string">white</span>;
+    <span class="keyword">border</span>: <span class="string">none</span>;
+    <span class="keyword">border-radius</span>: <span class="number">6px</span>;
+    <span class="keyword">padding</span>: <span class="number">8px 16px</span>;
+    <span class="keyword">font-weight</span>: <span class="string">bold</span>;
+}
+QPushButton:hover { <span class="keyword">background-color</span>: <span class="string">#2980b9</span>; }
+QPushButton:pressed { <span class="keyword">background-color</span>: <span class="string">#1f6fa8</span>; }
+QPushButton:disabled { <span class="keyword">background-color</span>: <span class="string">#bdc3c7</span>; }
+
+QLineEdit, QTextEdit, QComboBox {
+    <span class="keyword">border</span>: <span class="string">2px solid #bdc3c7</span>;
+    <span class="keyword">border-radius</span>: <span class="number">6px</span>;
+    <span class="keyword">padding</span>: <span class="number">6px 10px</span>;
+    <span class="keyword">background</span>: <span class="string">white</span>;
+}
+QLineEdit:focus, QTextEdit:focus {
+    <span class="keyword">border-color</span>: <span class="string">#3498db</span>;
+}
+
+QTableWidget {
+    <span class="keyword">border</span>: <span class="string">1px solid #ddd</span>;
+    <span class="keyword">gridline-color</span>: <span class="string">#ecf0f1</span>;
+}
+QTableWidget::item:selected {
+    <span class="keyword">background-color</span>: <span class="string">#3498db</span>;
+    <span class="keyword">color</span>: <span class="string">white</span>;
+}
+QHeaderView::section {
+    <span class="keyword">background-color</span>: <span class="string">#2c3e50</span>;
+    <span class="keyword">color</span>: <span class="string">white</span>;
+    <span class="keyword">padding</span>: <span class="number">8px</span>;
+    <span class="keyword">border</span>: <span class="string">none</span>;
+}</code></pre>
+                    </div>
+                </div>
+
+                <h3>Cara Load File QSS di Python</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">load_qss.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QApplication, QMainWindow, QTextEdit
+
+<span class="keyword">def</span> <span class="function">load_stylesheet</span>(<span class="parameter">filepath</span>):
+    <span class="string">"""Load QSS dari file dan return sebagai string"""</span>
+    <span class="keyword">try</span>:
+        <span class="keyword">with</span> <span class="builtin">open</span>(filepath, <span class="string">'r'</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:
+            <span class="keyword">return</span> f.read()
+    <span class="keyword">except</span> FileNotFoundError:
+        <span class="builtin">print</span>(<span class="string">f"File QSS tidak ditemukan: </span>{filepath}<span class="string">"</span>)
+        <span class="keyword">return</span> <span class="string">""</span>
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"App dengan QSS File"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">400</span>)
+        <span class="self">self</span>.setCentralWidget(QTextEdit())
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+
+    <span class="comment"># Load QSS dari file dan terapkan ke seluruh aplikasi</span>
+    stylesheet = load_stylesheet(<span class="string">"style.qss"</span>)
+    app.setStyleSheet(stylesheet)
+
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Keuntungan File QSS Terpisah</div>
+                    <ul>
+                        <li>Kode Python lebih bersih dan fokus pada logika</li>
+                        <li>Style mudah diubah tanpa menyentuh kode Python</li>
+                        <li>Bisa switch tema hanya dengan ganti file QSS</li>
+                        <li>Bisa di-share antar beberapa file Python</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 13: Tema Light/Dark -->
+            <section class="section" id="tema-light-dark">
+                <h2>13. Tema Light/Dark Mode</h2>
+
+                <p>Fitur toggle tema Light/Dark adalah salah satu fitur modern yang banyak diharapkan user. Implementasinya di PySide6 cukup sederhana dengan menyiapkan dua set QSS.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Toggle Tema</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Klik Toggle</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Ganti Stylesheet</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">UI Update Otomatis</div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">theme_toggle.py</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QTextEdit, QHBoxLayout
+)
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction
+
+<span class="comment"># ===== DEFINISI TEMA =====</span>
+
+LIGHT_THEME = <span class="string">"""
+    QMainWindow, QWidget {
+        background-color: #f5f6fa;
+        color: #2c3e50;
+    }
+    QTextEdit {
+        background: white;
+        color: #2c3e50;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 8px;
+    }
+    QPushButton {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: bold;
+    }
+    QPushButton:hover { background-color: #2980b9; }
+    QLabel { color: #2c3e50; font-size: 14px; }
+    QMenuBar { background: #2c3e50; color: white; }
+    QMenuBar::item:selected { background: #3498db; }
+    QStatusBar { background: #ecf0f1; color: #7f8c8d; }
+"""</span>
+
+DARK_THEME = <span class="string">"""
+    QMainWindow, QWidget {
+        background-color: #1a1a2e;
+        color: #e0e0e0;
+    }
+    QTextEdit {
+        background: #16213e;
+        color: #e0e0e0;
+        border: 1px solid #0f3460;
+        border-radius: 6px;
+        padding: 8px;
+    }
+    QPushButton {
+        background-color: #0f3460;
+        color: #e0e0e0;
+        border: 1px solid #e94560;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-weight: bold;
+    }
+    QPushButton:hover { background-color: #e94560; color: white; }
+    QLabel { color: #e0e0e0; font-size: 14px; }
+    QMenuBar { background: #16213e; color: #e0e0e0; }
+    QMenuBar::item:selected { background: #0f3460; }
+    QStatusBar { background: #16213e; color: #7f8c8d; }
+"""</span>
+
+
+<span class="keyword">class</span> <span class="class-name">ThemeApp</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Light/Dark Theme Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">450</span>)
+        <span class="self">self</span>.is_dark = <span class="keyword">False</span>  <span class="comment"># State tema saat ini</span>
+
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.setup_menu()
+        <span class="self">self</span>.apply_theme()  <span class="comment"># Terapkan tema awal</span>
+
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        <span class="self">self</span>.theme_label = QLabel(<span class="string">"Tema Aktif: Light Mode ☀️"</span>)
+        <span class="self">self</span>.theme_label.setStyleSheet(<span class="string">"font-size: 16px; font-weight: bold; padding: 10px;"</span>)
+
+        <span class="self">self</span>.text_edit = QTextEdit()
+        <span class="self">self</span>.text_edit.setPlaceholderText(<span class="string">"Ketik sesuatu di sini..."</span>)
+
+        btn_layout = QHBoxLayout()
+        <span class="self">self</span>.toggle_btn = QPushButton(<span class="string">"🌙 Switch to Dark Mode"</span>)
+        <span class="self">self</span>.toggle_btn.clicked.connect(<span class="self">self</span>.toggle_theme)
+        btn_layout.addWidget(<span class="self">self</span>.toggle_btn)
+
+        layout.addWidget(<span class="self">self</span>.theme_label)
+        layout.addWidget(<span class="self">self</span>.text_edit)
+        layout.addLayout(btn_layout)
+
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Light Mode aktif"</span>)
+
+    <span class="keyword">def</span> <span class="function">setup_menu</span>(<span class="self">self</span>):
+        view_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;View"</span>)
+        toggle_action = QAction(<span class="string">"Toggle Dark Mode"</span>, <span class="self">self</span>)
+        toggle_action.setShortcut(<span class="string">"Ctrl+Shift+T"</span>)
+        toggle_action.triggered.connect(<span class="self">self</span>.toggle_theme)
+        view_menu.addAction(toggle_action)
+
+    <span class="keyword">def</span> <span class="function">toggle_theme</span>(<span class="self">self</span>):
+        <span class="string">"""Toggle antara light dan dark theme"""</span>
+        <span class="self">self</span>.is_dark = <span class="keyword">not</span> <span class="self">self</span>.is_dark
+        <span class="self">self</span>.apply_theme()
+
+    <span class="keyword">def</span> <span class="function">apply_theme</span>(<span class="self">self</span>):
+        <span class="string">"""Terapkan tema sesuai state is_dark"""</span>
+        <span class="keyword">if</span> <span class="self">self</span>.is_dark:
+            QApplication.instance().setStyleSheet(DARK_THEME)
+            <span class="self">self</span>.theme_label.setText(<span class="string">"Tema Aktif: Dark Mode 🌙"</span>)
+            <span class="self">self</span>.toggle_btn.setText(<span class="string">"☀️ Switch to Light Mode"</span>)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Dark Mode aktif"</span>)
+        <span class="keyword">else</span>:
+            QApplication.instance().setStyleSheet(LIGHT_THEME)
+            <span class="self">self</span>.theme_label.setText(<span class="string">"Tema Aktif: Light Mode ☀️"</span>)
+            <span class="self">self</span>.toggle_btn.setText(<span class="string">"🌙 Switch to Dark Mode"</span>)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Light Mode aktif"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = ThemeApp()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Tips Implementasi Tema</div>
+                    <ul>
+                        <li>Simpan tema di konstanta atau file .qss terpisah agar mudah dikelola</li>
+                        <li>Gunakan <span class="inline-code">QApplication.instance().setStyleSheet()</span> untuk menerapkan ke seluruh app</li>
+                        <li>Simpan preferensi tema user ke file config agar tersimpan saat app ditutup</li>
+                        <li>Shortcut keyboard (Ctrl+Shift+T) membuat toggle lebih mudah diakses</li>
+                    </ul>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Ringkasan Pertemuan 5</div>
+                    <ol>
+                        <li>QListWidget dan QTableWidget untuk menampilkan data</li>
+                        <li>QSS mirip CSS — selector, property, value</li>
+                        <li>Selector: type, objectName (#), descendant</li>
+                        <li>Pseudo-states: :hover, :pressed, :disabled, :focus, :checked</li>
+                        <li>Load QSS dari file .qss untuk kode yang lebih rapi</li>
+                        <li>Toggle tema Light/Dark dengan mengganti stylesheet</li>
+                    </ol>
                 </div>
             </section>
         </main>
     </div>
 
     <script>
-        // Toggle sidebar for mobile
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // Hide all sections except the target one
         function showSection(sectionId) {
-            const sections = document.querySelectorAll('.section');
-            const pageHeader = document.querySelector('.page-header');
-            const learningIndicator = document.querySelector('.section:first-of-type');
-            
-            sections.forEach(section => {
-                section.style.display = 'none';
-            });
-            
-            // Show page header and learning indicator
-            if (pageHeader) pageHeader.style.display = 'block';
-            
-            // Show target section
-            if (sectionId === 'indikator') {
-                if (learningIndicator) learningIndicator.style.display = 'block';
-            } else {
-                const targetSection = document.getElementById(sectionId);
-                if (targetSection) {
-                    targetSection.style.display = 'block';
-                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const header = document.querySelector('.page-header');
+            if (header) header.style.display = 'block';
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        // Smooth scrolling for navigation
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 const href = this.getAttribute('href');
-                
-                // Skip if it's an external link
-                if (href.endsWith('.html')) {
-                    return;
-                }
-                
+                if (href.endsWith('.html')) return;
                 e.preventDefault();
-                const sectionId = href.substring(1); // Remove # from href
-                
-                // Show only the target section
-                showSection(sectionId);
-
-                // Update active class
+                showSection(href.substring(1));
                 document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
-
-                // Close sidebar on mobile
                 if (window.innerWidth <= 992) {
                     document.getElementById('sidebar').classList.remove('active');
                 }
             });
         });
 
-        // Show first section on page load
         document.addEventListener('DOMContentLoaded', function() {
             showSection('qwidget-vs-qmainwindow');
             document.querySelector('.nav-link').classList.add('active');
         });
 
-        // Disable right-click on code blocks
+        // Anti-copy
         document.querySelectorAll('.code-block').forEach(block => {
-            block.addEventListener('contextmenu', function(e) {
-                e.preventDefault();
-                alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
-                return false;
-            });
+            block.addEventListener('contextmenu', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual!'); });
+            block.addEventListener('selectstart', e => e.preventDefault());
+            block.addEventListener('dragstart', e => e.preventDefault());
         });
-
-        // Disable copy (Ctrl+C) on code blocks
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-                const selection = window.getSelection();
-                const codeBlock = selection.anchorNode?.parentElement?.closest('.code-block');
-                
-                if (codeBlock) {
+                const sel = window.getSelection();
+                if (sel.anchorNode?.parentElement?.closest('.code-block')) {
                     e.preventDefault();
-                    alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+                    alert('Kode tidak dapat disalin. Silakan ketik manual!');
                 }
             }
         });
-
-        // Disable drag selection on code blocks
-        document.querySelectorAll('.code-block').forEach(block => {
-            block.addEventListener('selectstart', function(e) {
-                e.preventDefault();
-                return false;
-            });
-            
-            block.addEventListener('dragstart', function(e) {
-                e.preventDefault();
-                return false;
-            });
+        document.querySelectorAll('.code-block, .table-code, .inline-code').forEach(el => {
+            el.addEventListener('copy', e => { e.preventDefault(); alert('Kode tidak dapat disalin!'); });
         });
 
-        // Disable copy event
-        document.querySelectorAll('.code-block, .table-code, .inline-code').forEach(element => {
-            element.addEventListener('copy', function(e) {
-                e.preventDefault();
-                alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
-            });
-        });
-
-        // Update active nav on scroll
-        window.addEventListener('scroll', function() {
-            const sections = document.querySelectorAll('.section');
-            const navLinks = document.querySelectorAll('.nav-link');
-            
-            let current = '';
-            
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                if (pageYOffset >= sectionTop - 100) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === '#' + current) {
-                    link.classList.add('active');
-                }
-            });
-        });
-
-        // Console warning
         console.log('%c⚠️ PERHATIAN!', 'color: red; font-size: 24px; font-weight: bold;');
-        console.log('%cKode di halaman ini dilindungi. Silakan ketik manual untuk belajar lebih efektif!', 'font-size: 14px;');
+        console.log('%cKode di halaman ini dilindungi.', 'font-size: 14px;');
     </script>
 </body>
 </html>
