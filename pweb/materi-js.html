@@ -1,0 +1,2565 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi JavaScript - Pemrograman Web</title>
+    <!-- Import CSS dari materi sebelumnya -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Tambahan style khusus JavaScript */
+
+        header {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+        }
+        
+        .sidebar h3 {
+            color: #f39c12 !important;
+        }
+        
+        .sidebar ul li a:hover {
+            border-left: 3px solid #f39c12 !important;
+        }
+        
+        .sidebar ul li a.active {
+            background-color: #f39c12 !important;
+        }
+        
+        section h2 {
+            border-bottom: 3px solid #f39c12 !important;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%) !important;
+        }
+        
+        .badge {
+            background: #f39c12 !important;
+        }
+        
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #f39c12 !important;
+        }
+
+        /* Console output style */
+        .console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            margin: 10px 0;
+            min-height: 50px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .console-output::before {
+            content: '> Console Output:';
+            color: #888;
+            display: block;
+            margin-bottom: 10px;
+            font-size: 0.85em;
+        }
+
+        /* Try it button */
+        .btn-try {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+            font-size: 0.9em;
+            transition: transform 0.2s;
+        }
+
+        .btn-try:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        /* Interactive demo area */
+        .interactive-demo {
+            background: #f8f9fa;
+            border: 2px solid #f39c12;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .interactive-demo h5 {
+            color: #e67e22;
+            margin-bottom: 15px;
+        }
+
+        .interactive-demo input,
+        .interactive-demo select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+            font-size: 1em;
+        }
+
+        .interactive-demo button {
+            padding: 8px 20px;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .interactive-demo button:hover {
+            background: #e67e22;
+        }
+
+        .result-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            min-height: 40px;
+        }
+
+                /* Keyword highlighting */
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+        .function { color: #61afef; }
+        .comment { color: #7f8c8d; }
+        .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>Materi JavaScript - Pemrograman Web</h1>
+        <p>Sub-CPMK 4: Membangun Halaman Web Berbasis JavaScript</p>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#pengertian" class="active">1. Pengertian JavaScript</a></li>
+                <li><a href="#penulisan">2. Cara Penulisan JS</a></li>
+                <li><a href="#variabel">3. Variabel & Tipe Data</a></li>
+                <li><a href="#operator">4. Operator</a></li>
+                <li><a href="#percabangan">5. Percabangan (If-Else)</a></li>
+                <li><a href="#perulangan">6. Perulangan (Loop)</a></li>
+                <li><a href="#function">7. Function</a></li>
+                <li><a href="#array">8. Array</a></li>
+                <li><a href="#object-bawaan">9. Object Bawaan JS</a></li>
+                <li><a href="#dom">10. DOM Manipulation</a></li>
+                <li><a href="#event">11. Event Handling</a></li>
+                <li><a href="#object-custom">12. Object Buatan Sendiri</a></li>
+                <li><a href="#latihan">13. Latihan & Tugas</a></li>
+            </ul>
+            
+            <h3>Capaian Pembelajaran</h3>
+            <ul>
+                <li><a href="#cpmk">CPMK 4.1 - 4.5</a></li>
+            </ul>
+
+            <h3>🔗 Link Terkait</h3>
+            <ul>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">eLearning</a></li>
+            </ul>
+        </nav>
+
+        <!-- Konten Utama -->
+        <main class="content">
+            
+            <!-- Section 1: Pengertian JavaScript -->
+            <section id="pengertian">
+                <h2>1. Pengertian JavaScript <span class="badge">CPMK 4.1</span></h2>
+                
+                <h3>Apa itu JavaScript?</h3>
+                <p><strong>JavaScript</strong> adalah bahasa pemrograman yang digunakan untuk membuat halaman web menjadi interaktif dan dinamis. JavaScript berjalan di sisi client (browser) dan dapat memanipulasi konten HTML, merespons aksi pengguna, dan berkomunikasi dengan server.</p>
+                
+                <div class="info-box">
+                    <strong>Fakta JavaScript:</strong>
+                    <ul>
+                        <li>Dibuat oleh <strong>Brendan Eich</strong> di Netscape tahun 1995</li>
+                        <li>Awalnya bernama <strong>LiveScript</strong>, lalu diubah jadi JavaScript</li>
+                        <li>JavaScript ≠ Java (bahasa berbeda!)</li>
+                        <li>Standar resmi: <strong>ECMAScript</strong> (ES6/ES2015 adalah versi populer)</li>
+                        <li>Dapat berjalan di browser dan server (Node.js)</li>
+                    </ul>
+                </div>
+
+                <h3>Bagaimana JavaScript Dieksekusi?</h3>
+                <table>
+                    <tr>
+                        <th>Langkah</th>
+                        <th>Proses</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>Browser memuat file HTML</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Browser menemukan tag <code>&lt;script&gt;</code></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>JavaScript Engine (V8/SpiderMonkey) mem-parsing kode</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Kode dikompilasi menjadi bytecode</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Kode dieksekusi dan hasilnya ditampilkan</td>
+                    </tr>
+                </table>
+
+                <h3>JavaScript Engine di Berbagai Browser</h3>
+                <table>
+                    <tr>
+                        <th>Browser</th>
+                        <th>JavaScript Engine</th>
+                    </tr>
+                    <tr>
+                        <td>Google Chrome</td>
+                        <td>V8</td>
+                    </tr>
+                    <tr>
+                        <td>Mozilla Firefox</td>
+                        <td>SpiderMonkey</td>
+                    </tr>
+                    <tr>
+                        <td>Safari</td>
+                        <td>JavaScriptCore (Nitro)</td>
+                    </tr>
+                    <tr>
+                        <td>Microsoft Edge</td>
+                        <td>V8 (Chromium-based)</td>
+                    </tr>
+                </table>
+
+                <h3>Apa yang Bisa Dilakukan JavaScript?</h3>
+                <ul>
+                    <li>Mengubah konten HTML dan CSS secara dinamis</li>
+                    <li>Merespons interaksi pengguna (klik, hover, input)</li>
+                    <li>Validasi form sebelum dikirim ke server</li>
+                    <li>Membuat animasi dan efek visual</li>
+                    <li>Mengambil dan mengirim data ke server (AJAX/Fetch)</li>
+                    <li>Menyimpan data di browser (localStorage, cookies)</li>
+                    <li>Membuat aplikasi web kompleks (SPA)</li>
+                </ul>
+            </section>
+
+            <!-- Section 2: Cara Penulisan JavaScript -->
+            <section id="penulisan">
+                <h2>2. Cara Penulisan JavaScript <span class="badge">CPMK 4.1</span></h2>
+                
+                <h3>3 Cara Menyisipkan JavaScript</h3>
+
+                <h4>1️⃣ Inline JavaScript (di atribut event)</h4>
+                <pre><code><span class="comment">&lt;!-- Tidak direkomendasikan --&gt;</span>
+&lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"alert('Hello!')"</span>&gt;Klik Saya&lt;/<span class="keyword">button</span>&gt;
+
+&lt;<span class="keyword">a</span> <span class="variable">href</span>=<span class="string">"#"</span> <span class="variable">onclick</span>=<span class="string">"console.log('Link diklik')"</span>&gt;Link&lt;/<span class="keyword">a</span>&gt;</code></pre>
+
+                <div class="warning-box">
+                    <strong>⚠️ Tidak Direkomendasikan:</strong> Inline JavaScript mencampur HTML dengan JavaScript, sulit di-maintain.
+                </div>
+
+                <h4>2️⃣ Internal JavaScript (di dalam tag &lt;script&gt;)</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Internal JS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 id="judul"&gt;Hello World&lt;/h1&gt;
+    
+    <span class="comment">&lt;!-- JavaScript di akhir body --&gt;</span>
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="comment">// Kode JavaScript di sini</span>
+        <span class="keyword">let</span> <span class="variable">nama</span> = <span class="string">"Mahasiswa"</span>;
+        <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Halo, "</span> + <span class="variable">nama</span>);
+        
+        <span class="comment">// Mengubah konten HTML</span>
+        <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"judul"</span>).<span class="variable">innerHTML</span> = <span class="string">"Selamat Belajar!"</span>;
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h4>3️⃣ External JavaScript (file terpisah) DIREKOMENDASIKAN</h4>
+                
+                <p><strong>File: script.js</strong></p>
+                <pre><code><span class="comment">// File: script.js</span>
+
+<span class="comment">// Variabel</span>
+<span class="keyword">let</span> <span class="variable">appName</span> = <span class="string">"My Website"</span>;
+
+<span class="comment">// Function</span>
+<span class="keyword">function</span> <span class="function">greet</span>(<span class="variable">name</span>) {
+    <span class="keyword">return</span> <span class="string">"Halo, "</span> + <span class="variable">name</span> + <span class="string">"!"</span>;
+}
+
+<span class="comment">// Event saat DOM loaded</span>
+<span class="variable">document</span>.<span class="function">addEventListener</span>(<span class="string">"DOMContentLoaded"</span>, <span class="keyword">function</span>() {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Website siap!"</span>);
+});</code></pre>
+
+                <p><strong>File: index.html</strong></p>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;External JS&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Belajar JavaScript&lt;/h1&gt;
+    
+    <span class="comment">&lt;!-- External JavaScript (di akhir body) --&gt;</span>
+    &lt;<span class="keyword">script</span> <span class="variable">src</span>=<span class="string">"script.js"</span>&gt;&lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h3>Posisi Tag &lt;script&gt;</h3>
+                <table>
+                    <tr>
+                        <th>Posisi</th>
+                        <th>Keterangan</th>
+                        <th>Kapan Digunakan</th>
+                    </tr>
+                    <tr>
+                        <td>Di &lt;head&gt;</td>
+                        <td>Dieksekusi sebelum body di-render</td>
+                        <td>Jika pakai <code>defer</code> atau <code>async</code></td>
+                    </tr>
+                    <tr>
+                        <td>Di akhir &lt;body&gt; ⭐</td>
+                        <td>Dieksekusi setelah HTML selesai dimuat</td>
+                        <td>Pilihan paling aman dan umum</td>
+                    </tr>
+                </table>
+
+                <h3>Atribut defer dan async</h3>
+
+                <p>Kedua atribut ini digunakan saat script diletakkan di <code>&lt;head&gt;</code>. Tanpa atribut apapun, browser akan <strong>berhenti</strong> memproses HTML saat menemukan tag <code>&lt;script&gt;</code>.</p>
+
+                <div style="overflow-x: auto; margin: 15px 0;">
+                    <table>
+                        <tr>
+                            <th>Atribut</th>
+                            <th>Download</th>
+                            <th>Eksekusi</th>
+                            <th>Cocok untuk</th>
+                        </tr>
+                        <tr>
+                            <td><code>&lt;script&gt;</code> biasa</td>
+                            <td>HTML berhenti, download JS</td>
+                            <td>Langsung, HTML belum selesai</td>
+                            <td>Script di akhir &lt;body&gt;</td>
+                        </tr>
+                        <tr>
+                            <td><code>defer</code></td>
+                            <td>Paralel (HTML tetap jalan)</td>
+                            <td>Setelah seluruh HTML selesai di-parse</td>
+                            <td>Script yang butuh akses DOM ⭐</td>
+                        </tr>
+                        <tr>
+                            <td><code>async</code></td>
+                            <td>Paralel (HTML tetap jalan)</td>
+                            <td>Langsung setelah download selesai</td>
+                            <td>Script independen (analytics, ads)</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin: 15px 0; border-left: 4px solid #f39c12;">
+                    <strong>🎯 Analogi sederhana:</strong>
+                    <ul style="margin: 10px 0 0 0; line-height: 2;">
+                        <li><strong>Tanpa atribut</strong> — seperti antri di kasir, semua berhenti sampai selesai</li>
+                        <li><strong>defer</strong> — ambil nomor antrian, HTML terus jalan, JS dieksekusi setelah HTML beres. <em>Urutan script tetap terjaga.</em></li>
+                        <li><strong>async</strong> — download sambil jalan, tapi langsung dieksekusi begitu selesai download. <em>Urutan tidak dijamin.</em></li>
+                    </ul>
+                </div>
+
+                <div style="background: #fff3cd; border-radius: 8px; padding: 14px; margin: 15px 0; border-left: 4px solid #f39c12;">
+                    <strong>💡 Kapan pakai yang mana?</strong><br>
+                    Gunakan <code>defer</code> untuk hampir semua kasus — script yang mengakses elemen HTML (getElementById, querySelector, dll) <strong>harus</strong> pakai <code>defer</code> atau diletakkan di akhir &lt;body&gt;. Gunakan <code>async</code> hanya untuk script yang tidak bergantung pada HTML, seperti Google Analytics.
+                </div>
+
+                <pre><code><span class="comment">&lt;!-- ❌ Tanpa atribut di &lt;head&gt;: HTML berhenti saat script didownload --&gt;</span>
+&lt;<span class="keyword">script</span> <span class="variable">src</span>=<span class="string">"app.js"</span>&gt;&lt;/<span class="keyword">script</span>&gt;
+
+<span class="comment">&lt;!-- ✅ defer: download paralel, eksekusi SETELAH HTML selesai di-parse --&gt;</span>
+&lt;<span class="keyword">script</span> <span class="variable">src</span>=<span class="string">"app.js"</span> <span class="variable">defer</span>&gt;&lt;/<span class="keyword">script</span>&gt;
+
+<span class="comment">&lt;!-- ⚡ async: download paralel, eksekusi SEGERA setelah download selesai --&gt;</span>
+&lt;<span class="keyword">script</span> <span class="variable">src</span>=<span class="string">"analytics.js"</span> <span class="variable">async</span>&gt;&lt;/<span class="keyword">script</span>&gt;</code></pre>
+
+                <h3>Output JavaScript</h3>
+
+                <p>Ada 5 cara menampilkan output di JavaScript. Berikut contoh lengkap masing-masing — simpan sebagai file <code>.html</code> dan buka di browser:</p>
+
+                <h4>1. console.log() — untuk debugging</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"id"</span>&gt;
+&lt;head&gt;&lt;meta charset=<span class="string">"UTF-8"</span>&gt;&lt;title&gt;console.log&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"coba()"</span>&gt;Coba console.log&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="keyword">function</span> <span class="function">coba</span>() {
+            <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Pesan biasa"</span>);
+            <span class="function">console</span>.<span class="function">warn</span>(<span class="string">"Ini pesan warning"</span>);
+            <span class="function">console</span>.<span class="function">error</span>(<span class="string">"Ini pesan error"</span>);
+        }
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                <p><small>💡 Buka DevTools (F12 → Console) untuk melihat hasilnya.</small></p>
+
+                <h4>2. alert() — popup pesan</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"id"</span>&gt;
+&lt;head&gt;&lt;meta charset=<span class="string">"UTF-8"</span>&gt;&lt;title&gt;alert&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"tampilAlert()"</span>&gt;Tampilkan Alert&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="keyword">function</span> <span class="function">tampilAlert</span>() {
+            <span class="function">alert</span>(<span class="string">"Halo! Ini adalah pesan alert."</span>);
+        }
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h4>3. confirm() — popup OK / Cancel</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"id"</span>&gt;
+&lt;head&gt;&lt;meta charset=<span class="string">"UTF-8"</span>&gt;&lt;title&gt;confirm&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"tanya()"</span>&gt;Tampilkan Confirm&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">p</span> <span class="variable">id</span>=<span class="string">"hasil"</span>&gt;&lt;/<span class="keyword">p</span>&gt;
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="keyword">function</span> <span class="function">tanya</span>() {
+            <span class="keyword">let</span> <span class="variable">jawaban</span> = <span class="function">confirm</span>(<span class="string">"Apakah Anda setuju?"</span>);
+            <span class="comment">// jawaban bernilai true (OK) atau false (Cancel)</span>
+            <span class="keyword">if</span> (<span class="variable">jawaban</span>) {
+                <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"hasil"</span>).<span class="variable">innerHTML</span> = <span class="string">"✅ Anda memilih OK"</span>;
+            } <span class="keyword">else</span> {
+                <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"hasil"</span>).<span class="variable">innerHTML</span> = <span class="string">"❌ Anda memilih Cancel"</span>;
+            }
+        }
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h4>4. prompt() — popup input dari user</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"id"</span>&gt;
+&lt;head&gt;&lt;meta charset=<span class="string">"UTF-8"</span>&gt;&lt;title&gt;prompt&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"tanyaNama()"</span>&gt;Tanya Nama&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">p</span> <span class="variable">id</span>=<span class="string">"salam"</span>&gt;&lt;/<span class="keyword">p</span>&gt;
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="keyword">function</span> <span class="function">tanyaNama</span>() {
+            <span class="keyword">let</span> <span class="variable">nama</span> = <span class="function">prompt</span>(<span class="string">"Siapa nama Anda?"</span>);
+            <span class="comment">// nama berisi teks yang diketik user, atau null jika Cancel</span>
+            <span class="keyword">if</span> (<span class="variable">nama</span>) {
+                <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"salam"</span>).<span class="variable">innerHTML</span> = <span class="string">"Halo, &lt;strong&gt;"</span> + <span class="variable">nama</span> + <span class="string">"&lt;/strong&gt;!"</span>;
+            }
+        }
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h4>5. innerHTML — mengubah konten elemen HTML ⭐ paling sering dipakai</h4>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=<span class="string">"id"</span>&gt;
+&lt;head&gt;&lt;meta charset=<span class="string">"UTF-8"</span>&gt;&lt;title&gt;innerHTML&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+    &lt;<span class="keyword">p</span> <span class="variable">id</span>=<span class="string">"teks"</span>&gt;Teks awal&lt;/<span class="keyword">p</span>&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"ubahTeks()"</span>&gt;Ubah Teks&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"kembalikan()"</span>&gt;Kembalikan&lt;/<span class="keyword">button</span>&gt;
+    &lt;<span class="keyword">script</span>&gt;
+        <span class="keyword">function</span> <span class="function">ubahTeks</span>() {
+            <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"teks"</span>).<span class="variable">innerHTML</span> = <span class="string">"&lt;strong&gt;Teks sudah diubah!&lt;/strong&gt;"</span>;
+        }
+        <span class="keyword">function</span> <span class="function">kembalikan</span>() {
+            <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"teks"</span>).<span class="variable">innerHTML</span> = <span class="string">"Teks awal"</span>;
+        }
+    &lt;/<span class="keyword">script</span>&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <div class="warning-box">
+                    <strong>⚠️ Catatan:</strong> <code>document.write()</code> tidak direkomendasikan karena akan menimpa seluruh halaman jika dipanggil setelah halaman selesai dimuat. Gunakan <code>innerHTML</code> sebagai gantinya.
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Langsung di Sini</h5>
+                    <button onclick="console.log('Pesan biasa'); console.warn('Warning!'); console.error('Error!')">1. console.log()</button>
+                    <button onclick="alert('Halo dari alert!')">2. alert()</button>
+                    <button onclick="let j=confirm('Setuju?'); document.getElementById('demo-output1').innerHTML='confirm → <strong>' + j + '</strong> (' + (j?'OK':'Cancel') + ')'">3. confirm()</button>
+                    <button onclick="let n=prompt('Nama Anda?'); if(n) document.getElementById('demo-output1').innerHTML='prompt → Halo, <strong>'+n+'</strong>!'">4. prompt()</button>
+                    <button onclick="document.getElementById('demo-output1').innerHTML='<strong>innerHTML</strong> berhasil mengubah konten elemen ini! ✅'">5. innerHTML</button>
+                    <div class="result-box" id="demo-output1">Klik salah satu tombol di atas...</div>
+                    <p><small>💡 Buka DevTools (F12 → Console) untuk melihat hasil console.log()</small></p>
+                </div>
+            </section>
+
+            <!-- Section 3: Variabel dan Tipe Data -->
+            <section id="variabel">
+                <h2>3. Variabel & Tipe Data <span class="badge">CPMK 4.2</span></h2>
+                
+                <h3>Deklarasi Variabel</h3>
+                <pre><code><span class="comment">// var - cara lama (hindari)</span>
+<span class="keyword">var</span> <span class="variable">nama</span> = <span class="string">"John"</span>;
+
+<span class="comment">// let - variabel yang bisa diubah ⭐</span>
+<span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">25</span>;
+<span class="variable">umur</span> = <span class="number">26</span>; <span class="comment">// bisa diubah</span>
+
+<span class="comment">// const - konstanta (tidak bisa diubah) ⭐</span>
+<span class="keyword">const</span> <span class="variable">PI</span> = <span class="number">3.14159</span>;
+<span class="comment">// PI = 3.14; // Error!</span>
+
+<span class="comment">// Aturan penamaan variabel:</span>
+<span class="keyword">let</span> <span class="variable">namaDepan</span> = <span class="string">"John"</span>;     <span class="comment">// camelCase (direkomendasikan)</span>
+<span class="keyword">let</span> <span class="variable">nama_belakang</span> = <span class="string">"Doe"</span>;  <span class="comment">// snake_case</span>
+<span class="keyword">let</span> <span class="variable">$harga</span> = <span class="number">1000</span>;          <span class="comment">// boleh pakai $</span>
+<span class="keyword">let</span> <span class="variable">_private</span> = <span class="keyword">true</span>;        <span class="comment">// boleh pakai _</span>
+<span class="comment">// let 1nama = "salah";      // tidak boleh dimulai angka</span></code></pre>
+
+                <h3>Perbedaan var, let, dan const</h3>
+                <table>
+                    <tr>
+                        <th>Fitur</th>
+                        <th>var</th>
+                        <th>let</th>
+                        <th>const</th>
+                    </tr>
+                    <tr>
+                        <td>Scope</td>
+                        <td>Function scope</td>
+                        <td>Block scope</td>
+                        <td>Block scope</td>
+                    </tr>
+                    <tr>
+                        <td>Re-assign</td>
+                        <td>Bisa</td>
+                        <td>Bisa</td>
+                        <td>Tidak bisa</td>
+                    </tr>
+                    <tr>
+                        <td>Re-declare</td>
+                        <td>Bisa</td>
+                        <td>Tidak bisa</td>
+                        <td>Tidak bisa</td>
+                    </tr>
+                    <tr>
+                        <td>Hoisting</td>
+                        <td>Ya (undefined)</td>
+                        <td>Tidak</td>
+                        <td>Tidak</td>
+                    </tr>
+                    <tr>
+                        <td>Rekomendasi</td>
+                        <td>Hindari</td>
+                        <td>Gunakan</td>
+                        <td>Gunakan</td>
+                    </tr>
+                </table>
+
+                <h3>Tipe Data Primitif</h3>
+                <pre><code><span class="comment">// 1. String (teks)</span>
+<span class="keyword">let</span> <span class="variable">nama</span> = <span class="string">"John Doe"</span>;
+<span class="keyword">let</span> <span class="variable">pesan</span> = <span class="string">'Hello World'</span>;
+<span class="keyword">let</span> <span class="variable">template</span> = <span class="string">`Halo, ${nama}!`</span>; <span class="comment">// template literal</span>
+
+<span class="comment">// 2. Number (angka - integer & float)</span>
+<span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">25</span>;
+<span class="keyword">let</span> <span class="variable">harga</span> = <span class="number">99.99</span>;
+<span class="keyword">let</span> <span class="variable">negatif</span> = <span class="number">-10</span>;
+
+<span class="comment">// 3. Boolean (true/false)</span>
+<span class="keyword">let</span> <span class="variable">aktif</span> = <span class="keyword">true</span>;
+<span class="keyword">let</span> <span class="variable">selesai</span> = <span class="keyword">false</span>;
+
+<span class="comment">// 4. Undefined (belum diberi nilai)</span>
+<span class="keyword">let</span> <span class="variable">x</span>;
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">x</span>); <span class="comment">// undefined</span>
+
+<span class="comment">// 5. Null (kosong/tidak ada nilai)</span>
+<span class="keyword">let</span> <span class="variable">data</span> = <span class="keyword">null</span>;
+
+<span class="comment">// 6. Symbol (ES6 - nilai unik)</span>
+<span class="keyword">let</span> <span class="variable">id</span> = <span class="function">Symbol</span>(<span class="string">"id"</span>);
+
+<span class="comment">// 7. BigInt (angka sangat besar)</span>
+<span class="keyword">let</span> <span class="variable">bigNumber</span> = <span class="number">9007199254740991n</span>;</code></pre>
+
+                <h3>Tipe Data Non-Primitif (Reference)</h3>
+                <pre><code><span class="comment">// 1. Object</span>
+<span class="keyword">let</span> <span class="variable">mahasiswa</span> = {
+    <span class="variable">nama</span>: <span class="string">"John"</span>,
+    <span class="variable">umur</span>: <span class="number">20</span>,
+    <span class="variable">jurusan</span>: <span class="string">"Informatika"</span>
+};
+
+<span class="comment">// 2. Array</span>
+<span class="keyword">let</span> <span class="variable">buah</span> = [<span class="string">"Apel"</span>, <span class="string">"Jeruk"</span>, <span class="string">"Mangga"</span>];
+<span class="keyword">let</span> <span class="variable">campuran</span> = [<span class="number">1</span>, <span class="string">"dua"</span>, <span class="keyword">true</span>, <span class="keyword">null</span>];
+
+<span class="comment">// 3. Function</span>
+<span class="keyword">let</span> <span class="variable">sapa</span> = <span class="keyword">function</span>(<span class="variable">nama</span>) {
+    <span class="keyword">return</span> <span class="string">"Halo, "</span> + <span class="variable">nama</span>;
+};</code></pre>
+
+                <h3>Mengecek Tipe Data</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">a</span> = <span class="string">"Hello"</span>;
+<span class="keyword">let</span> <span class="variable">b</span> = <span class="number">123</span>;
+<span class="keyword">let</span> <span class="variable">c</span> = <span class="keyword">true</span>;
+<span class="keyword">let</span> <span class="variable">d</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">let</span> <span class="variable">e</span> = {<span class="variable">nama</span>: <span class="string">"John"</span>};
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="variable">a</span>); <span class="comment">// "string"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="variable">b</span>); <span class="comment">// "number"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="variable">c</span>); <span class="comment">// "boolean"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="variable">d</span>); <span class="comment">// "object" (array adalah object)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="variable">e</span>); <span class="comment">// "object"</span>
+
+<span class="comment">// Cek apakah array</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Array</span>.<span class="function">isArray</span>(<span class="variable">d</span>)); <span class="comment">// true</span></code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Tipe Data</h5>
+                    <input type="text" id="input-value" placeholder="Masukkan nilai...">
+                    <button onclick="cekTipeData()">Cek Tipe Data</button>
+                    <div class="result-box" id="demo-tipe">Hasil pengecekan tipe data...</div>
+                </div>
+                <script>
+                    function cekTipeData() {
+                        let value = document.getElementById('input-value').value;
+                        let result = '';
+                        
+                        // Coba parse sebagai number
+                        if (!isNaN(value) && value !== '') {
+                            result = `Nilai: ${value}<br>typeof: "string" (dari input)<br>Jika dikonversi ke Number: ${Number(value)} (typeof: "number")`;
+                        } else if (value === 'true' || value === 'false') {
+                            result = `Nilai: ${value}<br>typeof: "string"<br>Jika dikonversi ke Boolean: ${value === 'true'}`;
+                        } else {
+                            result = `Nilai: "${value}"<br>typeof: "string"<br>Length: ${value.length}`;
+                        }
+                        
+                        document.getElementById('demo-tipe').innerHTML = result;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 4: Operator -->
+            <section id="operator">
+                <h2>4. Operator <span class="badge">CPMK 4.2</span></h2>
+                
+                <h3>Operator Aritmatika</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">a</span> = <span class="number">10</span>;
+<span class="keyword">let</span> <span class="variable">b</span> = <span class="number">3</span>;
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> + <span class="variable">b</span>);  <span class="comment">// 13 (penjumlahan)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> - <span class="variable">b</span>);  <span class="comment">// 7  (pengurangan)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> * <span class="variable">b</span>);  <span class="comment">// 30 (perkalian)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> / <span class="variable">b</span>);  <span class="comment">// 3.333... (pembagian)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> % <span class="variable">b</span>);  <span class="comment">// 1  (modulus/sisa bagi)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> ** <span class="variable">b</span>); <span class="comment">// 1000 (pangkat: 10³)</span>
+
+<span class="comment">// Increment & Decrement</span>
+<span class="keyword">let</span> <span class="variable">x</span> = <span class="number">5</span>;
+<span class="variable">x</span>++;  <span class="comment">// x = 6 (increment)</span>
+<span class="variable">x</span>--;  <span class="comment">// x = 5 (decrement)</span>
+++<span class="variable">x</span>;  <span class="comment">// x = 6 (pre-increment)</span>
+--<span class="variable">x</span>;  <span class="comment">// x = 5 (pre-decrement)</span></code></pre>
+
+                <h3>Operator Perbandingan</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">a</span> = <span class="number">5</span>;
+<span class="keyword">let</span> <span class="variable">b</span> = <span class="string">"5"</span>;
+
+<span class="comment">// == (sama nilai, tipe bisa beda)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> == <span class="variable">b</span>);   <span class="comment">// true</span>
+
+<span class="comment">// === (sama nilai DAN tipe) DIREKOMENDASIKAN</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> === <span class="variable">b</span>);  <span class="comment">// false</span>
+
+<span class="comment">// != (tidak sama nilai)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> != <span class="variable">b</span>);   <span class="comment">// false</span>
+
+<span class="comment">// !== (tidak sama nilai ATAU tipe) ⭐</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">a</span> !== <span class="variable">b</span>);  <span class="comment">// true</span>
+
+<span class="comment">// Perbandingan lainnya</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="number">10</span> > <span class="number">5</span>);   <span class="comment">// true (lebih besar)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="number">10</span> < <span class="number">5</span>);   <span class="comment">// false (lebih kecil)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="number">10</span> >= <span class="number">10</span>); <span class="comment">// true (lebih besar atau sama)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="number">10</span> <= <span class="number">5</span>);  <span class="comment">// false (lebih kecil atau sama)</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>⚠️ Penting:</strong> Selalu gunakan <code>===</code> dan <code>!==</code> untuk menghindari kesalahan perbandingan tipe data!
+                </div>
+
+                <h3>Operator Logika</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">x</span> = <span class="keyword">true</span>;
+<span class="keyword">let</span> <span class="variable">y</span> = <span class="keyword">false</span>;
+
+<span class="comment">// && (AND) - kedua kondisi harus true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">x</span> && <span class="variable">y</span>);  <span class="comment">// false</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">x</span> && <span class="variable">x</span>);  <span class="comment">// true</span>
+
+<span class="comment">// || (OR) - salah satu kondisi true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">x</span> || <span class="variable">y</span>);  <span class="comment">// true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">y</span> || <span class="variable">y</span>);  <span class="comment">// false</span>
+
+<span class="comment">// ! (NOT) - membalik nilai</span>
+<span class="function">console</span>.<span class="function">log</span>(!<span class="variable">x</span>);     <span class="comment">// false</span>
+<span class="function">console</span>.<span class="function">log</span>(!<span class="variable">y</span>);     <span class="comment">// true</span>
+
+<span class="comment">// Contoh praktis</span>
+<span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">20</span>;
+<span class="keyword">let</span> <span class="variable">punyaKTP</span> = <span class="keyword">true</span>;
+
+<span class="keyword">if</span> (<span class="variable">umur</span> >= <span class="number">17</span> && <span class="variable">punyaKTP</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Boleh membuat SIM"</span>);
+}</code></pre>
+
+                <h3>Operator Assignment</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">x</span> = <span class="number">10</span>;
+
+<span class="variable">x</span> += <span class="number">5</span>;   <span class="comment">// x = x + 5  → 15</span>
+<span class="variable">x</span> -= <span class="number">3</span>;   <span class="comment">// x = x - 3  → 12</span>
+<span class="variable">x</span> *= <span class="number">2</span>;   <span class="comment">// x = x * 2  → 24</span>
+<span class="variable">x</span> /= <span class="number">4</span>;   <span class="comment">// x = x / 4  → 6</span>
+<span class="variable">x</span> %= <span class="number">4</span>;   <span class="comment">// x = x % 4  → 2</span>
+<span class="variable">x</span> **= <span class="number">3</span>;  <span class="comment">// x = x ** 3 → 8</span></code></pre>
+
+                <h3>Operator String</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">firstName</span> = <span class="string">"John"</span>;
+<span class="keyword">let</span> <span class="variable">lastName</span> = <span class="string">"Doe"</span>;
+
+<span class="comment">// Concatenation (penggabungan)</span>
+<span class="keyword">let</span> <span class="variable">fullName</span> = <span class="variable">firstName</span> + <span class="string">" "</span> + <span class="variable">lastName</span>;
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">fullName</span>); <span class="comment">// "John Doe"</span>
+
+<span class="comment">// Template Literal (ES6) ⭐</span>
+<span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">25</span>;
+<span class="keyword">let</span> <span class="variable">pesan</span> = <span class="string">`Nama saya ${firstName} ${lastName}, umur ${umur} tahun`</span>;
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>); <span class="comment">// "Nama saya John Doe, umur 25 tahun"</span></code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Kalkulator Sederhana</h5>
+                    <input type="number" id="calc-a" placeholder="Angka 1" style="width: 80px;">
+                    <select id="calc-op">
+                        <option value="+">+</option>
+                        <option value="-">-</option>
+                        <option value="*">×</option>
+                        <option value="/">÷</option>
+                        <option value="%">%</option>
+                        <option value="**">^</option>
+                    </select>
+                    <input type="number" id="calc-b" placeholder="Angka 2" style="width: 80px;">
+                    <button onclick="hitungKalkulator()">Hitung</button>
+                    <div class="result-box" id="calc-result">Hasil: ...</div>
+                </div>
+                <script>
+                    function hitungKalkulator() {
+                        let a = Number(document.getElementById('calc-a').value);
+                        let b = Number(document.getElementById('calc-b').value);
+                        let op = document.getElementById('calc-op').value;
+                        let hasil;
+                        
+                        switch(op) {
+                            case '+': hasil = a + b; break;
+                            case '-': hasil = a - b; break;
+                            case '*': hasil = a * b; break;
+                            case '/': hasil = a / b; break;
+                            case '%': hasil = a % b; break;
+                            case '**': hasil = a ** b; break;
+                        }
+                        
+                        document.getElementById('calc-result').innerHTML = `${a} ${op} ${b} = <strong>${hasil}</strong>`;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 5: Percabangan -->
+            <section id="percabangan">
+                <h2>5. Percabangan (Control Flow) <span class="badge">CPMK 4.3</span></h2>
+                
+                <h3>If Statement</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">nilai</span> = <span class="number">85</span>;
+
+<span class="keyword">if</span> (<span class="variable">nilai</span> >= <span class="number">80</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Nilai A"</span>);
+}</code></pre>
+
+                <h3>If-Else Statement</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">15</span>;
+
+<span class="keyword">if</span> (<span class="variable">umur</span> >= <span class="number">17</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Boleh membuat SIM"</span>);
+} <span class="keyword">else</span> {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Belum boleh membuat SIM"</span>);
+}</code></pre>
+
+                <h3>If-Else If-Else Statement</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">nilai</span> = <span class="number">75</span>;
+<span class="keyword">let</span> <span class="variable">grade</span>;
+
+<span class="keyword">if</span> (<span class="variable">nilai</span> >= <span class="number">90</span>) {
+    <span class="variable">grade</span> = <span class="string">"A"</span>;
+} <span class="keyword">else if</span> (<span class="variable">nilai</span> >= <span class="number">80</span>) {
+    <span class="variable">grade</span> = <span class="string">"B"</span>;
+} <span class="keyword">else if</span> (<span class="variable">nilai</span> >= <span class="number">70</span>) {
+    <span class="variable">grade</span> = <span class="string">"C"</span>;
+} <span class="keyword">else if</span> (<span class="variable">nilai</span> >= <span class="number">60</span>) {
+    <span class="variable">grade</span> = <span class="string">"D"</span>;
+} <span class="keyword">else</span> {
+    <span class="variable">grade</span> = <span class="string">"E"</span>;
+}
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="string">`Nilai: ${nilai}, Grade: ${grade}`</span>);</code></pre>
+
+                <h3>Ternary Operator (Shorthand If-Else)</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">umur</span> = <span class="number">20</span>;
+
+<span class="comment">// Syntax: kondisi ? nilaiJikaTrue : nilaiJikaFalse</span>
+<span class="keyword">let</span> <span class="variable">status</span> = <span class="variable">umur</span> >= <span class="number">17</span> ? <span class="string">"Dewasa"</span> : <span class="string">"Anak-anak"</span>;
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">status</span>); <span class="comment">// "Dewasa"</span>
+
+<span class="comment">// Nested ternary (tidak direkomendasikan jika terlalu kompleks)</span>
+<span class="keyword">let</span> <span class="variable">nilai</span> = <span class="number">85</span>;
+<span class="keyword">let</span> <span class="variable">grade</span> = <span class="variable">nilai</span> >= <span class="number">90</span> ? <span class="string">"A"</span> : 
+             <span class="variable">nilai</span> >= <span class="number">80</span> ? <span class="string">"B"</span> : 
+             <span class="variable">nilai</span> >= <span class="number">70</span> ? <span class="string">"C"</span> : <span class="string">"D"</span>;</code></pre>
+
+                <h3>Switch Statement</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">hari</span> = <span class="number">3</span>;
+<span class="keyword">let</span> <span class="variable">namaHari</span>;
+
+<span class="keyword">switch</span> (<span class="variable">hari</span>) {
+    <span class="keyword">case</span> <span class="number">1</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Senin"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">2</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Selasa"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">3</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Rabu"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">4</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Kamis"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">5</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Jumat"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> <span class="number">6</span>:
+    <span class="keyword">case</span> <span class="number">7</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Weekend"</span>;
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>:
+        <span class="variable">namaHari</span> = <span class="string">"Tidak valid"</span>;
+}
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">namaHari</span>); <span class="comment">// "Rabu"</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>⚠️ Jangan lupa <code>break</code>!</strong> Tanpa break, eksekusi akan "jatuh" ke case berikutnya.
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Konversi Nilai ke Grade</h5>
+                    <input type="number" id="input-nilai" placeholder="Masukkan nilai (0-100)" min="0" max="100">
+                    <button onclick="konversiGrade()">Konversi</button>
+                    <div class="result-box" id="hasil-grade">Masukkan nilai untuk melihat grade...</div>
+                </div>
+                <script>
+                    function konversiGrade() {
+                        let nilai = Number(document.getElementById('input-nilai').value);
+                        let grade, keterangan;
+                        
+                        if (nilai >= 90) {
+                            grade = "A"; keterangan = "Sangat Baik";
+                        } else if (nilai >= 80) {
+                            grade = "B"; keterangan = "Baik";
+                        } else if (nilai >= 70) {
+                            grade = "C"; keterangan = "Cukup";
+                        } else if (nilai >= 60) {
+                            grade = "D"; keterangan = "Kurang";
+                        } else {
+                            grade = "E"; keterangan = "Sangat Kurang";
+                        }
+                        
+                        document.getElementById('hasil-grade').innerHTML = 
+                            `Nilai: <strong>${nilai}</strong><br>Grade: <strong>${grade}</strong> (${keterangan})`;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 6: Perulangan -->
+            <section id="perulangan">
+                <h2>6. Perulangan (Loop) <span class="badge">CPMK 4.3</span></h2>
+                
+                <h3>For Loop</h3>
+                <pre><code><span class="comment">// Syntax: for (inisialisasi; kondisi; increment)</span>
+
+<span class="comment">// Menampilkan angka 1-5</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>; <span class="variable">i</span> <= <span class="number">5</span>; <span class="variable">i</span>++) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+}
+<span class="comment">// Output: 1, 2, 3, 4, 5</span>
+
+<span class="comment">// Loop mundur</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">5</span>; <span class="variable">i</span> >= <span class="number">1</span>; <span class="variable">i</span>--) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+}
+<span class="comment">// Output: 5, 4, 3, 2, 1</span>
+
+<span class="comment">// Loop dengan step 2</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">0</span>; <span class="variable">i</span> <= <span class="number">10</span>; <span class="variable">i</span> += <span class="number">2</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+}
+<span class="comment">// Output: 0, 2, 4, 6, 8, 10</span></code></pre>
+
+                <h3>While Loop</h3>
+                <pre><code><span class="comment">// Loop selama kondisi true</span>
+<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>;
+
+<span class="keyword">while</span> (<span class="variable">i</span> <= <span class="number">5</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+    <span class="variable">i</span>++;
+}
+<span class="comment">// Output: 1, 2, 3, 4, 5</span></code></pre>
+
+                <h3>Do-While Loop</h3>
+                <pre><code><span class="comment">// Eksekusi minimal 1 kali, lalu cek kondisi</span>
+<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>;
+
+<span class="keyword">do</span> {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+    <span class="variable">i</span>++;
+} <span class="keyword">while</span> (<span class="variable">i</span> <= <span class="number">5</span>);
+
+<span class="comment">// Perbedaan dengan while: do-while minimal eksekusi 1x</span>
+<span class="keyword">let</span> <span class="variable">x</span> = <span class="number">10</span>;
+<span class="keyword">do</span> {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Ini akan tampil 1x"</span>);
+} <span class="keyword">while</span> (<span class="variable">x</span> < <span class="number">5</span>);</code></pre>
+
+                <h3>For...Of (untuk Array/String)</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">buah</span> = [<span class="string">"Apel"</span>, <span class="string">"Jeruk"</span>, <span class="string">"Mangga"</span>];
+
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">item</span> <span class="keyword">of</span> <span class="variable">buah</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">item</span>);
+}
+<span class="comment">// Output: Apel, Jeruk, Mangga</span>
+
+<span class="comment">// Untuk string</span>
+<span class="keyword">let</span> <span class="variable">kata</span> = <span class="string">"Halo"</span>;
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">huruf</span> <span class="keyword">of</span> <span class="variable">kata</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">huruf</span>);
+}
+<span class="comment">// Output: H, a, l, o</span></code></pre>
+
+                <h3>For...In (untuk Object)</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">mahasiswa</span> = {
+    <span class="variable">nama</span>: <span class="string">"John"</span>,
+    <span class="variable">umur</span>: <span class="number">20</span>,
+    <span class="variable">jurusan</span>: <span class="string">"Informatika"</span>
+};
+
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">key</span> <span class="keyword">in</span> <span class="variable">mahasiswa</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">`${key}: ${mahasiswa[key]}`</span>);
+}
+<span class="comment">// Output:</span>
+<span class="comment">// nama: John</span>
+<span class="comment">// umur: 20</span>
+<span class="comment">// jurusan: Informatika</span></code></pre>
+
+                <h3>Break dan Continue</h3>
+                <pre><code><span class="comment">// break: keluar dari loop</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>; <span class="variable">i</span> <= <span class="number">10</span>; <span class="variable">i</span>++) {
+    <span class="keyword">if</span> (<span class="variable">i</span> === <span class="number">5</span>) {
+        <span class="keyword">break</span>; <span class="comment">// berhenti di 5</span>
+    }
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+}
+<span class="comment">// Output: 1, 2, 3, 4</span>
+
+<span class="comment">// continue: skip iterasi saat ini</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>; <span class="variable">i</span> <= <span class="number">5</span>; <span class="variable">i</span>++) {
+    <span class="keyword">if</span> (<span class="variable">i</span> === <span class="number">3</span>) {
+        <span class="keyword">continue</span>; <span class="comment">// skip angka 3</span>
+    }
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">i</span>);
+}
+<span class="comment">// Output: 1, 2, 4, 5</span></code></pre>
+
+                <h3>Nested Loop (Loop Bersarang)</h3>
+                <pre><code><span class="comment">// Membuat tabel perkalian</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">1</span>; <span class="variable">i</span> <= <span class="number">3</span>; <span class="variable">i</span>++) {
+    <span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">j</span> = <span class="number">1</span>; <span class="variable">j</span> <= <span class="number">3</span>; <span class="variable">j</span>++) {
+        <span class="function">console</span>.<span class="function">log</span>(<span class="string">`${i} x ${j} = ${i * j}`</span>);
+    }
+}</code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Generator Angka</h5>
+                    <label>Dari: <input type="number" id="loop-start" value="1" style="width: 60px;"></label>
+                    <label>Sampai: <input type="number" id="loop-end" value="10" style="width: 60px;"></label>
+                    <label>Step: <input type="number" id="loop-step" value="1" style="width: 60px;"></label>
+                    <button onclick="generateLoop()">Generate</button>
+                    <div class="result-box" id="loop-result">Hasil loop akan muncul di sini...</div>
+                </div>
+                <script>
+                    function generateLoop() {
+                        let start = Number(document.getElementById('loop-start').value);
+                        let end = Number(document.getElementById('loop-end').value);
+                        let step = Number(document.getElementById('loop-step').value);
+                        let hasil = [];
+                        
+                        if (step > 0 && start <= end) {
+                            for (let i = start; i <= end; i += step) {
+                                hasil.push(i);
+                            }
+                        } else if (step < 0 && start >= end) {
+                            for (let i = start; i >= end; i += step) {
+                                hasil.push(i);
+                            }
+                        }
+                        
+                        document.getElementById('loop-result').innerHTML = 
+                            `Loop dari ${start} sampai ${end} dengan step ${step}:<br><strong>[${hasil.join(', ')}]</strong>`;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 7: Function -->
+            <section id="function">
+                <h2>7. Function <span class="badge">CPMK 4.2</span></h2>
+                
+                <h3>Deklarasi Function</h3>
+                <pre><code><span class="comment">// Function declaration</span>
+<span class="keyword">function</span> <span class="function">sapa</span>() {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Halo, Selamat Datang!"</span>);
+}
+
+<span class="comment">// Memanggil function</span>
+<span class="function">sapa</span>(); <span class="comment">// Output: Halo, Selamat Datang!</span></code></pre>
+
+                <h3>Function dengan Parameter</h3>
+                <pre><code><span class="keyword">function</span> <span class="function">sapaUser</span>(<span class="variable">nama</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">`Halo, ${nama}!`</span>);
+}
+
+<span class="function">sapaUser</span>(<span class="string">"John"</span>);  <span class="comment">// Output: Halo, John!</span>
+<span class="function">sapaUser</span>(<span class="string">"Jane"</span>);  <span class="comment">// Output: Halo, Jane!</span>
+
+<span class="comment">// Multiple parameters</span>
+<span class="keyword">function</span> <span class="function">perkenalanLengkap</span>(<span class="variable">nama</span>, <span class="variable">umur</span>, <span class="variable">kota</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">`Nama saya ${nama}, umur ${umur} tahun, dari ${kota}`</span>);
+}
+
+<span class="function">perkenalanLengkap</span>(<span class="string">"John"</span>, <span class="number">20</span>, <span class="string">"Mataram"</span>);</code></pre>
+
+                <h3>Function dengan Return</h3>
+                <pre><code><span class="keyword">function</span> <span class="function">tambah</span>(<span class="variable">a</span>, <span class="variable">b</span>) {
+    <span class="keyword">return</span> <span class="variable">a</span> + <span class="variable">b</span>;
+}
+
+<span class="keyword">let</span> <span class="variable">hasil</span> = <span class="function">tambah</span>(<span class="number">5</span>, <span class="number">3</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">hasil</span>); <span class="comment">// 8</span>
+
+<span class="comment">// Langsung digunakan</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">tambah</span>(<span class="number">10</span>, <span class="number">5</span>)); <span class="comment">// 15</span>
+
+<span class="comment">// Function dengan beberapa return</span>
+<span class="keyword">function</span> <span class="function">cekUmur</span>(<span class="variable">umur</span>) {
+    <span class="keyword">if</span> (<span class="variable">umur</span> >= <span class="number">17</span>) {
+        <span class="keyword">return</span> <span class="string">"Dewasa"</span>;
+    } <span class="keyword">else</span> {
+        <span class="keyword">return</span> <span class="string">"Anak-anak"</span>;
+    }
+}</code></pre>
+
+                <h3>Default Parameter (ES6)</h3>
+                <pre><code><span class="keyword">function</span> <span class="function">sapa</span>(<span class="variable">nama</span> = <span class="string">"Pengunjung"</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">`Halo, ${nama}!`</span>);
+}
+
+<span class="function">sapa</span>(<span class="string">"John"</span>); <span class="comment">// Halo, John!</span>
+<span class="function">sapa</span>();       <span class="comment">// Halo, Pengunjung!</span>
+
+<span class="keyword">function</span> <span class="function">hitungDiskon</span>(<span class="variable">harga</span>, <span class="variable">diskon</span> = <span class="number">10</span>) {
+    <span class="keyword">return</span> <span class="variable">harga</span> - (<span class="variable">harga</span> * <span class="variable">diskon</span> / <span class="number">100</span>);
+}
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">hitungDiskon</span>(<span class="number">100000</span>));      <span class="comment">// 90000 (diskon 10%)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">hitungDiskon</span>(<span class="number">100000</span>, <span class="number">25</span>)); <span class="comment">// 75000 (diskon 25%)</span></code></pre>
+
+                <h3>Function Expression</h3>
+                <pre><code><span class="comment">// Function disimpan dalam variabel</span>
+<span class="keyword">const</span> <span class="variable">kurang</span> = <span class="keyword">function</span>(<span class="variable">a</span>, <span class="variable">b</span>) {
+    <span class="keyword">return</span> <span class="variable">a</span> - <span class="variable">b</span>;
+};
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">kurang</span>(<span class="number">10</span>, <span class="number">3</span>)); <span class="comment">// 7</span></code></pre>
+
+                <h3>Arrow Function (ES6) ⭐</h3>
+                <pre><code><span class="comment">// Arrow function - syntax lebih singkat</span>
+<span class="keyword">const</span> <span class="variable">kali</span> = (<span class="variable">a</span>, <span class="variable">b</span>) => {
+    <span class="keyword">return</span> <span class="variable">a</span> * <span class="variable">b</span>;
+};
+
+<span class="comment">// Jika hanya 1 baris, bisa tanpa {} dan return</span>
+<span class="keyword">const</span> <span class="variable">bagi</span> = (<span class="variable">a</span>, <span class="variable">b</span>) => <span class="variable">a</span> / <span class="variable">b</span>;
+
+<span class="comment">// Jika hanya 1 parameter, bisa tanpa ()</span>
+<span class="keyword">const</span> <span class="variable">kuadrat</span> = <span class="variable">x</span> => <span class="variable">x</span> * <span class="variable">x</span>;
+
+<span class="comment">// Tanpa parameter</span>
+<span class="keyword">const</span> <span class="variable">sapaPagi</span> = () => <span class="string">"Selamat Pagi!"</span>;
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">kali</span>(<span class="number">5</span>, <span class="number">3</span>));    <span class="comment">// 15</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">bagi</span>(<span class="number">10</span>, <span class="number">2</span>));   <span class="comment">// 5</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">kuadrat</span>(<span class="number">4</span>));   <span class="comment">// 16</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">sapaPagi</span>());  <span class="comment">// "Selamat Pagi!"</span></code></pre>
+
+                <h3>Callback Function</h3>
+                <pre><code><span class="comment">// Function sebagai parameter function lain</span>
+<span class="keyword">function</span> <span class="function">prosesData</span>(<span class="variable">data</span>, <span class="variable">callback</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Memproses: "</span> + <span class="variable">data</span>);
+    <span class="function">callback</span>(); <span class="comment">// jalankan callback</span>
+}
+
+<span class="function">prosesData</span>(<span class="string">"File.txt"</span>, <span class="keyword">function</span>() {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Proses selesai!"</span>);
+});
+
+<span class="comment">// Dengan arrow function</span>
+<span class="function">prosesData</span>(<span class="string">"Image.png"</span>, () => {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Upload selesai!"</span>);
+});</code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Function Kalkulator</h5>
+                    <input type="number" id="func-a" placeholder="a" style="width: 60px;">
+                    <input type="number" id="func-b" placeholder="b" style="width: 60px;">
+                    <button onclick="panggilFunction('tambah')">Tambah</button>
+                    <button onclick="panggilFunction('kurang')">Kurang</button>
+                    <button onclick="panggilFunction('kali')">Kali</button>
+                    <button onclick="panggilFunction('bagi')">Bagi</button>
+                    <div class="result-box" id="func-result">Hasil function...</div>
+                </div>
+                <script>
+                    // Definisi functions
+                    const tambahDemo = (a, b) => a + b;
+                    const kurangDemo = (a, b) => a - b;
+                    const kaliDemo = (a, b) => a * b;
+                    const bagiDemo = (a, b) => a / b;
+                    
+                    function panggilFunction(operasi) {
+                        let a = Number(document.getElementById('func-a').value);
+                        let b = Number(document.getElementById('func-b').value);
+                        let hasil;
+                        
+                        switch(operasi) {
+                            case 'tambah': hasil = tambahDemo(a, b); break;
+                            case 'kurang': hasil = kurangDemo(a, b); break;
+                            case 'kali': hasil = kaliDemo(a, b); break;
+                            case 'bagi': hasil = bagiDemo(a, b); break;
+                        }
+                        
+                        document.getElementById('func-result').innerHTML = 
+                            `Function <strong>${operasi}(${a}, ${b})</strong> = <strong>${hasil}</strong>`;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 8: Array -->
+            <section id="array">
+                <h2>8. Array <span class="badge">CPMK 4.2</span></h2>
+                
+                <h3>Membuat Array</h3>
+                <pre><code><span class="comment">// Cara 1: Array literal</span>
+<span class="keyword">let</span> <span class="variable">buah</span> = [<span class="string">"Apel"</span>, <span class="string">"Jeruk"</span>, <span class="string">"Mangga"</span>];
+
+<span class="comment">// Cara 2: Constructor</span>
+<span class="keyword">let</span> <span class="variable">angka</span> = <span class="keyword">new</span> <span class="function">Array</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>);
+
+<span class="comment">// Array campuran</span>
+<span class="keyword">let</span> <span class="variable">campuran</span> = [<span class="number">1</span>, <span class="string">"dua"</span>, <span class="keyword">true</span>, <span class="keyword">null</span>, {<span class="variable">nama</span>: <span class="string">"John"</span>}];
+
+<span class="comment">// Array kosong</span>
+<span class="keyword">let</span> <span class="variable">kosong</span> = [];</code></pre>
+
+                <h3>Mengakses & Mengubah Elemen</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">buah</span> = [<span class="string">"Apel"</span>, <span class="string">"Jeruk"</span>, <span class="string">"Mangga"</span>];
+
+<span class="comment">// Mengakses (index dimulai dari 0)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>[<span class="number">0</span>]); <span class="comment">// "Apel"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>[<span class="number">1</span>]); <span class="comment">// "Jeruk"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>[<span class="number">2</span>]); <span class="comment">// "Mangga"</span>
+
+<span class="comment">// Mengubah elemen</span>
+<span class="variable">buah</span>[<span class="number">1</span>] = <span class="string">"Pisang"</span>;
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>); <span class="comment">// ["Apel", "Pisang", "Mangga"]</span>
+
+<span class="comment">// Panjang array</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>.<span class="variable">length</span>); <span class="comment">// 3</span>
+
+<span class="comment">// Elemen terakhir</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">buah</span>[<span class="variable">buah</span>.<span class="variable">length</span> - <span class="number">1</span>]); <span class="comment">// "Mangga"</span></code></pre>
+
+                <h3>Array Methods</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">arr</span> = [<span class="string">"a"</span>, <span class="string">"b"</span>, <span class="string">"c"</span>];
+
+<span class="comment">// push() - tambah di akhir</span>
+<span class="variable">arr</span>.<span class="function">push</span>(<span class="string">"d"</span>);      <span class="comment">// ["a", "b", "c", "d"]</span>
+
+<span class="comment">// pop() - hapus dari akhir</span>
+<span class="variable">arr</span>.<span class="function">pop</span>();          <span class="comment">// ["a", "b", "c"]</span>
+
+<span class="comment">// unshift() - tambah di awal</span>
+<span class="variable">arr</span>.<span class="function">unshift</span>(<span class="string">"z"</span>);   <span class="comment">// ["z", "a", "b", "c"]</span>
+
+<span class="comment">// shift() - hapus dari awal</span>
+<span class="variable">arr</span>.<span class="function">shift</span>();        <span class="comment">// ["a", "b", "c"]</span>
+
+<span class="comment">// indexOf() - cari index</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">arr</span>.<span class="function">indexOf</span>(<span class="string">"b"</span>)); <span class="comment">// 1</span>
+
+<span class="comment">// includes() - cek keberadaan</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">arr</span>.<span class="function">includes</span>(<span class="string">"b"</span>)); <span class="comment">// true</span>
+
+<span class="comment">// slice() - potong array (tidak mengubah asli)</span>
+<span class="keyword">let</span> <span class="variable">slice</span> = <span class="variable">arr</span>.<span class="function">slice</span>(<span class="number">1</span>, <span class="number">3</span>); <span class="comment">// ["b", "c"]</span>
+
+<span class="comment">// splice() - hapus/tambah elemen</span>
+<span class="variable">arr</span>.<span class="function">splice</span>(<span class="number">1</span>, <span class="number">1</span>, <span class="string">"x"</span>); <span class="comment">// hapus 1 elemen di index 1, tambah "x"</span>
+
+<span class="comment">// join() - gabung jadi string</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">arr</span>.<span class="function">join</span>(<span class="string">"-"</span>)); <span class="comment">// "a-x-c"</span>
+
+<span class="comment">// reverse() - balik urutan</span>
+<span class="variable">arr</span>.<span class="function">reverse</span>(); <span class="comment">// ["c", "x", "a"]</span>
+
+<span class="comment">// sort() - urutkan</span>
+<span class="variable">arr</span>.<span class="function">sort</span>(); <span class="comment">// ["a", "c", "x"]</span></code></pre>
+
+                <h3>Array Iteration Methods ⭐</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">angka</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
+
+<span class="comment">// forEach() - loop setiap elemen</span>
+<span class="variable">angka</span>.<span class="function">forEach</span>((<span class="variable">item</span>, <span class="variable">index</span>) => {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">`Index ${index}: ${item}`</span>);
+});
+
+<span class="comment">// map() - transformasi setiap elemen → array baru</span>
+<span class="keyword">let</span> <span class="variable">kuadrat</span> = <span class="variable">angka</span>.<span class="function">map</span>(<span class="variable">x</span> => <span class="variable">x</span> * <span class="variable">x</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">kuadrat</span>); <span class="comment">// [1, 4, 9, 16, 25]</span>
+
+<span class="comment">// filter() - filter elemen → array baru</span>
+<span class="keyword">let</span> <span class="variable">genap</span> = <span class="variable">angka</span>.<span class="function">filter</span>(<span class="variable">x</span> => <span class="variable">x</span> % <span class="number">2</span> === <span class="number">0</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">genap</span>); <span class="comment">// [2, 4]</span>
+
+<span class="comment">// find() - cari elemen pertama yang cocok</span>
+<span class="keyword">let</span> <span class="variable">lebihDari3</span> = <span class="variable">angka</span>.<span class="function">find</span>(<span class="variable">x</span> => <span class="variable">x</span> > <span class="number">3</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">lebihDari3</span>); <span class="comment">// 4</span>
+
+<span class="comment">// reduce() - akumulasi nilai</span>
+<span class="keyword">let</span> <span class="variable">total</span> = <span class="variable">angka</span>.<span class="function">reduce</span>((<span class="variable">acc</span>, <span class="variable">curr</span>) => <span class="variable">acc</span> + <span class="variable">curr</span>, <span class="number">0</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">total</span>); <span class="comment">// 15</span>
+
+<span class="comment">// some() - cek apakah ada yang memenuhi kondisi</span>
+<span class="keyword">let</span> <span class="variable">adaGenap</span> = <span class="variable">angka</span>.<span class="function">some</span>(<span class="variable">x</span> => <span class="variable">x</span> % <span class="number">2</span> === <span class="number">0</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">adaGenap</span>); <span class="comment">// true</span>
+
+<span class="comment">// every() - cek apakah semua memenuhi kondisi</span>
+<span class="keyword">let</span> <span class="variable">semuaPositif</span> = <span class="variable">angka</span>.<span class="function">every</span>(<span class="variable">x</span> => <span class="variable">x</span> > <span class="number">0</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">semuaPositif</span>); <span class="comment">// true</span></code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Array Methods</h5>
+                    <p>Array: <code id="demo-array">[1, 2, 3, 4, 5]</code></p>
+                    <button onclick="demoArrayMethod('push')">Push(6)</button>
+                    <button onclick="demoArrayMethod('pop')">Pop()</button>
+                    <button onclick="demoArrayMethod('map')">Map(x*2)</button>
+                    <button onclick="demoArrayMethod('filter')">Filter(genap)</button>
+                    <button onclick="demoArrayMethod('reduce')">Reduce(sum)</button>
+                    <button onclick="demoArrayMethod('reset')">Reset</button>
+                    <div class="result-box" id="array-result">Hasil operasi array...</div>
+                </div>
+                <script>
+                    let demoArr = [1, 2, 3, 4, 5];
+                    
+                    function demoArrayMethod(method) {
+                        let hasil;
+                        switch(method) {
+                            case 'push':
+                                demoArr.push(6);
+                                hasil = `push(6) → [${demoArr.join(', ')}]`;
+                                break;
+                            case 'pop':
+                                let removed = demoArr.pop();
+                                hasil = `pop() → removed: ${removed}, array: [${demoArr.join(', ')}]`;
+                                break;
+                            case 'map':
+                                hasil = `map(x*2) → [${demoArr.map(x => x*2).join(', ')}]`;
+                                break;
+                            case 'filter':
+                                hasil = `filter(genap) → [${demoArr.filter(x => x%2===0).join(', ')}]`;
+                                break;
+                            case 'reduce':
+                                hasil = `reduce(sum) → ${demoArr.reduce((a,b) => a+b, 0)}`;
+                                break;
+                            case 'reset':
+                                demoArr = [1, 2, 3, 4, 5];
+                                hasil = 'Array direset!';
+                                break;
+                        }
+                        document.getElementById('demo-array').textContent = `[${demoArr.join(', ')}]`;
+                        document.getElementById('array-result').innerHTML = hasil;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 9: Object Bawaan JavaScript -->
+            <section id="object-bawaan">
+                <h2>9. Object Bawaan JavaScript <span class="badge">CPMK 4.2</span></h2>
+                
+                <h3>String Methods</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">str</span> = <span class="string">"Hello World"</span>;
+
+<span class="comment">// Properti</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="variable">length</span>);          <span class="comment">// 11</span>
+
+<span class="comment">// Mengakses karakter</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>[<span class="number">0</span>]);              <span class="comment">// "H"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">charAt</span>(<span class="number">0</span>));       <span class="comment">// "H"</span>
+
+<span class="comment">// Case conversion</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">toUpperCase</span>());   <span class="comment">// "HELLO WORLD"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">toLowerCase</span>());   <span class="comment">// "hello world"</span>
+
+<span class="comment">// Search</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">indexOf</span>(<span class="string">"World"</span>));    <span class="comment">// 6</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">includes</span>(<span class="string">"Hello"</span>));   <span class="comment">// true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">startsWith</span>(<span class="string">"Hello"</span>)); <span class="comment">// true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">endsWith</span>(<span class="string">"World"</span>));   <span class="comment">// true</span>
+
+<span class="comment">// Extract</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">slice</span>(<span class="number">0</span>, <span class="number">5</span>));       <span class="comment">// "Hello"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">substring</span>(<span class="number">6</span>));      <span class="comment">// "World"</span>
+
+<span class="comment">// Replace</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">replace</span>(<span class="string">"World"</span>, <span class="string">"JavaScript"</span>)); <span class="comment">// "Hello JavaScript"</span>
+
+<span class="comment">// Split & Trim</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">str</span>.<span class="function">split</span>(<span class="string">" "</span>));        <span class="comment">// ["Hello", "World"]</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="string">"  text  "</span>.<span class="function">trim</span>());   <span class="comment">// "text"</span>
+
+<span class="comment">// Repeat</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="string">"Ha"</span>.<span class="function">repeat</span>(<span class="number">3</span>));       <span class="comment">// "HaHaHa"</span></code></pre>
+
+                <h3>Number Methods</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">num</span> = <span class="number">3.14159</span>;
+
+<span class="comment">// Pembulatan</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">num</span>.<span class="function">toFixed</span>(<span class="number">2</span>));       <span class="comment">// "3.14" (string)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">round</span>(<span class="variable">num</span>));      <span class="comment">// 3</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">floor</span>(<span class="variable">num</span>));      <span class="comment">// 3 (bulatkan ke bawah)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">ceil</span>(<span class="variable">num</span>));       <span class="comment">// 4 (bulatkan ke atas)</span>
+
+<span class="comment">// Konversi</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">parseInt</span>(<span class="string">"42"</span>));       <span class="comment">// 42</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">parseFloat</span>(<span class="string">"3.14"</span>));   <span class="comment">// 3.14</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">Number</span>(<span class="string">"123"</span>));        <span class="comment">// 123</span>
+
+<span class="comment">// Cek</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">isNaN</span>(<span class="string">"hello"</span>));       <span class="comment">// true</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="function">isFinite</span>(<span class="number">100</span>));        <span class="comment">// true</span></code></pre>
+
+                <h3>Math Object</h3>
+                <pre><code><span class="comment">// Konstanta</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="variable">PI</span>);        <span class="comment">// 3.141592653589793</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="variable">E</span>);         <span class="comment">// 2.718281828459045</span>
+
+<span class="comment">// Methods</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">abs</span>(-<span class="number">5</span>));       <span class="comment">// 5 (nilai absolut)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">pow</span>(<span class="number">2</span>, <span class="number">3</span>));     <span class="comment">// 8 (pangkat)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">sqrt</span>(<span class="number">16</span>));     <span class="comment">// 4 (akar kuadrat)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">min</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>));   <span class="comment">// 1</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">max</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>));   <span class="comment">// 3</span>
+
+<span class="comment">// Random</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">random</span>());          <span class="comment">// 0-0.999...</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">floor</span>(<span class="variable">Math</span>.<span class="function">random</span>() * <span class="number">10</span>)); <span class="comment">// 0-9</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Math</span>.<span class="function">floor</span>(<span class="variable">Math</span>.<span class="function">random</span>() * <span class="number">10</span>) + <span class="number">1</span>); <span class="comment">// 1-10</span></code></pre>
+
+                <h3>Date Object</h3>
+                <pre><code><span class="comment">// Membuat object Date</span>
+<span class="keyword">let</span> <span class="variable">sekarang</span> = <span class="keyword">new</span> <span class="function">Date</span>();
+<span class="keyword">let</span> <span class="variable">tanggalTertentu</span> = <span class="keyword">new</span> <span class="function">Date</span>(<span class="string">"2024-12-25"</span>);
+<span class="keyword">let</span> <span class="variable">tanggalWaktu</span> = <span class="keyword">new</span> <span class="function">Date</span>(<span class="number">2024</span>, <span class="number">11</span>, <span class="number">25</span>, <span class="number">10</span>, <span class="number">30</span>, <span class="number">0</span>); <span class="comment">// bulan 0-11</span>
+
+<span class="comment">// Get methods</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getFullYear</span>());  <span class="comment">// 2024</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getMonth</span>());      <span class="comment">// 0-11 (0 = Januari)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getDate</span>());       <span class="comment">// 1-31</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getDay</span>());        <span class="comment">// 0-6 (0 = Minggu)</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getHours</span>());      <span class="comment">// 0-23</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getMinutes</span>());    <span class="comment">// 0-59</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getSeconds</span>());    <span class="comment">// 0-59</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">getTime</span>());       <span class="comment">// timestamp (milliseconds)</span>
+
+<span class="comment">// Format tanggal</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">toDateString</span>());     <span class="comment">// "Mon Jan 15 2024"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">toLocaleDateString</span>()); <span class="comment">// "1/15/2024"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">sekarang</span>.<span class="function">toLocaleTimeString</span>()); <span class="comment">// "10:30:00 AM"</span></code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Object Bawaan</h5>
+                    <input type="text" id="input-obj" placeholder="Masukkan teks/angka" style="width: 200px;">
+                    <button onclick="demoObject('upper')">Uppercase</button>
+                    <button onclick="demoObject('lower')">Lowercase</button>
+                    <button onclick="demoObject('length')">Length</button>
+                    <button onclick="demoObject('reverse')">Reverse</button>
+                    <button onclick="demoObject('random')">Random 1-100</button>
+                    <button onclick="demoObject('date')">Tanggal</button>
+                    <div class="result-box" id="obj-result">Hasil...</div>
+                </div>
+                <script>
+                    function demoObject(method) {
+                        let input = document.getElementById('input-obj').value;
+                        let hasil;
+                        
+                        switch(method) {
+                            case 'upper':
+                                hasil = input.toUpperCase();
+                                break;
+                            case 'lower':
+                                hasil = input.toLowerCase();
+                                break;
+                            case 'length':
+                                hasil = `Length: ${input.length}`;
+                                break;
+                            case 'reverse':
+                                hasil = input.split('').reverse().join('');
+                                break;
+                            case 'random':
+                                hasil = `Random: ${Math.floor(Math.random() * 100) + 1}`;
+                                break;
+                            case 'date':
+                                let now = new Date();
+                                hasil = `${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID')}`;
+                                break;
+                        }
+                        
+                        document.getElementById('obj-result').innerHTML = `<strong>${hasil}</strong>`;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 10: DOM Manipulation -->
+            <section id="dom">
+                <h2>10. DOM Manipulation <span class="badge">CPMK 4.4</span></h2>
+                
+                <h3>Apa itu DOM?</h3>
+                <p><strong>DOM (Document Object Model)</strong> adalah representasi struktur HTML sebagai objek yang dapat dimanipulasi dengan JavaScript.</p>
+
+                <h3>Selecting Elements</h3>
+                <pre><code><span class="comment">// Berdasarkan ID (return 1 elemen)</span>
+<span class="keyword">let</span> <span class="variable">header</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"header"</span>);
+
+<span class="comment">// Berdasarkan class (return HTMLCollection)</span>
+<span class="keyword">let</span> <span class="variable">buttons</span> = <span class="variable">document</span>.<span class="function">getElementsByClassName</span>(<span class="string">"btn"</span>);
+
+<span class="comment">// Berdasarkan tag (return HTMLCollection)</span>
+<span class="keyword">let</span> <span class="variable">paragraphs</span> = <span class="variable">document</span>.<span class="function">getElementsByTagName</span>(<span class="string">"p"</span>);
+
+<span class="comment">// Query Selector (return 1 elemen pertama) ⭐</span>
+<span class="keyword">let</span> <span class="variable">firstBtn</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">".btn"</span>);
+<span class="keyword">let</span> <span class="variable">nav</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"#navbar"</span>);
+<span class="keyword">let</span> <span class="variable">link</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"nav a"</span>);
+
+<span class="comment">// Query Selector All (return NodeList) ⭐</span>
+<span class="keyword">let</span> <span class="variable">allBtns</span> = <span class="variable">document</span>.<span class="function">querySelectorAll</span>(<span class="string">".btn"</span>);
+<span class="keyword">let</span> <span class="variable">allLinks</span> = <span class="variable">document</span>.<span class="function">querySelectorAll</span>(<span class="string">"a"</span>);</code></pre>
+
+                <h3>Mengubah Konten</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">el</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"demo"</span>);
+
+<span class="comment">// innerHTML - mengubah HTML</span>
+<span class="variable">el</span>.<span class="variable">innerHTML</span> = <span class="string">"&lt;strong&gt;Teks Baru&lt;/strong&gt;"</span>;
+
+<span class="comment">// innerText - mengubah teks (render)</span>
+<span class="variable">el</span>.<span class="variable">innerText</span> = <span class="string">"Teks Biasa"</span>;
+
+<span class="comment">// textContent - mengubah teks (raw)</span>
+<span class="variable">el</span>.<span class="variable">textContent</span> = <span class="string">"Teks Content"</span>;
+
+<span class="comment">// value - untuk input</span>
+<span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"input"</span>).<span class="variable">value</span> = <span class="string">"Nilai baru"</span>;</code></pre>
+
+                <h3>Mengubah Style</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">el</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"box"</span>);
+
+<span class="comment">// Mengubah style langsung</span>
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">color</span> = <span class="string">"red"</span>;
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">backgroundColor</span> = <span class="string">"#f0f0f0"</span>;  <span class="comment">// camelCase!</span>
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">fontSize</span> = <span class="string">"20px"</span>;
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">border</span> = <span class="string">"2px solid blue"</span>;
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">display</span> = <span class="string">"none"</span>;  <span class="comment">// hide</span>
+<span class="variable">el</span>.<span class="variable">style</span>.<span class="variable">display</span> = <span class="string">"block"</span>; <span class="comment">// show</span></code></pre>
+
+                <h3>Mengubah Class</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">el</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"box"</span>);
+
+<span class="comment">// Menambah class</span>
+<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">add</span>(<span class="string">"active"</span>);
+<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">add</span>(<span class="string">"highlight"</span>, <span class="string">"bold"</span>);
+
+<span class="comment">// Menghapus class</span>
+<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">remove</span>(<span class="string">"active"</span>);
+
+<span class="comment">// Toggle class (add jika tidak ada, remove jika ada)</span>
+<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">toggle</span>(<span class="string">"active"</span>);
+
+<span class="comment">// Cek class</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">contains</span>(<span class="string">"active"</span>)); <span class="comment">// true/false</span>
+
+<span class="comment">// Replace class</span>
+<span class="variable">el</span>.<span class="variable">classList</span>.<span class="function">replace</span>(<span class="string">"old-class"</span>, <span class="string">"new-class"</span>);</code></pre>
+
+                <h3>Mengubah Atribut</h3>
+                <pre><code><span class="keyword">let</span> <span class="variable">link</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"a"</span>);
+<span class="keyword">let</span> <span class="variable">img</span> = <span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"img"</span>);
+
+<span class="comment">// Get atribut</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">link</span>.<span class="function">getAttribute</span>(<span class="string">"href"</span>));
+
+<span class="comment">// Set atribut</span>
+<span class="variable">link</span>.<span class="function">setAttribute</span>(<span class="string">"href"</span>, <span class="string">"https://google.com"</span>);
+<span class="variable">link</span>.<span class="function">setAttribute</span>(<span class="string">"target"</span>, <span class="string">"_blank"</span>);
+<span class="variable">img</span>.<span class="function">setAttribute</span>(<span class="string">"src"</span>, <span class="string">"new-image.jpg"</span>);
+
+<span class="comment">// Remove atribut</span>
+<span class="variable">link</span>.<span class="function">removeAttribute</span>(<span class="string">"target"</span>);
+
+<span class="comment">// Cek atribut</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">link</span>.<span class="function">hasAttribute</span>(<span class="string">"href"</span>)); <span class="comment">// true</span></code></pre>
+
+                <h3>Membuat & Menghapus Elemen</h3>
+                <pre><code><span class="comment">// Membuat elemen baru</span>
+<span class="keyword">let</span> <span class="variable">newDiv</span> = <span class="variable">document</span>.<span class="function">createElement</span>(<span class="string">"div"</span>);
+<span class="variable">newDiv</span>.<span class="variable">innerHTML</span> = <span class="string">"Ini div baru"</span>;
+<span class="variable">newDiv</span>.<span class="variable">classList</span>.<span class="function">add</span>(<span class="string">"card"</span>);
+
+<span class="comment">// Menambahkan ke DOM</span>
+<span class="variable">document</span>.<span class="variable">body</span>.<span class="function">appendChild</span>(<span class="variable">newDiv</span>);
+
+<span class="comment">// Insert sebelum elemen tertentu</span>
+<span class="keyword">let</span> <span class="variable">parent</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"container"</span>);
+<span class="keyword">let</span> <span class="variable">referensi</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"target"</span>);
+<span class="variable">parent</span>.<span class="function">insertBefore</span>(<span class="variable">newDiv</span>, <span class="variable">referensi</span>);
+
+<span class="comment">// Menghapus elemen</span>
+<span class="keyword">let</span> <span class="variable">toRemove</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"hapus"</span>);
+<span class="variable">toRemove</span>.<span class="function">remove</span>();
+
+<span class="comment">// Atau dari parent</span>
+<span class="variable">parent</span>.<span class="function">removeChild</span>(<span class="variable">toRemove</span>);</code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: DOM Manipulation</h5>
+                    <div id="dom-target" style="padding: 20px; background: #ecf0f1; border-radius: 5px; margin-bottom: 10px;">
+                        <p id="dom-text">Teks ini bisa diubah!</p>
+                    </div>
+                    <input type="text" id="dom-input" placeholder="Masukkan teks baru" style="width: 200px;">
+                    <button onclick="ubahTeks()">Ubah Teks</button>
+                    <button onclick="ubahWarna('red')">Merah</button>
+                    <button onclick="ubahWarna('blue')">Biru</button>
+                    <button onclick="ubahWarna('green')">Hijau</button>
+                    <button onclick="toggleBold()">Toggle Bold</button>
+                    <button onclick="tambahItem()">Tambah Item</button>
+                </div>
+                <script>
+                    function ubahTeks() {
+                        let teks = document.getElementById('dom-input').value;
+                        document.getElementById('dom-text').innerHTML = teks || 'Teks ini bisa diubah!';
+                    }
+                    
+                    function ubahWarna(warna) {
+                        document.getElementById('dom-text').style.color = warna;
+                    }
+                    
+                    function toggleBold() {
+                        document.getElementById('dom-text').classList.toggle('bold');
+                        let el = document.getElementById('dom-text');
+                        el.style.fontWeight = el.style.fontWeight === 'bold' ? 'normal' : 'bold';
+                    }
+                    
+                    function tambahItem() {
+                        let newP = document.createElement('p');
+                        newP.textContent = 'Item baru ditambahkan! ' + new Date().toLocaleTimeString();
+                        newP.style.color = '#27ae60';
+                        document.getElementById('dom-target').appendChild(newP);
+                    }
+                </script>
+            </section>
+
+            <!-- Section 11: Event Handling -->
+            <section id="event">
+                <h2>11. Event Handling <span class="badge">CPMK 4.4</span></h2>
+                
+                <h3>Cara Menangani Event</h3>
+
+                <h4>1. Inline Event Handler (Tidak Direkomendasikan)</h4>
+                <pre><code>&lt;<span class="keyword">button</span> <span class="variable">onclick</span>=<span class="string">"alert('Diklik!')"</span>&gt;Klik&lt;/<span class="keyword">button</span>&gt;</code></pre>
+
+                <h4>2. Event Handler Property</h4>
+                <pre><code><span class="keyword">let</span> <span class="variable">btn</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"myBtn"</span>);
+
+<span class="variable">btn</span>.<span class="variable">onclick</span> = <span class="keyword">function</span>() {
+    <span class="function">alert</span>(<span class="string">"Button diklik!"</span>);
+};</code></pre>
+
+                <h4>3. addEventListener (DIREKOMENDASIKAN) ⭐</h4>
+                <pre><code><span class="keyword">let</span> <span class="variable">btn</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"myBtn"</span>);
+
+<span class="variable">btn</span>.<span class="function">addEventListener</span>(<span class="string">"click"</span>, <span class="keyword">function</span>() {
+    <span class="function">alert</span>(<span class="string">"Button diklik!"</span>);
+});
+
+<span class="comment">// Dengan arrow function</span>
+<span class="variable">btn</span>.<span class="function">addEventListener</span>(<span class="string">"click"</span>, () => {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Clicked!"</span>);
+});
+
+<span class="comment">// Dengan function terpisah</span>
+<span class="keyword">function</span> <span class="function">handleClick</span>() {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Clicked!"</span>);
+}
+<span class="variable">btn</span>.<span class="function">addEventListener</span>(<span class="string">"click"</span>, <span class="function">handleClick</span>);</code></pre>
+
+                <h3>Jenis-jenis Event</h3>
+                <table>
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Event</th>
+                        <th>Keterangan</th>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"><strong>Mouse</strong></td>
+                        <td>click, dblclick</td>
+                        <td>Klik tunggal/ganda</td>
+                    </tr>
+                    <tr>
+                        <td>mouseenter, mouseleave, mouseover, mouseout</td>
+                        <td>Mouse masuk/keluar elemen</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"><strong>Keyboard</strong></td>
+                        <td>keydown, keyup</td>
+                        <td>Tombol ditekan/dilepas</td>
+                    </tr>
+                    <tr>
+                        <td>keypress</td>
+                        <td>Tombol ditekan (deprecated)</td>
+                    </tr>
+                    <tr>
+                        <td rowspan="2"><strong>Form</strong></td>
+                        <td>submit</td>
+                        <td>Form disubmit</td>
+                    </tr>
+                    <tr>
+                        <td>change, input, focus, blur</td>
+                        <td>Interaksi dengan input</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Window</strong></td>
+                        <td>load, resize, scroll</td>
+                        <td>Event pada window</td>
+                    </tr>
+                </table>
+
+                <h3>Event Object</h3>
+                <pre><code><span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"btn"</span>).<span class="function">addEventListener</span>(<span class="string">"click"</span>, <span class="keyword">function</span>(<span class="variable">event</span>) {
+    <span class="comment">// Informasi event</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">event</span>.<span class="variable">type</span>);        <span class="comment">// "click"</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">event</span>.<span class="variable">target</span>);      <span class="comment">// elemen yang diklik</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">event</span>.<span class="variable">currentTarget</span>); <span class="comment">// elemen dengan event listener</span>
+    
+    <span class="comment">// Posisi mouse</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">event</span>.<span class="variable">clientX</span>, <span class="variable">event</span>.<span class="variable">clientY</span>); <span class="comment">// posisi di viewport</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">event</span>.<span class="variable">pageX</span>, <span class="variable">event</span>.<span class="variable">pageY</span>);     <span class="comment">// posisi di halaman</span>
+});
+
+<span class="comment">// Keyboard event</span>
+<span class="variable">document</span>.<span class="function">addEventListener</span>(<span class="string">"keydown"</span>, <span class="keyword">function</span>(<span class="variable">e</span>) {
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">e</span>.<span class="variable">key</span>);       <span class="comment">// "a", "Enter", "ArrowUp"</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">e</span>.<span class="variable">keyCode</span>);   <span class="comment">// 65, 13, 38</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">e</span>.<span class="variable">ctrlKey</span>);   <span class="comment">// true jika Ctrl ditekan</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="variable">e</span>.<span class="variable">shiftKey</span>);  <span class="comment">// true jika Shift ditekan</span>
+});</code></pre>
+
+                <h3>preventDefault() dan stopPropagation()</h3>
+                <pre><code><span class="comment">// Mencegah aksi default</span>
+<span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">"form"</span>).<span class="function">addEventListener</span>(<span class="string">"submit"</span>, <span class="keyword">function</span>(<span class="variable">e</span>) {
+    <span class="variable">e</span>.<span class="function">preventDefault</span>(); <span class="comment">// form tidak akan submit</span>
+    <span class="function">console</span>.<span class="function">log</span>(<span class="string">"Form divalidasi dulu!"</span>);
+});
+
+<span class="comment">// Mencegah event bubbling</span>
+<span class="variable">document</span>.<span class="function">querySelector</span>(<span class="string">".child"</span>).<span class="function">addEventListener</span>(<span class="string">"click"</span>, <span class="keyword">function</span>(<span class="variable">e</span>) {
+    <span class="variable">e</span>.<span class="function">stopPropagation</span>(); <span class="comment">// event tidak naik ke parent</span>
+});</code></pre>
+
+                <h3>Contoh Praktis: Form Validation</h3>
+                <pre><code><span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"myForm"</span>).<span class="function">addEventListener</span>(<span class="string">"submit"</span>, <span class="keyword">function</span>(<span class="variable">e</span>) {
+    <span class="variable">e</span>.<span class="function">preventDefault</span>();
+    
+    <span class="keyword">let</span> <span class="variable">nama</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"nama"</span>).<span class="variable">value</span>;
+    <span class="keyword">let</span> <span class="variable">email</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">"email"</span>).<span class="variable">value</span>;
+    
+    <span class="keyword">if</span> (<span class="variable">nama</span> === <span class="string">""</span>) {
+        <span class="function">alert</span>(<span class="string">"Nama harus diisi!"</span>);
+        <span class="keyword">return</span>;
+    }
+    
+    <span class="keyword">if</span> (!<span class="variable">email</span>.<span class="function">includes</span>(<span class="string">"@"</span>)) {
+        <span class="function">alert</span>(<span class="string">"Email tidak valid!"</span>);
+        <span class="keyword">return</span>;
+    }
+    
+    <span class="function">alert</span>(<span class="string">"Form valid! Mengirim..."</span>);
+    <span class="comment">// this.submit(); // submit form</span>
+});</code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Event Handling</h5>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <button id="btn-click">Click Me!</button>
+                        <button id="btn-dblclick">Double Click</button>
+                        <div id="btn-hover" style="padding: 10px; background: #3498db; color: white; border-radius: 5px; cursor: pointer;">Hover Me</div>
+                    </div>
+                    <input type="text" id="input-keyup" placeholder="Ketik sesuatu..." style="width: 200px;">
+                    <div class="result-box" id="event-result">Event akan muncul di sini...</div>
+                </div>
+                <script>
+                    document.getElementById('btn-click').addEventListener('click', function() {
+                        document.getElementById('event-result').innerHTML = '🖱️ Button diklik! (click event)';
+                    });
+                    
+                    document.getElementById('btn-dblclick').addEventListener('dblclick', function() {
+                        document.getElementById('event-result').innerHTML = '🖱️🖱️ Double click detected!';
+                    });
+                    
+                    document.getElementById('btn-hover').addEventListener('mouseenter', function() {
+                        this.style.background = '#e74c3c';
+                        document.getElementById('event-result').innerHTML = '👆 Mouse masuk! (mouseenter)';
+                    });
+                    
+                    document.getElementById('btn-hover').addEventListener('mouseleave', function() {
+                        this.style.background = '#3498db';
+                        document.getElementById('event-result').innerHTML = '👋 Mouse keluar! (mouseleave)';
+                    });
+                    
+                    document.getElementById('input-keyup').addEventListener('keyup', function(e) {
+                        document.getElementById('event-result').innerHTML = 
+                            `⌨️ Key: "${e.key}" | Value: "${this.value}"`;
+                    });
+                </script>
+            </section>
+
+            <!-- Section 12: Object Buatan Sendiri -->
+            <section id="object-custom">
+                <h2>12. Object Buatan Sendiri <span class="badge">CPMK 4.5</span></h2>
+                     
+                
+                <h3>Object Literal</h3>
+                <pre><code><span class="comment">// Cara paling sederhana membuat object</span>
+<span class="keyword">let</span> <span class="variable">mahasiswa</span> = {
+    <span class="comment">// Properties</span>
+    <span class="variable">nama</span>: <span class="string">"John Doe"</span>,
+    <span class="variable">nim</span>: <span class="string">"12345"</span>,
+    <span class="variable">jurusan</span>: <span class="string">"Informatika"</span>,
+    <span class="variable">ipk</span>: <span class="number">3.75</span>,
+    
+    <span class="comment">// Method</span>
+    <span class="function">perkenalan</span>: <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="string">`Halo, saya ${this.nama} dari ${this.jurusan}`</span>;
+    },
+    
+    <span class="comment">// Method shorthand (ES6)</span>
+    <span class="function">getInfo</span>() {
+        <span class="keyword">return</span> <span class="string">`${this.nama} (${this.nim}) - IPK: ${this.ipk}`</span>;
+    }
+};
+
+<span class="comment">// Mengakses properties</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mahasiswa</span>.<span class="variable">nama</span>);         <span class="comment">// "John Doe"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mahasiswa</span>[<span class="string">"jurusan"</span>]);   <span class="comment">// "Informatika"</span>
+
+<span class="comment">// Memanggil method</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mahasiswa</span>.<span class="function">perkenalan</span>()); <span class="comment">// "Halo, saya John Doe dari Informatika"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mahasiswa</span>.<span class="function">getInfo</span>());     <span class="comment">// "John Doe (12345) - IPK: 3.75"</span>
+
+<span class="comment">// Menambah property baru</span>
+<span class="variable">mahasiswa</span>.<span class="variable">alamat</span> = <span class="string">"Mataram"</span>;
+<span class="variable">mahasiswa</span>.<span class="variable">hobi</span> = [<span class="string">"Coding"</span>, <span class="string">"Gaming"</span>];
+
+<span class="comment">// Menghapus property</span>
+<span class="keyword">delete</span> <span class="variable">mahasiswa</span>.<span class="variable">alamat</span>;</code></pre>
+
+                <h3>Constructor Function</h3>
+                <pre><code><span class="comment">// Constructor function untuk membuat banyak object sejenis</span>
+<span class="keyword">function</span> <span class="function">Mahasiswa</span>(<span class="variable">nama</span>, <span class="variable">nim</span>, <span class="variable">jurusan</span>) {
+    <span class="comment">// Properties</span>
+    <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">nama</span>;
+    <span class="keyword">this</span>.<span class="variable">nim</span> = <span class="variable">nim</span>;
+    <span class="keyword">this</span>.<span class="variable">jurusan</span> = <span class="variable">jurusan</span>;
+    <span class="keyword">this</span>.<span class="variable">ipk</span> = <span class="number">0</span>;
+    
+    <span class="comment">// Method</span>
+    <span class="keyword">this</span>.<span class="function">perkenalan</span> = <span class="keyword">function</span>() {
+        <span class="keyword">return</span> <span class="string">`Halo, saya ${this.nama} dari ${this.jurusan}`</span>;
+    };
+    
+    <span class="keyword">this</span>.<span class="function">setIpk</span> = <span class="keyword">function</span>(<span class="variable">nilai</span>) {
+        <span class="keyword">this</span>.<span class="variable">ipk</span> = <span class="variable">nilai</span>;
+    };
+}
+
+<span class="comment">// Membuat instance (object baru)</span>
+<span class="keyword">let</span> <span class="variable">mhs1</span> = <span class="keyword">new</span> <span class="function">Mahasiswa</span>(<span class="string">"John"</span>, <span class="string">"12345"</span>, <span class="string">"Informatika"</span>);
+<span class="keyword">let</span> <span class="variable">mhs2</span> = <span class="keyword">new</span> <span class="function">Mahasiswa</span>(<span class="string">"Jane"</span>, <span class="string">"12346"</span>, <span class="string">"Sistem Informasi"</span>);
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs1</span>.<span class="function">perkenalan</span>()); <span class="comment">// "Halo, saya John dari Informatika"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs2</span>.<span class="function">perkenalan</span>()); <span class="comment">// "Halo, saya Jane dari Sistem Informasi"</span>
+
+<span class="variable">mhs1</span>.<span class="function">setIpk</span>(<span class="number">3.8</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs1</span>.<span class="variable">ipk</span>); <span class="comment">// 3.8</span></code></pre>
+
+                <h3>Class (ES6) Modern & Direkomendasikan</h3>
+                <pre><code><span class="keyword">class</span> <span class="function">Mahasiswa</span> {
+    <span class="comment">// Constructor</span>
+    <span class="function">constructor</span>(<span class="variable">nama</span>, <span class="variable">nim</span>, <span class="variable">jurusan</span>) {
+        <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">nama</span>;
+        <span class="keyword">this</span>.<span class="variable">nim</span> = <span class="variable">nim</span>;
+        <span class="keyword">this</span>.<span class="variable">jurusan</span> = <span class="variable">jurusan</span>;
+        <span class="keyword">this</span>.<span class="variable">ipk</span> = <span class="number">0</span>;
+    }
+    
+    <span class="comment">// Methods</span>
+    <span class="function">perkenalan</span>() {
+        <span class="keyword">return</span> <span class="string">`Halo, saya ${this.nama} dari ${this.jurusan}`</span>;
+    }
+    
+    <span class="function">setIpk</span>(<span class="variable">nilai</span>) {
+        <span class="keyword">if</span> (<span class="variable">nilai</span> >= <span class="number">0</span> && <span class="variable">nilai</span> <= <span class="number">4</span>) {
+            <span class="keyword">this</span>.<span class="variable">ipk</span> = <span class="variable">nilai</span>;
+        } <span class="keyword">else</span> {
+            <span class="function">console</span>.<span class="function">log</span>(<span class="string">"IPK harus antara 0-4"</span>);
+        }
+    }
+    
+    <span class="function">getInfo</span>() {
+        <span class="keyword">return</span> <span class="string">`${this.nama} (${this.nim}) - IPK: ${this.ipk}`</span>;
+    }
+    
+    <span class="comment">// Getter</span>
+    <span class="keyword">get</span> <span class="function">namaLengkap</span>() {
+        <span class="keyword">return</span> <span class="keyword">this</span>.<span class="variable">nama</span>.<span class="function">toUpperCase</span>();
+    }
+    
+    <span class="comment">// Setter</span>
+    <span class="keyword">set</span> <span class="function">ubahNama</span>(<span class="variable">namaBaru</span>) {
+        <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">namaBaru</span>;
+    }
+    
+    <span class="comment">// Static method (dipanggil dari class, bukan instance)</span>
+    <span class="keyword">static</span> <span class="function">info</span>() {
+        <span class="keyword">return</span> <span class="string">"Ini adalah class Mahasiswa"</span>;
+    }
+}
+
+<span class="comment">// Membuat instance</span>
+<span class="keyword">let</span> <span class="variable">mhs</span> = <span class="keyword">new</span> <span class="function">Mahasiswa</span>(<span class="string">"John Doe"</span>, <span class="string">"12345"</span>, <span class="string">"Informatika"</span>);
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs</span>.<span class="function">perkenalan</span>());
+<span class="variable">mhs</span>.<span class="function">setIpk</span>(<span class="number">3.75</span>);
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs</span>.<span class="function">getInfo</span>());
+
+<span class="comment">// Getter (tanpa ())</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs</span>.<span class="variable">namaLengkap</span>); <span class="comment">// "JOHN DOE"</span>
+
+<span class="comment">// Setter</span>
+<span class="variable">mhs</span>.<span class="variable">ubahNama</span> = <span class="string">"Jane Doe"</span>;
+
+<span class="comment">// Static method</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">Mahasiswa</span>.<span class="function">info</span>()); <span class="comment">// Dipanggil dari class</span></code></pre>
+
+                <h3>Inheritance (Pewarisan)</h3>
+                <pre><code><span class="comment">// Parent class</span>
+<span class="keyword">class</span> <span class="function">Orang</span> {
+    <span class="function">constructor</span>(<span class="variable">nama</span>, <span class="variable">umur</span>) {
+        <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">nama</span>;
+        <span class="keyword">this</span>.<span class="variable">umur</span> = <span class="variable">umur</span>;
+    }
+    
+    <span class="function">sapa</span>() {
+        <span class="keyword">return</span> <span class="string">`Halo, saya ${this.nama}`</span>;
+    }
+}
+
+<span class="comment">// Child class (mewarisi dari Orang)</span>
+<span class="keyword">class</span> <span class="function">Mahasiswa</span> <span class="keyword">extends</span> <span class="function">Orang</span> {
+    <span class="function">constructor</span>(<span class="variable">nama</span>, <span class="variable">umur</span>, <span class="variable">nim</span>, <span class="variable">jurusan</span>) {
+        <span class="keyword">super</span>(<span class="variable">nama</span>, <span class="variable">umur</span>); <span class="comment">// Panggil constructor parent</span>
+        <span class="keyword">this</span>.<span class="variable">nim</span> = <span class="variable">nim</span>;
+        <span class="keyword">this</span>.<span class="variable">jurusan</span> = <span class="variable">jurusan</span>;
+    }
+    
+    <span class="comment">// Override method parent</span>
+    <span class="function">sapa</span>() {
+        <span class="keyword">return</span> <span class="string">`${super.sapa()}, mahasiswa ${this.jurusan}`</span>;
+    }
+    
+    <span class="comment">// Method baru</span>
+    <span class="function">belajar</span>() {
+        <span class="keyword">return</span> <span class="string">`${this.nama} sedang belajar`</span>;
+    }
+}
+
+<span class="comment">// Child class lain</span>
+<span class="keyword">class</span> <span class="function">Dosen</span> <span class="keyword">extends</span> <span class="function">Orang</span> {
+    <span class="function">constructor</span>(<span class="variable">nama</span>, <span class="variable">umur</span>, <span class="variable">nip</span>, <span class="variable">bidang</span>) {
+        <span class="keyword">super</span>(<span class="variable">nama</span>, <span class="variable">umur</span>);
+        <span class="keyword">this</span>.<span class="variable">nip</span> = <span class="variable">nip</span>;
+        <span class="keyword">this</span>.<span class="variable">bidang</span> = <span class="variable">bidang</span>;
+    }
+    
+    <span class="function">mengajar</span>() {
+        <span class="keyword">return</span> <span class="string">`${this.nama} mengajar ${this.bidang}`</span>;
+    }
+}
+
+<span class="comment">// Penggunaan</span>
+<span class="keyword">let</span> <span class="variable">mhs</span> = <span class="keyword">new</span> <span class="function">Mahasiswa</span>(<span class="string">"John"</span>, <span class="number">20</span>, <span class="string">"12345"</span>, <span class="string">"Informatika"</span>);
+<span class="keyword">let</span> <span class="variable">dosen</span> = <span class="keyword">new</span> <span class="function">Dosen</span>(<span class="string">"Dr. Smith"</span>, <span class="number">45</span>, <span class="string">"1234567"</span>, <span class="string">"Pemrograman Web"</span>);
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs</span>.<span class="function">sapa</span>());     <span class="comment">// "Halo, saya John, mahasiswa Informatika"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">mhs</span>.<span class="function">belajar</span>());  <span class="comment">// "John sedang belajar"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">dosen</span>.<span class="function">sapa</span>());   <span class="comment">// "Halo, saya Dr. Smith"</span>
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">dosen</span>.<span class="function">mengajar</span>()); <span class="comment">// "Dr. Smith mengajar Pemrograman Web"</span></code></pre>
+
+                <h3>Contoh Praktis: Class Produk untuk E-Commerce</h3>
+                <pre><code><span class="keyword">class</span> <span class="function">Produk</span> {
+    <span class="function">constructor</span>(<span class="variable">id</span>, <span class="variable">nama</span>, <span class="variable">harga</span>, <span class="variable">stok</span>) {
+        <span class="keyword">this</span>.<span class="variable">id</span> = <span class="variable">id</span>;
+        <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">nama</span>;
+        <span class="keyword">this</span>.<span class="variable">harga</span> = <span class="variable">harga</span>;
+        <span class="keyword">this</span>.<span class="variable">stok</span> = <span class="variable">stok</span>;
+    }
+    
+    <span class="function">formatHarga</span>() {
+        <span class="keyword">return</span> <span class="string">`Rp ${this.harga.toLocaleString('id-ID')}`</span>;
+    }
+    
+    <span class="function">kurangiStok</span>(<span class="variable">jumlah</span>) {
+        <span class="keyword">if</span> (<span class="variable">jumlah</span> <= <span class="keyword">this</span>.<span class="variable">stok</span>) {
+            <span class="keyword">this</span>.<span class="variable">stok</span> -= <span class="variable">jumlah</span>;
+            <span class="keyword">return</span> <span class="keyword">true</span>;
+        }
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+    
+    <span class="function">tambahStok</span>(<span class="variable">jumlah</span>) {
+        <span class="keyword">this</span>.<span class="variable">stok</span> += <span class="variable">jumlah</span>;
+    }
+    
+    <span class="function">getDetail</span>() {
+        <span class="keyword">return</span> {
+            <span class="variable">id</span>: <span class="keyword">this</span>.<span class="variable">id</span>,
+            <span class="variable">nama</span>: <span class="keyword">this</span>.<span class="variable">nama</span>,
+            <span class="variable">harga</span>: <span class="keyword">this</span>.<span class="function">formatHarga</span>(),
+            <span class="variable">stok</span>: <span class="keyword">this</span>.<span class="variable">stok</span>,
+            <span class="variable">tersedia</span>: <span class="keyword">this</span>.<span class="variable">stok</span> > <span class="number">0</span>
+        };
+    }
+}
+
+<span class="keyword">class</span> <span class="function">Keranjang</span> {
+    <span class="function">constructor</span>() {
+        <span class="keyword">this</span>.<span class="variable">items</span> = [];
+    }
+    
+    <span class="function">tambahItem</span>(<span class="variable">produk</span>, <span class="variable">qty</span>) {
+        <span class="keyword">if</span> (<span class="variable">produk</span>.<span class="function">kurangiStok</span>(<span class="variable">qty</span>)) {
+            <span class="keyword">this</span>.<span class="variable">items</span>.<span class="function">push</span>({ <span class="variable">produk</span>, <span class="variable">qty</span> });
+            <span class="keyword">return</span> <span class="keyword">true</span>;
+        }
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+    
+    <span class="function">hitungTotal</span>() {
+        <span class="keyword">return</span> <span class="keyword">this</span>.<span class="variable">items</span>.<span class="function">reduce</span>((<span class="variable">total</span>, <span class="variable">item</span>) => {
+            <span class="keyword">return</span> <span class="variable">total</span> + (<span class="variable">item</span>.<span class="variable">produk</span>.<span class="variable">harga</span> * <span class="variable">item</span>.<span class="variable">qty</span>);
+        }, <span class="number">0</span>);
+    }
+    
+    <span class="function">lihatKeranjang</span>() {
+        <span class="keyword">return</span> <span class="keyword">this</span>.<span class="variable">items</span>.<span class="function">map</span>(<span class="variable">item</span> => ({
+            <span class="variable">nama</span>: <span class="variable">item</span>.<span class="variable">produk</span>.<span class="variable">nama</span>,
+            <span class="variable">qty</span>: <span class="variable">item</span>.<span class="variable">qty</span>,
+            <span class="variable">subtotal</span>: <span class="variable">item</span>.<span class="variable">produk</span>.<span class="variable">harga</span> * <span class="variable">item</span>.<span class="variable">qty</span>
+        }));
+    }
+}
+
+<span class="comment">// Penggunaan</span>
+<span class="keyword">let</span> <span class="variable">laptop</span> = <span class="keyword">new</span> <span class="function">Produk</span>(<span class="number">1</span>, <span class="string">"Laptop Gaming"</span>, <span class="number">15000000</span>, <span class="number">10</span>);
+<span class="keyword">let</span> <span class="variable">mouse</span> = <span class="keyword">new</span> <span class="function">Produk</span>(<span class="number">2</span>, <span class="string">"Mouse Wireless"</span>, <span class="number">250000</span>, <span class="number">50</span>);
+
+<span class="keyword">let</span> <span class="variable">keranjang</span> = <span class="keyword">new</span> <span class="function">Keranjang</span>();
+<span class="variable">keranjang</span>.<span class="function">tambahItem</span>(<span class="variable">laptop</span>, <span class="number">1</span>);
+<span class="variable">keranjang</span>.<span class="function">tambahItem</span>(<span class="variable">mouse</span>, <span class="number">2</span>);
+
+<span class="function">console</span>.<span class="function">log</span>(<span class="variable">keranjang</span>.<span class="function">lihatKeranjang</span>());
+<span class="function">console</span>.<span class="function">log</span>(<span class="string">"Total:"</span>, <span class="variable">keranjang</span>.<span class="function">hitungTotal</span>());</code></pre>
+
+                <div class="interactive-demo">
+                    <h5>🧪 Coba Sendiri: Object Class Mahasiswa</h5>
+                    <input type="text" id="obj-nama" placeholder="Nama" style="width: 120px;">
+                    <input type="text" id="obj-nim" placeholder="NIM" style="width: 100px;">
+                    <input type="text" id="obj-jurusan" placeholder="Jurusan" style="width: 120px;">
+                    <input type="number" id="obj-ipk" placeholder="IPK" step="0.01" min="0" max="4" style="width: 70px;">
+                    <button onclick="buatMahasiswa()">Buat Object</button>
+                    <button onclick="lihatSemuaMhs()">Lihat Semua</button>
+                    <div class="result-box" id="obj-custom-result">Object akan ditampilkan di sini...</div>
+                </div>
+                <script>
+                    // Class Mahasiswa
+                    class MahasiswaDemo {
+                        constructor(nama, nim, jurusan, ipk) {
+                            this.nama = nama;
+                            this.nim = nim;
+                            this.jurusan = jurusan;
+                            this.ipk = parseFloat(ipk) || 0;
+                        }
+                        
+                        getInfo() {
+                            return `${this.nama} (${this.nim}) - ${this.jurusan}, IPK: ${this.ipk}`;
+                        }
+                        
+                        getPredikat() {
+                            if (this.ipk >= 3.5) return "Cum Laude";
+                            if (this.ipk >= 3.0) return "Sangat Memuaskan";
+                            if (this.ipk >= 2.5) return "Memuaskan";
+                            return "Cukup";
+                        }
+                    }
+                    
+                    let daftarMahasiswa = [];
+                    
+                    function buatMahasiswa() {
+                        let nama = document.getElementById('obj-nama').value;
+                        let nim = document.getElementById('obj-nim').value;
+                        let jurusan = document.getElementById('obj-jurusan').value;
+                        let ipk = document.getElementById('obj-ipk').value;
+                        
+                        if (!nama || !nim) {
+                            alert('Nama dan NIM harus diisi!');
+                            return;
+                        }
+                        
+                        let mhs = new MahasiswaDemo(nama, nim, jurusan, ipk);
+                        daftarMahasiswa.push(mhs);
+                        
+                        document.getElementById('obj-custom-result').innerHTML = `
+                            <strong>Object berhasil dibuat!</strong><br>
+                            Info: ${mhs.getInfo()}<br>
+                            Predikat: ${mhs.getPredikat()}<br>
+                            <small>Total mahasiswa: ${daftarMahasiswa.length}</small>
+                        `;
+                        
+                        // Reset form
+                        document.getElementById('obj-nama').value = '';
+                        document.getElementById('obj-nim').value = '';
+                        document.getElementById('obj-jurusan').value = '';
+                        document.getElementById('obj-ipk').value = '';
+                    }
+                    
+                    function lihatSemuaMhs() {
+                        if (daftarMahasiswa.length === 0) {
+                            document.getElementById('obj-custom-result').innerHTML = 'Belum ada data mahasiswa.';
+                            return;
+                        }
+                        
+                        let html = '<strong>Daftar Mahasiswa:</strong><ol>';
+                        daftarMahasiswa.forEach(mhs => {
+                            html += `<li>${mhs.getInfo()} - <em>${mhs.getPredikat()}</em></li>`;
+                        });
+                        html += '</ol>';
+                        
+                        document.getElementById('obj-custom-result').innerHTML = html;
+                    }
+                </script>
+            </section>
+
+            <!-- Section 13: Latihan dan Tugas -->
+            <section id="latihan">
+                <h2>13. Latihan & Tugas <span class="badge badge-important">Tugas 3</span></h2>
+                
+                <h3>Tugas 3: Membuat Halaman Frontend Web dengan JavaScript</h3>
+                
+                <div class="info-box">
+                    <strong>Instruksi Umum:</strong>
+                    <ul>
+                        <li>Kerjakan <strong>minimal 2 dari 3 tugas</strong> di bawah ini</li>
+                        <li>Gunakan HTML, CSS, dan JavaScript (external file)</li>
+                        <li>Kode harus rapi dengan komentar yang jelas</li>
+                        <li>Kumpulkan dalam format ZIP berisi folder project</li>
+                    </ul>
+                </div>
+
+                <!-- Tugas 1 -->
+                <div class="demo-box" style="border-color: #e74c3c;">
+                    <h4>📝 Tugas 3A: Kalkulator Sederhana</h4>
+                    <p>Buat aplikasi kalkulator dengan fitur:</p>
+                    <ul>
+                        <li>Input 2 angka</li>
+                        <li>Operasi: Tambah, Kurang, Kali, Bagi, Modulus, Pangkat</li>
+                        <li>Tampilkan hasil di halaman</li>
+                        <li>Validasi input (tidak boleh kosong, harus angka)</li>
+                        <li>Untuk pembagian, tampilkan error jika dibagi 0</li>
+                        <li><strong>Bonus:</strong> Tambahkan history perhitungan</li>
+                    </ul>
+                    
+                    <h5>💡 Hint Struktur:</h5>
+                    <pre><code><span class="comment">// HTML</span>
+&lt;input type="number" id="angka1"&gt;
+&lt;select id="operator"&gt;...&lt;/select&gt;
+&lt;input type="number" id="angka2"&gt;
+&lt;button onclick="hitung()"&gt;Hitung&lt;/button&gt;
+&lt;div id="hasil"&gt;&lt;/div&gt;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">function</span> <span class="function">hitung</span>() {
+    <span class="keyword">let</span> <span class="variable">a</span> = <span class="function">Number</span>(<span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'angka1'</span>).<span class="variable">value</span>);
+    <span class="keyword">let</span> <span class="variable">b</span> = <span class="function">Number</span>(<span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'angka2'</span>).<span class="variable">value</span>);
+    <span class="keyword">let</span> <span class="variable">op</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'operator'</span>).<span class="variable">value</span>;
+    <span class="keyword">let</span> <span class="variable">hasil</span>;
+    
+    <span class="comment">// Gunakan switch-case untuk operasi</span>
+    <span class="keyword">switch</span>(<span class="variable">op</span>) {
+        <span class="keyword">case</span> <span class="string">'+'</span>: <span class="variable">hasil</span> = <span class="variable">a</span> + <span class="variable">b</span>; <span class="keyword">break</span>;
+        <span class="comment">// ... dst</span>
+    }
+    
+    <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'hasil'</span>).<span class="variable">innerHTML</span> = <span class="variable">hasil</span>;
+}</code></pre>
+                </div>
+
+                <!-- Tugas 2 -->
+                <div class="demo-box" style="border-color: #27ae60;">
+                    <h4>📝 Tugas 3B: To-Do List</h4>
+                    <p>Buat aplikasi To-Do List dengan fitur:</p>
+                    <ul>
+                        <li>Input untuk menambah task baru</li>
+                        <li>Tombol untuk menambah task ke daftar</li>
+                        <li>Setiap task memiliki tombol "Selesai" dan "Hapus"</li>
+                        <li>Task yang selesai diberi style berbeda (coret/warna berbeda)</li>
+                        <li>Validasi: task tidak boleh kosong</li>
+                        <li><strong>Bonus:</strong> Simpan ke localStorage agar tidak hilang saat refresh</li>
+                    </ul>
+                    
+                    <h5>💡 Hint Struktur:</h5>
+                    <pre><code><span class="comment">// HTML</span>
+&lt;input type="text" id="taskInput" placeholder="Tambah task..."&gt;
+&lt;button onclick="tambahTask()"&gt;Tambah&lt;/button&gt;
+&lt;ul id="taskList"&gt;&lt;/ul&gt;
+
+<span class="comment">// JavaScript</span>
+<span class="keyword">let</span> <span class="variable">tasks</span> = [];
+
+<span class="keyword">function</span> <span class="function">tambahTask</span>() {
+    <span class="keyword">let</span> <span class="variable">task</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'taskInput'</span>).<span class="variable">value</span>;
+    
+    <span class="keyword">if</span> (<span class="variable">task</span>.<span class="function">trim</span>() === <span class="string">''</span>) {
+        <span class="function">alert</span>(<span class="string">'Task tidak boleh kosong!'</span>);
+        <span class="keyword">return</span>;
+    }
+    
+    <span class="variable">tasks</span>.<span class="function">push</span>({ <span class="variable">text</span>: <span class="variable">task</span>, <span class="variable">done</span>: <span class="keyword">false</span> });
+    <span class="function">renderTasks</span>();
+}
+
+<span class="keyword">function</span> <span class="function">renderTasks</span>() {
+    <span class="keyword">let</span> <span class="variable">html</span> = <span class="string">''</span>;
+    <span class="variable">tasks</span>.<span class="function">forEach</span>((<span class="variable">task</span>, <span class="variable">index</span>) => {
+        <span class="variable">html</span> += <span class="string">`&lt;li class="${task.done ? 'done' : ''}"&gt;
+            ${task.text}
+            &lt;button onclick="toggleDone(${index})"&gt;✓&lt;/button&gt;
+            &lt;button onclick="hapusTask(${index})"&gt;✗&lt;/button&gt;
+        &lt;/li&gt;`</span>;
+    });
+    <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'taskList'</span>).<span class="variable">innerHTML</span> = <span class="variable">html</span>;
+}</code></pre>
+                </div>
+
+                <!-- Tugas 3 -->
+                <div class="demo-box" style="border-color: #3498db;">
+                    <h4>📝 Tugas 3C: Form Validasi & Tabel Data</h4>
+                    <p>Buat form pendaftaran dengan validasi dan tampilkan data ke tabel:</p>
+                    <ul>
+                        <li>Form input: Nama, Email, Telepon, Tanggal Lahir, Jenis Kelamin</li>
+                        <li>Validasi:
+                            <ul>
+                                <li>Nama minimal 3 karakter</li>
+                                <li>Email harus valid (mengandung @ dan .)</li>
+                                <li>Telepon hanya angka, minimal 10 digit</li>
+                                <li>Semua field wajib diisi</li>
+                            </ul>
+                        </li>
+                        <li>Jika valid, data ditambahkan ke tabel di bawah form</li>
+                        <li>Setiap baris tabel ada tombol "Hapus"</li>
+                        <li><strong>Bonus:</strong> Gunakan Class untuk menyimpan data pendaftar</li>
+                    </ul>
+                    
+                    <h5>💡 Hint Struktur:</h5>
+                    <pre><code><span class="comment">// Class untuk data</span>
+<span class="keyword">class</span> <span class="function">Pendaftar</span> {
+    <span class="function">constructor</span>(<span class="variable">nama</span>, <span class="variable">email</span>, <span class="variable">telepon</span>, <span class="variable">tglLahir</span>, <span class="variable">gender</span>) {
+        <span class="keyword">this</span>.<span class="variable">id</span> = <span class="variable">Date</span>.<span class="function">now</span>();
+        <span class="keyword">this</span>.<span class="variable">nama</span> = <span class="variable">nama</span>;
+        <span class="keyword">this</span>.<span class="variable">email</span> = <span class="variable">email</span>;
+        <span class="keyword">this</span>.<span class="variable">telepon</span> = <span class="variable">telepon</span>;
+        <span class="keyword">this</span>.<span class="variable">tglLahir</span> = <span class="variable">tglLahir</span>;
+        <span class="keyword">this</span>.<span class="variable">gender</span> = <span class="variable">gender</span>;
+    }
+}
+
+<span class="keyword">let</span> <span class="variable">dataPendaftar</span> = [];
+
+<span class="keyword">function</span> <span class="function">validasiForm</span>() {
+    <span class="keyword">let</span> <span class="variable">nama</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'nama'</span>).<span class="variable">value</span>;
+    <span class="keyword">let</span> <span class="variable">email</span> = <span class="variable">document</span>.<span class="function">getElementById</span>(<span class="string">'email'</span>).<span class="variable">value</span>;
+    
+    <span class="comment">// Validasi nama</span>
+    <span class="keyword">if</span> (<span class="variable">nama</span>.<span class="variable">length</span> < <span class="number">3</span>) {
+        <span class="function">alert</span>(<span class="string">'Nama minimal 3 karakter!'</span>);
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+    
+    <span class="comment">// Validasi email</span>
+    <span class="keyword">if</span> (!<span class="variable">email</span>.<span class="function">includes</span>(<span class="string">'@'</span>) || !<span class="variable">email</span>.<span class="function">includes</span>(<span class="string">'.'</span>)) {
+        <span class="function">alert</span>(<span class="string">'Email tidak valid!'</span>);
+        <span class="keyword">return</span> <span class="keyword">false</span>;
+    }
+    
+    <span class="comment">// ... validasi lainnya</span>
+    
+    <span class="comment">// Jika valid, buat object dan tambah ke array</span>
+    <span class="keyword">let</span> <span class="variable">pendaftar</span> = <span class="keyword">new</span> <span class="function">Pendaftar</span>(<span class="variable">nama</span>, <span class="variable">email</span>, ...);
+    <span class="variable">dataPendaftar</span>.<span class="function">push</span>(<span class="variable">pendaftar</span>);
+    <span class="function">renderTabel</span>();
+    <span class="keyword">return</span> <span class="keyword">true</span>;
+}</code></pre>
+                </div>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr>
+                        <th>No</th>
+                        <th>Kriteria</th>
+                        <th>Bobot</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>Fungsionalitas (program berjalan sesuai requirement)</td>
+                        <td>30%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Penggunaan JavaScript yang tepat (variabel, function, DOM)</td>
+                        <td>25%</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Event handling yang benar</td>
+                        <td>15%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Validasi input</td>
+                        <td>10%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Struktur kode rapi & komentar</td>
+                        <td>10%</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td>Tampilan UI (menggunakan CSS)</td>
+                        <td>10%</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong>Bonus</strong></td>
+                        <td>+10%</td>
+                    </tr>
+                </table>
+
+                <h3>📁 Struktur Folder Pengumpulan</h3>
+                <pre><code>tugas3_NIM_Nama/
+├── index.html          <span class="comment"># Halaman utama</span>
+├── css/
+│   └── style.css       <span class="comment"># File CSS</span>
+├── js/
+│   └── script.js       <span class="comment"># File JavaScript</span>
+└── README.txt          <span class="comment"># Penjelasan singkat (opsional)</span></code></pre>
+
+                <div class="success-box">
+                    <strong>📅 Deadline:</strong> Sesuai dengan jadwal di eLearning<br>
+                    <strong>📤 Submit:</strong> Upload ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">eLearning</a><br>
+                    <strong>📁 Format:</strong> File ZIP dengan nama <code>tugas3_NIM_Nama.zip</code>
+                </div>
+
+                <div class="warning-box">
+                    <strong>⚠️ Perhatian:</strong>
+                    <ul>
+                        <li>Plagiarisme akan mendapat nilai 0</li>
+                        <li>Kerjakan secara mandiri</li>
+                        <li>Boleh diskusi konsep, tapi kode harus ditulis sendiri</li>
+                        <li>Keterlambatan pengumpulan akan mengurangi nilai</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section CPMK -->
+            <section id="cpmk">
+                <h2>📎 Capaian Pembelajaran (CPMK)</h2>
+                
+                <table>
+                    <tr>
+                        <th>CPMK</th>
+                        <th>Deskripsi</th>
+                        <th>Materi Terkait</th>
+                    </tr>
+                    <tr>
+                        <td>4.1</td>
+                        <td>Menjelaskan tentang JavaScript dan bagaimana aplikasi ini dieksekusi</td>
+                        <td>Section 1-2: Pengertian & Cara Penulisan JS</td>
+                    </tr>
+                    <tr>
+                        <td>4.2</td>
+                        <td>Menggunakan object-object bawaan JavaScript</td>
+                        <td>Section 3-4, 7-9: Variabel, Operator, Function, Array, Object Bawaan</td>
+                    </tr>
+                    <tr>
+                        <td>4.3</td>
+                        <td>Menggunakan fungsi control percabangan dan perulangan dalam JavaScript</td>
+                        <td>Section 5-6: Percabangan & Perulangan</td>
+                    </tr>
+                    <tr>
+                        <td>4.4</td>
+                        <td>Membuat pemrograman event handling dalam JavaScript</td>
+                        <td>Section 10-11: DOM Manipulation & Event Handling</td>
+                    </tr>
+                    <tr>
+                        <td>4.5</td>
+                        <td>Mengembangkan sendiri object-object dalam JavaScript</td>
+                        <td>Section 12: Object Buatan Sendiri (Class)</td>
+                    </tr>
+                </table>
+
+                <h3>📚 Referensi Tambahan</h3>
+                <ul>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">MDN Web Docs - JavaScript</a></li>
+                    <li><a href="https://javascript.info/" target="_blank">The Modern JavaScript Tutorial</a></li>
+                    <li><a href="https://www.w3schools.com/js/" target="_blank">W3Schools JavaScript Tutorial</a></li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Materi Pemrograman Web - JavaScript</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2024</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // ============================================
+        // SECTION VISIBILITY — hanya tampilkan section yang diklik
+        // ============================================
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sembunyikan semua section dulu
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            // Tampilkan section pertama
+            showSection('pengertian');
+
+            // Pasang event click ke semua link sidebar
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        // ============================================
+        // ANTI-COPY PROTECTION untuk elemen <pre> dan <code>
+        // ============================================
+        (function() {
+            'use strict';
+            
+            // 1. Disable right-click pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+            });
+
+            // 2. Disable text selection pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.msUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+            });
+
+            // 3. Disable copy keyboard shortcut (Ctrl+C, Ctrl+A)
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault();
+                        showCopyWarning();
+                        return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // 4. Disable drag pada elemen code
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            });
+
+            // 5. Override copy event
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', '⚠️ Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+
+            // Function untuk menampilkan warning
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.7);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 99999;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 30px;
+                            border-radius: 10px;
+                            text-align: center;
+                            max-width: 400px;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        ">
+                            <div style="font-size: 50px; margin-bottom: 15px;">🚫</div>
+                            <h3 style="color: #f39c12; margin-bottom: 10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color: #555; margin-bottom: 20px;">
+                                Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.
+                            </p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="
+                                background: #f39c12;
+                                color: white;
+                                border: none;
+                                padding: 10px 30px;
+                                border-radius: 5px;
+                                cursor: pointer;
+                                font-size: 16px;
+                            ">Mengerti</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+
+                setTimeout(function() {
+                    if (document.getElementById('copy-warning-modal')) {
+                        document.getElementById('copy-warning-modal').remove();
+                    }
+                }, 3000);
+            }
+
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+</body>
+</html>
