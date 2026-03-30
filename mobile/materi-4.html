@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Android Kotlin - Activity Intent</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Android - Activity Intent</h2>
+            <p>Pemrograman Mobile</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#activity" class="nav-link">Activity</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengertian-activity">Pengertian Activity</a></li>
+                    <li><a href="#lifecycle">Activity Lifecycle</a></li>
+                    <li><a href="#membuat-activity">Membuat Activity Baru</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#intent" class="nav-link">Intent</a>
+                <ul class="sub-menu">
+                    <li><a href="#pengertian-intent">Pengertian Intent</a></li>
+                    <li><a href="#explicit-intent">Explicit Intent</a></li>
+                    <li><a href="#implicit-intent">Implicit Intent</a></li>
+                    <li><a href="#passing-data">Passing Data</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Pendahuluan -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Pengenalan Android Development</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami lingkungan pengembangan Android</li>
+                    <li>Mampu membuat aplikasi Hello World</li>
+                    <li>Memahami struktur UI XML dan berbagai jenis Layout</li>
+                    <li>Mengenal dan menggunakan Basic Widgets</li>
+                    <li>Mampu membuat Style dan Theme</li>
+                    <li>Memahami konsep Localization</li>
+                    <li>Memahami konsep Activity dan Lifecycle</li>
+                    <li>Mampu mengimplementasikan Intent untuk navigasi</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Activity -->
+        <section id="activity" class="section">
+            <h1>Activity</h1>
+            
+            <article id="pengertian-activity">
+                <h2>Pengertian Activity</h2>
+                <p>Activity adalah komponen fundamental dalam aplikasi Android yang menyediakan layar (screen) untuk berinteraksi dengan pengguna. Setiap Activity merepresentasikan satu layar dengan user interface.</p>
+                
+                <div class="info-box">
+                    <h4>Karakteristik Activity</h4>
+                    <ul>
+                        <li>Setiap Activity adalah subclass dari <code>AppCompatActivity</code></li>
+                        <li>Setiap Activity harus didaftarkan di <code>AndroidManifest.xml</code></li>
+                        <li>Activity memiliki lifecycle yang dikelola oleh sistem Android</li>
+                        <li>Aplikasi bisa memiliki multiple Activities</li>
+                        <li>Activity bisa memiliki satu atau lebih layout</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="lifecycle">
+                <h2>Activity Lifecycle</h2>
+                <p>Activity memiliki siklus hidup (lifecycle) yang terdiri dari beberapa state. Memahami lifecycle penting untuk mengelola resource dengan benar.</p>
+                
+                <div class="lifecycle-diagram">
+                    <div class="lifecycle-state">onCreate()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStart()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onResume()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state running">RUNNING</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onPause()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStop()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onDestroy()</div>
+                </div>
+
+                <h3>Penjelasan Callback Methods</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Dipanggil Ketika</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>onCreate()</code></td>
+                            <td>Activity pertama kali dibuat</td>
+                            <td>Inisialisasi UI, binding view, setup data</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStart()</code></td>
+                            <td>Activity menjadi visible</td>
+                            <td>Persiapan untuk tampil ke user</td>
+                        </tr>
+                        <tr>
+                            <td><code>onResume()</code></td>
+                            <td>Activity siap berinteraksi</td>
+                            <td>Start animasi, acquire camera/sensor</td>
+                        </tr>
+                        <tr>
+                            <td><code>onPause()</code></td>
+                            <td>Activity kehilangan focus</td>
+                            <td>Pause animasi, save draft data</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStop()</code></td>
+                            <td>Activity tidak lagi visible</td>
+                            <td>Release heavy resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>onDestroy()</code></td>
+                            <td>Activity akan dihancurkan</td>
+                            <td>Final cleanup, release all resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>onRestart()</code></td>
+                            <td>Activity di-restart dari stopped</td>
+                            <td>Refresh data jika diperlukan</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Implementasi Lifecycle</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - Lifecycle Demo</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+    
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        Log.d(TAG, "onCreate: Activity created")
+        
+        // Inisialisasi UI components
+        // Setup data
+    }
+    
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "onStart: Activity is visible")
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "onResume: Activity is interactive")
+        // Start animations, acquire resources
+    }
+    
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "onPause: Activity losing focus")
+        // Pause animations, save data
+    }
+    
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "onStop: Activity not visible")
+        // Release resources
+    }
+    
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "onRestart: Activity restarting")
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "onDestroy: Activity destroyed")
+        // Final cleanup
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="membuat-activity">
+                <h2>Membuat Activity Baru</h2>
+                
+                <h3>Cara Membuat Activity</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Masukkan nama Activity (contoh: <strong>SecondActivity</strong>)</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Pastikan <strong>"Generate Layout File"</strong> tercentang</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Klik <strong>Finish</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Android Studio akan otomatis membuat:</p>
+                <ul>
+                    <li>File <code>SecondActivity.kt</code></li>
+                    <li>File layout <code>activity_second.xml</code></li>
+                    <li>Mendaftarkan Activity di <code>AndroidManifest.xml</code></li>
+                </ul>
+            </article>
+        </section>
+
+        <!-- Intent -->
+        <section id="intent" class="section">
+            <h1>Intent</h1>
+            
+            <article id="pengertian-intent">
+                <h2>Pengertian Intent</h2>
+                <p>Intent adalah objek messaging yang digunakan untuk meminta aksi dari komponen lain. Intent dapat digunakan untuk:</p>
+                <ul>
+                    <li>Memulai Activity baru</li>
+                    <li>Memulai Service</li>
+                    <li>Mengirim Broadcast</li>
+                    <li>Berkomunikasi antar komponen</li>
+                </ul>
+
+                <h3>Jenis Intent</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Keterangan</th>
+                            <th>Contoh Penggunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Explicit Intent</strong></td>
+                            <td>Menentukan komponen target secara spesifik</td>
+                            <td>Berpindah ke Activity lain dalam aplikasi yang sama</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Implicit Intent</strong></td>
+                            <td>Mendeklarasikan aksi umum tanpa menentukan komponen</td>
+                            <td>Membuka browser, share content, kirim email</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="explicit-intent">
+                <h2>Explicit Intent</h2>
+                <p>Explicit Intent digunakan ketika kita tahu persis komponen mana yang ingin dipanggil. Biasanya digunakan untuk navigasi antar Activity dalam satu aplikasi.</p>
+                
+                <h3>Layout MainActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_main.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/main_title"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnGoToSecond"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/btn_go_to_second"/&gt;
+
+        &lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>MainActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
+
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        
+        val btnGoToSecond = findViewById&lt;Button&gt;(R.id.btnGoToSecond)
+        
+        btnGoToSecond.setOnClickListener {
+            // Membuat Explicit Intent
+            val intent = Intent(this, SecondActivity::class.java)
+            startActivity(intent)
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Layout SecondActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_second.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="#E3F2FD"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Halaman Kedua"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Anda telah berhasil berpindah halaman!"
+        android:textSize="16sp"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kembali"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>SecondActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>SecondActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.Button
+
+class SecondActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_second)
+        
+        val btnBack = findViewById&lt;Button&gt;(R.id.btnBack)
+        
+        btnBack.setOnClickListener {
+            finish() // Kembali ke Activity sebelumnya
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="implicit-intent">
+                <h2>Implicit Intent</h2>
+                <p>Implicit Intent tidak menentukan komponen target secara langsung, melainkan mendeklarasikan aksi yang ingin dilakukan. Sistem Android akan mencari komponen yang dapat menangani Intent tersebut.</p>
+                
+                <h3>Layout untuk Implicit Intent Demo</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_implicit_intent.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contoh Implicit Intent"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnOpenBrowser"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buka Website"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnDial"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Panggil Telepon"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSendEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kirim Email"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSendSms"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kirim SMS"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnShare"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Share Text"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnOpenMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Buka Lokasi di Maps"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Implementasi Implicit Intent</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ImplicitIntentActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.widget.Button
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class ImplicitIntentActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_implicit_intent)
+        
+        setupButtons()
+    }
+    
+    private fun setupButtons() {
+        // 1. Membuka URL di Browser
+        findViewById&lt;Button&gt;(R.id.btnOpenBrowser).setOnClickListener {
+            val url = "https://www.google.com"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            safeStartActivity(intent, "Tidak ada browser yang tersedia")
+        }
+        
+        // 2. Membuka Dialer untuk Panggilan Telepon
+        findViewById&lt;Button&gt;(R.id.btnDial).setOnClickListener {
+            val phoneNumber = "08123456789"
+            val intent = Intent(Intent.ACTION_DIAL)
+            intent.data = Uri.parse("tel:$phoneNumber")
+            safeStartActivity(intent, "Tidak ada aplikasi telepon")
+        }
+        
+        // 3. Mengirim Email
+        findViewById&lt;Button&gt;(R.id.btnSendEmail).setOnClickListener {
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("contoh@email.com"))
+                putExtra(Intent.EXTRA_SUBJECT, "Subject Email")
+                putExtra(Intent.EXTRA_TEXT, "Isi pesan email...")
+            }
+            safeStartActivity(intent, "Tidak ada aplikasi email")
+        }
+        
+        // 4. Mengirim SMS
+        findViewById&lt;Button&gt;(R.id.btnSendSms).setOnClickListener {
+            val phoneNumber = "08123456789"
+            val message = "Halo, ini pesan SMS!"
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("smsto:$phoneNumber")
+                putExtra("sms_body", message)
+            }
+            safeStartActivity(intent, "Tidak ada aplikasi SMS")
+        }
+        
+        // 5. Share Text
+        findViewById&lt;Button&gt;(R.id.btnShare).setOnClickListener {
+            val shareText = "Ini adalah teks yang akan dibagikan!"
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, shareText)
+            }
+            startActivity(Intent.createChooser(intent, "Bagikan melalui"))
+        }
+        
+        // 6. Buka Lokasi di Maps
+        findViewById&lt;Button&gt;(R.id.btnOpenMap).setOnClickListener {
+            val latitude = -6.2088
+            val longitude = 106.8456
+            val label = "Jakarta"
+            val uri = Uri.parse("geo:$latitude,$longitude?q=$latitude,$longitude($label)")
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            safeStartActivity(intent, "Tidak ada aplikasi maps")
+        }
+    }
+    
+    private fun safeStartActivity(intent: Intent, errorMessage: String) {
+        // Cek apakah ada aplikasi yang bisa menangani intent
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Perhatian</h4>
+                    <p>Saat menggunakan Implicit Intent, selalu gunakan <code>resolveActivity()</code> atau try-catch untuk mengecek apakah ada aplikasi yang dapat menangani intent. Jika tidak ada, aplikasi akan crash.</p>
+                </div>
+
+                <h3>Common Intent Actions</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>ACTION_VIEW</code></td>
+                            <td>Menampilkan data (URL, lokasi, dll)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_SEND</code></td>
+                            <td>Mengirim/share data ke aplikasi lain</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_SENDTO</code></td>
+                            <td>Mengirim ke alamat tertentu (email, SMS)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_DIAL</code></td>
+                            <td>Membuka dialer dengan nomor tertentu</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_CALL</code></td>
+                            <td>Langsung melakukan panggilan (perlu permission)</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_PICK</code></td>
+                            <td>Memilih data dari content provider</td>
+                        </tr>
+                        <tr>
+                            <td><code>ACTION_EDIT</code></td>
+                            <td>Mengedit data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="passing-data">
+                <h2>Passing Data dengan Intent</h2>
+                <p>Intent dapat digunakan untuk mengirim data dari satu Activity ke Activity lain menggunakan method <code>putExtra()</code>.</p>
+                
+                <h3>Layout Form Input</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_form.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Form Input Data"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nama Lengkap"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Usia"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="3"/&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jenis Kelamin:"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"/&gt;
+
+    &lt;RadioGroup
+        android:id="@+id/rgGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp"&gt;
+
+        &lt;RadioButton
+            android:id="@+id/rbMale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Laki-laki"
+            android:layout_marginEnd="16dp"/&gt;
+
+        &lt;RadioButton
+            android:id="@+id/rbFemale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Perempuan"/&gt;
+
+    &lt;/RadioGroup&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbAgree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Saya setuju dengan syarat dan ketentuan"
+        android:layout_marginBottom="16dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit Data"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Mengirim Data dari FormActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>FormActivity.kt - Mengirim Data</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.RadioGroup
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.textfield.TextInputEditText
+
+class FormActivity : AppCompatActivity() {
+    
+    private lateinit var etName: TextInputEditText
+    private lateinit var etEmail: TextInputEditText
+    private lateinit var etAge: TextInputEditText
+    private lateinit var rgGender: RadioGroup
+    private lateinit var cbAgree: CheckBox
+    private lateinit var btnSubmit: Button
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_form)
+        
+        initViews()
+        setupSubmitButton()
+    }
+    
+    private fun initViews() {
+        etName = findViewById(R.id.etName)
+        etEmail = findViewById(R.id.etEmail)
+        etAge = findViewById(R.id.etAge)
+        rgGender = findViewById(R.id.rgGender)
+        cbAgree = findViewById(R.id.cbAgree)
+        btnSubmit = findViewById(R.id.btnSubmit)
+    }
+    
+    private fun setupSubmitButton() {
+        btnSubmit.setOnClickListener {
+            if (validateInput()) {
+                sendDataToResultActivity()
+            }
+        }
+    }
+    
+    private fun validateInput(): Boolean {
+        val name = etName.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val age = etAge.text.toString().trim()
+        
+        // Validasi nama
+        if (name.isEmpty()) {
+            etName.error = "Nama tidak boleh kosong"
+            etName.requestFocus()
+            return false
+        }
+        
+        // Validasi email
+        if (email.isEmpty()) {
+            etEmail.error = "Email tidak boleh kosong"
+            etEmail.requestFocus()
+            return false
+        }
+        
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.error = "Format email tidak valid"
+            etEmail.requestFocus()
+            return false
+        }
+        
+        // Validasi usia
+        if (age.isEmpty()) {
+            etAge.error = "Usia tidak boleh kosong"
+            etAge.requestFocus()
+            return false
+        }
+        
+        // Validasi gender
+        if (rgGender.checkedRadioButtonId == -1) {
+            Toast.makeText(this, "Pilih jenis kelamin", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        // Validasi checkbox
+        if (!cbAgree.isChecked) {
+            Toast.makeText(this, "Anda harus menyetujui syarat dan ketentuan", Toast.LENGTH_SHORT).show()
+            return false
+        }
+        
+        return true
+    }
+    
+    private fun sendDataToResultActivity() {
+        val name = etName.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val age = etAge.text.toString().toInt()
+        val gender = when (rgGender.checkedRadioButtonId) {
+            R.id.rbMale -> "Laki-laki"
+            R.id.rbFemale -> "Perempuan"
+            else -> ""
+        }
+        
+        // Membuat intent dengan data
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra(ResultActivity.EXTRA_NAME, name)
+            putExtra(ResultActivity.EXTRA_EMAIL, email)
+            putExtra(ResultActivity.EXTRA_AGE, age)
+            putExtra(ResultActivity.EXTRA_GENDER, gender)
+        }
+        
+        startActivity(intent)
+    }
+}</pre>
+                </div>
+
+                <h3>Layout Hasil</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>activity_result.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data yang Diterima"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        android:layout_marginBottom="16dp"&gt;
+
+        &lt;LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"&gt;
+
+            &lt;TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvAge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:layout_marginBottom="8dp"/&gt;
+
+            &lt;TextView
+                android:id="@+id/tvGender"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"/&gt;
+
+        &lt;/LinearLayout&gt;
+
+    &lt;/com.google.android.material.card.MaterialCardView&gt;
+
+    &lt;Button
+        android:id="@+id/btnBack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kembali ke Form"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>Menerima Data di ResultActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ResultActivity.kt - Menerima Data</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class ResultActivity : AppCompatActivity() {
+    
+    companion object {
+        const val EXTRA_NAME = "extra_name"
+        const val EXTRA_EMAIL = "extra_email"
+        const val EXTRA_AGE = "extra_age"
+        const val EXTRA_GENDER = "extra_gender"
+    }
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_result)
+        
+        // Menerima data dari Intent
+        val name = intent.getStringExtra(EXTRA_NAME) ?: "Tidak ada data"
+        val email = intent.getStringExtra(EXTRA_EMAIL) ?: "Tidak ada data"
+        val age = intent.getIntExtra(EXTRA_AGE, 0)
+        val gender = intent.getStringExtra(EXTRA_GENDER) ?: "Tidak ada data"
+        
+        // Menampilkan data
+        findViewById&lt;TextView&gt;(R.id.tvName).text = "Nama: $name"
+        findViewById&lt;TextView&gt;(R.id.tvEmail).text = "Email: $email"
+        findViewById&lt;TextView&gt;(R.id.tvAge).text = "Usia: $age tahun"
+        findViewById&lt;TextView&gt;(R.id.tvGender).text = "Jenis Kelamin: $gender"
+        
+        // Tombol kembali
+        findViewById&lt;Button&gt;(R.id.btnBack).setOnClickListener {
+            finish()
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Tipe Data yang Dapat Dikirim</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method putExtra</th>
+                            <th>Method getExtra</th>
+                            <th>Tipe Data</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>putExtra(key, String)</td>
+                            <td>getStringExtra(key)</td>
+                            <td>String</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Int)</td>
+                            <td>getIntExtra(key, defaultValue)</td>
+                            <td>Int</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Long)</td>
+                            <td>getLongExtra(key, defaultValue)</td>
+                            <td>Long</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Float)</td>
+                            <td>getFloatExtra(key, defaultValue)</td>
+                            <td>Float</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Double)</td>
+                            <td>getDoubleExtra(key, defaultValue)</td>
+                            <td>Double</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Boolean)</td>
+                            <td>getBooleanExtra(key, defaultValue)</td>
+                            <td>Boolean</td>
+                        </tr>
+                        <tr>
+                            <td>putStringArrayListExtra(key, ArrayList)</td>
+                            <td>getStringArrayListExtra(key)</td>
+                            <td>ArrayList&lt;String&gt;</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Parcelable)</td>
+                            <td>getParcelableExtra(key)</td>
+                            <td>Object (Parcelable)</td>
+                        </tr>
+                        <tr>
+                            <td>putExtra(key, Serializable)</td>
+                            <td>getSerializableExtra(key)</td>
+                            <td>Object (Serializable)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Mengirim Object dengan Parcelable</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>User.kt - Data Class Parcelable</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.helloworld
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class User(
+    val id: Int,
+    val name: String,
+    val email: String,
+    val age: Int,
+    val gender: String
+) : Parcelable</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mengirim dan Menerima Object Parcelable</span>
+                    </div>
+                    <pre class="no-copy">
+// Mengirim object
+val user = User(
+    id = 1,
+    name = "John Doe",
+    email = "john@email.com",
+    age = 25,
+    gender = "Laki-laki"
+)
+
+val intent = Intent(this, DetailActivity::class.java)
+intent.putExtra("USER_DATA", user)
+startActivity(intent)
+
+// =============================================
+
+// Menerima object di DetailActivity
+val user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    intent.getParcelableExtra("USER_DATA", User::class.java)
+} else {
+    @Suppress("DEPRECATION")
+    intent.getParcelableExtra("USER_DATA")
+}
+
+user?.let {
+    tvName.text = it.name
+    tvEmail.text = it.email
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Mengaktifkan Parcelize Plugin</h4>
+                    <p>Untuk menggunakan <code>@Parcelize</code>, tambahkan plugin di <code>build.gradle.kts</code>:</p>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize") // Tambahkan ini
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Tugas -->
+        <section id="tugas" class="section">
+            <h1>Tugas Praktikum</h1>
+            
+            <div class="task-box">
+                <h2>Tugas 1: Aplikasi Form Biodata</h2>
+                <p>Buatlah aplikasi dengan spesifikasi sebagai berikut:</p>
+                <ol>
+                    <li>Halaman pertama (MainActivity) berisi form input:
+                        <ul>
+                            <li>Nama lengkap (EditText)</li>
+                            <li>NIM (EditText dengan inputType number)</li>
+                            <li>Program Studi (Spinner dengan pilihan)</li>
+                            <li>Jenis Kelamin (RadioButton)</li>
+                            <li>Hobi (CheckBox - minimal 3 pilihan)</li>
+                        </ul>
+                    </li>
+                    <li>Implementasikan validasi input yang baik</li>
+                    <li>Gunakan Style untuk konsistensi tampilan</li>
+                    <li>Tombol "Tampilkan Profil" untuk berpindah ke halaman kedua</li>
+                    <li>Halaman kedua (ProfileActivity) menampilkan data yang diinput dengan tampilan yang menarik (gunakan CardView)</li>
+                    <li>Implementasikan localization (minimal 2 bahasa)</li>
+                </ol>
+                
+                <div class="info-box">
+                    <h4>Kriteria Penilaian</h4>
+                    <ul>
+                        <li>Implementasi Layout (ConstraintLayout) - 20%</li>
+                        <li>Penggunaan Widget yang tepat - 20%</li>
+                        <li>Validasi Input - 15%</li>
+                        <li>Style dan Theme - 15%</li>
+                        <li>Intent dan Data Passing - 20%</li>
+                        <li>Localization - 10%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 2: Aplikasi Kalkulator Sederhana</h2>
+                <p>Buatlah aplikasi kalkulator dengan spesifikasi:</p>
+                <ol>
+                    <li>Halaman pertama berisi:
+                        <ul>
+                            <li>Input angka pertama</li>
+                            <li>Input angka kedua</li>
+                            <li>Spinner untuk pilihan operasi (+, -, ×, ÷)</li>
+                            <li>Tombol Hitung</li>
+                        </ul>
+                    </li>
+                    <li>Halaman kedua menampilkan:
+                        <ul>
+                            <li>Angka pertama</li>
+                            <li>Operasi yang dipilih</li>
+                            <li>Angka kedua</li>
+                            <li>Hasil perhitungan</li>
+                        </ul>
+                    </li>
+                    <li>Implementasikan validasi:
+                        <ul>
+                            <li>Input tidak boleh kosong</li>
+                            <li>Pembagian dengan 0 harus ditangani</li>
+                        </ul>
+                    </li>
+                    <li>Gunakan Material Design components</li>
+                </ol>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 3: Aplikasi Intent Explorer</h2>
+                <p>Buatlah aplikasi yang mengeksplorasi berbagai jenis Intent:</p>
+                <ol>
+                    <li>Tombol untuk membuka website kampus</li>
+                    <li>Tombol untuk melakukan panggilan ke nomor kampus</li>
+                    <li>Tombol untuk mengirim email ke dosen</li>
+                    <li>Tombol untuk share text ke media sosial</li>
+                    <li>Tombol untuk membuka lokasi kampus di Maps</li>
+                    <li>Buat tampilan yang menarik dengan ikon untuk setiap tombol</li>
+                </ol>
+            </div>
+
+            <div class="task-box">
+                <h2>Tugas 4: Mini Project - Aplikasi Catatan Sederhana</h2>
+                <p>Buatlah aplikasi catatan sederhana dengan fitur:</p>
+                <ol>
+                    <li>Halaman utama menampilkan daftar catatan (sementara bisa hardcode)</li>
+                    <li>Tombol untuk menambah catatan baru</li>
+                    <li>Halaman form untuk menambah catatan:
+                        <ul>
+                            <li>Judul catatan</li>
+                            <li>Isi catatan (multiline)</li>
+                            <li>Kategori (Spinner: Pekerjaan, Pribadi, Belajar)</li>
+                            <li>Prioritas (RadioButton: Tinggi, Sedang, Rendah)</li>
+                        </ul>
+                    </li>
+                    <li>Halaman detail catatan</li>
+                    <li>Implementasikan semua konsep yang telah dipelajari:
+                        <ul>
+                            <li>Layout yang baik (ConstraintLayout)</li>
+                            <li>Berbagai widget</li>
+                            <li>Style dan Theme</li>
+                            <li>Localization</li>
+                            <li>Activity dan Intent</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+
+            <div class="info-box">
+                <h3>Ketentuan Pengumpulan</h3>
+                <ul>
+                    <li>Kumpulkan dalam format <strong>ZIP</strong> berisi project Android Studio lengkap</li>
+                    <li>Sertakan file <strong>README.md</strong> berisi:
+                        <ul>
+                            <li>Nama dan NIM</li>
+                            <li>Deskripsi singkat aplikasi</li>
+                            <li>Screenshot aplikasi (minimal 3 screenshot)</li>
+                            <li>Penjelasan fitur yang diimplementasikan</li>
+                        </ul>
+                    </li>
+                    <li>Pastikan project bisa di-build tanpa error</li>
+                    <li>Deadline: Pertemuan berikutnya</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <h3>Catatan Penting</h3>
+                <ul>
+                    <li>Plagiasi akan mendapat nilai 0</li>
+                    <li>Ketik ulang kode, jangan copy-paste</li>
+                    <li>Pahami setiap baris kode yang Anda tulis</li>
+                    <li>Jangan ragu bertanya jika ada kesulitan</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Referensi -->
+        <section id="referensi" class="section">
+            <h1>Referensi</h1>
+            
+            <h2>Dokumentasi Resmi</h2>
+            <ul>
+                <li><strong>Android Developers</strong> - developer.android.com</li>
+                <li><strong>Kotlin Documentation</strong> - kotlinlang.org/docs</li>
+                <li><strong>Material Design</strong> - material.io</li>
+            </ul>
+
+            <h2>Codelabs</h2>
+            <ul>
+                <li>Android Basics in Kotlin - developer.android.com/courses/android-basics-kotlin/course</li>
+                <li>Jetpack Compose Basics - developer.android.com/jetpack/compose</li>
+            </ul>
+
+            <h2>Tools</h2>
+            <ul>
+                <li><strong>Android Studio</strong> - IDE resmi untuk pengembangan Android</li>
+                <li><strong>Figma</strong> - Untuk desain UI</li>
+                <li><strong>Git</strong> - Version control</li>
+            </ul>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Bergerak</strong></p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <!-- JavaScript untuk anti-copy dan section navigation -->
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const allSections = document.querySelectorAll('.section');
+            allSections.forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.style.display = 'block';
+                // Scroll to top of main content
+                document.querySelector('.main-content').scrollTop = 0;
+                window.scrollTo(0, 0);
+            }
+            
+            // Update active state in navigation
+            updateActiveNav(sectionId);
+        }
+        
+        // Function to update active navigation link
+        function updateActiveNav(sectionId) {
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + sectionId) {
+                    link.classList.add('active');
+                }
+            });
+        }
+        
+        // Initialize: Show first section by default
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show pendahuluan section by default
+            showSection('pendahuluan');
+            
+            // Add click handlers to all navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    
+                    // Check if it's a main section or sub-article
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement) {
+                        if (targetElement.classList.contains('section')) {
+                            // It's a main section, show only this section
+                            showSection(targetId);
+                        } else {
+                            // It's a sub-article, show parent section and scroll to article
+                            const parentSection = targetElement.closest('.section');
+                            if (parentSection) {
+                                showSection(parentSection.id);
+                                // Small delay to ensure section is visible before scrolling
+                                setTimeout(() => {
+                                    targetElement.scrollIntoView({
+                                        behavior: 'smooth',
+                                        block: 'start'
+                                    });
+                                }, 100);
+                            }
+                        }
+                    }
+                });
+            });
+        });
+        
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Disable keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Disable Ctrl+C, Ctrl+U, Ctrl+S, Ctrl+A, Ctrl+Shift+I, F12
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || 
+                              e.key === 'u' || e.key === 'U' ||
+                              e.key === 's' || e.key === 'S' ||
+                              e.key === 'a' || e.key === 'A')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Disable text selection on code blocks
+        document.querySelectorAll('.no-copy').forEach(function(element) {
+            element.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+            });
+            element.addEventListener('copy', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        // Disable drag
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
+
+        const sidebar = document.querySelector('.sidebar');
+        let touchStartX = 0;
+        
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+        });
+        
+        document.addEventListener('touchend', function(e) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const diff = touchEndX - touchStartX;
+            
+            if (diff > 50 && touchStartX < 50) {
+                sidebar.classList.add('show');
+            } else if (diff < -50) {
+                sidebar.classList.remove('show');
+            }
+        });
+
+        console.log('%cPerhatian!', 'color: red; font-size: 30px; font-weight: bold;');
+        console.log('%cHalaman ini dilindungi. Silakan ketik ulang kode untuk belajar dengan lebih baik.', 'font-size: 16px;');
+    </script>
+</body>
+</html>
