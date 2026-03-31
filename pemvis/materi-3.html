@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Praktikum PySide6 - QMainWindow, Dialog & QSS</title>
     <link rel="stylesheet" href="assets/css/style-2.css">
+    <style>
+        /* Override anti-copy dari style-2.css — kode boleh di-copy */
+        .code-block pre,
+        .code-block code,
+        .table-code,
+        .inline-code {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            pointer-events: auto !important;
+        }
+        .code-block::after { display: none !important; }
+        .code-block::before { content: none !important; }
+        ::selection { background: #b3d4ff; color: #000; }
+        ::-moz-selection { background: #b3d4ff; color: #000; }
+    </style>
 </head>
 <body>
     <!-- Mobile Toggle Button -->
@@ -3295,27 +3312,15 @@ DARK_THEME = <span class="string">"""
             document.querySelector('.nav-link').classList.add('active');
         });
 
-        // Anti-copy
-        document.querySelectorAll('.code-block').forEach(block => {
-            block.addEventListener('contextmenu', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual!'); });
-            block.addEventListener('selectstart', e => e.preventDefault());
-            block.addEventListener('dragstart', e => e.preventDefault());
+        // Anti-copy dihapus — mahasiswa boleh copy kode langsung
+        document.addEventListener('DOMContentLoaded', function() {
+            // Pastikan semua kode bisa di-select dan di-copy
+            document.querySelectorAll('.code-block pre, .code-block code, .table-code, .inline-code').forEach(el => {
+                el.style.userSelect = 'text';
+                el.style.webkitUserSelect = 'text';
+                el.style.pointerEvents = 'auto';
+            });
         });
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-                const sel = window.getSelection();
-                if (sel.anchorNode?.parentElement?.closest('.code-block')) {
-                    e.preventDefault();
-                    alert('Kode tidak dapat disalin. Silakan ketik manual!');
-                }
-            }
-        });
-        document.querySelectorAll('.code-block, .table-code, .inline-code').forEach(el => {
-            el.addEventListener('copy', e => { e.preventDefault(); alert('Kode tidak dapat disalin!'); });
-        });
-
-        console.log('%c⚠️ PERHATIAN!', 'color: red; font-size: 24px; font-weight: bold;');
-        console.log('%cKode di halaman ini dilindungi.', 'font-size: 14px;');
     </script>
 </body>
 </html>
