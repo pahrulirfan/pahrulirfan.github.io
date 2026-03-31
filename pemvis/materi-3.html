@@ -584,159 +584,83 @@
                     </div>
                     <div class="code-block">
                         <pre><code><span class="keyword">import</span> sys
-<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
-    QApplication, QMainWindow, QTextEdit, QMessageBox
-)
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QApplication, QMainWindow, QTextEdit
 <span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence
 
 <span class="keyword">class</span> <span class="class-name">TextEditor</span>(QMainWindow):
     <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
         <span class="builtin">super</span>().__init__()
-        <span class="self">self</span>.setWindowTitle(<span class="string">"QAction Demo - Text Editor"</span>)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"QAction Demo"</span>)
         <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">700</span>, <span class="number">500</span>)
-        
-        <span class="comment"># Central widget</span>
+
         <span class="self">self</span>.text_edit = QTextEdit()
         <span class="self">self</span>.setCentralWidget(<span class="self">self</span>.text_edit)
-        
-        <span class="comment"># Buat actions</span>
+
         <span class="self">self</span>.create_actions()
-        
-        <span class="comment"># Buat menu dan toolbar</span>
         <span class="self">self</span>.create_menus()
         <span class="self">self</span>.create_toolbars()
-        
-        <span class="comment"># Status bar</span>
         <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
-    
+
     <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
-        <span class="string">"""Membuat semua QAction"""</span>
-        
-        <span class="comment"># === FILE ACTIONS ===</span>
-        
         <span class="comment"># New Action</span>
         <span class="self">self</span>.new_action = QAction(<span class="string">"&amp;New"</span>, <span class="self">self</span>)
         <span class="self">self</span>.new_action.setShortcut(QKeySequence.New)
-        <span class="self">self</span>.new_action.setStatusTip(<span class="string">"Create a new document"</span>)
+        <span class="self">self</span>.new_action.setStatusTip(<span class="string">"Buat dokumen baru"</span>)
         <span class="self">self</span>.new_action.triggered.connect(<span class="self">self</span>.new_document)
-        
-        <span class="comment"># Open Action</span>
-        <span class="self">self</span>.open_action = QAction(<span class="string">"&amp;Open..."</span>, <span class="self">self</span>)
-        <span class="self">self</span>.open_action.setShortcut(QKeySequence.Open)
-        <span class="self">self</span>.open_action.setStatusTip(<span class="string">"Open an existing document"</span>)
-        <span class="self">self</span>.open_action.triggered.connect(<span class="self">self</span>.open_document)
-        
+
         <span class="comment"># Save Action</span>
         <span class="self">self</span>.save_action = QAction(<span class="string">"&amp;Save"</span>, <span class="self">self</span>)
         <span class="self">self</span>.save_action.setShortcut(QKeySequence.Save)
-        <span class="self">self</span>.save_action.setStatusTip(<span class="string">"Save the document"</span>)
+        <span class="self">self</span>.save_action.setStatusTip(<span class="string">"Simpan dokumen"</span>)
         <span class="self">self</span>.save_action.triggered.connect(<span class="self">self</span>.save_document)
-        
+
         <span class="comment"># Exit Action</span>
         <span class="self">self</span>.exit_action = QAction(<span class="string">"E&amp;xit"</span>, <span class="self">self</span>)
         <span class="self">self</span>.exit_action.setShortcut(<span class="string">"Ctrl+Q"</span>)
-        <span class="self">self</span>.exit_action.setStatusTip(<span class="string">"Exit the application"</span>)
+        <span class="self">self</span>.exit_action.setStatusTip(<span class="string">"Keluar dari aplikasi"</span>)
         <span class="self">self</span>.exit_action.triggered.connect(<span class="self">self</span>.close)
-        
-        <span class="comment"># === EDIT ACTIONS ===</span>
-        
-        <span class="comment"># Undo Action</span>
-        <span class="self">self</span>.undo_action = QAction(<span class="string">"&amp;Undo"</span>, <span class="self">self</span>)
-        <span class="self">self</span>.undo_action.setShortcut(QKeySequence.Undo)
-        <span class="self">self</span>.undo_action.setStatusTip(<span class="string">"Undo the last action"</span>)
-        <span class="self">self</span>.undo_action.triggered.connect(<span class="self">self</span>.text_edit.undo)
-        
-        <span class="comment"># Redo Action</span>
-        <span class="self">self</span>.redo_action = QAction(<span class="string">"&amp;Redo"</span>, <span class="self">self</span>)
-        <span class="self">self</span>.redo_action.setShortcut(QKeySequence.Redo)
-        <span class="self">self</span>.redo_action.setStatusTip(<span class="string">"Redo the last undone action"</span>)
-        <span class="self">self</span>.redo_action.triggered.connect(<span class="self">self</span>.text_edit.redo)
-        
-        <span class="comment"># Cut Action</span>
-        <span class="self">self</span>.cut_action = QAction(<span class="string">"Cu&amp;t"</span>, <span class="self">self</span>)
-        <span class="self">self</span>.cut_action.setShortcut(QKeySequence.Cut)
-        <span class="self">self</span>.cut_action.setStatusTip(<span class="string">"Cut selected text"</span>)
-        <span class="self">self</span>.cut_action.triggered.connect(<span class="self">self</span>.text_edit.cut)
-        
-        <span class="comment"># Copy Action</span>
-        <span class="self">self</span>.copy_action = QAction(<span class="string">"&amp;Copy"</span>, <span class="self">self</span>)
-        <span class="self">self</span>.copy_action.setShortcut(QKeySequence.Copy)
-        <span class="self">self</span>.copy_action.setStatusTip(<span class="string">"Copy selected text"</span>)
-        <span class="self">self</span>.copy_action.triggered.connect(<span class="self">self</span>.text_edit.copy)
-        
-        <span class="comment"># Paste Action</span>
-        <span class="self">self</span>.paste_action = QAction(<span class="string">"&amp;Paste"</span>, <span class="self">self</span>)
-        <span class="self">self</span>.paste_action.setShortcut(QKeySequence.Paste)
-        <span class="self">self</span>.paste_action.setStatusTip(<span class="string">"Paste from clipboard"</span>)
-        <span class="self">self</span>.paste_action.triggered.connect(<span class="self">self</span>.text_edit.paste)
-        
-        <span class="comment"># === VIEW ACTIONS (Checkable) ===</span>
-        
-        <span class="comment"># Word Wrap Action (Checkable)</span>
+
+        <span class="comment"># Word Wrap — contoh checkable action (bisa di-toggle on/off)</span>
         <span class="self">self</span>.wordwrap_action = QAction(<span class="string">"&amp;Word Wrap"</span>, <span class="self">self</span>)
         <span class="self">self</span>.wordwrap_action.setCheckable(<span class="keyword">True</span>)
         <span class="self">self</span>.wordwrap_action.setChecked(<span class="keyword">True</span>)
         <span class="self">self</span>.wordwrap_action.setStatusTip(<span class="string">"Toggle word wrap"</span>)
         <span class="self">self</span>.wordwrap_action.triggered.connect(<span class="self">self</span>.toggle_word_wrap)
-    
+
     <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
-        <span class="string">"""Membuat menu bar dengan actions"""</span>
-        menu_bar = <span class="self">self</span>.menuBar()
-        
-        <span class="comment"># File Menu</span>
-        file_menu = menu_bar.addMenu(<span class="string">"&amp;File"</span>)
+        <span class="comment"># File Menu — action yang sama dipasang di sini...</span>
+        file_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;File"</span>)
         file_menu.addAction(<span class="self">self</span>.new_action)
-        file_menu.addAction(<span class="self">self</span>.open_action)
         file_menu.addAction(<span class="self">self</span>.save_action)
         file_menu.addSeparator()
         file_menu.addAction(<span class="self">self</span>.exit_action)
-        
-        <span class="comment"># Edit Menu</span>
-        edit_menu = menu_bar.addMenu(<span class="string">"&amp;Edit"</span>)
-        edit_menu.addAction(<span class="self">self</span>.undo_action)
-        edit_menu.addAction(<span class="self">self</span>.redo_action)
-        edit_menu.addSeparator()
-        edit_menu.addAction(<span class="self">self</span>.cut_action)
-        edit_menu.addAction(<span class="self">self</span>.copy_action)
-        edit_menu.addAction(<span class="self">self</span>.paste_action)
-        
-        <span class="comment"># View Menu</span>
-        view_menu = menu_bar.addMenu(<span class="string">"&amp;View"</span>)
+
+        <span class="comment"># View Menu — contoh checkable action di menu</span>
+        view_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;View"</span>)
         view_menu.addAction(<span class="self">self</span>.wordwrap_action)
-    
+
     <span class="keyword">def</span> <span class="function">create_toolbars</span>(<span class="self">self</span>):
-        <span class="string">"""Membuat toolbar dengan actions yang sama"""</span>
-        <span class="comment"># File Toolbar</span>
-        file_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"File"</span>)
-        file_toolbar.addAction(<span class="self">self</span>.new_action)
-        file_toolbar.addAction(<span class="self">self</span>.open_action)
-        file_toolbar.addAction(<span class="self">self</span>.save_action)
-        
-        <span class="comment"># Edit Toolbar</span>
-        edit_toolbar = <span class="self">self</span>.addToolBar(<span class="string">"Edit"</span>)
-        edit_toolbar.addAction(<span class="self">self</span>.cut_action)
-        edit_toolbar.addAction(<span class="self">self</span>.copy_action)
-        edit_toolbar.addAction(<span class="self">self</span>.paste_action)
-    
+        <span class="comment"># ...dan action yang SAMA juga dipasang di toolbar — tidak perlu definisi ulang</span>
+        toolbar = <span class="self">self</span>.addToolBar(<span class="string">"File"</span>)
+        toolbar.addAction(<span class="self">self</span>.new_action)
+        toolbar.addAction(<span class="self">self</span>.save_action)
+
     <span class="comment"># === SLOT METHODS ===</span>
-    
+
     <span class="keyword">def</span> <span class="function">new_document</span>(<span class="self">self</span>):
         <span class="self">self</span>.text_edit.clear()
-        <span class="self">self</span>.statusBar().showMessage(<span class="string">"New document created"</span>, <span class="number">3000</span>)
-    
-    <span class="keyword">def</span> <span class="function">open_document</span>(<span class="self">self</span>):
-        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Open dialog would appear here"</span>, <span class="number">3000</span>)
-    
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Dokumen baru dibuat"</span>, <span class="number">3000</span>)
+
     <span class="keyword">def</span> <span class="function">save_document</span>(<span class="self">self</span>):
-        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Document saved"</span>, <span class="number">3000</span>)
-    
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Dokumen disimpan"</span>, <span class="number">3000</span>)
+
     <span class="keyword">def</span> <span class="function">toggle_word_wrap</span>(<span class="self">self</span>, <span class="parameter">checked</span>):
         <span class="keyword">if</span> checked:
             <span class="self">self</span>.text_edit.setLineWrapMode(QTextEdit.WidgetWidth)
-            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap enabled"</span>, <span class="number">2000</span>)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap ON"</span>, <span class="number">2000</span>)
         <span class="keyword">else</span>:
             <span class="self">self</span>.text_edit.setLineWrapMode(QTextEdit.NoWrap)
-            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap disabled"</span>, <span class="number">2000</span>)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">"Word wrap OFF"</span>, <span class="number">2000</span>)
 
 <span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
     app = QApplication(sys.argv)
