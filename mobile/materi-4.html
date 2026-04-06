@@ -35,6 +35,9 @@
                     <li><a href="#passing-data">Passing Data</a></li>
                 </ul>
             </li>
+            <li class="nav-item">
+                <a href="#referensi" class="nav-link">Referensi</a>
+            </li>
         </ul>
     </nav>
 
@@ -59,10 +62,7 @@
         </section>
 
         <!-- Activity -->
-        <section id="activity" class="section">
-            <h1>Activity</h1>
-            
-            <article id="pengertian-activity">
+        <section id="pengertian-activity" class="section">
                 <h2>Pengertian Activity</h2>
                 <p>Activity adalah komponen fundamental dalam aplikasi Android yang menyediakan layar (screen) untuk berinteraksi dengan pengguna. Setiap Activity merepresentasikan satu layar dengan user interface.</p>
                 
@@ -76,12 +76,26 @@
                         <li>Activity bisa memiliki satu atau lebih layout</li>
                     </ul>
                 </div>
-            </article>
+        </section>
 
-            <article id="lifecycle">
+        <section id="lifecycle" class="section">
                 <h2>Activity Lifecycle</h2>
-                <p>Activity memiliki siklus hidup (lifecycle) yang terdiri dari beberapa state. Memahami lifecycle penting untuk mengelola resource dengan benar.</p>
-                
+                <p>Activity memiliki siklus hidup (lifecycle) yang terdiri dari beberapa state. Memahami lifecycle penting agar kamu tahu <strong>di mana harus meletakkan kode</strong> — misalnya kapan mulai memutar musik, kapan menyimpan data, kapan melepas kamera.</p>
+
+                <div class="info-box">
+                    <h4>Analogi Lifecycle</h4>
+                    <p>Bayangkan Activity seperti sebuah <strong>toko</strong>:</p>
+                    <ul>
+                        <li><strong>onCreate</strong> → toko sedang dibangun dan didekorasi</li>
+                        <li><strong>onStart</strong> → toko sudah buka, orang bisa melihat dari luar</li>
+                        <li><strong>onResume</strong> → toko aktif, pelanggan bisa masuk dan berinteraksi</li>
+                        <li><strong>onPause</strong> → ada gangguan kecil (telepon masuk), toko masih terlihat tapi tidak bisa dilayani penuh</li>
+                        <li><strong>onStop</strong> → toko tertutup, tidak terlihat dari luar</li>
+                        <li><strong>onRestart</strong> → toko dibuka kembali setelah sempat tutup</li>
+                        <li><strong>onDestroy</strong> → toko dibongkar total</li>
+                    </ul>
+                </div>
+
                 <div class="lifecycle-diagram">
                     <div class="lifecycle-state">onCreate()</div>
                     <div class="lifecycle-arrow">↓</div>
@@ -98,119 +112,324 @@
                     <div class="lifecycle-state">onDestroy()</div>
                 </div>
 
-                <h3>Penjelasan Callback Methods</h3>
+                <h3>Skenario Nyata Setiap Callback</h3>
+                <p>Berikut penjelasan kapan tepatnya setiap method dipanggil beserta contoh kode yang relevan.</p>
+
+                <h4>1. onCreate() — Activity pertama kali dibuat</h4>
+                <p><strong>Kapan dipanggil:</strong> Saat aplikasi pertama kali dibuka, atau setelah Activity dihancurkan lalu dibuat ulang (misal rotasi layar).</p>
+                <p><strong>Skenario:</strong> Kamu membuka aplikasi → <code>onCreate()</code> langsung dipanggil.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onCreate()</span></div>
+                    <pre >
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+
+    // Tempat yang tepat untuk:
+    // - Menghubungkan layout XML
+    // - Inisialisasi variabel dan view
+    // - Setup RecyclerView, Adapter
+    // - Mengambil data dari Intent
+
+    val btnSubmit = findViewById&lt;Button&gt;(R.id.btnSubmit)
+    val namaUser = intent.getStringExtra("NAMA") ?: "Tamu"
+
+    btnSubmit.setOnClickListener {
+        // aksi tombol
+    }
+}</pre>
+                </div>
+
+                <h4>2. onStart() — Activity mulai terlihat</h4>
+                <p><strong>Kapan dipanggil:</strong> Setelah <code>onCreate()</code>, atau saat Activity kembali terlihat setelah sebelumnya di-stop.</p>
+                <p><strong>Skenario:</strong> Kamu menekan tombol Home lalu kembali ke aplikasi → <code>onStart()</code> dipanggil lagi.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onStart()</span></div>
+                    <pre >
+override fun onStart() {
+    super.onStart()
+
+    // Tempat yang tepat untuk:
+    // - Mendaftarkan BroadcastReceiver
+    // - Mulai memantau perubahan data yang perlu ditampilkan
+
+    Log.d("Lifecycle", "Activity sekarang terlihat oleh user")
+}</pre>
+                </div>
+
+                <h4>3. onResume() — Activity aktif dan siap digunakan</h4>
+                <p><strong>Kapan dipanggil:</strong> Setiap kali Activity berada di foreground dan siap menerima input dari user. Ini adalah state "normal" saat aplikasi digunakan.</p>
+                <p><strong>Skenario:</strong> Notifikasi muncul lalu kamu dismiss → Activity kembali ke foreground → <code>onResume()</code> dipanggil.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onResume() — mulai kamera/sensor</span></div>
+                    <pre >
+private var mediaPlayer: MediaPlayer? = null
+
+override fun onResume() {
+    super.onResume()
+
+    // Tempat yang tepat untuk:
+    // - Mulai memutar musik/video
+    // - Mengaktifkan kamera
+    // - Mulai update lokasi GPS
+    // - Melanjutkan animasi
+
+    mediaPlayer?.start() // lanjutkan musik yang sempat di-pause
+    Log.d("Lifecycle", "Activity aktif, user bisa berinteraksi")
+}</pre>
+                </div>
+
+                <h4>4. onPause() — Activity kehilangan fokus (masih terlihat sebagian)</h4>
+                <p><strong>Kapan dipanggil:</strong> Saat ada Activity lain yang muncul di depan tapi tidak menutupi seluruh layar — misalnya dialog, notifikasi popup, atau saat berpindah ke Activity lain.</p>
+                <p><strong>Skenario nyata:</strong></p>
+                <ul>
+                    <li>Kamu sedang main game → ada telepon masuk → game masih terlihat di belakang → <code>onPause()</code> dipanggil</li>
+                    <li>Kamu menekan tombol untuk berpindah Activity → sebelum Activity baru muncul, <code>onPause()</code> Activity lama dipanggil dulu</li>
+                    <li>Muncul dialog permission (izin kamera, lokasi) → <code>onPause()</code> dipanggil</li>
+                </ul>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onPause() — pause musik dan simpan draft</span></div>
+                    <pre >
+override fun onPause() {
+    super.onPause()
+
+    // Tempat yang tepat untuk:
+    // - Pause musik/video (karena user tidak fokus ke app ini)
+    // - Simpan data sementara (draft) agar tidak hilang
+    // - Pause animasi
+    // - Lepas kamera jika tidak dibutuhkan di background
+
+    mediaPlayer?.pause() // pause musik
+
+    // Simpan teks yang sedang diketik ke SharedPreferences
+    val draft = etCatatan.text.toString()
+    getSharedPreferences("draft", MODE_PRIVATE)
+        .edit()
+        .putString("isi_catatan", draft)
+        .apply()
+
+    Log.d("Lifecycle", "onPause: Activity kehilangan fokus")
+
+    // JANGAN lakukan operasi berat di sini (network call, database query)
+    // karena onPause harus selesai cepat agar Activity baru bisa tampil
+}</pre>
+                </div>
+
+                <h4>5. onStop() — Activity tidak terlihat sama sekali</h4>
+                <p><strong>Kapan dipanggil:</strong> Saat Activity tertutup sepenuhnya — user menekan Home, berpindah ke Activity lain yang menutupi seluruh layar, atau layar mati.</p>
+                <p><strong>Skenario:</strong> Kamu menekan tombol Home → aplikasi masuk background → <code>onStop()</code> dipanggil.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onStop() — simpan data permanen dan lepas resource</span></div>
+                    <pre >
+override fun onStop() {
+    super.onStop()
+
+    // Tempat yang tepat untuk:
+    // - Simpan data ke database secara permanen
+    // - Hentikan animasi berat
+    // - Unregister BroadcastReceiver
+    // - Lepas resource yang tidak dibutuhkan di background
+
+    // Simpan data ke database (Room/SQLite)
+    lifecycleScope.launch {
+        database.catatanDao().simpan(catatan)
+    }
+
+    Log.d("Lifecycle", "onStop: Activity tidak terlihat")
+}</pre>
+                </div>
+
+                <h4>6. onRestart() — Activity kembali dari stopped</h4>
+                <p><strong>Kapan dipanggil:</strong> Saat user kembali ke Activity yang sebelumnya di-stop (bukan dihancurkan). Dipanggil sebelum <code>onStart()</code>.</p>
+                <p><strong>Skenario:</strong> Kamu menekan Home → buka aplikasi lain → kembali ke aplikasi ini → <code>onRestart()</code> → <code>onStart()</code> → <code>onResume()</code>.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onRestart() — refresh data</span></div>
+                    <pre >
+override fun onRestart() {
+    super.onRestart()
+
+    // Tempat yang tepat untuk:
+    // - Refresh data yang mungkin berubah saat app di background
+    // - Cek apakah ada update dari server
+
+    Log.d("Lifecycle", "onRestart: kembali dari background")
+    refreshDataDariServer() // perbarui tampilan jika ada data baru
+}</pre>
+                </div>
+
+                <h4>7. onDestroy() — Activity dihancurkan</h4>
+                <p><strong>Kapan dipanggil:</strong> Saat user menekan tombol Back (finish), atau sistem Android menghancurkan Activity karena kebutuhan memori, atau terjadi rotasi layar.</p>
+                <p><strong>Skenario:</strong> Kamu menekan tombol Back → <code>onDestroy()</code> dipanggil → Activity hilang dari memori.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Contoh onDestroy() — bersihkan semua resource</span></div>
+                    <pre >
+override fun onDestroy() {
+    super.onDestroy()
+
+    // Tempat yang tepat untuk:
+    // - Lepas semua resource yang masih dipegang
+    // - Hentikan thread/coroutine yang berjalan
+    // - Release MediaPlayer, kamera, koneksi database
+
+    mediaPlayer?.release() // bebaskan resource MediaPlayer
+    mediaPlayer = null
+
+    Log.d("Lifecycle", "onDestroy: Activity dihancurkan")
+}</pre>
+                </div>
+
+                <h3>Urutan Lifecycle Berdasarkan Skenario</h3>
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Method</th>
-                            <th>Dipanggil Ketika</th>
-                            <th>Kegunaan</th>
+                            <th>Skenario</th>
+                            <th>Urutan Callback yang Dipanggil</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><code>onCreate()</code></td>
-                            <td>Activity pertama kali dibuat</td>
-                            <td>Inisialisasi UI, binding view, setup data</td>
+                            <td>Buka aplikasi pertama kali</td>
+                            <td><code>onCreate</code> → <code>onStart</code> → <code>onResume</code></td>
                         </tr>
                         <tr>
-                            <td><code>onStart()</code></td>
-                            <td>Activity menjadi visible</td>
-                            <td>Persiapan untuk tampil ke user</td>
+                            <td>Tekan tombol Home</td>
+                            <td><code>onPause</code> → <code>onStop</code></td>
                         </tr>
                         <tr>
-                            <td><code>onResume()</code></td>
-                            <td>Activity siap berinteraksi</td>
-                            <td>Start animasi, acquire camera/sensor</td>
+                            <td>Kembali ke app setelah Home</td>
+                            <td><code>onRestart</code> → <code>onStart</code> → <code>onResume</code></td>
                         </tr>
                         <tr>
-                            <td><code>onPause()</code></td>
-                            <td>Activity kehilangan focus</td>
-                            <td>Pause animasi, save draft data</td>
+                            <td>Muncul dialog / notifikasi popup</td>
+                            <td><code>onPause</code> (Activity masih terlihat sebagian)</td>
                         </tr>
                         <tr>
-                            <td><code>onStop()</code></td>
-                            <td>Activity tidak lagi visible</td>
-                            <td>Release heavy resources</td>
+                            <td>Dismiss dialog, kembali fokus</td>
+                            <td><code>onResume</code></td>
                         </tr>
                         <tr>
-                            <td><code>onDestroy()</code></td>
-                            <td>Activity akan dihancurkan</td>
-                            <td>Final cleanup, release all resources</td>
+                            <td>Pindah ke Activity lain</td>
+                            <td>Activity A: <code>onPause</code> → Activity B: <code>onCreate</code> → <code>onStart</code> → <code>onResume</code> → Activity A: <code>onStop</code></td>
                         </tr>
                         <tr>
-                            <td><code>onRestart()</code></td>
-                            <td>Activity di-restart dari stopped</td>
-                            <td>Refresh data jika diperlukan</td>
+                            <td>Tekan tombol Back</td>
+                            <td><code>onPause</code> → <code>onStop</code> → <code>onDestroy</code></td>
+                        </tr>
+                        <tr>
+                            <td>Rotasi layar (portrait ↔ landscape)</td>
+                            <td><code>onPause</code> → <code>onStop</code> → <code>onDestroy</code> → <code>onCreate</code> → <code>onStart</code> → <code>onResume</code></td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h3>Implementasi Lifecycle</h3>
+                <h3>Kode Lengkap dengan Log untuk Praktikum</h3>
+                <p>Buat project baru, copy kode ini ke <code>MainActivity.kt</code>, lalu jalankan dan perhatikan output di <strong>Logcat</strong> (View → Tool Windows → Logcat) sambil melakukan berbagai aksi di emulator.</p>
                 <div class="code-block">
                     <div class="code-header">
-                        <span>MainActivity.kt - Lifecycle Demo</span>
+                        <span>MainActivity.kt — Lifecycle Demo Lengkap</span>
                     </div>
-                    <pre class="no-copy">
-package com.example.helloworld
+                    <pre >
+package com.example.lifecycledemo
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
-    
+
     companion object {
-        private const val TAG = "MainActivity"
+        private const val TAG = "LifecycleDemo"
     }
-    
+
+    // TextView untuk menampilkan log di layar
+    private lateinit var tvLog: TextView
+    private val logHistory = StringBuilder()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        Log.d(TAG, "onCreate: Activity created")
-        
-        // Inisialisasi UI components
-        // Setup data
+        tvLog = findViewById(R.id.tvLog)
+
+        addLog("onCreate() ← Buka aplikasi / rotasi layar")
+        // Lakukan inisialisasi di sini
     }
-    
+
     override fun onStart() {
         super.onStart()
-        Log.d(TAG, "onStart: Activity is visible")
+        addLog("onStart() ← Activity mulai terlihat")
     }
-    
+
     override fun onResume() {
         super.onResume()
-        Log.d(TAG, "onResume: Activity is interactive")
-        // Start animations, acquire resources
+        addLog("onResume() ← Activity aktif, siap digunakan")
+        // Mulai kamera, GPS, animasi, musik di sini
     }
-    
+
     override fun onPause() {
         super.onPause()
-        Log.d(TAG, "onPause: Activity losing focus")
-        // Pause animations, save data
+        addLog("onPause() ← Ada dialog/notifikasi, atau pindah Activity")
+        // Pause musik, simpan draft di sini
+        // Jangan operasi berat di sini!
     }
-    
+
     override fun onStop() {
         super.onStop()
-        Log.d(TAG, "onStop: Activity not visible")
-        // Release resources
+        addLog("onStop() ← Tekan Home / Activity tertutup penuh")
+        // Simpan data ke database, lepas resource berat di sini
     }
-    
+
     override fun onRestart() {
         super.onRestart()
-        Log.d(TAG, "onRestart: Activity restarting")
+        addLog("onRestart() ← Kembali dari background")
     }
-    
+
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "onDestroy: Activity destroyed")
-        // Final cleanup
+        addLog("onDestroy() ← Tekan Back / sistem hancurkan Activity")
+        // Lepas semua resource di sini
+    }
+
+    private fun addLog(message: String) {
+        Log.d(TAG, message)
+        logHistory.append("• $message\n")
+        // Tampilkan di layar agar mudah diamati
+        if (::tvLog.isInitialized) {
+            tvLog.text = logHistory.toString()
+        }
     }
 }</pre>
                 </div>
-            </article>
 
-            <article id="membuat-activity">
+                <div class="info-box">
+                    <h4>Cara Mengamati Lifecycle di Logcat</h4>
+                    <ol>
+                        <li>Jalankan aplikasi di emulator</li>
+                        <li>Buka <strong>Logcat</strong> di Android Studio (pojok bawah)</li>
+                        <li>Filter dengan kata kunci <code>LifecycleDemo</code></li>
+                        <li>Coba lakukan aksi berikut dan perhatikan log yang muncul:
+                            <ul>
+                                <li>Tekan tombol <strong>Home</strong></li>
+                                <li>Kembali ke aplikasi dari Recent Apps</li>
+                                <li>Tekan tombol <strong>Back</strong></li>
+                                <li>Rotasi layar (Ctrl+F11 di emulator)</li>
+                                <li>Buka aplikasi lain lalu kembali</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Kesalahan Umum</h4>
+                    <ul>
+                        <li><strong>Menyimpan data hanya di onDestroy</strong> → berbahaya, karena onDestroy tidak selalu dipanggil jika sistem mematikan app secara paksa. Simpan data penting di <code>onPause</code> atau <code>onStop</code>.</li>
+                        <li><strong>Membuka koneksi di onCreate tapi tidak menutupnya</strong> → menyebabkan memory leak. Selalu pasangkan: buka di <code>onResume</code>, tutup di <code>onPause</code>.</li>
+                        <li><strong>Operasi berat di onPause</strong> → memperlambat transisi ke Activity berikutnya. onPause harus selesai secepat mungkin.</li>
+                    </ul>
+                </div>
+        </section>
+
+        <section id="membuat-activity" class="section">
                 <h2>Membuat Activity Baru</h2>
                 
                 <h3>Cara Membuat Activity</h3>
@@ -247,14 +466,10 @@ class MainActivity : AppCompatActivity() {
                     <li>File layout <code>activity_second.xml</code></li>
                     <li>Mendaftarkan Activity di <code>AndroidManifest.xml</code></li>
                 </ul>
-            </article>
         </section>
 
         <!-- Intent -->
-        <section id="intent" class="section">
-            <h1>Intent</h1>
-            
-            <article id="pengertian-intent">
+        <section id="pengertian-intent" class="section">
                 <h2>Pengertian Intent</h2>
                 <p>Intent adalah objek messaging yang digunakan untuk meminta aksi dari komponen lain. Intent dapat digunakan untuk:</p>
                 <ul>
@@ -286,18 +501,121 @@ class MainActivity : AppCompatActivity() {
                         </tr>
                     </tbody>
                 </table>
-            </article>
+        </section>
 
-            <article id="explicit-intent">
+        <section id="explicit-intent" class="section">
                 <h2>Explicit Intent</h2>
                 <p>Explicit Intent digunakan ketika kita tahu persis komponen mana yang ingin dipanggil. Biasanya digunakan untuk navigasi antar Activity dalam satu aplikasi.</p>
-                
-                <h3>Layout MainActivity</h3>
+
+                <div class="info-box">
+                    <h4>Analogi Explicit Intent</h4>
+                    <p>Bayangkan kamu mengirim surat dan sudah tahu <strong>persis alamat tujuannya</strong>. Kamu tulis nama dan alamat lengkap penerimanya — surat pasti sampai ke orang yang tepat. Itulah Explicit Intent: kamu secara langsung menyebutkan Activity mana yang ingin dibuka.</p>
+                    <p>Berbeda dengan Implicit Intent yang seperti mengirim surat tanpa alamat dan membiarkan kantor pos mencari siapa yang bisa menerimanya.</p>
+                </div>
+
+                <div class="lifecycle-diagram" style="flex-direction: row; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 16px;">
+                    <div class="lifecycle-state" style="background:#1565C0; color:white; padding:10px 16px; border-radius:8px;">MainActivity<br><small>(Halaman 1)</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#6A1B9A; color:white; padding:10px 16px; border-radius:8px;">Explicit Intent<br><small>Intent(this, SecondActivity::class.java)</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#1B5E20; color:white; padding:10px 16px; border-radius:8px;">SecondActivity<br><small>(Halaman 2)</small></div>
+                </div>
+
+                <h3>Langkah 1 — Buat Project Baru</h3>
+                <p>Buka Android Studio, buat project baru dengan template <strong>Empty Views Activity</strong>. Isi konfigurasi berikut:</p>
+                <ul>
+                    <li><strong>Name:</strong> ExplicitIntentDemo</li>
+                    <li><strong>Package name:</strong> com.example.explicitintentdemo</li>
+                    <li><strong>Language:</strong> Kotlin</li>
+                    <li><strong>Minimum SDK:</strong> API 24 (Android 7.0)</li>
+                </ul>
+                <p>Klik <strong>Finish</strong> dan tunggu Gradle selesai sync.</p>
+
+                <h3>Langkah 2 — Buat Activity Kedua (SecondActivity)</h3>
+                <p>Setelah project siap, kita perlu menambahkan Activity baru sebagai halaman tujuan.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Di panel <strong>Project</strong> (kiri), expand: <code>app → java → com.example.explicitintentdemo</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Klik kanan pada package <code>com.example.explicitintentdemo</code> → pilih <strong>New → Activity → Empty Views Activity</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Isi nama Activity: <strong>SecondActivity</strong>, pastikan <strong>Generate Layout File</strong> tercentang, lalu klik <strong>Finish</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Android Studio otomatis membuat <code>SecondActivity.kt</code>, <code>activity_second.xml</code>, dan mendaftarkannya di <code>AndroidManifest.xml</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Langkah 3 — Cek AndroidManifest.xml</h3>
+                <p>Setiap Activity <strong>wajib</strong> terdaftar di <code>AndroidManifest.xml</code>. Android Studio melakukan ini otomatis, tapi penting untuk memahami strukturnya.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml</span>
+                    </div>
+                    <pre >
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+
+    &lt;application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.ExplicitIntentDemo"&gt;
+
+        &lt;!-- Activity pertama: MainActivity sebagai launcher (halaman awal) --&gt;
+        &lt;activity
+            android:name=".MainActivity"
+            android:exported="true"&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+
+        &lt;!-- Activity kedua: SecondActivity (otomatis ditambahkan Android Studio) --&gt;
+        &lt;activity
+            android:name=".SecondActivity"
+            android:exported="false" /&gt;
+
+    &lt;/application&gt;
+
+&lt;/manifest&gt;</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan AndroidManifest.xml</h4>
+                    <ul>
+                        <li><code>android:name=".MainActivity"</code> → nama class Activity (titik di depan = shorthand untuk package name)</li>
+                        <li><code>intent-filter</code> dengan <code>MAIN</code> dan <code>LAUNCHER</code> → menandai Activity ini sebagai halaman pertama yang dibuka saat aplikasi dijalankan</li>
+                        <li><code>android:exported="false"</code> → Activity tidak bisa dibuka dari aplikasi lain (aman untuk Activity internal)</li>
+                        <li>Jika Activity tidak terdaftar di sini, aplikasi akan <strong>crash</strong> saat mencoba membukanya</li>
+                    </ul>
+                </div>
+
+                <h3>Langkah 4 — Desain Layout MainActivity</h3>
+                <p>Buka file <code>res/layout/activity_main.xml</code> dan buat tampilan halaman pertama.</p>
+
                 <div class="code-block">
                     <div class="code-header">
                         <span>activity_main.xml</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -307,59 +625,82 @@ class MainActivity : AppCompatActivity() {
     android:gravity="center"
     android:padding="16dp"&gt;
 
+    &lt;!-- Judul halaman --&gt;
     &lt;TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/main_title"
+        android:text="Halaman Pertama"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="24dp"/&gt;
+        android:layout_marginBottom="8dp"/&gt;
 
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ini adalah MainActivity"
+        android:textSize="14sp"
+        android:textColor="#888888"
+        android:layout_marginBottom="32dp"/&gt;
+
+    &lt;!-- Tombol untuk berpindah ke SecondActivity --&gt;
+    &lt;!-- android:id digunakan untuk mengakses tombol ini dari kode Kotlin --&gt;
     &lt;Button
         android:id="@+id/btnGoToSecond"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btn_go_to_second"/&gt;
+        android:text="Pergi ke Halaman Kedua"
+        android:padding="12dp"/&gt;
 
-        &lt;/LinearLayout&gt;</pre>
+&lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>MainActivity.kt</h3>
+                <h3>Langkah 5 — Tulis Kode MainActivity.kt</h3>
+                <p>Buka <code>MainActivity.kt</code> dan tambahkan logika untuk berpindah ke <code>SecondActivity</code> saat tombol diklik.</p>
+
                 <div class="code-block">
                     <div class="code-header">
                         <span>MainActivity.kt</span>
                     </div>
-                    <pre class="no-copy">
-package com.example.helloworld
+                    <pre >
+package com.example.explicitintentdemo
 
-import android.content.Intent
+import android.content.Intent   // ← import Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        
+        setContentView(R.layout.activity_main) // ← hubungkan dengan layout XML
+
+        // Ambil referensi tombol dari layout menggunakan ID-nya
         val btnGoToSecond = findViewById&lt;Button&gt;(R.id.btnGoToSecond)
-        
+
+        // Pasang listener: kode di dalam blok ini dijalankan saat tombol diklik
         btnGoToSecond.setOnClickListener {
-            // Membuat Explicit Intent
+
+            // Buat Explicit Intent:
+            // - Parameter 1 (this)                  → context saat ini (Activity ini)
+            // - Parameter 2 (SecondActivity::class.java) → Activity tujuan yang ingin dibuka
             val intent = Intent(this, SecondActivity::class.java)
+
+            // Jalankan Intent → Android akan membuka SecondActivity
             startActivity(intent)
         }
     }
 }</pre>
                 </div>
 
-                <h3>Layout SecondActivity</h3>
+                <h3>Langkah 6 — Desain Layout SecondActivity</h3>
+                <p>Buka <code>res/layout/activity_second.xml</code> dan buat tampilan halaman kedua.</p>
+
                 <div class="code-block">
                     <div class="code-header">
                         <span>activity_second.xml</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -368,7 +709,7 @@ class MainActivity : AppCompatActivity() {
     android:orientation="vertical"
     android:gravity="center"
     android:padding="16dp"
-    android:background="#E3F2FD"&gt;
+    android:background="#E3F2FD"&gt;  &lt;!-- Warna biru muda agar terlihat berbeda --&gt;
 
     &lt;TextView
         android:layout_width="wrap_content"
@@ -376,53 +717,132 @@ class MainActivity : AppCompatActivity() {
         android:text="Halaman Kedua"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:layout_marginBottom="24dp"/&gt;
+        android:layout_marginBottom="8dp"/&gt;
 
     &lt;TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Anda telah berhasil berpindah halaman!"
-        android:textSize="16sp"
-        android:layout_marginBottom="24dp"/&gt;
+        android:text="Kamu berhasil berpindah halaman!"
+        android:textSize="14sp"
+        android:textColor="#555555"
+        android:layout_marginBottom="32dp"/&gt;
 
+    &lt;!-- Tombol untuk kembali ke halaman sebelumnya --&gt;
     &lt;Button
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Kembali"/&gt;
+        android:text="Kembali"
+        android:padding="12dp"/&gt;
 
 &lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>SecondActivity.kt</h3>
+                <h3>Langkah 7 — Tulis Kode SecondActivity.kt</h3>
+                <p>Buka <code>SecondActivity.kt</code> dan tambahkan logika tombol kembali.</p>
+
                 <div class="code-block">
                     <div class="code-header">
                         <span>SecondActivity.kt</span>
                     </div>
-                    <pre class="no-copy">
-package com.example.helloworld
+                    <pre >
+package com.example.explicitintentdemo
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
 
 class SecondActivity : AppCompatActivity() {
-    
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_second)
-        
+        setContentView(R.layout.activity_second) // ← hubungkan dengan layout XML
+
         val btnBack = findViewById&lt;Button&gt;(R.id.btnBack)
-        
+
         btnBack.setOnClickListener {
-            finish() // Kembali ke Activity sebelumnya
+            // finish() → menutup Activity ini dan kembali ke Activity sebelumnya
+            // Lebih baik dari membuat Intent baru ke MainActivity
+            // karena tidak membuat tumpukan Activity baru di back stack
+            finish()
         }
     }
 }</pre>
                 </div>
-            </article>
 
-            <article id="implicit-intent">
+                <div class="info-box">
+                    <h4>finish() vs Intent ke MainActivity</h4>
+                    <ul>
+                        <li><code>finish()</code> → menutup Activity saat ini, kembali ke Activity sebelumnya di back stack. <strong>Direkomendasikan.</strong></li>
+                        <li><code>startActivity(Intent(this, MainActivity::class.java))</code> → membuat instance MainActivity baru di atas stack. Ini menyebabkan penumpukan Activity dan boros memori.</li>
+                    </ul>
+                </div>
+
+                <h3>Langkah 8 — Jalankan Aplikasi</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Hubungkan perangkat Android atau jalankan emulator dari <strong>Device Manager</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Klik tombol <strong>Run ▶</strong> (Shift+F10) di toolbar Android Studio</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Aplikasi terbuka di emulator/perangkat, tampil <strong>Halaman Pertama</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Klik tombol <strong>"Pergi ke Halaman Kedua"</strong> → halaman kedua terbuka dengan background biru</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <p>Klik tombol <strong>"Kembali"</strong> atau tekan tombol Back di perangkat → kembali ke halaman pertama</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Struktur File Akhir</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Struktur Project</span>
+                    </div>
+                    <pre >
+app/
+├── manifests/
+│   └── AndroidManifest.xml          ← MainActivity & SecondActivity terdaftar di sini
+├── java/
+│   └── com.example.explicitintentdemo/
+│       ├── MainActivity.kt           ← Halaman 1: tombol untuk berpindah
+│       └── SecondActivity.kt         ← Halaman 2: tombol untuk kembali
+└── res/
+    └── layout/
+        ├── activity_main.xml         ← Layout halaman 1
+        └── activity_second.xml       ← Layout halaman 2</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Kesalahan Umum yang Sering Terjadi</h4>
+                    <ul>
+                        <li><strong>Activity tidak terdaftar di Manifest</strong> → aplikasi crash dengan error <code>ActivityNotFoundException</code>. Solusi: pastikan Activity ada di <code>AndroidManifest.xml</code>.</li>
+                        <li><strong>ID tidak cocok</strong> → <code>findViewById</code> mengembalikan null dan crash. Pastikan ID di XML dan Kotlin sama persis.</li>
+                        <li><strong>Lupa import Intent</strong> → error compile. Tambahkan <code>import android.content.Intent</code> di bagian atas file.</li>
+                        <li><strong>Menggunakan startActivity() tanpa Intent</strong> → tidak bisa, Intent wajib dibuat terlebih dahulu.</li>
+                    </ul>
+                </div>
+        </section>
+
+        <section id="implicit-intent" class="section">
                 <h2>Implicit Intent</h2>
                 <p>Implicit Intent tidak menentukan komponen target secara langsung, melainkan mendeklarasikan aksi yang ingin dilakukan. Sistem Android akan mencari komponen yang dapat menangani Intent tersebut.</p>
                 
@@ -431,7 +851,7 @@ class SecondActivity : AppCompatActivity() {
                     <div class="code-header">
                         <span>activity_implicit_intent.xml</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -497,7 +917,7 @@ class SecondActivity : AppCompatActivity() {
                     <div class="code-header">
                         <span>ImplicitIntentActivity.kt</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 package com.example.helloworld
 
 import android.content.Intent
@@ -630,18 +1050,240 @@ class ImplicitIntentActivity : AppCompatActivity() {
                         </tr>
                     </tbody>
                 </table>
-            </article>
+        </section>
 
-            <article id="passing-data">
+        <section id="passing-data" class="section">
                 <h2>Passing Data dengan Intent</h2>
-                <p>Intent dapat digunakan untuk mengirim data dari satu Activity ke Activity lain menggunakan method <code>putExtra()</code>.</p>
-                
-                <h3>Layout Form Input</h3>
+                <p>Intent dapat digunakan untuk mengirim data dari satu Activity ke Activity lain menggunakan method <code>putExtra()</code>. Mari mulai dari contoh paling sederhana dulu — cukup 2 input saja!</p>
+
+                <div class="info-box">
+                    <h4>Analogi Passing Data</h4>
+                    <p>Bayangkan kamu mengisi formulir di loket A, lalu petugas membawa formulir itu ke loket B. Itulah yang dilakukan <code>putExtra()</code> — memasukkan data ke dalam "amplop" (Intent), lalu Activity tujuan membuka amplop itu dan membaca isinya.</p>
+                </div>
+
+                <h3>Contoh Sederhana — 2 Input dengan Validasi</h3>
+                <p>Kita akan membuat form dengan 2 input: <strong>Nama</strong> dan <strong>Pesan</strong>. Data dikirim ke halaman berikutnya hanya jika kedua input sudah diisi.</p>
+
+                <div class="lifecycle-diagram" style="flex-direction: row; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 16px;">
+                    <div class="lifecycle-state" style="background:#1565C0; color:white; padding:10px 16px; border-radius:8px;">MainActivity<br><small>Input Nama &amp; Pesan</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#6A1B9A; color:white; padding:10px 16px; border-radius:8px;">putExtra("NAMA", nama)<br>putExtra("PESAN", pesan)</div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#1B5E20; color:white; padding:10px 16px; border-radius:8px;">HasilActivity<br><small>Tampilkan data</small></div>
+                </div>
+
+                <h4>Langkah 1 — Layout Pengirim (activity_main.xml)</h4>
+                <p>Buat form sederhana dengan 2 EditText dan 1 tombol kirim.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>activity_main.xml</span></div>
+                    <pre >
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kirim Data ke Halaman Lain"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/&gt;
+
+    &lt;!-- Input Nama --&gt;
+    &lt;EditText
+        android:id="@+id/etNama"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Masukkan nama kamu"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="12dp"/&gt;
+
+    &lt;!-- Input Pesan --&gt;
+    &lt;EditText
+        android:id="@+id/etPesan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Masukkan pesan"
+        android:inputType="text"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnKirim"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Kirim Data"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h4>Langkah 2 — Layout Penerima (activity_hasil.xml)</h4>
+                <p>Halaman tujuan yang menampilkan data yang diterima.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>activity_hasil.xml</span></div>
+                    <pre >
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#E8F5E9"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Data Diterima!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;!-- Menampilkan nama yang diterima --&gt;
+    &lt;TextView
+        android:id="@+id/tvNama"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;!-- Menampilkan pesan yang diterima --&gt;
+    &lt;TextView
+        android:id="@+id/tvPesan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_marginBottom="32dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnKembali"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kembali"/&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h4>Langkah 3 — MainActivity.kt (Pengirim)</h4>
+                <p>Ambil teks dari EditText, validasi dulu, baru kirim via Intent.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>MainActivity.kt</span></div>
+                    <pre >
+package com.example.passingdatademo
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val etNama  = findViewById&lt;EditText&gt;(R.id.etNama)
+        val etPesan = findViewById&lt;EditText&gt;(R.id.etPesan)
+        val btnKirim = findViewById&lt;Button&gt;(R.id.btnKirim)
+
+        btnKirim.setOnClickListener {
+            val nama  = etNama.text.toString().trim()
+            val pesan = etPesan.text.toString().trim()
+
+            // --- VALIDASI ---
+            if (nama.isEmpty()) {
+                etNama.error = "Nama tidak boleh kosong!"
+                etNama.requestFocus()
+                return@setOnClickListener  // hentikan, jangan lanjut
+            }
+            if (pesan.isEmpty()) {
+                etPesan.error = "Pesan tidak boleh kosong!"
+                etPesan.requestFocus()
+                return@setOnClickListener  // hentikan, jangan lanjut
+            }
+
+            // --- KIRIM DATA ---
+            // Semua validasi lolos, baru buat Intent dan kirim data
+            val intent = Intent(this, HasilActivity::class.java)
+            intent.putExtra("NAMA", nama)   // kunci: "NAMA", nilai: isi EditText
+            intent.putExtra("PESAN", pesan) // kunci: "PESAN", nilai: isi EditText
+            startActivity(intent)
+        }
+    }
+}</pre>
+                </div>
+
+                <h4>Langkah 4 — HasilActivity.kt (Penerima)</h4>
+                <p>Ambil data dari Intent menggunakan kunci yang sama saat mengirim.</p>
+                <div class="code-block">
+                    <div class="code-header"><span>HasilActivity.kt</span></div>
+                    <pre >
+package com.example.passingdatademo
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class HasilActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_hasil)
+
+        // Ambil data dari Intent menggunakan kunci yang sama
+        // ?: "..." adalah nilai default jika data tidak ada (null safety)
+        val nama  = intent.getStringExtra("NAMA")  ?: "Tidak ada nama"
+        val pesan = intent.getStringExtra("PESAN") ?: "Tidak ada pesan"
+
+        // Tampilkan ke layar
+        findViewById&lt;TextView&gt;(R.id.tvNama).text  = "Halo, $nama!"
+        findViewById&lt;TextView&gt;(R.id.tvPesan).text = "Pesanmu: $pesan"
+
+        // Tombol kembali
+        findViewById&lt;Button&gt;(R.id.btnKembali).setOnClickListener {
+            finish() // tutup Activity ini, kembali ke MainActivity
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Poin Penting dari Contoh Sederhana</h4>
+                    <ul>
+                        <li><code>putExtra("KUNCI", nilai)</code> → memasukkan data ke Intent sebelum dikirim</li>
+                        <li><code>getStringExtra("KUNCI")</code> → mengambil data di Activity tujuan dengan kunci yang sama</li>
+                        <li><code>return@setOnClickListener</code> → menghentikan eksekusi di dalam lambda jika validasi gagal</li>
+                        <li><code>?: "default"</code> → nilai cadangan jika data null (Elvis operator)</li>
+                        <li>Kunci harus <strong>sama persis</strong> saat mengirim dan menerima — typo = data tidak terbaca</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Jangan Lupa Daftarkan HasilActivity di Manifest!</h4>
+                    <p>Buka <code>AndroidManifest.xml</code> dan pastikan <code>HasilActivity</code> sudah terdaftar. Jika dibuat via <em>New → Activity</em>, Android Studio melakukan ini otomatis.</p>
+                    <pre >
+&lt;activity android:name=".HasilActivity" android:exported="false" /&gt;</pre>
+                </div>
+
+                <hr style="margin: 40px 0; border-color: #e0e0e0;">
+
+                <h3>Contoh Lengkap Menggunakan Fungsi</h3>
+                <p>Setelah memahami konsep dasar, berikut implementasi yang lebih terstruktur menggunakan fungsi-fungsi terpisah, form dengan lebih banyak input, dan validasi yang lebih lengkap.</p>
+
+                <h4>Layout Form Input</h4>
                 <div class="code-block">
                     <div class="code-header">
                         <span>activity_form.xml</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -749,12 +1391,12 @@ class ImplicitIntentActivity : AppCompatActivity() {
 &lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>Mengirim Data dari FormActivity</h3>
+                <h4>Mengirim Data dari FormActivity</h4>
                 <div class="code-block">
                     <div class="code-header">
                         <span>FormActivity.kt - Mengirim Data</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 package com.example.helloworld
 
 import android.content.Intent
@@ -870,12 +1512,12 @@ class FormActivity : AppCompatActivity() {
 }</pre>
                 </div>
 
-                <h3>Layout Hasil</h3>
+                <h4>Layout Hasil</h4>
                 <div class="code-block">
                     <div class="code-header">
                         <span>activity_result.xml</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 &lt;?xml version="1.0" encoding="utf-8"?&gt;
 &lt;LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -945,12 +1587,12 @@ class FormActivity : AppCompatActivity() {
 &lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>Menerima Data di ResultActivity</h3>
+                <h4>Menerima Data di ResultActivity</h4>
                 <div class="code-block">
                     <div class="code-header">
                         <span>ResultActivity.kt - Menerima Data</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 package com.example.helloworld
 
 import android.os.Bundle
@@ -991,7 +1633,7 @@ class ResultActivity : AppCompatActivity() {
 }</pre>
                 </div>
 
-                <h3>Tipe Data yang Dapat Dikirim</h3>
+                <h4>Tipe Data yang Dapat Dikirim</h4>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -1049,213 +1691,221 @@ class ResultActivity : AppCompatActivity() {
                     </tbody>
                 </table>
 
-                <h3>Mengirim Object dengan Parcelable</h3>
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>User.kt - Data Class Parcelable</span>
-                    </div>
-                    <pre class="no-copy">
-package com.example.helloworld
-
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
-
-@Parcelize
-data class User(
-    val id: Int,
-    val name: String,
-    val email: String,
-    val age: Int,
-    val gender: String
-) : Parcelable</pre>
-                </div>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Mengirim dan Menerima Object Parcelable</span>
-                    </div>
-                    <pre class="no-copy">
-// Mengirim object
-val user = User(
-    id = 1,
-    name = "John Doe",
-    email = "john@email.com",
-    age = 25,
-    gender = "Laki-laki"
-)
-
-val intent = Intent(this, DetailActivity::class.java)
-intent.putExtra("USER_DATA", user)
-startActivity(intent)
-
-// =============================================
-
-// Menerima object di DetailActivity
-val user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    intent.getParcelableExtra("USER_DATA", User::class.java)
-} else {
-    @Suppress("DEPRECATION")
-    intent.getParcelableExtra("USER_DATA")
-}
-
-user?.let {
-    tvName.text = it.name
-    tvEmail.text = it.email
-}</pre>
-                </div>
+                <h4>Mengirim Object dengan Parcelable</h4>
 
                 <div class="info-box">
-                    <h4>Mengaktifkan Parcelize Plugin</h4>
-                    <p>Untuk menggunakan <code>@Parcelize</code>, tambahkan plugin di <code>build.gradle.kts</code>:</p>
+                    <h4>Apa itu Parcelable?</h4>
+                    <p>Bayangkan kamu ingin mengirim sebuah <strong>formulir biodata</strong> dari satu ruangan ke ruangan lain. Kamu tidak bisa melempar orangnya langsung — kamu harus <em>menuliskan</em> semua datanya di selembar kertas, lalu kertas itu dikirim, dan di ruangan tujuan kertas itu dibaca kembali.</p>
+                    <p>Itulah yang dilakukan <code>Parcelable</code>. Ia mengubah sebuah <strong>object Kotlin</strong> menjadi format yang bisa "dibungkus" dan dikirim melalui Intent, lalu dibuka kembali di Activity tujuan.</p>
+                    <ul>
+                        <li><strong>Parcelable</strong> = mekanisme bawaan Android untuk serialisasi object</li>
+                        <li><strong>@Parcelize</strong> = anotasi Kotlin yang otomatis menghasilkan kode Parcelable (tidak perlu tulis manual)</li>
+                        <li>Lebih cepat dari <code>Serializable</code> karena dioptimasi untuk Android</li>
+                    </ul>
                 </div>
+
+                <h4>Mengapa Tidak Bisa Langsung Kirim Object?</h4>
+                <p>Intent hanya bisa membawa tipe data primitif (<code>String</code>, <code>Int</code>, <code>Boolean</code>, dll). Jika kamu punya object seperti <code>User</code>, kamu perlu "mengemas" object itu terlebih dahulu agar bisa dikirim.</p>
+
+                <div class="lifecycle-diagram" style="flex-direction: row; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 16px;">
+                    <div class="lifecycle-state" style="background:#1565C0; color:white; padding:10px 16px; border-radius:8px;">Object User<br><small>(di FormActivity)</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#6A1B9A; color:white; padding:10px 16px; border-radius:8px;">Parcelable<br><small>(dikemas)</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#1B5E20; color:white; padding:10px 16px; border-radius:8px;">Intent<br><small>(dikirim)</small></div>
+                    <div class="lifecycle-arrow" style="font-size:24px;">→</div>
+                    <div class="lifecycle-state" style="background:#E65100; color:white; padding:10px 16px; border-radius:8px;">Object User<br><small>(di DetailActivity)</small></div>
+                </div>
+
+                <h4>Langkah 1 — Aktifkan Plugin Parcelize</h4>
+                <p>Sebelum menggunakan <code>@Parcelize</code>, plugin harus diaktifkan di file konfigurasi Gradle. Buka file <code>build.gradle.kts</code> pada modul <code>app</code>:</p>
 
                 <div class="code-block">
                     <div class="code-header">
                         <span>build.gradle.kts (Module: app)</span>
                     </div>
-                    <pre class="no-copy">
+                    <pre >
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize") // Tambahkan ini
+    id("kotlin-parcelize") // ← Tambahkan baris ini
+}
+// Setelah menambahkan plugin, klik "Sync Now" di pojok kanan atas Android Studio</pre>
+                </div>
+
+                <h4>Langkah 2 — Buat Data Class dengan @Parcelize</h4>
+                <p>Buat file baru bernama <code>User.kt</code> di dalam package yang sama. Cukup tambahkan anotasi <code>@Parcelize</code> dan implementasikan interface <code>Parcelable</code> — sisanya dikerjakan otomatis oleh Kotlin.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>User.kt - Data Class Parcelable</span>
+                    </div>
+                    <pre >
+package com.example.helloworld
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+// @Parcelize → anotasi yang otomatis membuat kode serialisasi
+// data class  → class khusus untuk menyimpan data (otomatis punya equals, toString, copy)
+// : Parcelable → menandakan class ini bisa dikirim via Intent
+
+@Parcelize
+data class User(
+    val id: Int,          // ID unik pengguna
+    val name: String,     // Nama lengkap
+    val email: String,    // Alamat email
+    val age: Int,         // Usia
+    val gender: String    // Jenis kelamin
+) : Parcelable
+
+// Tanpa @Parcelize, kamu harus menulis puluhan baris kode secara manual.
+// Dengan @Parcelize, cukup 1 baris anotasi!</pre>
+                </div>
+
+                <h4>Langkah 3 — Kirim Object dari FormActivity</h4>
+                <p>Setelah data class siap, buat object <code>User</code> dan masukkan ke Intent menggunakan <code>putExtra()</code>. Gunakan sebuah konstanta sebagai "kunci" agar mudah diingat dan tidak typo.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>FormActivity.kt - Mengirim Object User</span>
+                    </div>
+                    <pre >
+package com.example.helloworld
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+
+class FormActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_form)
+
+        findViewById&lt;Button&gt;(R.id.btnSubmit).setOnClickListener {
+
+            // 1. Buat object User dengan data yang ingin dikirim
+            val user = User(
+                id = 1,
+                name = "Budi Santoso",
+                email = "budi@email.com",
+                age = 20,
+                gender = "Laki-laki"
+            )
+
+            // 2. Buat Intent menuju DetailActivity
+            val intent = Intent(this, DetailActivity::class.java)
+
+            // 3. Masukkan object ke Intent dengan putExtra(kunci, nilai)
+            //    "USER_DATA" adalah kunci yang akan dipakai untuk mengambil data nanti
+            intent.putExtra("USER_DATA", user)
+
+            // 4. Jalankan Intent
+            startActivity(intent)
+        }
+    }
 }</pre>
                 </div>
-            </article>
-        </section>
 
-        <!-- Tugas -->
-        <section id="tugas" class="section">
-            <h1>Tugas Praktikum</h1>
-            
-            <div class="task-box">
-                <h2>Tugas 1: Aplikasi Form Biodata</h2>
-                <p>Buatlah aplikasi dengan spesifikasi sebagai berikut:</p>
-                <ol>
-                    <li>Halaman pertama (MainActivity) berisi form input:
-                        <ul>
-                            <li>Nama lengkap (EditText)</li>
-                            <li>NIM (EditText dengan inputType number)</li>
-                            <li>Program Studi (Spinner dengan pilihan)</li>
-                            <li>Jenis Kelamin (RadioButton)</li>
-                            <li>Hobi (CheckBox - minimal 3 pilihan)</li>
-                        </ul>
-                    </li>
-                    <li>Implementasikan validasi input yang baik</li>
-                    <li>Gunakan Style untuk konsistensi tampilan</li>
-                    <li>Tombol "Tampilkan Profil" untuk berpindah ke halaman kedua</li>
-                    <li>Halaman kedua (ProfileActivity) menampilkan data yang diinput dengan tampilan yang menarik (gunakan CardView)</li>
-                    <li>Implementasikan localization (minimal 2 bahasa)</li>
-                </ol>
-                
-                <div class="info-box">
-                    <h4>Kriteria Penilaian</h4>
-                    <ul>
-                        <li>Implementasi Layout (ConstraintLayout) - 20%</li>
-                        <li>Penggunaan Widget yang tepat - 20%</li>
-                        <li>Validasi Input - 15%</li>
-                        <li>Style dan Theme - 15%</li>
-                        <li>Intent dan Data Passing - 20%</li>
-                        <li>Localization - 10%</li>
-                    </ul>
+                <h4>Langkah 4 — Terima Object di DetailActivity</h4>
+                <p>Di Activity tujuan, ambil object menggunakan <code>getParcelableExtra()</code>. Perlu pengecekan versi Android karena cara pengambilan berubah di Android 13 (API 33 / TIRAMISU).</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>DetailActivity.kt - Menerima Object User</span>
+                    </div>
+                    <pre >
+package com.example.helloworld
+
+import android.os.Build
+import android.os.Bundle
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class DetailActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_detail)
+
+        // Ambil object dari Intent
+        // Perlu pengecekan versi karena API berubah di Android 13 (API 33)
+        val user = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Cara baru (Android 13+): lebih aman, perlu menyebutkan class-nya
+            intent.getParcelableExtra("USER_DATA", User::class.java)
+        } else {
+            // Cara lama (Android 12 ke bawah): masih bisa dipakai tapi deprecated
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra("USER_DATA")
+        }
+
+        // Gunakan safe call (?.) karena user bisa null jika data tidak dikirim
+        user?.let { u ->
+            // Tampilkan data ke TextView
+            findViewById&lt;TextView&gt;(R.id.tvName).text   = "Nama   : ${u.name}"
+            findViewById&lt;TextView&gt;(R.id.tvEmail).text  = "Email  : ${u.email}"
+            findViewById&lt;TextView&gt;(R.id.tvAge).text    = "Usia   : ${u.age} tahun"
+            findViewById&lt;TextView&gt;(R.id.tvGender).text = "Gender : ${u.gender}"
+        }
+    }
+}</pre>
                 </div>
-            </div>
 
-            <div class="task-box">
-                <h2>Tugas 2: Aplikasi Kalkulator Sederhana</h2>
-                <p>Buatlah aplikasi kalkulator dengan spesifikasi:</p>
-                <ol>
-                    <li>Halaman pertama berisi:
-                        <ul>
-                            <li>Input angka pertama</li>
-                            <li>Input angka kedua</li>
-                            <li>Spinner untuk pilihan operasi (+, -, ×, ÷)</li>
-                            <li>Tombol Hitung</li>
-                        </ul>
-                    </li>
-                    <li>Halaman kedua menampilkan:
-                        <ul>
-                            <li>Angka pertama</li>
-                            <li>Operasi yang dipilih</li>
-                            <li>Angka kedua</li>
-                            <li>Hasil perhitungan</li>
-                        </ul>
-                    </li>
-                    <li>Implementasikan validasi:
-                        <ul>
-                            <li>Input tidak boleh kosong</li>
-                            <li>Pembagian dengan 0 harus ditangani</li>
-                        </ul>
-                    </li>
-                    <li>Gunakan Material Design components</li>
-                </ol>
-            </div>
+                <div class="warning-box">
+                    <h4>Kenapa Ada Pengecekan Build.VERSION?</h4>
+                    <p>Android 13 (API 33) memperbarui cara kerja <code>getParcelableExtra()</code> agar lebih type-safe. Jika tidak melakukan pengecekan ini, aplikasi bisa crash di perangkat Android 13 ke atas atau menampilkan warning di versi lama. Selalu lakukan pengecekan ini saat mengambil Parcelable dari Intent.</p>
+                </div>
 
-            <div class="task-box">
-                <h2>Tugas 3: Aplikasi Intent Explorer</h2>
-                <p>Buatlah aplikasi yang mengeksplorasi berbagai jenis Intent:</p>
-                <ol>
-                    <li>Tombol untuk membuka website kampus</li>
-                    <li>Tombol untuk melakukan panggilan ke nomor kampus</li>
-                    <li>Tombol untuk mengirim email ke dosen</li>
-                    <li>Tombol untuk share text ke media sosial</li>
-                    <li>Tombol untuk membuka lokasi kampus di Maps</li>
-                    <li>Buat tampilan yang menarik dengan ikon untuk setiap tombol</li>
-                </ol>
-            </div>
+                <h4>Perbandingan: Parcelable vs Serializable</h4>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Parcelable</th>
+                            <th>Serializable</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Kecepatan</td>
+                            <td>Lebih cepat</td>
+                            <td>Lebih lambat</td>
+                        </tr>
+                        <tr>
+                            <td>Penggunaan memori</td>
+                            <td>Lebih efisien</td>
+                            <td>Lebih boros</td>
+                        </tr>
+                        <tr>
+                            <td>Kemudahan penulisan</td>
+                            <td>Mudah dengan @Parcelize</td>
+                            <td>Cukup implement Serializable</td>
+                        </tr>
+                        <tr>
+                            <td>Rekomendasi Android</td>
+                            <td>Direkomendasikan</td>
+                            <td>Tidak direkomendasikan</td>
+                        </tr>
+                        <tr>
+                            <td>Platform</td>
+                            <td>Android only</td>
+                            <td>Java/Kotlin umum</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-            <div class="task-box">
-                <h2>Tugas 4: Mini Project - Aplikasi Catatan Sederhana</h2>
-                <p>Buatlah aplikasi catatan sederhana dengan fitur:</p>
-                <ol>
-                    <li>Halaman utama menampilkan daftar catatan (sementara bisa hardcode)</li>
-                    <li>Tombol untuk menambah catatan baru</li>
-                    <li>Halaman form untuk menambah catatan:
-                        <ul>
-                            <li>Judul catatan</li>
-                            <li>Isi catatan (multiline)</li>
-                            <li>Kategori (Spinner: Pekerjaan, Pribadi, Belajar)</li>
-                            <li>Prioritas (RadioButton: Tinggi, Sedang, Rendah)</li>
-                        </ul>
-                    </li>
-                    <li>Halaman detail catatan</li>
-                    <li>Implementasikan semua konsep yang telah dipelajari:
-                        <ul>
-                            <li>Layout yang baik (ConstraintLayout)</li>
-                            <li>Berbagai widget</li>
-                            <li>Style dan Theme</li>
-                            <li>Localization</li>
-                            <li>Activity dan Intent</li>
-                        </ul>
-                    </li>
-                </ol>
-            </div>
-
-            <div class="info-box">
-                <h3>Ketentuan Pengumpulan</h3>
-                <ul>
-                    <li>Kumpulkan dalam format <strong>ZIP</strong> berisi project Android Studio lengkap</li>
-                    <li>Sertakan file <strong>README.md</strong> berisi:
-                        <ul>
-                            <li>Nama dan NIM</li>
-                            <li>Deskripsi singkat aplikasi</li>
-                            <li>Screenshot aplikasi (minimal 3 screenshot)</li>
-                            <li>Penjelasan fitur yang diimplementasikan</li>
-                        </ul>
-                    </li>
-                    <li>Pastikan project bisa di-build tanpa error</li>
-                    <li>Deadline: Pertemuan berikutnya</li>
-                </ul>
-            </div>
-
-            <div class="warning-box">
-                <h3>Catatan Penting</h3>
-                <ul>
-                    <li>Plagiasi akan mendapat nilai 0</li>
-                    <li>Ketik ulang kode, jangan copy-paste</li>
-                    <li>Pahami setiap baris kode yang Anda tulis</li>
-                    <li>Jangan ragu bertanya jika ada kesulitan</li>
-                </ul>
-            </div>
+                <div class="info-box">
+                    <h4>Ringkasan Langkah-langkah</h4>
+                    <ol>
+                        <li>Tambahkan plugin <code>kotlin-parcelize</code> di <code>build.gradle.kts</code></li>
+                        <li>Buat <code>data class</code> dengan anotasi <code>@Parcelize</code> dan implementasi <code>Parcelable</code></li>
+                        <li>Di Activity pengirim: buat object, lalu <code>intent.putExtra("KUNCI", object)</code></li>
+                        <li>Di Activity penerima: ambil dengan <code>getParcelableExtra("KUNCI")</code> beserta pengecekan versi Android</li>
+                        <li>Gunakan <code>?.let { }</code> untuk menangani kemungkinan nilai null</li>
+                    </ol>
+                </div>
         </section>
 
         <!-- Referensi -->
@@ -1294,111 +1944,70 @@ plugins {
 
     <!-- JavaScript untuk anti-copy dan section navigation -->
     <script>
-        function showSection(sectionId) {
-            // Hide all sections
-            const allSections = document.querySelectorAll('.section');
-            allSections.forEach(section => {
-                section.style.display = 'none';
+        // Semua unit yang bisa ditampilkan (section + article)
+        const ALL_IDS = [
+            'pendahuluan',
+            'pengertian-activity', 'lifecycle', 'membuat-activity',
+            'pengertian-intent', 'explicit-intent', 'implicit-intent', 'passing-data',
+            'tugas', 'referensi'
+        ];
+
+        // Mapping: klik menu utama → tampilkan sub pertama
+        const SECTION_DEFAULT = {
+            'activity': 'pengertian-activity',
+            'intent':   'pengertian-intent'
+        };
+
+        function showCard(id) {
+            // Sembunyikan semua unit
+            ALL_IDS.forEach(function(uid) {
+                const el = document.getElementById(uid);
+                if (el) el.style.display = 'none';
             });
-            
-            // Show selected section
-            const targetSection = document.getElementById(sectionId);
-            if (targetSection) {
-                targetSection.style.display = 'block';
-                // Scroll to top of main content
-                document.querySelector('.main-content').scrollTop = 0;
+
+            // Tampilkan unit yang dipilih
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
                 window.scrollTo(0, 0);
             }
-            
-            // Update active state in navigation
-            updateActiveNav(sectionId);
-        }
-        
-        // Function to update active navigation link
-        function updateActiveNav(sectionId) {
-            const navLinks = document.querySelectorAll('.nav-link');
-            navLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === '#' + sectionId) {
-                    link.classList.add('active');
+
+            // Update active nav
+            document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+                a.classList.remove('active');
+                if (a.getAttribute('href') === '#' + id) {
+                    a.classList.add('active');
                 }
             });
         }
-        
-        // Initialize: Show first section by default
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Show pendahuluan section by default
-            showSection('pendahuluan');
-            
-            // Add click handlers to all navigation links
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
+            // Sembunyikan semua dulu
+            ALL_IDS.forEach(function(uid) {
+                const el = document.getElementById(uid);
+                if (el) el.style.display = 'none';
+            });
+
+            // Tampilkan pendahuluan by default
+            showCard('pendahuluan');
+
+            // Pasang click handler ke semua link sidebar
+            document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
+                anchor.addEventListener('click', function(e) {
                     e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    
-                    // Check if it's a main section or sub-article
-                    const targetElement = document.getElementById(targetId);
-                    if (targetElement) {
-                        if (targetElement.classList.contains('section')) {
-                            // It's a main section, show only this section
-                            showSection(targetId);
-                        } else {
-                            // It's a sub-article, show parent section and scroll to article
-                            const parentSection = targetElement.closest('.section');
-                            if (parentSection) {
-                                showSection(parentSection.id);
-                                // Small delay to ensure section is visible before scrolling
-                                setTimeout(() => {
-                                    targetElement.scrollIntoView({
-                                        behavior: 'smooth',
-                                        block: 'start'
-                                    });
-                                }, 100);
-                            }
-                        }
+                    const id = this.getAttribute('href').substring(1);
+
+                    // Jika menu utama punya default sub, tampilkan sub-nya
+                    if (SECTION_DEFAULT[id]) {
+                        showCard(SECTION_DEFAULT[id]);
+                    } else {
+                        showCard(id);
                     }
                 });
             });
         });
         
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
 
-        // Disable keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Disable Ctrl+C, Ctrl+U, Ctrl+S, Ctrl+A, Ctrl+Shift+I, F12
-            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || 
-                              e.key === 'u' || e.key === 'U' ||
-                              e.key === 's' || e.key === 'S' ||
-                              e.key === 'a' || e.key === 'A')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.key === 'F12') {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Disable text selection on code blocks
-        document.querySelectorAll('.no-copy').forEach(function(element) {
-            element.addEventListener('selectstart', function(e) {
-                e.preventDefault();
-            });
-            element.addEventListener('copy', function(e) {
-                e.preventDefault();
-            });
-        });
-
-        // Disable drag
-        document.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-        });
 
         const sidebar = document.querySelector('.sidebar');
         let touchStartX = 0;

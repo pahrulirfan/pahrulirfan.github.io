@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Mengajar — Android Kotlin Materi 3 & 4</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+    <style>
+        /* Override anti-copy — semua teks bisa di-select dan di-copy */
+        * {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            user-select: text !important;
+        }
+        /* Kembalikan warna selection yang terlihat */
+        ::selection {
+            background: #b3d4ff !important;
+            color: #000 !important;
+        }
+        ::-moz-selection {
+            background: #b3d4ff !important;
+            color: #000 !important;
+        }
+        /* Kecuali demo interaktif View/ViewGroup */
+        .vg-wrap, .vg-wrap * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            user-select: none !important;
+        }
+        .code-body pre, .code-body pre code,
+        .code-simple pre {
+            pointer-events: auto !important;
+        }
+        .code-overlay { display: none !important; }
+
+        /* Badge dosen */
+        .teacher-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        .timing-badge {
+            display: inline-block;
+            background: #ff9800;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .teacher-note {
+            background: #fff8e1;
+            border-left: 4px solid #ff9800;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-style: italic;
+            color: #555;
+        }
+        .teacher-note strong { color: #e67e22; font-style: normal; }
+        .scenario-box {
+            background: #e8f5e9;
+            border: 2px dashed #27ae60;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .scenario-box h4 { color: #27ae60; margin-bottom: 10px; }
+        .bug-box {
+            background: #fdeaea;
+            border: 2px dashed #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .bug-box h4 { color: #e74c3c; margin-bottom: 10px; }
+        .challenge-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            color: white;
+        }
+        .challenge-box h3 { color: white; margin-bottom: 12px; }
+        .challenge-box ol { margin-left: 20px; }
+        .challenge-box li { margin-bottom: 8px; color: rgba(255,255,255,0.9); }
+        .copy-note {
+            background: #e8f4fd;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-size: 0.8rem;
+            color: #2980b9;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .section-tag {
+            font-size: 0.8rem;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            padding: 3px 10px;
+            border-radius: 10px;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+        /* Sidebar nav override */
+        .nav-menu { list-style: none; padding: 0; }
+        .nav-item { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sub-menu { list-style: none; padding-left: 15px; }
+        .sub-menu li a {
+            display: block;
+            padding: 8px 20px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .sub-menu li a:hover { color: white; }
+        /* Section styles */
+        .section { display: none; }
+        .section.active { display: block; }
+        /* Data table */
+        .data-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .data-table th { background: #7F52FF; color: white; padding: 10px 14px; text-align: left; }
+        .data-table td { padding: 10px 14px; border-bottom: 1px solid #eee; color: #555; }
+        .data-table tr:hover { background: #f8f9fa; }
+        /* Steps */
+        .steps { margin: 15px 0; }
+        .step { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-start; }
+        .step-number {
+            width: 32px; height: 32px; background: #7F52FF; color: white;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-weight: bold; flex-shrink: 0; font-size: 0.9rem;
+        }
+        .step-content { flex: 1; padding-top: 4px; }
+        .step-content h4 { margin: 0 0 6px; color: #2d3436; }
+        /* Info box */
+        .info-box { padding: 18px 20px; border-radius: 10px; margin: 18px 0; }
+        .info-box.tip { background: #e8f5e9; border-left: 4px solid #4caf50; }
+        .info-box.warning { background: #fff3e0; border-left: 4px solid #ff9800; }
+        .info-box.info { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .info-box h4 { margin: 0 0 8px; color: #2d3436; }
+        /* Code block simple */
+        .code-simple {
+            background: #0d1117; border-radius: 8px; padding: 16px 20px;
+            margin: 12px 0; overflow-x: auto; border: 1px solid #30363d;
+        }
+        .code-simple pre { margin: 0; color: #e6edf3; font-family: 'Fira Code', Consolas, monospace; font-size: 0.88rem; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="kotlin-logo">K</div>
+            <h2>📋 Panduan Dosen</h2>
+            <p>Android Kotlin — Materi 3 & 4</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pembuka" class="nav-link" onclick="showSection('pembuka')">🎬 Strategi Pembuka</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="opacity:0.5; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; cursor:default;">Materi 3 — UI & Layout</a>
+                <ul class="sub-menu">
+                    <li><a href="#m3-s1" onclick="showSection('m3-s1')">1. View & ViewGroup</a></li>
+                    <li><a href="#m3-s2" onclick="showSection('m3-s2')">2. LinearLayout</a></li>
+                    <li><a href="#m3-s3" onclick="showSection('m3-s3')">3. ConstraintLayout</a></li>
+                    <li><a href="#m3-s4" onclick="showSection('m3-s4')">4. Basic Widgets</a></li>
+                    <li><a href="#m3-s5" onclick="showSection('m3-s5')">5. String & Color Resources</a></li>
+                    <li><a href="#m3-proyek" onclick="showSection('m3-proyek')">★ Mini Proyek M3</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" style="opacity:0.5; font-size:0.75rem; text-transform:uppercase; letter-spacing:1px; cursor:default;">Materi 4 — Activity & Intent</a>
+                <ul class="sub-menu">
+                    <li><a href="#m4-s1" onclick="showSection('m4-s1')">6. Activity & Lifecycle</a></li>
+                    <li><a href="#m4-s2" onclick="showSection('m4-s2')">7. Explicit Intent</a></li>
+                    <li><a href="#m4-s3" onclick="showSection('m4-s3')">8. Passing Data</a></li>
+                    <li><a href="#m4-s4" onclick="showSection('m4-s4')">9. Implicit Intent</a></li>
+                    <li><a href="#m4-proyek" onclick="showSection('m4-proyek')">★ Mini Proyek M4</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <div class="content-header">
+            <h1>Panduan Mengajar Android Kotlin <span class="teacher-badge">🎓 Untuk Dosen</span></h1>
+            <p>Skenario kelas interaktif — Materi 3 (UI & Layout) dan Materi 4 (Activity & Intent)</p>
+        </div>
+        <div class="content-body">
+
+<!-- PEMBUKA -->
+<section id="pembuka" class="section active">
+<h2>🎬 Strategi Pembuka Kelas <span class="timing-badge">⏱ 10 menit</span></h2>
+<div class="teacher-note">
+    <strong>Catatan:</strong> Jangan langsung buka materi. Mulai dengan demo visual — tunjukkan dua aplikasi: satu yang tampilannya berantakan, satu yang rapi. Tanya mahasiswa mana yang lebih enak dipakai.
+</div>
+<div class="scenario-box">
+    <h4>🎯 Demo Pembuka — "Sebelum vs Sesudah"</h4>
+    <p>Buka Android Studio, buat project baru. Tunjukkan layout default yang kosong, lalu tunjukkan hasil akhir yang akan mereka buat hari ini. Ini membangun motivasi sebelum masuk teori.</p>
+</div>
+<div class="info-box tip">
+    <h4>Urutan Ideal Hari Ini</h4>
+    <ol>
+        <li>Materi 3: View → LinearLayout → ConstraintLayout → Widgets → Resources (90 menit)</li>
+        <li>Istirahat 15 menit</li>
+        <li>Materi 4: Activity → Lifecycle → Explicit Intent → Passing Data → Implicit Intent (90 menit)</li>
+        <li>Mini Proyek gabungan (30 menit)</li>
+    </ol>
+</div>
+</section>
+
+<!-- M3-S1: View & ViewGroup -->
+<section id="m3-s1" class="section">
+<h2>1. View & ViewGroup <span class="timing-badge">⏱ 15 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Gunakan analogi kotak. ViewGroup = kotak besar yang bisa menampung kotak-kotak kecil. View = kotak kecil yang berisi konten. Gambar di papan tulis dulu sebelum buka kode.
+</div>
+<div class="scenario-box">
+    <h4>💬 Pertanyaan Pemantik</h4>
+    <p>Tunjukkan screenshot aplikasi Instagram atau WhatsApp. Tanya: <em>"Kalau kalian lihat layar ini, kira-kira ada berapa 'kotak' yang menyusunnya?"</em> Biarkan mahasiswa tebak dulu.</p>
+</div>
+<h3>Demo Visual — Anatomi View & ViewGroup</h3>
+<p>Klik setiap kotak untuk lihat penjelasannya. Tidak bisa di-block atau di-copy.</p>
+
+<style>
+.vg-wrap { background:#12111f; border-radius:16px; padding:24px 20px; margin:20px 0; user-select:none; -webkit-user-select:none; font-family:'Segoe UI',sans-serif; }
+.vg-title { text-align:center; color:#a78bfa; font-size:0.75rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:18px; }
+.phone-shell { max-width:340px; margin:0 auto; background:#0d0d1a; border-radius:28px; border:2.5px solid #2a2a3d; padding:10px; box-shadow:0 0 50px rgba(127,82,255,0.25), inset 0 0 20px rgba(0,0,0,0.4); }
+.phone-notch { background:#0d0d1a; border-radius:12px 12px 0 0; padding:8px 16px; display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.phone-notch span { color:#555; font-size:0.7rem; }
+.vg-node { border-radius:10px; padding:10px 12px; cursor:pointer; transition:all 0.18s ease; position:relative; }
+.vg-node:hover { filter:brightness(1.15); }
+.vg-node.active { outline:2px solid white; outline-offset:2px; }
+.vg-label { font-size:0.6rem; font-family:monospace; margin-bottom:8px; opacity:0.85; letter-spacing:0.3px; }
+.v-node { border-radius:8px; padding:7px 10px; cursor:pointer; transition:all 0.18s ease; }
+.v-node:hover { filter:brightness(1.2); }
+.v-node.active { outline:2px solid white; outline-offset:2px; }
+.vg-legend { display:flex; gap:20px; justify-content:center; margin-top:14px; flex-wrap:wrap; }
+.vg-legend-item { display:flex; align-items:center; gap:7px; font-size:0.75rem; }
+.vg-legend-dot { width:12px; height:12px; border-radius:3px; }
+.info-panel { margin-top:16px; background:#1a1930; border-radius:12px; padding:16px 18px; border-left:4px solid #7F52FF; min-height:90px; transition:border-color 0.2s; }
+.info-panel-title { font-family:monospace; font-weight:700; font-size:0.9rem; margin-bottom:8px; }
+.info-panel-body { font-size:0.83rem; line-height:1.7; color:#9ca3af; }
+.info-panel-body code { background:#0d0d1a; padding:1px 6px; border-radius:4px; font-size:0.82rem; }
+</style>
+
+<div class="vg-wrap" id="vgDemo">
+  <div class="vg-title">📱 Anatomi View &amp; ViewGroup — Klik tiap elemen</div>
+
+  <div class="phone-shell">
+    <div class="phone-notch">
+      <span>9:41</span>
+      <span>▲▲ ▮▮▮</span>
+    </div>
+
+    <!-- ROOT -->
+    <div class="vg-node" id="vg-root" onclick="vgSelect(event,'root')"
+      style="background:rgba(127,82,255,0.12); border:2px solid #7F52FF;">
+      <div class="vg-label" style="color:#a78bfa;">LinearLayout  ·  orientation="vertical"</div>
+
+      <!-- HEADER ROW -->
+      <div class="vg-node" id="vg-header" onclick="vgSelect(event,'header')"
+        style="background:rgba(226,68,98,0.12); border:2px solid #E24462; display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <div class="vg-label" style="color:#f87171; margin:0; white-space:nowrap;">LinearLayout  ·  horizontal</div>
+
+        <!-- Avatar -->
+        <div class="v-node" id="v-avatar" onclick="vgSelect(event,'avatar')"
+          style="background:rgba(61,220,132,0.15); border:2px solid #3DDC84; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; flex-shrink:0;">
+          👤
+        </div>
+
+        <!-- Name stack -->
+        <div class="vg-node" id="vg-names" onclick="vgSelect(event,'names')"
+          style="background:rgba(226,68,98,0.1); border:2px dashed #E24462; flex:1; padding:6px 8px;">
+          <div class="vg-label" style="color:#f87171; margin-bottom:5px;">LinearLayout  ·  vertical</div>
+          <div class="v-node" id="v-name" onclick="vgSelect(event,'name')"
+            style="background:rgba(61,220,132,0.15); border:2px solid #3DDC84; color:#fff; font-weight:700; font-size:0.85rem; margin-bottom:4px; padding:4px 8px;">
+            Budi Santoso
+          </div>
+          <div class="v-node" id="v-role" onclick="vgSelect(event,'role')"
+            style="background:rgba(61,220,132,0.1); border:2px solid #3DDC84; color:#9ca3af; font-size:0.72rem; padding:3px 8px;">
+            Mahasiswa Teknik Informatika
+          </div>
+        </div>
+      </div>
+
+      <!-- EditText -->
+      <div class="v-node" id="v-input" onclick="vgSelect(event,'input')"
+        style="background:rgba(61,220,132,0.1); border:2px solid #3DDC84; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+        <span style="color:#3DDC84; font-size:0.65rem; font-family:monospace; white-space:nowrap;">EditText</span>
+        <span style="color:#555; font-size:0.8rem;">Masukkan pesan...</span>
+      </div>
+
+      <!-- Button row -->
+      <div class="vg-node" id="vg-buttons" onclick="vgSelect(event,'buttons')"
+        style="background:rgba(226,68,98,0.1); border:2px dashed #E24462; display:flex; gap:8px; align-items:center;">
+        <div class="vg-label" style="color:#f87171; margin:0; white-space:nowrap; font-size:0.55rem;">LinearLayout  ·  horizontal</div>
+        <div class="v-node" id="v-btn1" onclick="vgSelect(event,'btn1')"
+          style="background:rgba(61,220,132,0.15); border:2px solid #3DDC84; flex:1; text-align:center; color:#fff; font-weight:600; font-size:0.8rem; padding:7px 0;">
+          Batal
+        </div>
+        <div class="v-node" id="v-btn2" onclick="vgSelect(event,'btn2')"
+          style="background:#7F52FF; border:2px solid #a78bfa; flex:1; text-align:center; color:#fff; font-weight:600; font-size:0.8rem; padding:7px 0;">
+          Kirim
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="vg-legend">
+    <div class="vg-legend-item">
+      <div class="vg-legend-dot" style="background:rgba(226,68,98,0.3); border:2px solid #E24462;"></div>
+      <span style="color:#f87171;">ViewGroup — bisa menampung View lain</span>
+    </div>
+    <div class="vg-legend-item">
+      <div class="vg-legend-dot" style="background:rgba(61,220,132,0.2); border:2px solid #3DDC84;"></div>
+      <span style="color:#3DDC84;">View — menampilkan konten</span>
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <div class="info-panel" id="vgInfoPanel">
+    <div class="info-panel-title" id="vgInfoTitle" style="color:#a78bfa;">👆 Klik salah satu elemen di atas</div>
+    <div class="info-panel-body" id="vgInfoBody">
+      Setiap elemen UI di Android adalah <strong style="color:#e6edf3;">View</strong>.
+      <strong style="color:#e6edf3;">ViewGroup</strong> adalah View khusus yang bisa menampung View lain sebagai child-nya.
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const D = {
+  root:    { c:'#7F52FF', t:'LinearLayout (Root ViewGroup)', b:'<code>LinearLayout</code> adalah ViewGroup — mengatur child secara vertikal atau horizontal. Tidak menampilkan konten sendiri, hanya mengatur posisi.<br><br><span style="color:#3DDC84">android:orientation="vertical"</span> → child disusun atas ke bawah<br><span style="color:#3DDC84">android:padding="16dp"</span> → jarak dalam dari tepi' },
+  header:  { c:'#E24462', t:'LinearLayout (horizontal) — ViewGroup', b:'ViewGroup bisa <strong>bersarang</strong> di dalam ViewGroup lain. LinearLayout horizontal ini menyusun avatar dan nama secara berdampingan.<br><br><span style="color:#f87171">⚠ Hindari nested layout lebih dari 3 level</span> — performa rendering akan menurun.' },
+  avatar:  { c:'#3DDC84', t:'ImageView — View (leaf node)', b:'<code>ImageView</code> menampilkan gambar. Ini adalah <strong>leaf node</strong> — tidak bisa menampung View lain.<br><br><span style="color:#3DDC84">android:src="@drawable/avatar"</span><br><span style="color:#3DDC84">android:scaleType="centerCrop"</span>' },
+  names:   { c:'#E24462', t:'LinearLayout (vertical) — ViewGroup', b:'ViewGroup ketiga dalam hierarki. Menampung dua TextView secara vertikal.<br><br>Ini contoh <strong>nested ViewGroup</strong> — LinearLayout di dalam LinearLayout horizontal.' },
+  name:    { c:'#3DDC84', t:'TextView (Nama) — View', b:'<code>TextView</code> menampilkan teks. Tidak bisa menampung View lain.<br><br><span style="color:#3DDC84">android:text="Budi Santoso"</span><br><span style="color:#3DDC84">android:textSize="16sp"</span><br><span style="color:#3DDC84">android:textStyle="bold"</span>' },
+  role:    { c:'#3DDC84', t:'TextView (Role/Subtitle) — View', b:'TextView kedua dengan style berbeda untuk subtitle.<br><br><span style="color:#3DDC84">android:textColor="@color/textSecondary"</span><br><span style="color:#3DDC84">android:textSize="12sp"</span>' },
+  input:   { c:'#3DDC84', t:'EditText — View', b:'<code>EditText</code> adalah View untuk input teks dari user. Subclass dari TextView.<br><br><span style="color:#3DDC84">android:hint="Masukkan pesan..."</span><br><span style="color:#3DDC84">android:inputType="text"</span>' },
+  buttons: { c:'#E24462', t:'LinearLayout (horizontal) — ViewGroup', b:'ViewGroup untuk menyusun dua tombol berdampingan dengan pembagian ruang yang sama.<br><br><span style="color:#3DDC84">android:orientation="horizontal"</span><br>Setiap Button pakai <span style="color:#3DDC84">layout_weight="1"</span> dan <span style="color:#3DDC84">layout_width="0dp"</span>' },
+  btn1:    { c:'#3DDC84', t:'Button (Batal) — View', b:'<code>Button</code> adalah View yang bisa diklik. Subclass dari TextView.<br><br><span style="color:#3DDC84">android:layout_weight="1"</span> → 50% ruang<br><span style="color:#3DDC84">android:layout_width="0dp"</span> → wajib saat pakai weight' },
+  btn2:    { c:'#3DDC84', t:'Button (Kirim) — View', b:'Button kedua dengan warna berbeda (filled primary).<br><br><span style="color:#3DDC84">android:backgroundTint="@color/colorPrimary"</span><br><span style="color:#3DDC84">android:layout_weight="1"</span>' }
+};
+window.vgSelect = function(e, id) {
+  e.stopPropagation();
+  const d = D[id]; if(!d) return;
+  document.querySelectorAll('#vgDemo .vg-node, #vgDemo .v-node').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById('vg-'+id) || document.getElementById('v-'+id);
+  if(el) el.classList.add('active');
+  const p = document.getElementById('vgInfoPanel');
+  p.style.borderLeftColor = d.c;
+  document.getElementById('vgInfoTitle').style.color = d.c;
+  document.getElementById('vgInfoTitle').innerHTML = '📌 ' + d.t;
+  document.getElementById('vgInfoBody').innerHTML = d.b;
+};
+})();
+</script>
+
+<h3>Kode Android Studio — Coba Langsung</h3>
+<p>Ini kode XML yang persis merepresentasikan diagram di atas. Copy ke <code>activity_main.xml</code> di Android Studio.</p>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="#F8F9FA"&gt;
+
+    &lt;!-- HEADER ROW: LinearLayout horizontal (ViewGroup) --&gt;
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp"
+        android:background="#FFFFFF"
+        android:layout_marginBottom="12dp"&gt;
+
+        &lt;!-- ImageView (View) --&gt;
+        &lt;ImageView
+            android:id="@+id/ivAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@mipmap/ic_launcher_round"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="12dp"/&gt;
+
+        &lt;!-- Name stack: LinearLayout vertical (ViewGroup) --&gt;
+        &lt;LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"&gt;
+
+            &lt;!-- TextView Nama (View) --&gt;
+            &lt;TextView
+                android:id="@+id/tvNama"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Budi Santoso"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#212121"/&gt;
+
+            &lt;!-- TextView Role (View) --&gt;
+            &lt;TextView
+                android:id="@+id/tvRole"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mahasiswa Teknik Informatika"
+                android:textSize="12sp"
+                android:textColor="#757575"
+                android:layout_marginTop="2dp"/&gt;
+
+        &lt;/LinearLayout&gt;
+    &lt;/LinearLayout&gt;
+
+    &lt;!-- EditText (View) --&gt;
+    &lt;EditText
+        android:id="@+id/etPesan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Masukkan pesan..."
+        android:inputType="text"
+        android:padding="12dp"
+        android:background="#FFFFFF"
+        android:layout_marginBottom="12dp"/&gt;
+
+    &lt;!-- BUTTON ROW: LinearLayout horizontal (ViewGroup) --&gt;
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"&gt;
+
+        &lt;!-- Button Batal (View) --&gt;
+        &lt;Button
+            android:id="@+id/btnBatal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Batal"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/&gt;
+
+        &lt;!-- Button Kirim (View) --&gt;
+        &lt;Button
+            android:id="@+id/btnKirim"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Kirim"/&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/LinearLayout&gt;
+</pre></div>
+
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// MainActivity.kt — akses semua View dari diagram
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val tvNama  = findViewById&lt;TextView&gt;(R.id.tvNama)
+        val tvRole  = findViewById&lt;TextView&gt;(R.id.tvRole)
+        val etPesan = findViewById&lt;EditText&gt;(R.id.etPesan)
+        val btnBatal = findViewById&lt;Button&gt;(R.id.btnBatal)
+        val btnKirim = findViewById&lt;Button&gt;(R.id.btnKirim)
+
+        btnKirim.setOnClickListener {
+            val pesan = etPesan.text.toString().trim()
+            if (pesan.isEmpty()) {
+                etPesan.error = "Pesan tidak boleh kosong"
+                return@setOnClickListener
+            }
+            Toast.makeText(this, "${tvNama.text}: $pesan", Toast.LENGTH_SHORT).show()
+            etPesan.text.clear()
+        }
+
+        btnBatal.setOnClickListener {
+            etPesan.text.clear()
+            etPesan.clearFocus()
+        }
+    }
+}
+</pre></div>
+
+<h3>Live Demo — Buka Layout Inspector</h3>
+<p>Setelah kode di atas jalan di emulator, buka <strong>Layout Inspector</strong> (Tools → Layout Inspector). Tunjukkan hierarki View yang sama persis dengan diagram — mahasiswa langsung paham koneksinya.</p>
+
+<div class="bug-box">
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #1 — Lupa layout_width/height</h4>
+    <p>Buat TextView tanpa atribut <code>layout_width</code> dan <code>layout_height</code>. Tunjukkan error merah di XML editor. Tanya: <em>"Kenapa error? Apa yang kurang?"</em></p>
+    <p style="margin-top:8px;">Jawaban: Setiap View WAJIB punya <code>android:layout_width</code> dan <code>android:layout_height</code>. Ini bukan opsional.</p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #1 <span class="timing-badge">⏱ 5 menit</span></h3>
+    <p><strong>Kerjakan:</strong> Buat layout dengan 3 TextView bertumpuk secara vertikal.</p>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Apa bedanya <code>match_parent</code> dan <code>wrap_content</code>? Kapan pakai yang mana?</li>
+        <li>Kenapa kita perlu ViewGroup? Kenapa tidak langsung taruh semua View di root?</li>
+    </ol>
+    <p style="margin-top:8px; font-size:0.9rem; opacity:0.85;">💡 Boleh tanya AI, tapi harus bisa jelaskan dengan kata-kata sendiri.</p>
+</div>
+</section>
+
+<!-- M3-S2: LinearLayout -->
+<section id="m3-s2" class="section">
+<h2>2. LinearLayout <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Bangun form login bertahap — tambah satu widget per satu, jalankan setiap kali. Jangan langsung tempel kode lengkap. Fokus pada <code>orientation</code> dan <code>layout_weight</code> karena ini yang paling sering bikin bingung.
+</div>
+
+<h3>Tahap 1 — Vertical dulu</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Form Login"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp"/&gt;
+
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="12dp"/&gt;
+
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:layout_marginBottom="16dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login"/&gt;
+
+&lt;/LinearLayout&gt;
+</pre></div>
+
+<h3>Tahap 2 — Tambah Weight (tombol berdampingan)</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;!-- Ganti Button Login dengan dua tombol berdampingan --&gt;
+&lt;LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="8dp"&gt;
+
+    &lt;Button
+        android:id="@+id/btnCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Batal"
+        android:layout_marginEnd="8dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Login"/&gt;
+
+&lt;/LinearLayout&gt;
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #2 — Lupa layout_width="0dp" saat pakai weight</h4>
+    <p>Ganti <code>layout_width="0dp"</code> menjadi <code>layout_width="wrap_content"</code> pada salah satu tombol. Jalankan — tombol tidak terbagi rata. Tanya: <em>"Kenapa hasilnya aneh?"</em></p>
+    <p style="margin-top:8px;">Jawaban: Saat pakai <code>layout_weight</code>, width/height harus <code>0dp</code> agar weight yang menentukan ukurannya, bukan konten.</p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #2 <span class="timing-badge">⏱ 8 menit</span></h3>
+    <p><strong>Kerjakan</strong> (pair programming):</p>
+    <ol>
+        <li>Buat layout dengan 3 tombol horizontal dengan pembagian 25% : 50% : 25%</li>
+        <li>Tambahkan <code>android:gravity="center"</code> ke LinearLayout — apa yang berubah?</li>
+        <li>Coba ganti <code>orientation</code> dari vertical ke horizontal — apa yang terjadi?</li>
+    </ol>
+    <p style="margin-top:10px;"><strong>Jelaskan ke pasangan:</strong></p>
+    <ol>
+        <li>Apa bedanya <code>android:gravity</code> dan <code>android:layout_gravity</code>?</li>
+        <li>Kapan LinearLayout tidak cukup dan kita butuh layout lain?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M3-S3: ConstraintLayout -->
+<section id="m3-s3" class="section">
+<h2>3. ConstraintLayout <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Mulai dari visual editor drag-and-drop dulu — biarkan mahasiswa eksplorasi 5 menit. Baru tunjukkan kode XML yang dihasilkan. Ini lebih efektif daripada langsung baca XML.
+</div>
+<div class="scenario-box">
+    <h4>💡 Analogi untuk Mahasiswa</h4>
+    <p>ConstraintLayout itu seperti memasang foto di dinding dengan tali. Setiap foto (View) diikat ke dinding (parent) atau ke foto lain dengan tali (constraint). Kalau tidak ada tali, foto jatuh ke pojok kiri atas.</p>
+</div>
+
+<h3>Aturan Wajib ConstraintLayout</h3>
+<div class="info-box warning">
+    <h4>⚠️ Setiap View WAJIB punya minimal:</h4>
+    <ul>
+        <li>1 constraint horizontal (start/end ke parent atau view lain)</li>
+        <li>1 constraint vertical (top/bottom ke parent atau view lain)</li>
+    </ul>
+    <p>Kalau tidak, View akan "lari" ke pojok kiri atas saat runtime.</p>
+</div>
+
+<h3>Contoh Login Screen dengan ConstraintLayout</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"&gt;
+
+    &lt;!-- Logo di tengah atas --&gt;
+    &lt;TextView
+        android:id="@+id/tvLogo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🤖 MyApp"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp"/&gt;
+
+    &lt;!-- Input Email --&gt;
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        app:layout_constraintTop_toBottomOf="@id/tvLogo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp"/&gt;
+
+    &lt;!-- Input Password --&gt;
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@id/etEmail"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="12dp"/&gt;
+
+    &lt;!-- Tombol Login --&gt;
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        app:layout_constraintTop_toBottomOf="@id/etPassword"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"/&gt;
+
+    &lt;!-- Link Register di bawah --&gt;
+    &lt;TextView
+        android:id="@+id/tvRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Belum punya akun? Daftar"
+        android:textColor="#7F52FF"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="32dp"/&gt;
+
+&lt;/androidx.constraintlayout.widget.ConstraintLayout&gt;
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #3 — Hilangkan satu constraint</h4>
+    <p>Hapus <code>app:layout_constraintStart_toStartOf="parent"</code> dari salah satu View. Jalankan di emulator — View akan "lari" ke posisi aneh. Tanya: <em>"Kenapa posisinya berubah?"</em></p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #3 <span class="timing-badge">⏱ 10 menit</span></h3>
+    <p><strong>Kerjakan:</strong></p>
+    <ol>
+        <li>Tambahkan TextView "Lupa Password?" yang posisinya di kanan bawah etPassword</li>
+        <li>Buat tombol Login menggunakan <code>layout_constraintHorizontal_bias="0.5"</code> — apa efeknya?</li>
+        <li>Coba ubah bias menjadi 0.0 dan 1.0 — apa yang terjadi?</li>
+    </ol>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Kenapa ConstraintLayout lebih direkomendasikan daripada nested LinearLayout?</li>
+        <li>Kapan kamu tetap pilih LinearLayout daripada ConstraintLayout?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M3-S4: Basic Widgets -->
+<section id="m3-s4" class="section">
+<h2>4. Basic Widgets + Kotlin Binding <span class="timing-badge">⏱ 25 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Ini bagian yang paling banyak "wow moment". Buat form sederhana di XML, lalu tunjukkan cara akses dari Kotlin dan buat tombol yang benar-benar bekerja. Mahasiswa senang kalau kode mereka langsung bisa dijalankan.
+</div>
+
+<h3>Form Lengkap — XML</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;!-- activity_main.xml --&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Hasil akan muncul di sini"
+        android:textSize="16sp"
+        android:padding="12dp"
+        android:background="#F0F0F0"
+        android:layout_marginBottom="16dp"/&gt;
+
+    &lt;EditText
+        android:id="@+id/etNama"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nama Lengkap"
+        android:inputType="textPersonName"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;EditText
+        android:id="@+id/etUsia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Usia"
+        android:inputType="number"
+        android:maxLength="3"
+        android:layout_marginBottom="8dp"/&gt;
+
+    &lt;RadioGroup
+        android:id="@+id/rgGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp"&gt;
+        &lt;RadioButton android:id="@+id/rbLaki" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="Laki-laki" android:layout_marginEnd="16dp"/&gt;
+        &lt;RadioButton android:id="@+id/rbPerempuan" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="Perempuan"/&gt;
+    &lt;/RadioGroup&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbSetuju"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Saya setuju dengan syarat dan ketentuan"
+        android:layout_marginBottom="16dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnSubmit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Submit"/&gt;
+
+&lt;/LinearLayout&gt;
+</pre></div>
+
+<h3>Kotlin — Akses dan Validasi</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// MainActivity.kt
+package com.example.myapp
+
+import android.os.Bundle
+import android.widget.*
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    // Deklarasi dengan lateinit — akan diinisialisasi di onCreate
+    private lateinit var tvResult: TextView
+    private lateinit var etNama: EditText
+    private lateinit var etUsia: EditText
+    private lateinit var rgGender: RadioGroup
+    private lateinit var cbSetuju: CheckBox
+    private lateinit var btnSubmit: Button
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Binding view
+        tvResult  = findViewById(R.id.tvResult)
+        etNama    = findViewById(R.id.etNama)
+        etUsia    = findViewById(R.id.etUsia)
+        rgGender  = findViewById(R.id.rgGender)
+        cbSetuju  = findViewById(R.id.cbSetuju)
+        btnSubmit = findViewById(R.id.btnSubmit)
+
+        btnSubmit.setOnClickListener {
+            submitForm()
+        }
+    }
+
+    private fun submitForm() {
+        val nama = etNama.text.toString().trim()
+        val usia = etUsia.text.toString().trim()
+
+        // Validasi
+        if (nama.isEmpty()) {
+            etNama.error = "Nama tidak boleh kosong"
+            etNama.requestFocus()
+            return
+        }
+        if (usia.isEmpty()) {
+            etUsia.error = "Usia tidak boleh kosong"
+            etUsia.requestFocus()
+            return
+        }
+        if (rgGender.checkedRadioButtonId == -1) {
+            Toast.makeText(this, "Pilih jenis kelamin!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!cbSetuju.isChecked) {
+            Toast.makeText(this, "Centang persetujuan dulu!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Ambil gender
+        val gender = if (rgGender.checkedRadioButtonId == R.id.rbLaki) "Laki-laki" else "Perempuan"
+
+        // Tampilkan hasil
+        tvResult.text = "Nama: $nama\nUsia: $usia tahun\nGender: $gender"
+    }
+}
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #4 — Lupa lateinit atau lupa binding</h4>
+    <p>Hapus salah satu baris <code>findViewById</code>, misalnya untuk <code>tvResult</code>. Klik tombol Submit — aplikasi crash dengan <code>UninitializedPropertyAccessException</code>.</p>
+    <p style="margin-top:8px;">Tanya: <em>"Error apa yang muncul? Kenapa? Apa bedanya <code>lateinit var</code> dengan <code>val</code>?"</em></p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #4 <span class="timing-badge">⏱ 10 menit</span></h3>
+    <p><strong>Kerjakan:</strong></p>
+    <ol>
+        <li>Tambahkan Spinner untuk memilih kota (Jakarta, Surabaya, Bandung, Medan)</li>
+        <li>Tampilkan kota yang dipilih di tvResult</li>
+        <li>Tambahkan validasi: usia harus antara 17-60 tahun</li>
+    </ol>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Kenapa kita pakai <code>lateinit var</code> bukan <code>val</code> untuk view binding?</li>
+        <li>Apa yang terjadi kalau kita panggil <code>etNama.text</code> sebelum <code>setContentView()</code>?</li>
+        <li>Kenapa <code>.trim()</code> penting saat mengambil input teks?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M3-S5: Resources -->
+<section id="m3-s5" class="section">
+<h2>5. String & Color Resources <span class="timing-badge">⏱ 15 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Tunjukkan masalah dulu — hardcoded string di XML. Lalu tunjukkan kenapa itu buruk: kalau mau ganti teks "Login" jadi "Masuk" di 10 tempat, harus ubah 10 kali. Dengan string resource, ubah sekali saja.
+</div>
+
+<div class="scenario-box">
+    <h4>🌍 Skenario Nyata</h4>
+    <p>Bayangkan aplikasi kalian dipakai di 5 negara berbeda. Tanpa string resource, kalian harus buat 5 versi layout XML yang berbeda. Dengan string resource, cukup buat 5 file strings.xml.</p>
+</div>
+
+<h3>strings.xml — Pindahkan semua teks ke sini</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;!-- res/values/strings.xml --&gt;
+&lt;resources&gt;
+    &lt;string name="app_name"&gt;Aplikasi Saya&lt;/string&gt;
+
+    &lt;!-- Form --&gt;
+    &lt;string name="hint_nama"&gt;Nama Lengkap&lt;/string&gt;
+    &lt;string name="hint_usia"&gt;Usia&lt;/string&gt;
+    &lt;string name="hint_email"&gt;Email&lt;/string&gt;
+    &lt;string name="hint_password"&gt;Password&lt;/string&gt;
+    &lt;string name="btn_submit"&gt;Submit&lt;/string&gt;
+    &lt;string name="btn_login"&gt;Login&lt;/string&gt;
+    &lt;string name="btn_cancel"&gt;Batal&lt;/string&gt;
+
+    &lt;!-- Pesan error --&gt;
+    &lt;string name="error_nama_kosong"&gt;Nama tidak boleh kosong&lt;/string&gt;
+    &lt;string name="error_usia_kosong"&gt;Usia tidak boleh kosong&lt;/string&gt;
+    &lt;string name="error_pilih_gender"&gt;Pilih jenis kelamin!&lt;/string&gt;
+
+    &lt;!-- String dengan parameter --&gt;
+    &lt;string name="sambutan"&gt;Halo, %1$s! Usia kamu %2$d tahun.&lt;/string&gt;
+
+    &lt;!-- String array untuk Spinner --&gt;
+    &lt;string-array name="daftar_kota"&gt;
+        &lt;item&gt;Pilih Kota&lt;/item&gt;
+        &lt;item&gt;Jakarta&lt;/item&gt;
+        &lt;item&gt;Surabaya&lt;/item&gt;
+        &lt;item&gt;Bandung&lt;/item&gt;
+        &lt;item&gt;Medan&lt;/item&gt;
+    &lt;/string-array&gt;
+&lt;/resources&gt;
+</pre></div>
+
+<h3>colors.xml</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;!-- res/values/colors.xml --&gt;
+&lt;resources&gt;
+    &lt;color name="colorPrimary"&gt;#7F52FF&lt;/color&gt;
+    &lt;color name="colorPrimaryDark"&gt;#5C3DC7&lt;/color&gt;
+    &lt;color name="colorAccent"&gt;#E24462&lt;/color&gt;
+    &lt;color name="colorSuccess"&gt;#4CAF50&lt;/color&gt;
+    &lt;color name="colorError"&gt;#F44336&lt;/color&gt;
+    &lt;color name="colorWarning"&gt;#FF9800&lt;/color&gt;
+    &lt;color name="textPrimary"&gt;#212121&lt;/color&gt;
+    &lt;color name="textSecondary"&gt;#757575&lt;/color&gt;
+    &lt;color name="bgLight"&gt;#F5F5F5&lt;/color&gt;
+&lt;/resources&gt;
+</pre></div>
+
+<h3>Cara pakai di Kotlin</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// String sederhana
+val errorMsg = getString(R.string.error_nama_kosong)
+etNama.error = errorMsg
+
+// String dengan parameter
+val nama = "Budi"
+val usia = 20
+val sambutan = getString(R.string.sambutan, nama, usia)
+// Hasil: "Halo, Budi! Usia kamu 20 tahun."
+tvResult.text = sambutan
+
+// String array untuk Spinner
+val kota = resources.getStringArray(R.array.daftar_kota)
+val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, kota)
+spinner.adapter = adapter
+</pre></div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #5 <span class="timing-badge">⏱ 8 menit</span></h3>
+    <p><strong>Kerjakan:</strong> Pindahkan semua hardcoded string dari layout XML ke strings.xml.</p>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Kenapa Android Studio memberi warning kalau kita hardcode string di XML?</li>
+        <li>Apa yang terjadi kalau kita buat folder <code>values-id/</code> dengan strings.xml berbeda?</li>
+        <li>Kapan kita perlu string dengan parameter (<code>%1$s</code>) daripada string biasa?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M3 PROYEK -->
+<section id="m3-proyek" class="section">
+<h2>★ Mini Proyek Akhir Materi 3 <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Kerjakan individual atau berpasangan. Tidak harus sempurna — yang penting jalan. Di akhir, minta 2-3 mahasiswa demo hasil mereka.
+</div>
+<div class="challenge-box">
+    <h3>🏆 Proyek: "Kartu Profil Interaktif"</h3>
+    <p>Buat aplikasi dengan dua layar (satu Activity dulu):</p>
+    <ol>
+        <li><strong>Form Input:</strong> Nama, Usia, Kota (Spinner), Hobi (CheckBox min 2), Jenis Kelamin (RadioButton)</li>
+        <li><strong>Tampilan Hasil:</strong> Setelah klik Submit, tampilkan semua data yang diinput di TextView dengan format yang rapi</li>
+        <li><strong>Validasi:</strong> Semua field wajib diisi, usia 17-60 tahun</li>
+        <li><strong>Resources:</strong> Semua string di strings.xml, semua warna di colors.xml</li>
+        <li><strong>Bonus:</strong> Tambahkan tombol "Reset" yang mengosongkan semua input</li>
+    </ol>
+</div>
+<div class="info-box tip">
+    <h4>Checklist Penilaian</h4>
+    <table class="data-table">
+        <thead><tr><th>Kriteria</th><th>Poin</th></tr></thead>
+        <tbody>
+            <tr><td>Layout menggunakan ConstraintLayout atau LinearLayout dengan benar</td><td>20</td></tr>
+            <tr><td>Semua widget berfungsi (EditText, RadioButton, CheckBox, Spinner)</td><td>25</td></tr>
+            <tr><td>Validasi input berjalan</td><td>20</td></tr>
+            <tr><td>String resources digunakan (tidak hardcode)</td><td>15</td></tr>
+            <tr><td>Tampilan hasil yang rapi dan informatif</td><td>20</td></tr>
+            <tr><td>Bonus: Tombol Reset</td><td>+10</td></tr>
+        </tbody>
+    </table>
+</div>
+</section>
+
+<!-- M4-S1: Activity & Lifecycle -->
+<section id="m4-s1" class="section">
+<h2>6. Activity & Lifecycle <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Lifecycle paling mudah dipahami dengan Log. Tambahkan Log.d() di setiap callback, jalankan di emulator, lalu tunjukkan output di Logcat saat mahasiswa menekan Home, Back, dan membuka ulang app.
+</div>
+<div class="scenario-box">
+    <h4>🎬 Demo Lifecycle dengan Logcat</h4>
+    <p>Jalankan kode di bawah, buka Logcat (filter tag "LifecycleDemo"), lalu lakukan aksi berikut sambil tunjukkan log yang muncul:</p>
+    <ol>
+        <li>Buka app → onCreate, onStart, onResume</li>
+        <li>Tekan Home → onPause, onStop</li>
+        <li>Buka lagi dari recent → onRestart, onStart, onResume</li>
+        <li>Tekan Back → onPause, onStop, onDestroy</li>
+    </ol>
+</div>
+
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// MainActivity.kt — Lifecycle Demo
+package com.example.myapp
+
+import android.os.Bundle
+import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "LifecycleDemo"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+        Log.d(TAG, "1. onCreate() — Activity dibuat, setup UI di sini")
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d(TAG, "2. onStart() — Activity mulai terlihat")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d(TAG, "3. onResume() — Activity aktif, user bisa interaksi")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d(TAG, "4. onPause() — Activity kehilangan fokus, simpan data penting di sini")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d(TAG, "5. onStop() — Activity tidak terlihat")
+    }
+
+    override fun onRestart() {
+        super.onRestart()
+        Log.d(TAG, "6. onRestart() — Activity kembali dari stopped")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d(TAG, "7. onDestroy() — Activity dihancurkan, bersihkan resource di sini")
+    }
+}
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #5 — Lupa super.onCreate()</h4>
+    <p>Hapus <code>super.onCreate(savedInstanceState)</code>. Jalankan — app crash dengan <code>RuntimeException</code>. Tanya: <em>"Kenapa harus panggil super? Apa yang dilakukan super.onCreate()?"</em></p>
+    <p style="margin-top:8px;">Jawaban: <code>super.onCreate()</code> melakukan inisialisasi penting dari framework Android. Tanpanya, Activity tidak bisa berfungsi.</p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #6 <span class="timing-badge">⏱ 8 menit</span></h3>
+    <p><strong>Kerjakan:</strong> Tambahkan counter di Activity yang menghitung berapa kali onResume() dipanggil. Tampilkan di TextView.</p>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Kenapa kita inisialisasi UI di <code>onCreate()</code> bukan di <code>onResume()</code>?</li>
+        <li>Kalau user menerima telepon saat pakai app kita, callback apa yang dipanggil?</li>
+        <li>Apa bedanya <code>onStop()</code> dan <code>onDestroy()</code>? Kapan masing-masing dipanggil?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M4-S2: Explicit Intent -->
+<section id="m4-s2" class="section">
+<h2>7. Explicit Intent — Pindah Halaman <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Bangun bertahap — buat SecondActivity dulu (kosong), lalu tambahkan Intent dari MainActivity. Jalankan, tunjukkan perpindahan. Baru tambahkan tombol Back.
+</div>
+
+<h3>Langkah 1 — Buat SecondActivity</h3>
+<p>Klik kanan package → New → Activity → Empty Views Activity → nama: <strong>SecondActivity</strong></p>
+
+<h3>Langkah 2 — Layout MainActivity</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+&lt;!-- activity_main.xml --&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#E8F5E9"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Halaman Pertama"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp"/&gt;
+
+    &lt;Button
+        android:id="@+id/btnKeHalaman2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pergi ke Halaman 2"/&gt;
+
+&lt;/LinearLayout&gt;
+</pre></div>
+
+<h3>Langkah 3 — MainActivity.kt dengan Intent</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// MainActivity.kt
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val btnKeHalaman2 = findViewById&lt;Button&gt;(R.id.btnKeHalaman2)
+
+        btnKeHalaman2.setOnClickListener {
+            // Explicit Intent: kita tahu persis mau ke mana
+            val intent = Intent(this, SecondActivity::class.java)
+            startActivity(intent)
+        }
+    }
+}
+</pre></div>
+
+<h3>Langkah 4 — SecondActivity.kt</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// SecondActivity.kt
+class SecondActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_second)
+
+        val btnKembali = findViewById&lt;Button&gt;(R.id.btnKembali)
+        btnKembali.setOnClickListener {
+            finish() // Tutup Activity ini, kembali ke sebelumnya
+        }
+    }
+}
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #6 — Lupa daftarkan Activity di Manifest</h4>
+    <p>Buat Activity secara manual (buat file .kt saja tanpa wizard). Jalankan dan klik tombol — crash dengan <code>ActivityNotFoundException</code>.</p>
+    <p style="margin-top:8px;">Tanya: <em>"Error apa? Kenapa? Apa yang perlu ditambahkan?"</em> Lalu tunjukkan cara daftarkan di AndroidManifest.xml.</p>
+    <div class="code-simple" style="margin-top:8px;"><pre>
+&lt;!-- AndroidManifest.xml — tambahkan ini --&gt;
+&lt;activity android:name=".SecondActivity" /&gt;
+    </pre></div>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #7 <span class="timing-badge">⏱ 8 menit</span></h3>
+    <p><strong>Kerjakan:</strong></p>
+    <ol>
+        <li>Buat ThirdActivity dan buat navigasi: Main → Second → Third → (back) Second → (back) Main</li>
+        <li>Beri warna background berbeda di setiap Activity agar mudah dibedakan</li>
+    </ol>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Apa bedanya <code>finish()</code> dan menekan tombol Back di device?</li>
+        <li>Kenapa disebut "Explicit" Intent? Apa lawannya?</li>
+        <li>Kalau kita panggil <code>startActivity()</code> dua kali, apa yang terjadi di back stack?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M4-S3: Passing Data -->
+<section id="m4-s3" class="section">
+<h2>8. Passing Data Antar Activity <span class="timing-badge">⏱ 25 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Ini yang paling sering dipakai di proyek nyata. Gunakan kode dari Mini Proyek M3 (form profil) — kirim data form ke Activity kedua untuk ditampilkan. Mahasiswa langsung lihat relevansinya.
+</div>
+
+<h3>FormActivity — Kirim Data</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// FormActivity.kt — mengirim data
+class FormActivity : AppCompatActivity() {
+
+    private lateinit var etNama: EditText
+    private lateinit var etUsia: EditText
+    private lateinit var btnSubmit: Button
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_form)
+
+        etNama    = findViewById(R.id.etNama)
+        etUsia    = findViewById(R.id.etUsia)
+        btnSubmit = findViewById(R.id.btnSubmit)
+
+        btnSubmit.setOnClickListener {
+            val nama = etNama.text.toString().trim()
+            val usia = etUsia.text.toString().trim()
+
+            if (nama.isEmpty()) {
+                etNama.error = "Nama wajib diisi"
+                return@setOnClickListener
+            }
+
+            // Kirim data via Intent extras
+            val intent = Intent(this, HasilActivity::class.java)
+            intent.putExtra("NAMA", nama)
+            intent.putExtra("USIA", usia.toIntOrNull() ?: 0)
+            intent.putExtra("WAKTU", System.currentTimeMillis())
+            startActivity(intent)
+        }
+    }
+}
+</pre></div>
+
+<h3>HasilActivity — Terima Data</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// HasilActivity.kt — menerima data
+class HasilActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_hasil)
+
+        val tvHasil = findViewById&lt;TextView&gt;(R.id.tvHasil)
+
+        // Ambil data dari Intent
+        val nama  = intent.getStringExtra("NAMA") ?: "Tidak diketahui"
+        val usia  = intent.getIntExtra("USIA", 0)
+        val waktu = intent.getLongExtra("WAKTU", 0L)
+
+        // Tampilkan
+        tvHasil.text = """
+            Nama  : $nama
+            Usia  : $usia tahun
+            Waktu : ${java.util.Date(waktu)}
+        """.trimIndent()
+
+        // Tombol kembali
+        findViewById&lt;Button&gt;(R.id.btnKembali).setOnClickListener {
+            finish()
+        }
+    }
+}
+</pre></div>
+
+<div class="info-box info">
+    <h4>Tipe Data yang Bisa Dikirim via Intent</h4>
+    <table class="data-table">
+        <thead><tr><th>Tipe</th><th>Method Kirim</th><th>Method Terima</th></tr></thead>
+        <tbody>
+            <tr><td>String</td><td>putExtra("key", "value")</td><td>getStringExtra("key")</td></tr>
+            <tr><td>Int</td><td>putExtra("key", 42)</td><td>getIntExtra("key", default)</td></tr>
+            <tr><td>Boolean</td><td>putExtra("key", true)</td><td>getBooleanExtra("key", false)</td></tr>
+            <tr><td>Long</td><td>putExtra("key", 123L)</td><td>getLongExtra("key", 0L)</td></tr>
+            <tr><td>ArrayList&lt;String&gt;</td><td>putStringArrayListExtra("key", list)</td><td>getStringArrayListExtra("key")</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #7 — Key typo</h4>
+    <p>Di FormActivity kirim dengan key <code>"NAMA"</code>, di HasilActivity terima dengan key <code>"nama"</code> (huruf kecil). Jalankan — nama tampil "Tidak diketahui".</p>
+    <p style="margin-top:8px;">Tanya: <em>"Kenapa nama tidak muncul? Tidak ada error, tapi data hilang."</em> Ini mengajarkan pentingnya konsistensi key dan kenapa sebaiknya key disimpan sebagai konstanta.</p>
+    <div class="code-simple" style="margin-top:8px;"><pre>
+// Best practice: simpan key sebagai konstanta
+companion object {
+    const val EXTRA_NAMA = "NAMA"
+    const val EXTRA_USIA = "USIA"
+}
+// Pakai: intent.putExtra(EXTRA_NAMA, nama)
+    </pre></div>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #8 <span class="timing-badge">⏱ 10 menit</span></h3>
+    <p><strong>Kerjakan:</strong> Kirim data dari Mini Proyek M3 (nama, usia, kota, gender, hobi) ke Activity kedua dan tampilkan sebagai "kartu profil" yang rapi.</p>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Kenapa key Intent sebaiknya disimpan sebagai konstanta di <code>companion object</code>?</li>
+        <li>Apa yang terjadi kalau kita kirim objek custom (data class) via Intent? Apa yang perlu dilakukan?</li>
+        <li>Apa bedanya <code>getStringExtra("key")</code> dan <code>getStringExtra("key") ?: "default"</code>?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M4-S4: Implicit Intent -->
+<section id="m4-s4" class="section">
+<h2>9. Implicit Intent <span class="timing-badge">⏱ 20 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Demo langsung di emulator — klik tombol "Buka Browser", tunjukkan browser terbuka. Ini selalu bikin mahasiswa antusias karena app mereka bisa "keluar" dan berinteraksi dengan app lain.
+</div>
+<div class="scenario-box">
+    <h4>💡 Konsep Kunci</h4>
+    <p>Explicit Intent = "Saya mau ke toko A yang ada di Jalan B No. C"<br>
+    Implicit Intent = "Saya mau beli roti, siapapun yang jual roti silakan angkat tangan"</p>
+</div>
+
+<h3>Demo Semua Implicit Intent</h3>
+<p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+<div class="code-simple"><pre>
+// ImplicitIntentActivity.kt
+class ImplicitIntentActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_implicit)
+
+        // 1. Buka Browser
+        findViewById&lt;Button&gt;(R.id.btnBrowser).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://developer.android.com"))
+            safeStart(intent, "Tidak ada browser")
+        }
+
+        // 2. Buka Dialer
+        findViewById&lt;Button&gt;(R.id.btnTelepon).setOnClickListener {
+            val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:08123456789"))
+            safeStart(intent, "Tidak ada app telepon")
+        }
+
+        // 3. Kirim Email
+        findViewById&lt;Button&gt;(R.id.btnEmail).setOnClickListener {
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf("dosen@kampus.ac.id"))
+                putExtra(Intent.EXTRA_SUBJECT, "Pertanyaan Praktikum")
+                putExtra(Intent.EXTRA_TEXT, "Halo Pak/Bu, saya ingin bertanya...")
+            }
+            safeStart(intent, "Tidak ada app email")
+        }
+
+        // 4. Share Teks
+        findViewById&lt;Button&gt;(R.id.btnShare).setOnClickListener {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, "Saya sedang belajar Android di kampus!")
+            }
+            // createChooser menampilkan dialog pilih app
+            startActivity(Intent.createChooser(intent, "Bagikan via"))
+        }
+
+        // 5. Buka Maps
+        findViewById&lt;Button&gt;(R.id.btnMaps).setOnClickListener {
+            val lat = -8.5833  // Mataram, NTB
+            val lng = 116.1167
+            val uri = Uri.parse("geo:$lat,$lng?q=$lat,$lng(Universitas)")
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            safeStart(intent, "Tidak ada app maps")
+        }
+    }
+
+    // Helper: cek dulu apakah ada app yang bisa handle intent ini
+    private fun safeStart(intent: Intent, errorMsg: String) {
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        } else {
+            Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+</pre></div>
+
+<div class="bug-box">
+    <h4>🐛 Bug Sengaja #8 — Tidak pakai safeStart()</h4>
+    <p>Hapus pengecekan <code>resolveActivity()</code>, langsung panggil <code>startActivity(intent)</code>. Di emulator yang tidak ada app tertentu, app crash dengan <code>ActivityNotFoundException</code>.</p>
+    <p style="margin-top:8px;">Tanya: <em>"Kenapa crash? Bagaimana cara mencegahnya?"</em> Ini mengajarkan defensive programming.</p>
+</div>
+
+<div class="challenge-box">
+    <h3>🎯 Mini Challenge #9 <span class="timing-badge">⏱ 10 menit</span></h3>
+    <p><strong>Kerjakan:</strong></p>
+    <ol>
+        <li>Tambahkan tombol "Kirim SMS" ke nomor tertentu</li>
+        <li>Tambahkan tombol "Buka Kamera" menggunakan <code>MediaStore.ACTION_IMAGE_CAPTURE</code></li>
+        <li>Tambahkan tombol "Cari di Google" yang membuka browser dengan query pencarian</li>
+    </ol>
+    <p style="margin-top:10px;"><strong>Jelaskan ke teman:</strong></p>
+    <ol>
+        <li>Apa bedanya <code>ACTION_DIAL</code> dan <code>ACTION_CALL</code>? Kenapa ACTION_CALL butuh permission?</li>
+        <li>Kenapa kita pakai <code>Intent.createChooser()</code> untuk share, tapi tidak untuk buka browser?</li>
+        <li>Kalau ada 3 app yang bisa handle intent yang sama, apa yang terjadi?</li>
+    </ol>
+</div>
+</section>
+
+<!-- M4 PROYEK -->
+<section id="m4-proyek" class="section">
+<h2>★ Mini Proyek Gabungan M3 + M4 <span class="timing-badge">⏱ 30 menit</span></h2>
+<div class="teacher-note">
+    <strong>Cara Mengajar:</strong> Ini proyek penutup yang menggabungkan semua materi hari ini. Kerjakan berpasangan. Minta presentasi singkat 2 menit di akhir.
+</div>
+<div class="challenge-box">
+    <h3>🏆 Proyek: "Aplikasi Biodata Mahasiswa"</h3>
+    <p>Buat aplikasi 2 Activity yang menggabungkan semua yang sudah dipelajari:</p>
+    <ol>
+        <li><strong>Activity 1 — Form Input:</strong>
+            <ul style="margin-top:6px;">
+                <li>Nama, NIM, Jurusan (Spinner), Semester (1-14), Hobi (min 2 CheckBox)</li>
+                <li>Validasi semua field wajib diisi</li>
+                <li>Layout menggunakan ConstraintLayout</li>
+            </ul>
+        </li>
+        <li><strong>Activity 2 — Kartu Profil:</strong>
+            <ul style="margin-top:6px;">
+                <li>Tampilkan semua data yang dikirim dari Activity 1</li>
+                <li>Tombol "Edit" yang kembali ke Activity 1</li>
+                <li>Tombol "Bagikan" yang share profil via Implicit Intent</li>
+                <li>Tombol "Hubungi Dosen" yang buka dialer/email</li>
+            </ul>
+        </li>
+        <li><strong>Resources:</strong> Semua string di strings.xml, semua warna di colors.xml</li>
+        <li><strong>Bonus:</strong> Simpan data ke SharedPreferences agar tidak hilang saat app ditutup</li>
+    </ol>
+</div>
+
+<div class="info-box tip">
+    <h4>Checklist Penilaian Proyek Gabungan</h4>
+    <table class="data-table">
+        <thead><tr><th>Kriteria</th><th>Poin</th></tr></thead>
+        <tbody>
+            <tr><td>Form input lengkap dengan semua widget</td><td>20</td></tr>
+            <tr><td>Validasi input berjalan dengan benar</td><td>15</td></tr>
+            <tr><td>Data berhasil dikirim dan ditampilkan di Activity 2</td><td>20</td></tr>
+            <tr><td>Implicit Intent (share/telepon/email) berfungsi</td><td>20</td></tr>
+            <tr><td>String & color resources digunakan</td><td>10</td></tr>
+            <tr><td>UI rapi dan konsisten</td><td>15</td></tr>
+            <tr><td>Bonus: SharedPreferences</td><td>+10</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="info-box info">
+    <h4>💡 Hint SharedPreferences (Bonus)</h4>
+    <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+    <div class="code-simple"><pre>
+// Simpan data
+val prefs = getSharedPreferences("biodata", MODE_PRIVATE)
+prefs.edit()
+    .putString("nama", nama)
+    .putString("nim", nim)
+    .putInt("semester", semester)
+    .apply()
+
+// Baca data
+val savedNama = prefs.getString("nama", "")
+val savedNim  = prefs.getString("nim", "")
+    </pre></div>
+</div>
+</section>
+
+        </div><!-- end content-body -->
+    </main>
+
+    <button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">☰</button>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.add('active');
+                document.querySelector('.main-content').scrollTo(0, 0);
+                window.scrollTo(0, 0);
+            }
+            if (window.innerWidth <= 992) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
+
+        // Pastikan semua teks bisa di-select dan di-copy
+        document.querySelectorAll('pre, code, p, li, h2, h3, h4, td, th').forEach(el => {
+            if (!el.closest('.vg-wrap')) {
+                el.style.userSelect = 'text';
+                el.style.webkitUserSelect = 'text';
+                el.style.pointerEvents = 'auto';
+            }
+        });
+    </script>
+</body>
+</html>
