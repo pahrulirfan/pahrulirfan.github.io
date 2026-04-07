@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - Database SQLite</title>
+        <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Database SQLite & CRUD</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Persiapan</div>
+                    <a href="#requirements" class="nav-link active">
+                        <span class="nav-number">0</span>Requirement & Instalasi
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Materi Pembelajaran</div>
+                    <a href="#koneksi-sqlite" class="nav-link">
+                        <span class="nav-number">1</span>Koneksi SQLite
+                    </a>
+                    <a href="#database-manager" class="nav-link">
+                        <span class="nav-number">2</span>DatabaseManager Class
+                    </a>
+                    <a href="#prepared-statement" class="nav-link">
+                        <span class="nav-number">3</span>Prepared Statement
+                    </a>
+                    <a href="#crud-operations" class="nav-link">
+                        <span class="nav-number">4</span>CRUD Operations
+                    </a>
+                    <a href="#sync-db-ui" class="nav-link">
+                        <span class="nav-number">5</span>Sinkronisasi DB ↔ UI
+                    </a>
+                    <a href="#validasi-input" class="nav-link">
+                        <span class="nav-number">6</span>Validasi Input
+                    </a>
+                    <a href="#export-csv" class="nav-link">
+                        <span class="nav-number">7</span>Export CSV
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Arsitektur</div>
+                    <a href="#separation-of-concerns" class="nav-link">
+                        <span class="nav-number">8</span>Separation of Concerns
+                    </a>
+                    <a href="#project-structure" class="nav-link">
+                        <span class="nav-number">9</span>Struktur Project Modular
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigasi</div>
+                    <a href="mainwindow.html" class="nav-link">
+                        <span class="nav-number">←</span>Materi Sebelumnya
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Integrasi Database SQLite di PySide6</h1>
+                <p class="subtitle">Membangun aplikasi desktop dengan penyimpanan data persisten menggunakan SQLite</p>
+            </header>
+
+            <!-- Indikator -->
+            <section class="section">
+                <h2>Capaian Pembelajaran</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan materi ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Melakukan koneksi ke SQLite dari aplikasi PySide6</li>
+                        <li>Membuat DatabaseManager sebagai class terpisah</li>
+                        <li>Melakukan CRUD dengan prepared statement</li>
+                        <li>Melakukan validasi input dan export data ke CSV</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Section 0: Requirements -->
+            <section class="section" id="requirements">
+                <h2>0. Requirement & Instalasi</h2>
+
+                <p>Sebelum memulai, pastikan environment sudah siap. Berikut kebutuhan untuk menggunakan database di aplikasi PySide6.</p>
+
+                <h3>Kebutuhan untuk SQLite</h3>
+
+                <div class="info-box success">
+                    <div class="info-box-title">SQLite - Tidak Perlu Install Tambahan!</div>
+                    <p>SQLite sudah <strong>built-in</strong> di Python melalui modul <span class="inline-code">sqlite3</span>. Tidak perlu install server, driver, atau library tambahan. Database tersimpan dalam satu file <span class="inline-code">.db</span>.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">cek_sqlite.py</span>
+                        <span class="code-badge">Test</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Cek apakah sqlite3 tersedia</span>
+<span class="keyword">import</span> sqlite3
+
+<span class="builtin">print</span>(<span class="string">f"sqlite3 version: </span>{sqlite3.version}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"SQLite version : </span>{sqlite3.sqlite_version}<span class="string">"</span>)
+
+<span class="comment"># Cek PySide6</span>
+<span class="keyword">import</span> PySide6
+<span class="builtin">print</span>(<span class="string">f"PySide6 version: </span>{PySide6.__version__}<span class="string">"</span>)
+
+<span class="builtin">print</span>(<span class="string">"Semua siap!"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <h3>Instalasi PySide6 (jika belum)</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">terminal</span>
+                        <span class="code-badge">CMD</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Install PySide6</span>
+pip install PySide6
+
+<span class="comment"># Atau versi spesifik</span>
+pip install PySide6==6.6.1</code></pre>
+                    </div>
+                </div>
+
+                <h3>Perbandingan: SQLite vs MySQL</h3>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">SQLite (Dipakai di Praktikum Ini)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Built-in Python, tanpa install</li>
+                                <li>Tidak perlu server</li>
+                                <li>Database = 1 file .db</li>
+                                <li>Cocok untuk aplikasi desktop</li>
+                                <li>Single user / embedded</li>
+                                <li>Import: <strong>import sqlite3</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">MySQL (Untuk Referensi)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Perlu install MySQL Server</li>
+                                <li>Perlu install driver Python</li>
+                                <li>Database di server terpisah</li>
+                                <li>Cocok untuk aplikasi web/multi-user</li>
+                                <li>Multi user / client-server</li>
+                                <li>Install: <strong>pip install mysql-connector-python</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Jika Ingin Menggunakan MySQL</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">koneksi_mysql.py</span>
+                        <span class="code-badge">Referensi</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># ============================</span>
+<span class="comment"># MYSQL - Hanya untuk referensi</span>
+<span class="comment"># Praktikum ini menggunakan SQLite</span>
+<span class="comment"># ============================</span>
+
+<span class="comment"># 1. Install driver (pilih salah satu)</span>
+<span class="comment"># pip install mysql-connector-python</span>
+<span class="comment"># pip install PyMySQL</span>
+
+<span class="comment"># 2. Koneksi menggunakan mysql-connector-python</span>
+<span class="keyword">import</span> mysql.connector
+
+conn = mysql.connector.connect(
+    host=<span class="string">"localhost"</span>,
+    user=<span class="string">"root"</span>,
+    password=<span class="string">"password_anda"</span>,
+    database=<span class="string">"nama_database"</span>
+)
+
+cursor = conn.cursor()
+cursor.execute(<span class="string">"SELECT * FROM mahasiswa"</span>)
+results = cursor.fetchall()
+
+conn.close()
+
+<span class="comment"># 3. Perbedaan syntax</span>
+<span class="comment"># SQLite  : cursor.execute("INSERT INTO tbl VALUES (?, ?)", (a, b))</span>
+<span class="comment"># MySQL   : cursor.execute("INSERT INTO tbl VALUES (%s, %s)", (a, b))</span>
+<span class="comment"># Placeholder SQLite = ?   |   MySQL = %s</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Aspek</th>
+                                <th>SQLite</th>
+                                <th>MySQL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Install</td>
+                                <td><span class="table-code">Tidak perlu</span></td>
+                                <td><span class="table-code">pip install mysql-connector-python</span></td>
+                            </tr>
+                            <tr>
+                                <td>Server</td>
+                                <td>Tidak perlu</td>
+                                <td>Perlu MySQL Server</td>
+                            </tr>
+                            <tr>
+                                <td>Import</td>
+                                <td><span class="table-code">import sqlite3</span></td>
+                                <td><span class="table-code">import mysql.connector</span></td>
+                            </tr>
+                            <tr>
+                                <td>Koneksi</td>
+                                <td><span class="table-code">sqlite3.connect('file.db')</span></td>
+                                <td><span class="table-code">mysql.connector.connect(host, user, pass, db)</span></td>
+                            </tr>
+                            <tr>
+                                <td>Placeholder</td>
+                                <td><span class="table-code">?</span></td>
+                                <td><span class="table-code">%s</span></td>
+                            </tr>
+                            <tr>
+                                <td>Auto Increment</td>
+                                <td><span class="table-code">AUTOINCREMENT</span></td>
+                                <td><span class="table-code">AUTO_INCREMENT</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Catatan Praktikum</div>
+                    <p>Pada praktikum ini kita akan menggunakan <strong>SQLite</strong> karena tidak memerlukan instalasi server tambahan. Konsep CRUD dan prepared statement yang dipelajari dapat diterapkan juga ke MySQL dengan sedikit penyesuaian.</p>
+                </div>
+            </section>
+
+            <!-- Section 1: Koneksi SQLite -->
+            <section class="section" id="koneksi-sqlite">
+                <h2>1. Koneksi Python ke SQLite</h2>
+
+                <p>Untuk bekerja dengan SQLite di Python, kita menggunakan modul <span class="inline-code">sqlite3</span> yang sudah tersedia secara default.</p>
+
+                <h3>Alur Kerja Database</h3>
+
+                <div class="diagram">
+                    <div class="diagram-title">Langkah Kerja SQLite</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Connect<br><small>sqlite3.connect()</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Cursor<br><small>conn.cursor()</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Execute<br><small>cursor.execute()</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Commit<br><small>conn.commit()</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Close<br><small>conn.close()</small></div>
+                    </div>
+                </div>
+
+                <h3>Koneksi Manual</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">koneksi_manual.py</span>
+                        <span class="code-badge">Dasar</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+<span class="comment"># Membuat koneksi (file akan dibuat otomatis jika belum ada)</span>
+conn = sqlite3.connect(<span class="string">'data_mhs.db'</span>)
+
+<span class="comment"># Membuat cursor</span>
+cursor = conn.cursor()
+
+<span class="comment"># Membuat tabel sederhana: id, nim, nama</span>
+cursor.execute(<span class="string">'''
+    CREATE TABLE IF NOT EXISTS mahasiswa (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nim TEXT NOT NULL UNIQUE,
+        nama TEXT NOT NULL
+    )
+'''</span>)
+
+<span class="comment"># Simpan perubahan</span>
+conn.commit()
+
+<span class="comment"># Tutup koneksi</span>
+conn.close()
+
+<span class="builtin">print</span>(<span class="string">"Database dan tabel berhasil dibuat!"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <h3>Koneksi dengan Context Manager (Recommended)</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">koneksi_with.py</span>
+                        <span class="code-badge">Recommended</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+<span class="comment"># Dengan 'with', koneksi otomatis ditutup saat selesai</span>
+<span class="keyword">with</span> sqlite3.connect(<span class="string">'data_mhs.db'</span>) <span class="keyword">as</span> conn:
+    cursor = conn.cursor()
+    
+    <span class="comment"># Buat tabel</span>
+    cursor.execute(<span class="string">'''
+        CREATE TABLE IF NOT EXISTS mahasiswa (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nim TEXT NOT NULL UNIQUE,
+            nama TEXT NOT NULL
+        )
+    '''</span>)
+    
+    <span class="comment"># Insert data contoh</span>
+    cursor.execute(
+        <span class="string">'INSERT OR IGNORE INTO mahasiswa (nim, nama) VALUES (?, ?)'</span>,
+        (<span class="string">'12345678'</span>, <span class="string">'Budi Santoso'</span>)
+    )
+
+<span class="comment"># Keluar dari 'with' = otomatis commit & close</span>
+<span class="builtin">print</span>(<span class="string">"Selesai!"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Selalu Gunakan Context Manager!</div>
+                    <p>Gunakan <span class="inline-code">with</span> agar koneksi otomatis ditutup meskipun terjadi error. Ini mencegah database lock dan memory leak.</p>
+                </div>
+
+                <h3>Tipe Data SQLite</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>SQLite</th>
+                                <th>Python</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="table-code">INTEGER</span></td><td>int</td><td>42, 0, -5</td></tr>
+                            <tr><td><span class="table-code">TEXT</span></td><td>str</td><td>"Budi", 'Hello'</td></tr>
+                            <tr><td><span class="table-code">REAL</span></td><td>float</td><td>3.14, -2.5</td></tr>
+                            <tr><td><span class="table-code">NULL</span></td><td>None</td><td>None</td></tr>
+                            <tr><td><span class="table-code">BLOB</span></td><td>bytes</td><td>b'\x00\x01'</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 2: DatabaseManager -->
+            <section class="section" id="database-manager">
+                <h2>2. Class DatabaseManager</h2>
+
+                <p>Agar kode lebih rapi, kita bungkus semua operasi database dalam satu class bernama <strong>DatabaseManager</strong>. Class ini bertanggung jawab untuk koneksi, membuat tabel, dan semua query.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">db_manager.py</span>
+                        <span class="code-badge">Class</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+<span class="keyword">class</span> <span class="class-name">DatabaseManager</span>:
+    <span class="string">"""Class untuk mengelola semua operasi database"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">db_name</span>=<span class="string">'data_mhs.db'</span>):
+        <span class="self">self</span>.db_name = db_name
+        <span class="self">self</span>.create_table()
+    
+    <span class="keyword">def</span> <span class="function">get_connection</span>(<span class="self">self</span>):
+        <span class="string">"""Buat koneksi baru ke database"""</span>
+        conn = sqlite3.connect(<span class="self">self</span>.db_name)
+        conn.row_factory = sqlite3.Row  <span class="comment"># Agar hasil bisa diakses pakai nama kolom</span>
+        <span class="keyword">return</span> conn
+    
+    <span class="keyword">def</span> <span class="function">create_table</span>(<span class="self">self</span>):
+        <span class="string">"""Buat tabel mahasiswa jika belum ada"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'''
+                CREATE TABLE IF NOT EXISTS mahasiswa (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nim TEXT NOT NULL UNIQUE,
+                    nama TEXT NOT NULL
+                )
+            '''</span>)
+    
+    <span class="keyword">def</span> <span class="function">tambah</span>(<span class="self">self</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="string">"""Tambah mahasiswa baru"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'INSERT INTO mahasiswa (nim, nama) VALUES (?, ?)'</span>,
+                (nim, nama)
+            )
+    
+    <span class="keyword">def</span> <span class="function">ambil_semua</span>(<span class="self">self</span>):
+        <span class="string">"""Ambil semua data mahasiswa"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(<span class="string">'SELECT * FROM mahasiswa ORDER BY nama'</span>).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">ambil_by_id</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="string">"""Ambil satu mahasiswa berdasarkan ID"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(<span class="string">'SELECT * FROM mahasiswa WHERE id = ?'</span>, (id,)).fetchone()
+    
+    <span class="keyword">def</span> <span class="function">cari</span>(<span class="self">self</span>, <span class="parameter">keyword</span>):
+        <span class="string">"""Cari mahasiswa berdasarkan nama atau NIM"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(
+                <span class="string">'SELECT * FROM mahasiswa WHERE nama LIKE ? OR nim LIKE ?'</span>,
+                (<span class="string">f'%</span>{keyword}<span class="string">%'</span>, <span class="string">f'%</span>{keyword}<span class="string">%'</span>)
+            ).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">update</span>(<span class="self">self</span>, <span class="parameter">id</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="string">"""Update data mahasiswa"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'UPDATE mahasiswa SET nim = ?, nama = ? WHERE id = ?'</span>,
+                (nim, nama, id)
+            )
+    
+    <span class="keyword">def</span> <span class="function">hapus</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="string">"""Hapus mahasiswa berdasarkan ID"""</span>
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'DELETE FROM mahasiswa WHERE id = ?'</span>, (id,))</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Tentang row_factory = sqlite3.Row</div>
+                    <p>Dengan setting ini, hasil query bisa diakses pakai nama kolom. Contoh: <span class="inline-code">row['nama']</span> selain <span class="inline-code">row[0]</span>. Ini membuat kode lebih mudah dibaca.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Prepared Statement -->
+            <section class="section" id="prepared-statement">
+                <h2>3. Prepared Statement</h2>
+
+                <p><strong>Prepared Statement</strong> adalah cara aman untuk memasukkan data dari user ke dalam query SQL. Ini mencegah serangan <strong>SQL Injection</strong>.</p>
+
+                <h3>Apa itu SQL Injection?</h3>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">SQL Injection = Celah Keamanan Berbahaya</div>
+                    <p>SQL Injection terjadi ketika input user langsung digabungkan ke query SQL. Penyerang bisa menyisipkan perintah SQL untuk mencuri atau menghapus data.</p>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">SALAH - String Concatenation</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Input user langsung masuk query</li>
+                                <li>Rentan SQL Injection</li>
+                                <li>JANGAN PERNAH digunakan!</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">BENAR - Prepared Statement</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Gunakan placeholder <strong>?</strong></li>
+                                <li>Parameter di-escape otomatis</li>
+                                <li>SELALU gunakan ini!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">prepared_statement.py</span>
+                        <span class="code-badge">Penting</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+nama_dari_user = <span class="string">"Budi"</span>
+
+<span class="comment"># ❌ SALAH - Rentan SQL Injection</span>
+<span class="comment"># query = f"SELECT * FROM mahasiswa WHERE nama = '{nama_dari_user}'"</span>
+<span class="comment"># Jika user memasukkan: ' OR '1'='1</span>
+<span class="comment"># Query menjadi: SELECT * FROM mahasiswa WHERE nama = '' OR '1'='1'</span>
+<span class="comment"># Hasilnya: SEMUA data ditampilkan!</span>
+
+<span class="comment"># ✓ BENAR - Gunakan placeholder ?</span>
+<span class="keyword">with</span> sqlite3.connect(<span class="string">'data_mhs.db'</span>) <span class="keyword">as</span> conn:
+    cursor = conn.cursor()
+    
+    <span class="comment"># INSERT - Parameter berupa tuple</span>
+    cursor.execute(
+        <span class="string">"INSERT INTO mahasiswa (nim, nama) VALUES (?, ?)"</span>,
+        (<span class="string">'12345678'</span>, <span class="string">'Budi Santoso'</span>)
+    )
+    
+    <span class="comment"># SELECT - Untuk 1 parameter, tuple harus pakai koma: (value,)</span>
+    cursor.execute(
+        <span class="string">"SELECT * FROM mahasiswa WHERE nama LIKE ?"</span>,
+        (<span class="string">f'%</span>{nama_dari_user}<span class="string">%'</span>,)
+    )
+    
+    <span class="comment"># UPDATE</span>
+    cursor.execute(
+        <span class="string">"UPDATE mahasiswa SET nama = ? WHERE id = ?"</span>,
+        (<span class="string">'Budi S.'</span>, <span class="number">1</span>)
+    )
+    
+    <span class="comment"># DELETE</span>
+    cursor.execute(
+        <span class="string">"DELETE FROM mahasiswa WHERE id = ?"</span>,
+        (<span class="number">5</span>,)
+    )</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Aturan Penting</div>
+                    <ul>
+                        <li>Placeholder SQLite = <span class="inline-code">?</span> (tanda tanya)</li>
+                        <li>Parameter harus berupa <strong>tuple</strong></li>
+                        <li>Tuple 1 elemen harus pakai koma: <span class="inline-code">(value,)</span></li>
+                        <li>Untuk wildcard LIKE, gabungkan di parameter: <span class="inline-code">f'%{keyword}%'</span></li>
+                    </ul>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Kegunaan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">cursor.execute(sql, params)</span></td>
+                                <td>Eksekusi 1 query</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">cursor.executemany(sql, list)</span></td>
+                                <td>Eksekusi query untuk banyak data sekaligus</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">cursor.fetchone()</span></td>
+                                <td>Ambil 1 baris hasil query</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">cursor.fetchall()</span></td>
+                                <td>Ambil semua baris hasil query</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">cursor.lastrowid</span></td>
+                                <td>ID terakhir yang di-insert</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 4: CRUD Operations -->
+            <section class="section" id="crud-operations">
+                <h2>4. CRUD Operations</h2>
+
+                <p><strong>CRUD</strong> = Create, Read, Update, Delete — empat operasi dasar untuk mengelola data.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Empat Operasi CRUD</div>
+                    <div class="flow-container">
+                        <div class="flow-box highlight">Create<br><small>INSERT</small></div>
+                        <div class="flow-box highlight">Read<br><small>SELECT</small></div>
+                        <div class="flow-box highlight">Update<br><small>UPDATE</small></div>
+                        <div class="flow-box highlight">Delete<br><small>DELETE</small></div>
+                    </div>
+                </div>
+
+                <h3>Contoh Aplikasi CRUD Lengkap (1 File)</h3>
+
+                <p>Berikut adalah contoh aplikasi CRUD dalam <strong>satu file</strong> yang bisa langsung dijalankan. Tabel hanya memiliki 3 kolom: <span class="inline-code">id</span>, <span class="inline-code">nim</span>, <span class="inline-code">nama</span>. Form input langsung di main window.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Tentang Contoh Ini</div>
+                    <p>Contoh ini sengaja dibuat dalam 1 file agar mudah dicoba. Di bagian akhir materi, kita akan belajar memisahkannya menjadi beberapa file (modular).</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">crud_mahasiswa.py</span>
+                        <span class="code-badge">1 File - Langsung Jalan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> sqlite3
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QTableWidget, QTableWidgetItem, QPushButton, QLineEdit,
+    QLabel, QFormLayout, QMessageBox, QHeaderView
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># BAGIAN 1: DATABASE</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">DatabaseManager</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">db_name</span>=<span class="string">'data_mhs.db'</span>):
+        <span class="self">self</span>.db_name = db_name
+        <span class="self">self</span>.create_table()
+    
+    <span class="keyword">def</span> <span class="function">get_connection</span>(<span class="self">self</span>):
+        conn = sqlite3.connect(<span class="self">self</span>.db_name)
+        conn.row_factory = sqlite3.Row
+        <span class="keyword">return</span> conn
+    
+    <span class="keyword">def</span> <span class="function">create_table</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'''
+                CREATE TABLE IF NOT EXISTS mahasiswa (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nim TEXT NOT NULL UNIQUE,
+                    nama TEXT NOT NULL
+                )
+            '''</span>)
+    
+    <span class="keyword">def</span> <span class="function">tambah</span>(<span class="self">self</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'INSERT INTO mahasiswa (nim, nama) VALUES (?, ?)'</span>, (nim, nama))
+    
+    <span class="keyword">def</span> <span class="function">ambil_semua</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(<span class="string">'SELECT * FROM mahasiswa ORDER BY nama'</span>).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">cari</span>(<span class="self">self</span>, <span class="parameter">keyword</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(
+                <span class="string">'SELECT * FROM mahasiswa WHERE nama LIKE ? OR nim LIKE ?'</span>,
+                (<span class="string">f'%</span>{keyword}<span class="string">%'</span>, <span class="string">f'%</span>{keyword}<span class="string">%'</span>)
+            ).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">update</span>(<span class="self">self</span>, <span class="parameter">id</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'UPDATE mahasiswa SET nim=?, nama=? WHERE id=?'</span>, (nim, nama, id))
+    
+    <span class="keyword">def</span> <span class="function">hapus</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'DELETE FROM mahasiswa WHERE id = ?'</span>, (id,))
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># BAGIAN 2: MAIN WINDOW (UI + LOGIC)</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"CRUD Mahasiswa Sederhana"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">500</span>)
+        
+        <span class="comment"># Inisialisasi database</span>
+        <span class="self">self</span>.db = DatabaseManager()
+        
+        <span class="comment"># ID mahasiswa yang sedang di-edit (None = mode tambah)</span>
+        <span class="self">self</span>.selected_id = <span class="keyword">None</span>
+        
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.load_data()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># ===== FORM INPUT =====</span>
+        form_layout = QFormLayout()
+        
+        <span class="self">self</span>.nim_input = QLineEdit()
+        <span class="self">self</span>.nim_input.setPlaceholderText(<span class="string">"Contoh: 12345678"</span>)
+        form_layout.addRow(<span class="string">"NIM:"</span>, <span class="self">self</span>.nim_input)
+        
+        <span class="self">self</span>.nama_input = QLineEdit()
+        <span class="self">self</span>.nama_input.setPlaceholderText(<span class="string">"Contoh: Budi Santoso"</span>)
+        form_layout.addRow(<span class="string">"Nama:"</span>, <span class="self">self</span>.nama_input)
+        
+        layout.addLayout(form_layout)
+        
+        <span class="comment"># ===== TOMBOL AKSI =====</span>
+        btn_layout = QHBoxLayout()
+        
+        <span class="self">self</span>.btn_simpan = QPushButton(<span class="string">"Simpan"</span>)
+        <span class="self">self</span>.btn_simpan.clicked.connect(<span class="self">self</span>.simpan_data)
+        btn_layout.addWidget(<span class="self">self</span>.btn_simpan)
+        
+        <span class="self">self</span>.btn_hapus = QPushButton(<span class="string">"Hapus"</span>)
+        <span class="self">self</span>.btn_hapus.clicked.connect(<span class="self">self</span>.hapus_data)
+        btn_layout.addWidget(<span class="self">self</span>.btn_hapus)
+        
+        <span class="self">self</span>.btn_batal = QPushButton(<span class="string">"Batal"</span>)
+        <span class="self">self</span>.btn_batal.clicked.connect(<span class="self">self</span>.batal_edit)
+        btn_layout.addWidget(<span class="self">self</span>.btn_batal)
+        
+        layout.addLayout(btn_layout)
+        
+        <span class="comment"># ===== SEARCH =====</span>
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel(<span class="string">"Cari:"</span>))
+        <span class="self">self</span>.search_input = QLineEdit()
+        <span class="self">self</span>.search_input.setPlaceholderText(<span class="string">"Ketik nama atau NIM..."</span>)
+        <span class="self">self</span>.search_input.textChanged.connect(<span class="self">self</span>.cari_data)
+        search_layout.addWidget(<span class="self">self</span>.search_input)
+        layout.addLayout(search_layout)
+        
+        <span class="comment"># ===== TABEL DATA =====</span>
+        <span class="self">self</span>.table = QTableWidget()
+        <span class="self">self</span>.table.setColumnCount(<span class="number">3</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">"ID"</span>, <span class="string">"NIM"</span>, <span class="string">"Nama"</span>])
+        <span class="self">self</span>.table.setSelectionBehavior(QTableWidget.SelectRows)
+        <span class="self">self</span>.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        <span class="self">self</span>.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        <span class="self">self</span>.table.clicked.connect(<span class="self">self</span>.isi_form_dari_tabel)
+        layout.addWidget(<span class="self">self</span>.table)
+        
+        <span class="comment"># Status bar</span>
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Siap"</span>)
+    
+    <span class="comment"># ============================</span>
+    <span class="comment"># OPERASI CRUD</span>
+    <span class="comment"># ============================</span>
+    
+    <span class="keyword">def</span> <span class="function">load_data</span>(<span class="self">self</span>):
+        <span class="string">"""Ambil semua data dari DB dan tampilkan ke tabel"""</span>
+        data = <span class="self">self</span>.db.ambil_semua()
+        <span class="self">self</span>.tampilkan_ke_tabel(data)
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Total: </span>{<span class="builtin">len</span>(data)}<span class="string"> mahasiswa"</span>)
+    
+    <span class="keyword">def</span> <span class="function">tampilkan_ke_tabel</span>(<span class="self">self</span>, <span class="parameter">data</span>):
+        <span class="string">"""Mengisi tabel dengan data"""</span>
+        <span class="self">self</span>.table.setRowCount(<span class="number">0</span>)  <span class="comment"># Kosongkan tabel dulu</span>
+        
+        <span class="keyword">for</span> row_data <span class="keyword">in</span> data:
+            row = <span class="self">self</span>.table.rowCount()
+            <span class="self">self</span>.table.insertRow(row)
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(row_data[<span class="string">'id'</span>])))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(row_data[<span class="string">'nim'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">2</span>, QTableWidgetItem(row_data[<span class="string">'nama'</span>]))
+    
+    <span class="keyword">def</span> <span class="function">simpan_data</span>(<span class="self">self</span>):
+        <span class="string">"""Simpan data baru atau update data yang sudah ada"""</span>
+        nim = <span class="self">self</span>.nim_input.text().strip()
+        nama = <span class="self">self</span>.nama_input.text().strip()
+        
+        <span class="comment"># Validasi sederhana</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> nim <span class="keyword">or</span> <span class="keyword">not</span> nama:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"NIM dan Nama harus diisi!"</span>)
+            <span class="keyword">return</span>
+        
+        <span class="keyword">try</span>:
+            <span class="keyword">if</span> <span class="self">self</span>.selected_id:
+                <span class="comment"># MODE UPDATE</span>
+                <span class="self">self</span>.db.update(<span class="self">self</span>.selected_id, nim, nama)
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil diupdate!"</span>)
+            <span class="keyword">else</span>:
+                <span class="comment"># MODE TAMBAH</span>
+                <span class="self">self</span>.db.tambah(nim, nama)
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil ditambahkan!"</span>)
+            
+            <span class="self">self</span>.batal_edit()   <span class="comment"># Reset form</span>
+            <span class="self">self</span>.load_data()    <span class="comment"># Refresh tabel</span>
+        
+        <span class="keyword">except</span> sqlite3.IntegrityError:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM sudah terdaftar!"</span>)
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">f"Terjadi kesalahan:\n</span>{e}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">hapus_data</span>(<span class="self">self</span>):
+        <span class="string">"""Hapus data yang dipilih di tabel"""</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.selected_id:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih data di tabel yang akan dihapus!"</span>)
+            <span class="keyword">return</span>
+        
+        reply = QMessageBox.question(
+            <span class="self">self</span>, <span class="string">"Konfirmasi"</span>,
+            <span class="string">"Yakin ingin menghapus data ini?"</span>,
+            QMessageBox.Yes | QMessageBox.No
+        )
+        
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            <span class="self">self</span>.db.hapus(<span class="self">self</span>.selected_id)
+            <span class="self">self</span>.batal_edit()
+            <span class="self">self</span>.load_data()
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil dihapus!"</span>)
+    
+    <span class="keyword">def</span> <span class="function">cari_data</span>(<span class="self">self</span>):
+        <span class="string">"""Cari data berdasarkan keyword di search input"""</span>
+        keyword = <span class="self">self</span>.search_input.text().strip()
+        <span class="keyword">if</span> keyword:
+            data = <span class="self">self</span>.db.cari(keyword)
+        <span class="keyword">else</span>:
+            data = <span class="self">self</span>.db.ambil_semua()
+        <span class="self">self</span>.tampilkan_ke_tabel(data)
+    
+    <span class="keyword">def</span> <span class="function">isi_form_dari_tabel</span>(<span class="self">self</span>):
+        <span class="string">"""Saat baris di tabel diklik, isi form dengan data tersebut"""</span>
+        row = <span class="self">self</span>.table.currentRow()
+        <span class="keyword">if</span> row >= <span class="number">0</span>:
+            <span class="self">self</span>.selected_id = <span class="builtin">int</span>(<span class="self">self</span>.table.item(row, <span class="number">0</span>).text())
+            <span class="self">self</span>.nim_input.setText(<span class="self">self</span>.table.item(row, <span class="number">1</span>).text())
+            <span class="self">self</span>.nama_input.setText(<span class="self">self</span>.table.item(row, <span class="number">2</span>).text())
+            <span class="self">self</span>.btn_simpan.setText(<span class="string">"Update"</span>)
+            <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Editing ID: </span>{<span class="self">self</span>.selected_id}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">batal_edit</span>(<span class="self">self</span>):
+        <span class="string">"""Reset form ke mode tambah"""</span>
+        <span class="self">self</span>.selected_id = <span class="keyword">None</span>
+        <span class="self">self</span>.nim_input.clear()
+        <span class="self">self</span>.nama_input.clear()
+        <span class="self">self</span>.btn_simpan.setText(<span class="string">"Simpan"</span>)
+        <span class="self">self</span>.table.clearSelection()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Siap"</span>)
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># BAGIAN 3: MENJALANKAN APLIKASI</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <h3>Penjelasan Alur Kerja Aplikasi</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Tambah Data (Create)</h4>
+                            <p>Isi form NIM dan Nama, lalu klik <strong>Simpan</strong>. Data akan di-INSERT ke database dan tabel otomatis di-refresh.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Lihat Data (Read)</h4>
+                            <p>Data otomatis ditampilkan di tabel saat aplikasi dibuka. Bisa juga dicari menggunakan kolom search.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Edit Data (Update)</h4>
+                            <p>Klik baris di tabel → form terisi otomatis → ubah data → klik <strong>Update</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Hapus Data (Delete)</h4>
+                            <p>Klik baris di tabel → klik <strong>Hapus</strong> → konfirmasi → data terhapus.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Tentang selected_id</div>
+                    <p>Variabel <span class="inline-code">self.selected_id</span> digunakan untuk membedakan mode Tambah dan mode Edit. Jika <span class="inline-code">None</span>, tombol Simpan akan melakukan INSERT. Jika berisi ID, tombol akan melakukan UPDATE.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Sinkronisasi DB ↔ UI -->
+            <section class="section" id="sync-db-ui">
+                <h2>5. Sinkronisasi Database ↔ UI</h2>
+
+                <p>Sinkronisasi memastikan tabel di UI selalu menampilkan data terbaru dari database.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Pola Sinkronisasi</div>
+                    <div class="flow-container">
+                        <div class="flow-box">User Aksi<br><small>(Tambah/Edit/Hapus)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Update Database</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Refresh Tabel</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Update Status</div>
+                    </div>
+                </div>
+
+                <h3>Kapan Harus Refresh?</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Aksi Database</th>
+                                <th>Aksi UI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Aplikasi baru dibuka</td>
+                                <td>SELECT semua data</td>
+                                <td>Isi tabel (load_data)</td>
+                            </tr>
+                            <tr>
+                                <td>Setelah Tambah</td>
+                                <td>INSERT selesai</td>
+                                <td>load_data() + reset form</td>
+                            </tr>
+                            <tr>
+                                <td>Setelah Edit</td>
+                                <td>UPDATE selesai</td>
+                                <td>load_data() + reset form</td>
+                            </tr>
+                            <tr>
+                                <td>Setelah Hapus</td>
+                                <td>DELETE selesai</td>
+                                <td>load_data() + reset form</td>
+                            </tr>
+                            <tr>
+                                <td>User mengetik di search</td>
+                                <td>SELECT LIKE keyword</td>
+                                <td>Tampilkan hasil filter</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">pola_sinkronisasi.py</span>
+                        <span class="code-badge">Pattern</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Pola yang SELALU digunakan setelah operasi database:</span>
+
+<span class="keyword">def</span> <span class="function">simpan_data</span>(<span class="self">self</span>):
+    <span class="comment"># 1. Ambil input dari form</span>
+    nim = <span class="self">self</span>.nim_input.text().strip()
+    nama = <span class="self">self</span>.nama_input.text().strip()
+    
+    <span class="comment"># 2. Validasi</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nim <span class="keyword">or</span> <span class="keyword">not</span> nama:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"Data tidak boleh kosong!"</span>)
+        <span class="keyword">return</span>
+    
+    <span class="keyword">try</span>:
+        <span class="comment"># 3. Operasi database</span>
+        <span class="self">self</span>.db.tambah(nim, nama)
+        
+        <span class="comment"># 4. Reset form</span>
+        <span class="self">self</span>.batal_edit()
+        
+        <span class="comment"># 5. Refresh tabel (SINKRONISASI!)</span>
+        <span class="self">self</span>.load_data()
+        
+        <span class="comment"># 6. Feedback ke user</span>
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"OK"</span>, <span class="string">"Berhasil!"</span>)
+    
+    <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+        <span class="comment"># 7. Handle error</span>
+        QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="builtin">str</span>(e))</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Kunci Sinkronisasi</div>
+                    <p>Selalu panggil <span class="inline-code">self.load_data()</span> setelah setiap operasi INSERT, UPDATE, atau DELETE. Ini menjamin data di tabel selalu sama dengan data di database.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Validasi Input -->
+            <section class="section" id="validasi-input">
+                <h2>6. Validasi Input</h2>
+
+                <p>Validasi memastikan data yang masuk ke database benar dan konsisten. Validasi dilakukan <strong>sebelum</strong> menyimpan ke database.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">validasi_sederhana.py</span>
+                        <span class="code-badge">Inline</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">def</span> <span class="function">simpan_data</span>(<span class="self">self</span>):
+    nim = <span class="self">self</span>.nim_input.text().strip()
+    nama = <span class="self">self</span>.nama_input.text().strip()
+    
+    <span class="comment"># Validasi: tidak boleh kosong</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nim:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM tidak boleh kosong!"</span>)
+        <span class="self">self</span>.nim_input.setFocus()
+        <span class="keyword">return</span>
+    
+    <span class="keyword">if</span> <span class="keyword">not</span> nama:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"Nama tidak boleh kosong!"</span>)
+        <span class="self">self</span>.nama_input.setFocus()
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Validasi: NIM harus angka</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nim.isdigit():
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM harus berupa angka!"</span>)
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Validasi: NIM harus 8 digit</span>
+    <span class="keyword">if</span> <span class="builtin">len</span>(nim) != <span class="number">8</span>:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM harus 8 digit!"</span>)
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Validasi: Nama minimal 3 karakter</span>
+    <span class="keyword">if</span> <span class="builtin">len</span>(nama) < <span class="number">3</span>:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"Nama minimal 3 karakter!"</span>)
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Semua valid, lanjut simpan</span>
+    <span class="self">self</span>.db.tambah(nim, nama)
+    <span class="self">self</span>.load_data()</code></pre>
+                    </div>
+                </div>
+
+                <h3>Validasi dengan Function Terpisah (Lebih Rapi)</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">validasi_function.py</span>
+                        <span class="code-badge">Function</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">def</span> <span class="function">validasi_nim</span>(<span class="parameter">nim</span>):
+    <span class="string">"""Validasi NIM. Return (True/False, pesan_error)"""</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nim:
+        <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM tidak boleh kosong"</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nim.isdigit():
+        <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM harus berupa angka"</span>
+    <span class="keyword">if</span> <span class="builtin">len</span>(nim) != <span class="number">8</span>:
+        <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM harus 8 digit"</span>
+    <span class="keyword">return</span> <span class="keyword">True</span>, <span class="string">""</span>
+
+
+<span class="keyword">def</span> <span class="function">validasi_nama</span>(<span class="parameter">nama</span>):
+    <span class="string">"""Validasi Nama. Return (True/False, pesan_error)"""</span>
+    <span class="keyword">if</span> <span class="keyword">not</span> nama:
+        <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"Nama tidak boleh kosong"</span>
+    <span class="keyword">if</span> <span class="builtin">len</span>(nama) < <span class="number">3</span>:
+        <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"Nama minimal 3 karakter"</span>
+    <span class="keyword">return</span> <span class="keyword">True</span>, <span class="string">""</span>
+
+
+<span class="comment"># Penggunaan di MainWindow:</span>
+<span class="keyword">def</span> <span class="function">simpan_data</span>(<span class="self">self</span>):
+    nim = <span class="self">self</span>.nim_input.text().strip()
+    nama = <span class="self">self</span>.nama_input.text().strip()
+    
+    <span class="comment"># Validasi NIM</span>
+    valid, pesan = validasi_nim(nim)
+    <span class="keyword">if</span> <span class="keyword">not</span> valid:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi Gagal"</span>, pesan)
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Validasi Nama</span>
+    valid, pesan = validasi_nama(nama)
+    <span class="keyword">if</span> <span class="keyword">not</span> valid:
+        QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi Gagal"</span>, pesan)
+        <span class="keyword">return</span>
+    
+    <span class="comment"># Semua valid, lanjut simpan</span>
+    <span class="self">self</span>.db.tambah(nim, nama)
+    <span class="self">self</span>.load_data()</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Export CSV -->
+            <section class="section" id="export-csv">
+                <h2>7. Export CSV</h2>
+
+                <p>Export data ke CSV agar bisa dibuka di Excel atau aplikasi spreadsheet lainnya.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">export_csv.py</span>
+                        <span class="code-badge">Export</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> csv
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QFileDialog, QMessageBox
+
+
+<span class="comment"># Tambahkan method ini di class MainWindow:</span>
+
+<span class="keyword">def</span> <span class="function">export_csv</span>(<span class="self">self</span>):
+    <span class="string">"""Export data mahasiswa ke file CSV"""</span>
+    
+    <span class="comment"># 1. Pilih lokasi file</span>
+    filepath, _ = QFileDialog.getSaveFileName(
+        <span class="self">self</span>,
+        <span class="string">"Export CSV"</span>,
+        <span class="string">"data_mahasiswa.csv"</span>,
+        <span class="string">"CSV Files (*.csv)"</span>
+    )
+    
+    <span class="keyword">if</span> <span class="keyword">not</span> filepath:
+        <span class="keyword">return</span>  <span class="comment"># User klik Cancel</span>
+    
+    <span class="comment"># 2. Ambil data dari database</span>
+    data = <span class="self">self</span>.db.ambil_semua()
+    
+    <span class="comment"># 3. Tulis ke file CSV</span>
+    <span class="keyword">try</span>:
+        <span class="keyword">with</span> <span class="builtin">open</span>(filepath, <span class="string">'w'</span>, newline=<span class="string">''</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> file:
+            writer = csv.writer(file)
+            
+            <span class="comment"># Tulis header</span>
+            writer.writerow([<span class="string">'ID'</span>, <span class="string">'NIM'</span>, <span class="string">'Nama'</span>])
+            
+            <span class="comment"># Tulis data per baris</span>
+            <span class="keyword">for</span> row <span class="keyword">in</span> data:
+                writer.writerow([row[<span class="string">'id'</span>], row[<span class="string">'nim'</span>], row[<span class="string">'nama'</span>]])
+        
+        QMessageBox.information(
+            <span class="self">self</span>, <span class="string">"Sukses"</span>,
+            <span class="string">f"Data berhasil di-export!\n\nFile: </span>{filepath}<span class="string">\nTotal: </span>{<span class="builtin">len</span>(data)}<span class="string"> baris"</span>
+        )
+    
+    <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+        QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">f"Gagal export:\n</span>{e}<span class="string">"</span>)
+
+
+<span class="comment"># Jangan lupa tambahkan tombol Export di setup_ui():</span>
+<span class="comment"># self.btn_export = QPushButton("Export CSV")</span>
+<span class="comment"># self.btn_export.clicked.connect(self.export_csv)</span>
+<span class="comment"># btn_layout.addWidget(self.btn_export)</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Parameter csv.writer</div>
+                    <ul>
+                        <li><span class="inline-code">newline=''</span> — Mencegah baris kosong ekstra di Windows</li>
+                        <li><span class="inline-code">encoding='utf-8'</span> — Agar karakter non-ASCII (misal: huruf daerah) bisa tersimpan</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 8: Separation of Concerns -->
+            <section class="section" id="separation-of-concerns">
+                <h2>8. Separation of Concerns</h2>
+
+                <p><strong>Separation of Concerns (SoC)</strong> berarti memisahkan kode berdasarkan tugasnya. Contoh CRUD di atas sudah menggabungkan semuanya di 1 file. Sekarang kita belajar memisahkannya.</p>
+
+                <h3>Mengapa Perlu Dipisah?</h3>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Semua di 1 File</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Cepat untuk project kecil</li>
+                                <li>File jadi panjang dan sulit dibaca</li>
+                                <li>Susah di-maintain</li>
+                                <li>Tidak bisa di-reuse</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Dipisah per Tugas</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Sedikit lebih banyak file</li>
+                                <li>Setiap file pendek dan jelas</li>
+                                <li>Mudah di-maintain</li>
+                                <li>Bisa di-reuse di project lain</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>3 Bagian Utama yang Dipisah</h3>
+
+                <div class="diagram">
+                    <div class="diagram-title">Pembagian Tanggung Jawab</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Database<br><small>Query SQL</small></div>
+                        <span class="flow-arrow">↔</span>
+                        <div class="flow-box highlight">Logic<br><small>Validasi, Proses</small></div>
+                        <span class="flow-arrow">↔</span>
+                        <div class="flow-box">UI<br><small>Tampilan</small></div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bagian</th>
+                                <th>Tugas</th>
+                                <th>Contoh Isi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Database</strong></td>
+                                <td>Semua yang berhubungan dengan SQL</td>
+                                <td>connect, INSERT, SELECT, UPDATE, DELETE</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Logic / Controller</strong></td>
+                                <td>Validasi dan aturan bisnis</td>
+                                <td>validasi_nim(), validasi_nama()</td>
+                            </tr>
+                            <tr>
+                                <td><strong>UI</strong></td>
+                                <td>Tampilan dan interaksi user</td>
+                                <td>QMainWindow, QPushButton, QTableWidget</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Aturan Sederhana</div>
+                    <ul>
+                        <li><strong>File database</strong> — tidak boleh ada kode PySide6 (QWidget, dll)</li>
+                        <li><strong>File logic</strong> — tidak boleh ada kode SQL atau PySide6</li>
+                        <li><strong>File UI</strong> — tidak boleh ada kode SQL langsung</li>
+                        <li><strong>main.py</strong> — hanya menjalankan aplikasi, menghubungkan semua bagian</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 9: Struktur Project Modular -->
+            <section class="section" id="project-structure">
+                <h2>9. Struktur Project Modular</h2>
+
+                <p>Sekarang kita ubah aplikasi CRUD 1 file tadi menjadi <strong>project modular</strong> dengan beberapa file terpisah. Setiap file punya tugas masing-masing.</p>
+
+                <h3>Struktur Folder</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Struktur Folder</span>
+                        <span class="code-badge">Folder</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>crud_mahasiswa/
+│
+├── main.py                  <span class="comment"># Entry point, menjalankan app</span>
+│
+├── database/
+│   ├── __init__.py          <span class="comment"># Kosong (penanda package)</span>
+│   └── db_manager.py        <span class="comment"># Semua operasi SQL</span>
+│
+├── logic/
+│   ├── __init__.py
+│   └── validator.py         <span class="comment"># Semua validasi</span>
+│
+└── ui/
+    ├── __init__.py
+    └── main_window.py       <span class="comment"># Tampilan / GUI</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">File __init__.py</div>
+                    <p>Setiap folder yang berisi module Python harus punya file <span class="inline-code">__init__.py</span>. File ini boleh kosong, fungsinya sebagai penanda bahwa folder tersebut adalah Python package.</p>
+                </div>
+
+                <h3>File 1: database/db_manager.py</h3>
+                <p>File ini <strong>hanya berisi kode SQL</strong>. Tidak ada import PySide6.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">database/db_manager.py</span>
+                        <span class="code-badge">SQL Only</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+
+<span class="keyword">class</span> <span class="class-name">DatabaseManager</span>:
+    <span class="string">"""Mengelola semua operasi database (SQL).
+    File ini TIDAK boleh import PySide6."""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">db_name</span>=<span class="string">'data_mhs.db'</span>):
+        <span class="self">self</span>.db_name = db_name
+        <span class="self">self</span>.create_table()
+    
+    <span class="keyword">def</span> <span class="function">get_connection</span>(<span class="self">self</span>):
+        conn = sqlite3.connect(<span class="self">self</span>.db_name)
+        conn.row_factory = sqlite3.Row
+        <span class="keyword">return</span> conn
+    
+    <span class="keyword">def</span> <span class="function">create_table</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'''
+                CREATE TABLE IF NOT EXISTS mahasiswa (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nim TEXT NOT NULL UNIQUE,
+                    nama TEXT NOT NULL
+                )
+            '''</span>)
+    
+    <span class="keyword">def</span> <span class="function">tambah</span>(<span class="self">self</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'INSERT INTO mahasiswa (nim, nama) VALUES (?, ?)'</span>,
+                (nim, nama)
+            )
+    
+    <span class="keyword">def</span> <span class="function">ambil_semua</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(
+                <span class="string">'SELECT * FROM mahasiswa ORDER BY nama'</span>
+            ).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">cari</span>(<span class="self">self</span>, <span class="parameter">keyword</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(
+                <span class="string">'SELECT * FROM mahasiswa WHERE nama LIKE ? OR nim LIKE ?'</span>,
+                (<span class="string">f'%</span>{keyword}<span class="string">%'</span>, <span class="string">f'%</span>{keyword}<span class="string">%'</span>)
+            ).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">update</span>(<span class="self">self</span>, <span class="parameter">id</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'UPDATE mahasiswa SET nim=?, nama=? WHERE id=?'</span>,
+                (nim, nama, id)
+            )
+    
+    <span class="keyword">def</span> <span class="function">hapus</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'DELETE FROM mahasiswa WHERE id = ?'</span>, (id,)
+            )</code></pre>
+                    </div>
+                </div>
+
+                <h3>File 2: logic/validator.py</h3>
+                <p>File ini <strong>hanya berisi logika validasi</strong>. Tidak ada SQL dan tidak ada PySide6.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">logic/validator.py</span>
+                        <span class="code-badge">Logic Only</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">class</span> <span class="class-name">Validator</span>:
+    <span class="string">"""Validasi input data mahasiswa.
+    File ini TIDAK boleh import PySide6 atau sqlite3."""</span>
+    
+    <span class="decorator">@staticmethod</span>
+    <span class="keyword">def</span> <span class="function">validasi_nim</span>(<span class="parameter">nim</span>):
+        <span class="string">"""Return (True/False, pesan_error)"""</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> nim:
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM tidak boleh kosong"</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> nim.isdigit():
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM harus berupa angka"</span>
+        <span class="keyword">if</span> <span class="builtin">len</span>(nim) != <span class="number">8</span>:
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"NIM harus 8 digit"</span>
+        <span class="keyword">return</span> <span class="keyword">True</span>, <span class="string">""</span>
+    
+    <span class="decorator">@staticmethod</span>
+    <span class="keyword">def</span> <span class="function">validasi_nama</span>(<span class="parameter">nama</span>):
+        <span class="string">"""Return (True/False, pesan_error)"""</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> nama:
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"Nama tidak boleh kosong"</span>
+        <span class="keyword">if</span> <span class="builtin">len</span>(nama) < <span class="number">3</span>:
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">"Nama minimal 3 karakter"</span>
+        <span class="keyword">return</span> <span class="keyword">True</span>, <span class="string">""</span>
+    
+    <span class="decorator">@staticmethod</span>
+    <span class="keyword">def</span> <span class="function">validasi_semua</span>(<span class="parameter">nim</span>, <span class="parameter">nama</span>):
+        <span class="string">"""Validasi semua field sekaligus.
+        Return (True/False, list_pesan_error)"""</span>
+        errors = []
+        
+        valid, msg = Validator.validasi_nim(nim)
+        <span class="keyword">if</span> <span class="keyword">not</span> valid:
+            errors.append(msg)
+        
+        valid, msg = Validator.validasi_nama(nama)
+        <span class="keyword">if</span> <span class="keyword">not</span> valid:
+            errors.append(msg)
+        
+        <span class="keyword">return</span> <span class="builtin">len</span>(errors) == <span class="number">0</span>, errors</code></pre>
+                    </div>
+                </div>
+
+                <h3>File 3: ui/main_window.py</h3>
+                <p>File ini <strong>hanya berisi tampilan/GUI</strong>. Tidak ada kode SQL langsung.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">ui/main_window.py</span>
+                        <span class="code-badge">UI Only</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> csv
+<span class="keyword">import</span> sqlite3
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QTableWidget, QTableWidgetItem, QPushButton, QLineEdit,
+    QLabel, QFormLayout, QMessageBox, QHeaderView, QFileDialog
+)
+
+<span class="comment"># Import dari module kita sendiri</span>
+<span class="keyword">from</span> logic.validator <span class="keyword">import</span> Validator
+
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="string">"""MainWindow untuk CRUD Mahasiswa.
+    File ini TIDAK boleh ada kode SQL langsung."""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">db</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"CRUD Mahasiswa - Modular"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">600</span>, <span class="number">500</span>)
+        
+        <span class="comment"># Terima DatabaseManager dari luar (dari main.py)</span>
+        <span class="self">self</span>.db = db
+        <span class="self">self</span>.selected_id = <span class="keyword">None</span>
+        
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.load_data()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Form Input</span>
+        form = QFormLayout()
+        <span class="self">self</span>.nim_input = QLineEdit()
+        <span class="self">self</span>.nim_input.setPlaceholderText(<span class="string">"8 digit angka"</span>)
+        <span class="self">self</span>.nama_input = QLineEdit()
+        <span class="self">self</span>.nama_input.setPlaceholderText(<span class="string">"Nama lengkap"</span>)
+        form.addRow(<span class="string">"NIM:"</span>, <span class="self">self</span>.nim_input)
+        form.addRow(<span class="string">"Nama:"</span>, <span class="self">self</span>.nama_input)
+        layout.addLayout(form)
+        
+        <span class="comment"># Tombol</span>
+        btn_layout = QHBoxLayout()
+        
+        <span class="self">self</span>.btn_simpan = QPushButton(<span class="string">"Simpan"</span>)
+        <span class="self">self</span>.btn_simpan.clicked.connect(<span class="self">self</span>.simpan_data)
+        btn_layout.addWidget(<span class="self">self</span>.btn_simpan)
+        
+        <span class="self">self</span>.btn_hapus = QPushButton(<span class="string">"Hapus"</span>)
+        <span class="self">self</span>.btn_hapus.clicked.connect(<span class="self">self</span>.hapus_data)
+        btn_layout.addWidget(<span class="self">self</span>.btn_hapus)
+        
+        <span class="self">self</span>.btn_batal = QPushButton(<span class="string">"Batal"</span>)
+        <span class="self">self</span>.btn_batal.clicked.connect(<span class="self">self</span>.batal_edit)
+        btn_layout.addWidget(<span class="self">self</span>.btn_batal)
+        
+        <span class="self">self</span>.btn_export = QPushButton(<span class="string">"Export CSV"</span>)
+        <span class="self">self</span>.btn_export.clicked.connect(<span class="self">self</span>.export_csv)
+        btn_layout.addWidget(<span class="self">self</span>.btn_export)
+        
+        layout.addLayout(btn_layout)
+        
+        <span class="comment"># Search</span>
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(QLabel(<span class="string">"Cari:"</span>))
+        <span class="self">self</span>.search_input = QLineEdit()
+        <span class="self">self</span>.search_input.setPlaceholderText(<span class="string">"Ketik nama atau NIM..."</span>)
+        <span class="self">self</span>.search_input.textChanged.connect(<span class="self">self</span>.cari_data)
+        search_layout.addWidget(<span class="self">self</span>.search_input)
+        layout.addLayout(search_layout)
+        
+        <span class="comment"># Tabel</span>
+        <span class="self">self</span>.table = QTableWidget()
+        <span class="self">self</span>.table.setColumnCount(<span class="number">3</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">"ID"</span>, <span class="string">"NIM"</span>, <span class="string">"Nama"</span>])
+        <span class="self">self</span>.table.setSelectionBehavior(QTableWidget.SelectRows)
+        <span class="self">self</span>.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        <span class="self">self</span>.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        <span class="self">self</span>.table.clicked.connect(<span class="self">self</span>.isi_form_dari_tabel)
+        layout.addWidget(<span class="self">self</span>.table)
+        
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Siap"</span>)
+    
+    <span class="comment"># ---- Operasi Data (memanggil DB dan Validator) ----</span>
+    
+    <span class="keyword">def</span> <span class="function">load_data</span>(<span class="self">self</span>):
+        data = <span class="self">self</span>.db.ambil_semua()
+        <span class="self">self</span>.tampilkan_ke_tabel(data)
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Total: </span>{<span class="builtin">len</span>(data)}<span class="string"> mahasiswa"</span>)
+    
+    <span class="keyword">def</span> <span class="function">tampilkan_ke_tabel</span>(<span class="self">self</span>, <span class="parameter">data</span>):
+        <span class="self">self</span>.table.setRowCount(<span class="number">0</span>)
+        <span class="keyword">for</span> row_data <span class="keyword">in</span> data:
+            row = <span class="self">self</span>.table.rowCount()
+            <span class="self">self</span>.table.insertRow(row)
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(row_data[<span class="string">'id'</span>])))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(row_data[<span class="string">'nim'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">2</span>, QTableWidgetItem(row_data[<span class="string">'nama'</span>]))
+    
+    <span class="keyword">def</span> <span class="function">simpan_data</span>(<span class="self">self</span>):
+        nim = <span class="self">self</span>.nim_input.text().strip()
+        nama = <span class="self">self</span>.nama_input.text().strip()
+        
+        <span class="comment"># Validasi menggunakan Validator (dari logic/validator.py)</span>
+        valid, errors = Validator.validasi_semua(nim, nama)
+        <span class="keyword">if</span> <span class="keyword">not</span> valid:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi Gagal"</span>, <span class="string">"\n"</span>.join(errors))
+            <span class="keyword">return</span>
+        
+        <span class="keyword">try</span>:
+            <span class="keyword">if</span> <span class="self">self</span>.selected_id:
+                <span class="self">self</span>.db.update(<span class="self">self</span>.selected_id, nim, nama)
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil diupdate!"</span>)
+            <span class="keyword">else</span>:
+                <span class="self">self</span>.db.tambah(nim, nama)
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil ditambahkan!"</span>)
+            
+            <span class="self">self</span>.batal_edit()
+            <span class="self">self</span>.load_data()
+        
+        <span class="keyword">except</span> sqlite3.IntegrityError:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM sudah terdaftar!"</span>)
+    
+    <span class="keyword">def</span> <span class="function">hapus_data</span>(<span class="self">self</span>):
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.selected_id:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih data dulu!"</span>)
+            <span class="keyword">return</span>
+        
+        reply = QMessageBox.question(<span class="self">self</span>, <span class="string">"Konfirmasi"</span>, <span class="string">"Yakin hapus data ini?"</span>)
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            <span class="self">self</span>.db.hapus(<span class="self">self</span>.selected_id)
+            <span class="self">self</span>.batal_edit()
+            <span class="self">self</span>.load_data()
+    
+    <span class="keyword">def</span> <span class="function">cari_data</span>(<span class="self">self</span>):
+        keyword = <span class="self">self</span>.search_input.text().strip()
+        data = <span class="self">self</span>.db.cari(keyword) <span class="keyword">if</span> keyword <span class="keyword">else</span> <span class="self">self</span>.db.ambil_semua()
+        <span class="self">self</span>.tampilkan_ke_tabel(data)
+    
+    <span class="keyword">def</span> <span class="function">isi_form_dari_tabel</span>(<span class="self">self</span>):
+        row = <span class="self">self</span>.table.currentRow()
+        <span class="keyword">if</span> row >= <span class="number">0</span>:
+            <span class="self">self</span>.selected_id = <span class="builtin">int</span>(<span class="self">self</span>.table.item(row, <span class="number">0</span>).text())
+            <span class="self">self</span>.nim_input.setText(<span class="self">self</span>.table.item(row, <span class="number">1</span>).text())
+            <span class="self">self</span>.nama_input.setText(<span class="self">self</span>.table.item(row, <span class="number">2</span>).text())
+            <span class="self">self</span>.btn_simpan.setText(<span class="string">"Update"</span>)
+    
+    <span class="keyword">def</span> <span class="function">batal_edit</span>(<span class="self">self</span>):
+        <span class="self">self</span>.selected_id = <span class="keyword">None</span>
+        <span class="self">self</span>.nim_input.clear()
+        <span class="self">self</span>.nama_input.clear()
+        <span class="self">self</span>.btn_simpan.setText(<span class="string">"Simpan"</span>)
+        <span class="self">self</span>.table.clearSelection()
+    
+    <span class="keyword">def</span> <span class="function">export_csv</span>(<span class="self">self</span>):
+        filepath, _ = QFileDialog.getSaveFileName(
+            <span class="self">self</span>, <span class="string">"Export CSV"</span>, <span class="string">"mahasiswa.csv"</span>, <span class="string">"CSV Files (*.csv)"</span>
+        )
+        <span class="keyword">if</span> <span class="keyword">not</span> filepath:
+            <span class="keyword">return</span>
+        
+        <span class="keyword">try</span>:
+            data = <span class="self">self</span>.db.ambil_semua()
+            <span class="keyword">with</span> <span class="builtin">open</span>(filepath, <span class="string">'w'</span>, newline=<span class="string">''</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:
+                writer = csv.writer(f)
+                writer.writerow([<span class="string">'ID'</span>, <span class="string">'NIM'</span>, <span class="string">'Nama'</span>])
+                <span class="keyword">for</span> r <span class="keyword">in</span> data:
+                    writer.writerow([r[<span class="string">'id'</span>], r[<span class="string">'nim'</span>], r[<span class="string">'nama'</span>]])
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Export berhasil!\n</span>{filepath}<span class="string">"</span>)
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="builtin">str</span>(e))</code></pre>
+                    </div>
+                </div>
+
+                <h3>File 4: main.py</h3>
+                <p>File ini <strong>hanya menjalankan aplikasi</strong> dan menghubungkan semua bagian.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">main.py</span>
+                        <span class="code-badge">Entry Point</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> QApplication
+
+<span class="comment"># Import dari module kita</span>
+<span class="keyword">from</span> database.db_manager <span class="keyword">import</span> DatabaseManager
+<span class="keyword">from</span> ui.main_window <span class="keyword">import</span> MainWindow
+
+
+<span class="keyword">def</span> <span class="function">main</span>():
+    <span class="comment"># 1. Buat aplikasi</span>
+    app = QApplication(sys.argv)
+    
+    <span class="comment"># 2. Buat database manager</span>
+    db = DatabaseManager(<span class="string">'data_mhs.db'</span>)
+    
+    <span class="comment"># 3. Buat window, kirim db sebagai parameter</span>
+    window = MainWindow(db)
+    window.show()
+    
+    <span class="comment"># 4. Jalankan</span>
+    sys.exit(app.exec())
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    main()</code></pre>
+                    </div>
+                </div>
+
+                <h3>Bagaimana Semua File Terhubung?</h3>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Hubungan Antar File</div>
+                    <div class="flow-container">
+                        <div class="flow-box highlight">main.py<br><small>Jalankan App</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">MainWindow<br><small>ui/</small></div>
+                        <span class="flow-arrow">↔</span>
+                        <div class="flow-box">Validator<br><small>logic/</small></div>
+                    </div>
+                    <div style="margin-top: 10px;"></div>
+                    <div class="flow-container">
+                        <div class="flow-box highlight">main.py</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">DatabaseManager<br><small>database/</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">data_mhs.db<br><small>SQLite File</small></div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Boleh Import</th>
+                                <th>Tidak Boleh Import</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>database/db_manager.py</strong></td>
+                                <td>sqlite3</td>
+                                <td>PySide6, logic</td>
+                            </tr>
+                            <tr>
+                                <td><strong>logic/validator.py</strong></td>
+                                <td>Python built-in (re, dll)</td>
+                                <td>PySide6, sqlite3</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ui/main_window.py</strong></td>
+                                <td>PySide6, logic</td>
+                                <td>sqlite3 (langsung)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>main.py</strong></td>
+                                <td>PySide6, database, ui</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Ringkasan Pembagian File</div>
+                    <ul>
+                        <li><strong>database/db_manager.py</strong> — Semua operasi SQL (CREATE TABLE, INSERT, SELECT, UPDATE, DELETE)</li>
+                        <li><strong>logic/validator.py</strong> — Semua aturan validasi (cek kosong, format, panjang)</li>
+                        <li><strong>ui/main_window.py</strong> — Semua tampilan GUI (form, tabel, tombol, dialog)</li>
+                        <li><strong>main.py</strong> — Menghubungkan semuanya dan menjalankan aplikasi</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Cara Menjalankan</div>
+                    <p>Buka terminal di folder <span class="inline-code">crud_mahasiswa/</span>, lalu jalankan:</p>
+                    <p><span class="inline-code">python main.py</span></p>
+                    <p>Pastikan semua file <span class="inline-code">__init__.py</span> sudah dibuat di setiap folder (database/, logic/, ui/).</p>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+
+                if (window.innerWidth <= 992)
+                    document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+        window.addEventListener('scroll', function() {
+            let current = '';
+            document.querySelectorAll('.section').forEach(section => {
+                if (pageYOffset >= section.offsetTop - 100) current = section.getAttribute('id');
+            });
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) link.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
