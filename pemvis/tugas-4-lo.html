@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas PySide6 - Database SQLite</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Tugas PySide6</h2>
+                <p>Database SQLite</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigasi</div>
+                    <a href="#ketentuan" class="nav-link active">
+                        <span class="nav-number">1</span>Ketentuan
+                    </a>
+                    <a href="#ganjil" class="nav-link">
+                        <span class="nav-number">2</span>NIM Ganjil
+                    </a>
+                    <a href="#genap" class="nav-link">
+                        <span class="nav-number">3</span>NIM Genap
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Tugas Praktikum — PySide6 + SQLite</h1>
+                <p class="subtitle">Buat aplikasi CRUD sederhana dengan QMainWindow, MenuBar, Layout, dan Style</p>
+            </header>
+
+            <!-- Ketentuan Umum -->
+            <section class="section" id="ketentuan">
+                <h2>Ketentuan Umum</h2>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Aturan Tugas</div>
+                    <ol>
+                        <li>Buat aplikasi CRUD sederhana menggunakan <code>PySide6</code> dan <code>SQLite</code>.</li>
+                        <li>Gunakan <strong>QMainWindow</strong>, <strong>Menu Bar</strong>, <strong>Layout</strong>, dan <strong>QTableWidget</strong>.</li>
+                        <li>Form input terdiri dari <strong>3 field</strong> sesuai pembagian tugas.</li>
+                        <li>Sediakan tombol <strong>Simpan</strong>, <strong>Hapus</strong>, dan <strong>Bersihkan Form</strong>.</li>
+                        <li>Semua field wajib diisi. Tambahkan validasi sesuai tipe data.</li>
+                        <li>Terapkan <code>setStyleSheet()</code> minimal pada 3 widget.</li>
+                        <li>Tampilkan Nama dan NIM pada status bar serta menu <em>Tentang</em>.</li>
+                        <li>Tulis program dari awal, tanpa kerangka kode jadi.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- NIM Ganjil -->
+            <section class="section" id="ganjil">
+                <h2>Mahasiswa NIM Ganjil</h2>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kolom yang Harus Dibuat</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Kolom</th><th>Tipe Input</th><th>Keterangan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Kode Buku</td><td>QLineEdit</td><td>Wajib diisi, kombinasi huruf/angka diperbolehkan</td></tr>
+                                <tr><td>Judul Buku</td><td>QLineEdit</td><td>Wajib diisi</td></tr>
+                                <tr><td>Kategori</td><td>QComboBox</td><td>Pilihan: Pemrograman, Jaringan, Desain</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NIM Genap -->
+            <section class="section" id="genap">
+                <h2>Mahasiswa NIM Genap</h2>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kolom yang Harus Dibuat</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Kolom</th><th>Tipe Input</th><th>Keterangan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Judul Film</td><td>QLineEdit</td><td>Wajib diisi</td></tr>
+                                <tr><td>Durasi</td><td>QLineEdit</td><td>Wajib diisi, hanya angka menit</td></tr>
+                                <tr><td>Genre</td><td>QComboBox</td><td>Pilihan: Aksi, Animasi, Drama</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('contextmenu', e => { e.preventDefault(); alert('Ketik manual ya!'); });
+            block.addEventListener('selectstart', e => e.preventDefault());
+        });
+
+        window.addEventListener('scroll', function() {
+            let current = '';
+            document.querySelectorAll('.section').forEach(s => {
+                if (pageYOffset >= s.offsetTop - 100) current = s.getAttribute('id');
+            });
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.toggle('active', l.getAttribute('href') === '#' + current);
+            });
+        });
+    </script>
+</body>
+</html>
