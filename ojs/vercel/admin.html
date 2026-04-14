@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Monitoring OJS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; min-height: 100vh; }
+
+    /* LOGIN */
+    .login-wrap {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+    }
+    .login-box {
+      background: white; border-radius: 14px; padding: 36px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 100%; max-width: 360px;
+      text-align: center;
+    }
+    .login-box h2 { margin-bottom: 6px; font-size: 20px; }
+    .login-box p  { font-size: 13px; color: #888; margin-bottom: 24px; }
+    .login-box input {
+      width: 100%; padding: 10px 14px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 14px; margin-bottom: 12px; outline: none;
+    }
+    .login-box input:focus { border-color: #2e6da4; }
+    .login-error { color: #dc3545; font-size: 13px; margin-bottom: 10px; display: none; }
+
+    /* LAYOUT */
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #2e6da4);
+      color: white; padding: 16px 30px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    header h1 { font-size: 18px; font-weight: 600; }
+    header a  { color: rgba(255,255,255,0.8); font-size: 13px; text-decoration: none; }
+    header a:hover { color: white; }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
+
+    .panel {
+      background: white; border-radius: 12px; padding: 22px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px;
+    }
+    .panel-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 16px;
+      padding-bottom: 10px; border-bottom: 1px solid #f0f0f0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .btn {
+      padding: 8px 18px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #2e6da4; color: white; }
+    .btn-danger  { background: #dc3545; color: white; }
+    .btn-warning { background: #fd7e14; color: white; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    textarea {
+      width: 100%; border: 1px solid #ddd; border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; font-family: monospace;
+      resize: vertical; outline: none;
+    }
+    textarea:focus { border-color: #2e6da4; }
+
+    .url-list { list-style: none; }
+    .url-list li {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-radius: 8px; font-size: 13px;
+      border: 1px solid #f0f0f0; margin-bottom: 6px; background: #fafafa;
+    }
+    .url-list li:hover { background: #f0f4f8; }
+    .url-list li a { color: #2e6da4; text-decoration: none; }
+    .url-list li a:hover { text-decoration: underline; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #333; color: white; padding: 12px 20px;
+      border-radius: 10px; font-size: 13px; opacity: 0;
+      transition: opacity 0.3s; pointer-events: none; z-index: 999;
+    }
+    .toast.show { opacity: 1; }
+    .toast.success { background: #28a745; }
+    .toast.error   { background: #dc3545; }
+
+    .info { font-size: 12px; color: #888; margin-top: 8px; }
+    .badge-count {
+      background: #2e6da4; color: white; border-radius: 99px;
+      padding: 2px 8px; font-size: 12px; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h2>🔐 Admin Panel</h2>
+    <p>Monitoring Jurnal OJS</p>
+    <div class="login-error" id="loginError">Password salah</div>
+    <input type="password" id="inputPassword" placeholder="Masukkan password admin"
+      onkeydown="if(event.key==='Enter') doLogin()">
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Masuk</button>
+  </div>
+</div>
+
+<!-- DASHBOARD ADMIN -->
+<div id="adminWrap" style="display:none">
+  <header>
+    <h1>⚙️ Admin - Monitoring OJS</h1>
+    <div style="display:flex;gap:16px;align-items:center">
+      <a href="/">← Lihat Monitoring</a>
+      <a href="#" onclick="logout()">Keluar</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- AKSI CEPAT -->
+    <div class="panel">
+      <div class="panel-title">Aksi Cepat</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-warning" id="btnReset" onclick="resetCache()">
+          🔄 Paksa Cek Ulang Sekarang
+        </button>
+      </div>
+      <p class="info">Menghapus cache sehingga pengecekan baru akan berjalan saat halaman monitoring dibuka.</p>
+    </div>
+
+    <!-- TAMBAH URL -->
+    <div class="panel">
+      <div class="panel-title">
+        <span>Daftar Jurnal <span class="badge-count" id="jumlahUrl">0</span></span>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="tambahBaris()">+ Tambah Baris</button>
+          <button class="btn btn-success btn-sm" onclick="simpanUrls()">💾 Simpan Perubahan</button>
+        </div>
+      </div>
+
+      <table id="tabelJurnal" style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead>
+          <tr style="background:#f8f9fa;border-bottom:2px solid #e9ecef">
+            <th style="padding:8px 10px;text-align:left;width:40%">Nama Jurnal <span style="color:#aaa;font-weight:normal">(maks. 200 karakter)</span></th>
+            <th style="padding:8px 10px;text-align:left">URL</th>
+            <th style="padding:8px 10px;width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="bodyJurnal"></tbody>
+      </table>
+      <p class="info" style="margin-top:10px">Klik "+ Tambah Baris" untuk menambah jurnal baru. Perubahan aktif setelah klik Simpan.</p>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_KEY = "ojs_admin_token";
+
+// ── LOGIN ──────────────────────────────────────────
+function doLogin() {
+  const pw = document.getElementById("inputPassword").value;
+  if (!pw) return;
+
+  sessionStorage.setItem(ADMIN_KEY, pw);
+  verifyAndLoad();
+}
+
+function logout() {
+  sessionStorage.removeItem(ADMIN_KEY);
+  location.reload();
+}
+
+async function verifyAndLoad() {
+  const token = sessionStorage.getItem(ADMIN_KEY);
+  if (!token) return;
+
+  // Verifikasi password dengan hit endpoint admin
+  const res = await fetch("/api/admin?action=verify", {
+    headers: { "x-admin-secret": token }
+  });
+
+  if (res.status === 403) {
+    document.getElementById("loginError").style.display = "block";
+    sessionStorage.removeItem(ADMIN_KEY);
+    return;
+  }
+
+  document.getElementById("loginWrap").style.display = "none";
+  document.getElementById("adminWrap").style.display = "block";
+  loadUrls();
+}
+
+// ── LOAD URLs ──────────────────────────────────────
+async function loadUrls() {
+  const token = sessionStorage.getItem(ADMIN_KEY);
+  const res = await fetch("/api/admin?action=get-urls", {
+    headers: { "x-admin-secret": token }
+  });
+  const data = await res.json();
+  const journals = data.journals ?? [];
+
+  renderTabelJurnal(journals);
+  document.getElementById("jumlahUrl").textContent = journals.length;
+}
+
+function renderTabelJurnal(journals) {
+  const tbody = document.getElementById("bodyJurnal");
+  tbody.innerHTML = journals.map((j, i) => barisHtml(i, j.name, j.url)).join("");
+  updateJumlah();
+}
+
+function barisHtml(i, name = "", url = "") {
+  return `<tr id="baris-${i}" style="border-bottom:1px solid #f0f0f0">
+    <td style="padding:6px 8px">
+      <input type="text" value="${escHtml(name)}" maxlength="200"
+        placeholder="Nama jurnal..."
+        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none"
+        oninput="updateJumlah()">
+    </td>
+    <td style="padding:6px 8px">
+      <input type="url" value="${escHtml(url)}"
+        placeholder="https://..."
+        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none">
+    </td>
+    <td style="padding:6px 8px;text-align:center">
+      <button onclick="hapusBaris(this)" style="background:none;border:none;cursor:pointer;color:#dc3545;font-size:16px" title="Hapus">✕</button>
+    </td>
+  </tr>`;
+}
+
+function tambahBaris() {
+  const tbody = document.getElementById("bodyJurnal");
+  const i = tbody.rows.length;
+  const tr = document.createElement("tr");
+  tr.id = `baris-${i}`;
+  tr.style.borderBottom = "1px solid #f0f0f0";
+  tr.innerHTML = barisHtml(i).match(/<td[\s\S]*<\/tr>/)?.[0]
+    ?? barisHtml(i).replace(/^<tr[^>]*>|<\/tr>$/g, "");
+  // Lebih simpel:
+  tbody.insertAdjacentHTML("beforeend", barisHtml(Date.now()));
+  updateJumlah();
+  tbody.lastElementChild.querySelector("input").focus();
+}
+
+function hapusBaris(btn) {
+  btn.closest("tr").remove();
+  updateJumlah();
+}
+
+function updateJumlah() {
+  const rows = document.querySelectorAll("#bodyJurnal tr");
+  document.getElementById("jumlahUrl").textContent = rows.length;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+}
+
+function getJournalsFromTable() {
+  const rows = document.querySelectorAll("#bodyJurnal tr");
+  const result = [];
+  rows.forEach(row => {
+    const inputs = row.querySelectorAll("input");
+    const name = inputs[0].value.trim().slice(0, 200);
+    const url  = inputs[1].value.trim();
+    if (url) result.push({ name, url });
+  });
+  return result;
+}
+
+// ── SIMPAN URLs ────────────────────────────────────
+async function simpanUrls() {
+  const token = sessionStorage.getItem(ADMIN_KEY);
+  const journals = getJournalsFromTable();
+
+  if (journals.length === 0) return showToast("Minimal 1 jurnal", "error");
+
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = "⏳ Menyimpan & mengecek jurnal baru...";
+
+  const res = await fetch("/api/admin?action=set-urls", {
+    method: "POST",
+    headers: { "x-admin-secret": token, "Content-Type": "application/json" },
+    body: JSON.stringify({ journals })
+  });
+
+  btn.disabled = false;
+  btn.textContent = "💾 Simpan Perubahan";
+
+  if (res.ok) {
+    const data = await res.json();
+    const msg = data.jurnalBaru > 0
+      ? `✅ Disimpan. ${data.jurnalBaru} jurnal baru langsung dicek.`
+      : `✅ ${journals.length} jurnal berhasil disimpan`;
+    showToast(msg, "success");
+    document.getElementById("jumlahUrl").textContent = journals.length;
+  } else {
+    showToast("Gagal menyimpan", "error");
+  }
+}
+
+// ── RESET CACHE ────────────────────────────────────
+async function resetCache() {
+  const token = sessionStorage.getItem(ADMIN_KEY);
+  const btn = document.getElementById("btnReset");
+  btn.disabled = true;
+  btn.textContent = "Menghapus cache...";
+
+  const res = await fetch("/api/admin?action=reset-cache", {
+    method: "POST",
+    headers: { "x-admin-secret": token }
+  });
+
+  btn.disabled = false;
+  btn.textContent = "🔄 Paksa Cek Ulang Sekarang";
+
+  if (res.ok) showToast("✅ Cache dihapus. Buka halaman monitoring untuk cek ulang.", "success");
+  else showToast("Gagal menghapus cache", "error");
+}
+
+// ── TOAST ──────────────────────────────────────────
+function showToast(msg, type = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.className = "toast", 3000);
+}
+
+// Auto-login jika sudah ada session
+verifyAndLoad();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoring Jurnal OJS</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #333; min-height: 100vh; }
+
+    header {
+      background: linear-gradient(135deg, #1e3a5f, #2e6da4);
+      color: white; padding: 20px 30px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    header h1 { font-size: 20px; font-weight: 600; }
+    header p  { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+    header a  { color: rgba(255,255,255,0.8); font-size: 13px; text-decoration: none; }
+    header a:hover { color: white; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px; margin-bottom: 20px;
+    }
+    .stat-card {
+      background: white; border-radius: 10px; padding: 16px;
+      text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-top: 4px solid #ccc; cursor: pointer; transition: transform 0.15s;
+    }
+    .stat-card:hover { transform: translateY(-2px); }
+    .stat-card.active { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .stat-card.total  { border-color: #2e6da4; }
+    .stat-card.ok     { border-color: #28a745; }
+    .stat-card.down   { border-color: #dc3545; }
+    .stat-card.warn   { border-color: #fd7e14; }
+    .stat-card .num   { font-size: 28px; font-weight: 700; }
+    .stat-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+    .stat-card.total .num { color: #2e6da4; }
+    .stat-card.ok .num    { color: #28a745; }
+    .stat-card.down .num  { color: #dc3545; }
+    .stat-card.warn .num  { color: #fd7e14; }
+
+    .panel {
+      background: white; border-radius: 12px; padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 20px;
+    }
+
+    .chip {
+      background: #f0f4f8; border-radius: 99px;
+      padding: 4px 12px; font-size: 12px; display: inline-block;
+    }
+    .chip.blue  { background: #cce5ff; color: #004085; }
+
+    /* TOOLBAR */
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .toolbar-left  { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .toolbar-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    .search-wrap { position: relative; }
+    .search-wrap input {
+      padding: 8px 12px 8px 34px; border: 1px solid #ddd;
+      border-radius: 8px; font-size: 13px; outline: none; width: 240px;
+    }
+    .search-wrap input:focus { border-color: #2e6da4; }
+    .search-wrap .icon {
+      position: absolute; left: 10px; top: 50%;
+      transform: translateY(-50%); color: #aaa; font-size: 14px;
+    }
+
+    select {
+      padding: 8px 12px; border: 1px solid #ddd; border-radius: 8px;
+      font-size: 13px; outline: none; background: white;
+    }
+
+    .btn {
+      padding: 8px 16px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-outline { background: white; color: #555; border: 1px solid #ddd; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+      background: #f8f9fa; padding: 10px 14px; text-align: left;
+      font-weight: 600; color: #555; border-bottom: 2px solid #e9ecef;
+      white-space: nowrap; cursor: pointer; user-select: none;
+    }
+    thead th:hover { background: #eef2f7; }
+    thead th .sort-icon { margin-left: 4px; opacity: 0.4; font-size: 11px; }
+    thead th.asc .sort-icon::after  { content: '▲'; opacity: 1; }
+    thead th.desc .sort-icon::after { content: '▼'; opacity: 1; }
+    thead th:not(.asc):not(.desc) .sort-icon::after { content: '⇅'; }
+
+    tbody tr { border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+    tbody tr:hover { background: #f8fbff; }
+    td { padding: 10px 14px; vertical-align: middle; }
+    td a { color: #2e6da4; text-decoration: none; font-size: 12px; word-break: break-all; }
+    td a:hover { text-decoration: underline; }
+
+    .badge {
+      display: inline-block; padding: 3px 10px;
+      border-radius: 99px; font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+    .badge.ok      { background: #d4edda; color: #155724; }
+    .badge.down    { background: #f8d7da; color: #721c24; }
+    .badge.warn    { background: #fff3cd; color: #856404; }
+    .badge.pending { background: #e9ecef; color: #555; }
+
+    /* PAGINATION */
+    .pagination-wrap {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 16px; flex-wrap: wrap; gap: 10px;
+    }
+    .pagination-info { font-size: 13px; color: #666; }
+    .pagination { display: flex; gap: 4px; }
+    .page-btn {
+      padding: 6px 11px; border: 1px solid #ddd; border-radius: 6px;
+      background: white; font-size: 13px; cursor: pointer; transition: all 0.15s;
+      min-width: 34px; text-align: center;
+    }
+    .page-btn:hover:not(:disabled) { background: #f0f4f8; }
+    .page-btn.active { background: #2e6da4; color: white; border-color: #2e6da4; }
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .loading { text-align: center; padding: 60px 20px; color: #aaa; }
+    .spinner {
+      width: 36px; height: 36px; border: 4px solid #e9ecef;
+      border-top-color: #2e6da4; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .info-bar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      align-items: center; margin-bottom: 16px; font-size: 13px; color: #666;
+    }
+    .countdown { font-weight: 600; color: #2e6da4; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📡 Monitoring Jurnal OJS</h1>
+    <p>Status ketersediaan jurnal diperbarui setiap 2 jam sekali</p>
+  </div>
+  <a href="/admin.html">⚙️ Admin</a>
+</header>
+
+<div class="container">
+
+  <div class="stats">
+    <div class="stat-card total active" onclick="setFilter('all', this)">
+      <div class="num" id="s-total">-</div><div class="label">Total URL</div>
+    </div>
+    <div class="stat-card ok" onclick="setFilter('ok', this)">
+      <div class="num" id="s-ok">-</div><div class="label">🟢 Lancar</div>
+    </div>
+    <div class="stat-card down" onclick="setFilter('down', this)">
+      <div class="num" id="s-down">-</div><div class="label">🔴 Down</div>
+    </div>
+    <div class="stat-card warn" onclick="setFilter('warn', this)">
+      <div class="num" id="s-warn">-</div><div class="label">🟡 Peringatan</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="info-bar">
+      <span class="chip blue" id="waktuCek">Memuat...</span>
+      <span class="chip" id="nextCek"></span>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <div class="search-wrap">
+          <span class="icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Cari URL jurnal..."
+            oninput="onSearch()">
+        </div>
+        <select id="filterStatus" onchange="onFilterChange()">
+          <option value="all">Semua Status</option>
+          <option value="ok">🟢 Lancar</option>
+          <option value="down">🔴 Down</option>
+          <option value="warn">🟡 Peringatan</option>
+        </select>
+      </div>
+      <div class="toolbar-right">
+        <select id="perPage" onchange="onPerPageChange()">
+          <option value="10">10 per halaman</option>
+          <option value="25" selected>25 per halaman</option>
+          <option value="50">50 per halaman</option>
+          <option value="100">100 per halaman</option>
+        </select>
+        <button class="btn btn-success" onclick="exportCSV()" style="display: none;">⬇ CSV</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50px">#</th>
+            <th class="sortable" data-col="name" onclick="sortBy('name', this)">
+              Nama Jurnal <span class="sort-icon"></span>
+            </th>
+            <th class="sortable" data-col="url" onclick="sortBy('url', this)">
+              URL <span class="sort-icon"></span>
+            </th>
+            <th class="sortable" data-col="status" onclick="sortBy('status', this)">
+              Status <span class="sort-icon"></span>
+            </th>
+            <th class="sortable" data-col="code" onclick="sortBy('code', this)">
+              HTTP Code <span class="sort-icon"></span>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="4">
+            <div class="loading"><div class="spinner"></div>Memuat data...</div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination-wrap">
+      <div class="pagination-info" id="pageInfo"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let allData    = [];
+let filtered   = [];
+let currentPage = 1;
+let perPage    = 25;
+let sortCol    = null;
+let sortDir    = 'asc';
+let filterStatus = 'all';
+let searchQuery  = '';
+
+async function loadHasil() {
+  try {
+    const res  = await fetch("/api/hasil");
+    const data = await res.json();
+
+    allData = data.hasil.map((d, i) => ({ no: i + 1, ...d }));
+
+    const waktu = new Date(data.waktuCek).toLocaleString("id-ID");
+    document.getElementById("waktuCek").textContent = "Dicek: " + waktu;
+    startCountdown(new Date(data.nextCek));
+
+    updateStats();
+    applyFilter();
+  } catch {
+    document.getElementById("tbody").innerHTML =
+      `<tr><td colspan="4" style="text-align:center;padding:40px;color:red">
+        Gagal memuat data. Coba refresh halaman.
+      </td></tr>`;
+  }
+}
+
+function updateStats() {
+  document.getElementById("s-total").textContent = allData.length;
+  document.getElementById("s-ok").textContent    = allData.filter(d => d.status === "ok").length;
+  document.getElementById("s-down").textContent  = allData.filter(d => d.status === "down").length;
+  document.getElementById("s-warn").textContent  = allData.filter(d => d.status === "warn").length;
+}
+
+function setFilter(f, el) {
+  filterStatus = f;
+  document.getElementById("filterStatus").value = f;
+  document.querySelectorAll(".stat-card").forEach(c => c.classList.remove("active"));
+  el.classList.add("active");
+  currentPage = 1;
+  applyFilter();
+}
+
+function onFilterChange() {
+  filterStatus = document.getElementById("filterStatus").value;
+  document.querySelectorAll(".stat-card").forEach(c => c.classList.remove("active"));
+  currentPage = 1;
+  applyFilter();
+}
+
+function onSearch() {
+  searchQuery = document.getElementById("searchInput").value.toLowerCase();
+  currentPage = 1;
+  applyFilter();
+}
+
+function onPerPageChange() {
+  perPage = parseInt(document.getElementById("perPage").value);
+  currentPage = 1;
+  renderTable();
+}
+
+function applyFilter() {
+  filtered = allData.filter(d => {
+    const matchStatus = filterStatus === 'all' || d.status === filterStatus;
+    const matchSearch = !searchQuery ||
+        d.url.toLowerCase().includes(searchQuery) ||
+        (d.name ?? "").toLowerCase().includes(searchQuery);
+    return matchStatus && matchSearch;
+  });
+
+  if (sortCol) applySort();
+  renderTable();
+}
+
+function sortBy(col, th) {
+  if (sortCol === col) {
+    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortCol = col;
+    sortDir = 'asc';
+  }
+  document.querySelectorAll("thead th").forEach(t => t.classList.remove("asc", "desc"));
+  th.classList.add(sortDir);
+  applySort();
+  renderTable();
+}
+
+function applySort() {
+  filtered.sort((a, b) => {
+    let va = a[sortCol] ?? '';
+    let vb = b[sortCol] ?? '';
+    if (typeof va === 'number' && typeof vb === 'number') {
+      return sortDir === 'asc' ? va - vb : vb - va;
+    }
+    va = String(va).toLowerCase();
+    vb = String(vb).toLowerCase();
+    return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+}
+
+function renderTable() {
+  const total  = filtered.length;
+  const pages  = Math.max(1, Math.ceil(total / perPage));
+  if (currentPage > pages) currentPage = pages;
+
+  const start = (currentPage - 1) * perPage;
+  const end   = Math.min(start + perPage, total);
+  const slice = filtered.slice(start, end);
+
+  const badges = {
+    ok:   `<span class="badge ok">🟢 Lancar</span>`,
+    down: `<span class="badge down">🔴 Down</span>`,
+    warn: `<span class="badge warn">🟡 Peringatan</span>`,
+  };
+
+  if (slice.length === 0) {
+    document.getElementById("tbody").innerHTML =
+      `<tr><td colspan="4" style="text-align:center;padding:30px;color:#aaa">
+        Tidak ada data ditemukan
+      </td></tr>`;
+  } else {
+    document.getElementById("tbody").innerHTML = slice.map((d, i) => `
+      <tr>
+        <td style="color:#aaa;font-size:12px">${start + i + 1}</td>
+        <td style="font-weight:500">${d.name ?? '<span style="color:#aaa">-</span>'}</td>
+        <td><a href="${d.url}" target="_blank">${d.url}</a></td>
+        <td>${badges[d.status] ?? '<span class="badge pending">-</span>'}</td>
+        <td style="font-size:12px;color:#666">${d.code ?? '-'}</td>
+      </tr>`).join("");
+  }
+
+  // Info
+  document.getElementById("pageInfo").textContent =
+    total === 0 ? "Tidak ada data" :
+    `Menampilkan ${start + 1}–${end} dari ${total} jurnal`;
+
+  renderPagination(pages);
+}
+
+function renderPagination(pages) {
+  const el = document.getElementById("pagination");
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let btns = '';
+
+  // Prev
+  btns += `<button class="page-btn" onclick="goPage(${currentPage - 1})"
+    ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+
+  // Halaman
+  const range = pageRange(currentPage, pages);
+  range.forEach(p => {
+    if (p === '...') {
+      btns += `<button class="page-btn" disabled>…</button>`;
+    } else {
+      btns += `<button class="page-btn ${p === currentPage ? 'active' : ''}"
+        onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  // Next
+  btns += `<button class="page-btn" onclick="goPage(${currentPage + 1})"
+    ${currentPage === pages ? 'disabled' : ''}>›</button>`;
+
+  el.innerHTML = btns;
+}
+
+function pageRange(current, total) {
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = [];
+  pages.push(1);
+  if (current > 3) pages.push('...');
+  for (let i = Math.max(2, current - 1); i <= Math.min(total - 1, current + 1); i++) {
+    pages.push(i);
+  }
+  if (current < total - 2) pages.push('...');
+  pages.push(total);
+  return pages;
+}
+
+function goPage(p) {
+  const pages = Math.ceil(filtered.length / perPage);
+  if (p < 1 || p > pages) return;
+  currentPage = p;
+  renderTable();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startCountdown(nextTime) {
+  function tick() {
+    const sisa = Math.max(0, Math.floor((nextTime - Date.now()) / 1000));
+    const h = Math.floor(sisa / 3600).toString().padStart(2, "0");
+    const m = Math.floor((sisa % 3600) / 60).toString().padStart(2, "0");
+    const s = (sisa % 60).toString().padStart(2, "0");
+    document.getElementById("nextCek").textContent =
+      sisa > 0 ? `Cek berikutnya: ${h}:${m}:${s}` : "Siap dicek ulang";
+    if (sisa > 0) setTimeout(tick, 1000);
+  }
+  tick();
+}
+
+function exportCSV() {
+  if (!allData.length) return;
+  const rows = [["No","Nama Jurnal","URL","Status","HTTP Code"]];
+  allData.forEach(d => rows.push([d.no, d.name ?? "", d.url, d.status, d.code]));
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `monitoring-ojs-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+loadHasil();
+</script>
+</body>
+</html>
