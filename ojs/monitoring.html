@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Monitoring OJS</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .ok { color: green; font-weight: bold; }
+    .down { color: red; font-weight: bold; }
+    .warn { color: orange; font-weight: bold; }
+    table { border-collapse: collapse; width: 100%; margin-top: 16px; }
+    th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+    th { background: #f0f0f0; }
+    textarea { width: 100%; max-width: 600px; }
+    #info { font-size: 12px; color: #888; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<h2>Monitoring OJS</h2>
+
+<textarea id="listUrl" rows="7" cols="60">
+https://jurnal.fe.unram.ac.id/index.php/intour
+https://jurnal.fe.unram.ac.id/
+https://jeet.unram.ac.id/index.php/rky
+https://jtika.if.unram.ac.id/index.php/JTIKA/
+https://begawe.unram.ac.id/index.php/JBTI
+https://journal.unram.ac.id/index.php/pendas/en
+</textarea>
+<br>
+<p id="info">⚠️ Versi ini menggunakan proxy publik (allorigins.win). Hasil mungkin sedikit lebih lambat.</p>
+
+<select id="interval">
+  <option value="60000">1 menit</option>
+  <option value="300000">5 menit</option>
+</select>
+
+<button onclick="mulai()">Mulai</button>
+<button onclick="stop()">Stop</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>URL</th>
+      <th>Status</th>
+      <th>Waktu</th>
+    </tr>
+  </thead>
+  <tbody id="hasil"></tbody>
+</table>
+
+<script>
+let timer;
+
+function mulai() {
+  const interval = parseInt(document.getElementById("interval").value);
+  if (timer) clearInterval(timer);
+  cek();
+  timer = setInterval(cek, interval);
+}
+
+function stop() {
+  if (timer) clearInterval(timer);
+  timer = null;
+}
+
+async function cekSatuUrl(url) {
+  const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+  const res = await fetch(proxyUrl);
+  const data = await res.json();
+  return data.status; // { http_code, content_type }
+}
+
+async function cek() {
+  const urls = document.getElementById("listUrl").value.split("\n");
+  const tbody = document.getElementById("hasil");
+  tbody.innerHTML = "";
+
+  for (let url of urls) {
+    url = url.trim();
+    if (!url) continue;
+
+    const row = document.createElement("tr");
+    const urlCell = document.createElement("td");
+    urlCell.innerHTML = `<a href="${url}" target="_blank">${url}</a>`;
+
+    const statusCell = document.createElement("td");
+    statusCell.innerHTML = "⏳ Mengecek...";
+
+    const waktuCell = document.createElement("td");
+
+    row.appendChild(urlCell);
+    row.appendChild(statusCell);
+    row.appendChild(waktuCell);
+    tbody.appendChild(row);
+
+    try {
+      const status = await cekSatuUrl(url);
+      const code = status.http_code;
+
+      if (code === 200) {
+        statusCell.innerHTML = "🟢 Lancar";
+        statusCell.className = "ok";
+      } else if (code === 404) {
+        statusCell.innerHTML = "🔴 404 Not Found";
+        statusCell.className = "down";
+      } else if (code === 500) {
+        statusCell.innerHTML = "🟡 500 Server Error";
+        statusCell.className = "warn";
+      } else if (code === 0 || code === null) {
+        statusCell.innerHTML = "🔴 Tidak Dapat Diakses";
+        statusCell.className = "down";
+      } else {
+        statusCell.innerHTML = "⚠️ HTTP " + code;
+        statusCell.className = "warn";
+      }
+    } catch (err) {
+      statusCell.innerHTML = "🔴 Error / Timeout";
+      statusCell.className = "down";
+    }
+
+    waktuCell.innerHTML = new Date().toLocaleTimeString();
+  }
+}
+</script>
+
+</body>
+</html>
