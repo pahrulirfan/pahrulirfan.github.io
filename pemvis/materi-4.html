@@ -476,6 +476,75 @@ conn.close()
                     <p>SQL Injection terjadi ketika input user langsung digabungkan ke query SQL. Penyerang bisa menyisipkan perintah SQL untuk mencuri atau menghapus data.</p>
                 </div>
 
+                <h3>Contoh Nyata SQL Injection</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">sql_injection_demo.py</span>
+                        <span class="code-badge">Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+
+<span class="comment"># Setup: buat database dan isi data contoh</span>
+<span class="keyword">with</span> sqlite3.connect(<span class="string">':memory:'</span>) <span class="keyword">as</span> conn:
+    conn.execute(<span class="string">"CREATE TABLE mahasiswa (id INTEGER PRIMARY KEY, nim TEXT, nama TEXT)"</span>)
+    conn.execute(<span class="string">"INSERT INTO mahasiswa VALUES (1, '11111111', 'Budi')"</span>)
+    conn.execute(<span class="string">"INSERT INTO mahasiswa VALUES (2, '22222222', 'Sari')"</span>)
+    conn.execute(<span class="string">"INSERT INTO mahasiswa VALUES (3, '33333333', 'Doni')"</span>)
+    conn.commit()
+
+    <span class="comment"># ============================================</span>
+    <span class="comment"># KASUS 1: Login bypass - ambil semua data</span>
+    <span class="comment"># ============================================</span>
+    <span class="comment"># Misalnya ada form login, user memasukkan nama:</span>
+    nama_input = <span class="string">"' OR '1'='1"</span>  <span class="comment"># &lt;-- input jahat dari penyerang</span>
+
+    <span class="comment"># ❌ SALAH: string langsung digabung ke query</span>
+    query_berbahaya = <span class="string">f"SELECT * FROM mahasiswa WHERE nama = '</span>{nama_input}<span class="string">'"</span>
+    <span class="comment"># Query yang terbentuk:</span>
+    <span class="comment"># SELECT * FROM mahasiswa WHERE nama = '' OR '1'='1'</span>
+    <span class="comment"># '1'='1' selalu TRUE → semua baris dikembalikan!</span>
+    hasil = conn.execute(query_berbahaya).fetchall()
+    <span class="builtin">print</span>(<span class="string">f"❌ Hasil query berbahaya: </span>{<span class="builtin">len</span>(hasil)}<span class="string"> baris"</span>)  <span class="comment"># → 3 baris (semua data bocor!)</span>
+
+    <span class="comment"># ✓ BENAR: gunakan prepared statement</span>
+    hasil_aman = conn.execute(
+        <span class="string">"SELECT * FROM mahasiswa WHERE nama = ?"</span>,
+        (nama_input,)
+    ).fetchall()
+    <span class="builtin">print</span>(<span class="string">f"✓ Hasil query aman    : </span>{<span class="builtin">len</span>(hasil_aman)}<span class="string"> baris"</span>)  <span class="comment"># → 0 baris (tidak ada yang cocok)</span>
+
+    <span class="comment"># ============================================</span>
+    <span class="comment"># KASUS 2: DROP TABLE - hapus seluruh tabel</span>
+    <span class="comment"># ============================================</span>
+    nim_input = <span class="string">"'; DROP TABLE mahasiswa; --"</span>  <span class="comment"># &lt;-- input jahat</span>
+
+    <span class="comment"># ❌ SALAH: query yang terbentuk menjadi 2 perintah:</span>
+    <span class="comment"># SELECT * FROM mahasiswa WHERE nim = '';</span>
+    <span class="comment"># DROP TABLE mahasiswa;  &lt;-- tabel terhapus!</span>
+    <span class="comment"># -- (sisa query diabaikan sebagai komentar)</span>
+    <span class="comment"># sqlite3 Python memblokir executescript, tapi tetap JANGAN dilakukan!</span>
+
+    <span class="comment"># ✓ BENAR: prepared statement memperlakukan input sebagai data, bukan perintah</span>
+    hasil_aman2 = conn.execute(
+        <span class="string">"SELECT * FROM mahasiswa WHERE nim = ?"</span>,
+        (nim_input,)
+    ).fetchall()
+    <span class="builtin">print</span>(<span class="string">f"✓ DROP TABLE dicegah  : </span>{<span class="builtin">len</span>(hasil_aman2)}<span class="string"> baris"</span>)  <span class="comment"># → 0 baris (aman)</span>
+
+<span class="builtin">print</span>(<span class="string">"</span><span class="string">\nKesimpulan:"</span>)
+<span class="builtin">print</span>(<span class="string">"  Prepared statement mengubah input user menjadi DATA, bukan PERINTAH SQL."</span>)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Output Demo di Atas</div>
+                    <pre style="margin:0; font-size: 0.85em;">❌ Hasil query berbahaya: 3 baris   ← semua data bocor!
+✓ Hasil query aman    : 0 baris   ← input diperlakukan sebagai teks biasa
+✓ DROP TABLE dicegah  : 0 baris   ← perintah DROP tidak dieksekusi</pre>
+                </div>
+
                 <div class="comparison-grid">
                     <div class="comparison-box">
                         <div class="comparison-header traditional">SALAH - String Concatenation</div>
