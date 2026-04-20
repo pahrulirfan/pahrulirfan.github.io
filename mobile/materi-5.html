@@ -1,0 +1,3067 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecyclerView, Fragment & Navigation</title>
+        <link rel="stylesheet" href="style/style-materi-3.css">
+    <link rel="shortcut icon" href="../assets/img/logo-unram.png" type="image/x-icon">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>RecyclerView, Fragment & Navigation</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#recyclerview" class="nav-link">RecyclerView</a>
+                <ul class="sub-menu">
+                    <li><a href="#rv-pengenalan">Pengenalan RecyclerView</a></li>
+                    <li><a href="#rv-komponen">Komponen RecyclerView</a></li>
+                    <li><a href="#rv-dependency">Menambahkan Dependency</a></li>
+                    <li><a href="#rv-data-class">Membuat Data Class</a></li>
+                    <li><a href="#rv-item-layout">Membuat Item Layout</a></li>
+                    <li><a href="#rv-adapter">Membuat Adapter</a></li>
+                    <li><a href="#rv-activity">Setup di Activity</a></li>
+                    <li><a href="#rv-layoutmanager">LayoutManager</a></li>
+                    <li><a href="#rv-click">Item Click Listener</a></li>
+                    <li><a href="#rv-detail">Navigasi ke Detail</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#fragment" class="nav-link">Fragment</a>
+                <ul class="sub-menu">
+                    <li><a href="#fg-pengenalan">Pengenalan Fragment</a></li>
+                    <li><a href="#fg-lifecycle">Fragment Lifecycle</a></li>
+                    <li><a href="#fg-membuat">Membuat Fragment</a></li>
+                    <li><a href="#fg-manager">FragmentManager</a></li>
+                    <li><a href="#fg-komunikasi">Komunikasi Fragment</a></li>
+                    <li><a href="#fg-viewpager">ViewPager2 & TabLayout</a></li>
+                    <li><a href="#fg-bottomnav">BottomNavigationView</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#navigation" class="nav-link">Navigation Component</a>
+                <ul class="sub-menu">
+                    <li><a href="#nav-pengenalan">Pengenalan Navigation</a></li>
+                    <li><a href="#nav-setup">Setup Navigation</a></li>
+                    <li><a href="#nav-graph">Navigation Graph</a></li>
+                    <li><a href="#nav-host">NavHostFragment</a></li>
+                    <li><a href="#nav-navigate">Navigasi antar Fragment</a></li>
+                    <li><a href="#nav-args">Safe Args</a></li>
+                    <li><a href="#nav-bottomnav">Navigation + BottomNav</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#handson" class="nav-link">Hands-On Praktikum</a>
+                <ul class="sub-menu">
+                    <li><a href="#handson-1">Hands-On 1: RecyclerView</a></li>
+                    <li><a href="#handson-2">Hands-On 2: Fragment</a></li>
+                    <li><a href="#handson-3">Hands-On 3: Navigation</a></li>
+                    <li><a href="#handson-final">Tugas Akhir</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- ============================================ -->
+        <!-- PENDAHULUAN -->
+        <!-- ============================================ -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: RecyclerView, Fragment & Navigation</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami dan mengimplementasikan RecyclerView untuk menampilkan daftar data</li>
+                    <li>Memahami konsep Adapter pattern dan ViewHolder</li>
+                    <li>Memahami konsep Fragment dan lifecycle-nya</li>
+                    <li>Mampu menggunakan Fragment untuk modularisasi UI</li>
+                    <li>Memahami dan mengimplementasikan Navigation Component</li>
+                    <li>Mampu membuat aplikasi dengan navigasi yang kompleks</li>
+                </ul>
+            </div>
+
+            <h2>Prasyarat</h2>
+            <p>Sebelum memulai praktikum ini, pastikan Anda sudah memahami materi berikut dari praktikum sebelumnya:</p>
+            <ul>
+                <li>Lingkungan pengembangan Android Studio</li>
+                <li>Struktur project Android dan folder resources</li>
+                <li>UI XML, Layout (LinearLayout, ConstraintLayout, dll)</li>
+                <li>Basic Widgets (TextView, EditText, Button, ImageView, dll)</li>
+                <li>Style, Theme, dan Localization</li>
+                <li>Activity, Lifecycle, dan Intent</li>
+            </ul>
+
+            <h2>Gambaran Besar Materi</h2>
+            <div class="diagram-box">
+                <pre class="diagram">
+    ┌───────────────────────────────────────────────────────────────────┐
+    │                     ALUR PEMBELAJARAN                            │
+    ├───────────────────────────────────────────────────────────────────┤
+    │                                                                   │
+    │   ┌──────────────┐    ┌──────────────┐    ┌──────────────────┐   │
+    │   │ RecyclerView │ ──→│   Fragment   │ ──→│   Navigation     │   │
+    │   │              │    │              │    │   Component      │   │
+    │   │ Menampilkan  │    │ Modularisasi │    │                  │   │
+    │   │ list data    │    │ UI dalam     │    │ Navigasi antar   │   │
+    │   │ secara       │    │ satu Activity│    │ Fragment dengan  │   │
+    │   │ efisien      │    │              │    │ arsitektur yang  │   │
+    │   │              │    │              │    │ baik             │   │
+    │   └──────────────┘    └──────────────┘    └──────────────────┘   │
+    │         ↑                    ↑                     ↑              │
+    │    Adapter Pattern     Lifecycle mgmt        NavGraph            │
+    │    ViewHolder          FragmentManager        Safe Args          │
+    │    LayoutManager       Communication         Deep Linking        │
+    │                                                                   │
+    └───────────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- RECYCLERVIEW -->
+        <!-- ============================================ -->
+        <section id="recyclerview" class="section">
+            <h1>RecyclerView</h1>
+
+            <article id="rv-pengenalan">
+                <h2>Pengenalan RecyclerView</h2>
+                <p>RecyclerView adalah widget Android yang digunakan untuk menampilkan kumpulan data dalam bentuk list (daftar) atau grid secara efisien. RecyclerView merupakan penerus dari ListView dan GridView yang sudah deprecated.</p>
+
+                <h3>Mengapa RecyclerView?</h3>
+                <p>Bayangkan Anda memiliki 1000 data kontak. Jika menggunakan ScrollView dengan 1000 TextView, maka Android harus membuat 1000 View sekaligus di memori, padahal layar hanya menampilkan sekitar 10-15 item. Ini sangat boros memori dan membuat aplikasi lambat.</p>
+                <p>RecyclerView mengatasi masalah ini dengan konsep <strong>"daur ulang" (recycle)</strong>. Hanya View yang terlihat di layar yang dibuat, dan saat user scroll, View yang sudah tidak terlihat akan didaur ulang untuk menampilkan data baru.</p>
+
+                <!-- Mockup: Cara Kerja RecyclerView -->
+                <div class="rv-mockup-wrapper">
+                    <div class="rv-mockup-title">
+                        <span class="rv-mockup-icon">♻️</span>
+                        Cara Kerja RecyclerView <em>(View Recycling)</em>
+                    </div>
+
+                    <div class="rv-mockup-stages">
+
+                        <!-- BEFORE SCROLL -->
+                        <div class="rv-stage">
+                            <div class="rv-stage-label">Sebelum Scroll</div>
+                            <div class="rv-phone">
+                                <div class="rv-phone-bar">
+                                    <span class="rv-phone-dot"></span><span class="rv-phone-dot"></span><span class="rv-phone-dot"></span>
+                                </div>
+                                <div class="rv-phone-screen">
+                                    <div class="rv-item vh-a visible">
+                                        <span class="rv-avatar" style="background:#3f51b5">A</span>
+                                        <span class="rv-name">Ahmad</span>
+                                        <span class="rv-badge">VH A</span>
+                                    </div>
+                                    <div class="rv-item vh-b visible">
+                                        <span class="rv-avatar" style="background:#e91e63">B</span>
+                                        <span class="rv-name">Budi</span>
+                                        <span class="rv-badge">VH B</span>
+                                    </div>
+                                    <div class="rv-item vh-c visible">
+                                        <span class="rv-avatar" style="background:#009688">C</span>
+                                        <span class="rv-name">Clara</span>
+                                        <span class="rv-badge">VH C</span>
+                                    </div>
+                                    <div class="rv-item vh-d visible">
+                                        <span class="rv-avatar" style="background:#ff5722">D</span>
+                                        <span class="rv-name">Deni</span>
+                                        <span class="rv-badge">VH D</span>
+                                    </div>
+                                    <div class="rv-item vh-e visible">
+                                        <span class="rv-avatar" style="background:#795548">E</span>
+                                        <span class="rv-name">Eva</span>
+                                        <span class="rv-badge">VH E</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ARROW -->
+                        <div class="rv-arrow-col">
+                            <div class="rv-scroll-arrow">
+                                <div class="rv-scroll-line"></div>
+                                <div class="rv-scroll-label">scroll<br>ke bawah</div>
+                                <div class="rv-scroll-chevron">▼</div>
+                            </div>
+                        </div>
+
+                        <!-- AFTER SCROLL -->
+                        <div class="rv-stage">
+                            <div class="rv-stage-label">Setelah Scroll</div>
+                            <div class="rv-phone">
+                                <div class="rv-phone-bar">
+                                    <span class="rv-phone-dot"></span><span class="rv-phone-dot"></span><span class="rv-phone-dot"></span>
+                                </div>
+                                <div class="rv-phone-screen">
+                                    <div class="rv-item vh-b visible">
+                                        <span class="rv-avatar" style="background:#e91e63">B</span>
+                                        <span class="rv-name">Budi</span>
+                                        <span class="rv-badge">VH B</span>
+                                    </div>
+                                    <div class="rv-item vh-c visible">
+                                        <span class="rv-avatar" style="background:#009688">C</span>
+                                        <span class="rv-name">Clara</span>
+                                        <span class="rv-badge">VH C</span>
+                                    </div>
+                                    <div class="rv-item vh-d visible">
+                                        <span class="rv-avatar" style="background:#ff5722">D</span>
+                                        <span class="rv-name">Deni</span>
+                                        <span class="rv-badge">VH D</span>
+                                    </div>
+                                    <div class="rv-item vh-e visible">
+                                        <span class="rv-avatar" style="background:#795548">E</span>
+                                        <span class="rv-name">Eva</span>
+                                        <span class="rv-badge">VH E</span>
+                                    </div>
+                                    <div class="rv-item vh-a recycled">
+                                        <span class="rv-avatar" style="background:#3f51b5">F</span>
+                                        <span class="rv-name">Fani</span>
+                                        <span class="rv-badge recycled-badge">VH A ♻️</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div><!-- end stages -->
+
+                    <!-- Keterangan -->
+                    <div class="rv-mockup-note">
+                        <div class="rv-note-item">
+                            <span class="rv-note-dot" style="background:#3f51b5"></span>
+                            <strong>ViewHolder A</strong> — tadinya menampilkan <em>Ahmad</em> (keluar layar), didaur ulang untuk menampilkan <em>Fani</em>
+                        </div>
+                        <div class="rv-note-item">
+                            <span class="rv-note-dot" style="background:#4caf50"></span>
+                            Tidak ada View baru yang dibuat → <strong>hemat memori!</strong>
+                        </div>
+                    </div>
+                </div><!-- end rv-mockup-wrapper -->
+
+                <h3>Perbandingan ListView vs RecyclerView</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fitur</th>
+                            <th>ListView</th>
+                            <th>RecyclerView</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ViewHolder Pattern</td>
+                            <td>Opsional (manual)</td>
+                            <td>Wajib (built-in)</td>
+                        </tr>
+                        <tr>
+                            <td>Layout Manager</td>
+                            <td>Hanya vertical list</td>
+                            <td>List, Grid, Staggered Grid</td>
+                        </tr>
+                        <tr>
+                            <td>Item Animator</td>
+                            <td>Tidak ada</td>
+                            <td>Built-in animation</td>
+                        </tr>
+                        <tr>
+                            <td>Item Decoration</td>
+                            <td>Terbatas (divider)</td>
+                            <td>Sangat fleksibel</td>
+                        </tr>
+                        <tr>
+                            <td>Click Listener</td>
+                            <td>onItemClickListener</td>
+                            <td>Manual (lebih fleksibel)</td>
+                        </tr>
+                        <tr>
+                            <td>Performa</td>
+                            <td>Baik</td>
+                            <td>Lebih baik</td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td>Deprecated</td>
+                            <td>Recommended</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="rv-komponen">
+                <h2>Komponen RecyclerView</h2>
+                <p>RecyclerView bukan satu komponen tunggal — ia adalah <strong>sistem</strong> yang terdiri dari beberapa bagian yang bekerja bersama. Pahami setiap bagiannya agar tidak bingung saat implementasi.</p>
+
+                <!-- Diagram arsitektur visual -->
+                <div class="comp-diagram">
+                    <div class="comp-diagram-title">Arsitektur RecyclerView</div>
+                    <div class="comp-outer">
+                        <div class="comp-outer-label">RecyclerView</div>
+                        <div class="comp-inner-grid">
+
+                            <div class="comp-card comp-lm">
+                                <div class="comp-card-icon">⊞</div>
+                                <div class="comp-card-name">LayoutManager</div>
+                                <div class="comp-card-desc">Mengatur <em>posisi</em> dan <em>ukuran</em> setiap item di layar</div>
+                                <div class="comp-card-tags">
+                                    <span>Linear</span><span>Grid</span><span>Staggered</span>
+                                </div>
+                            </div>
+
+                            <div class="comp-card comp-adapter">
+                                <div class="comp-card-icon">🔌</div>
+                                <div class="comp-card-name">Adapter</div>
+                                <div class="comp-card-desc">Jembatan antara <em>data</em> dan <em>tampilan</em>. Membuat & mengisi ViewHolder.</div>
+                                <div class="comp-adapter-inner">
+                                    <div class="comp-vh">
+                                        <span class="comp-vh-icon">📦</span>
+                                        <div>
+                                            <strong>ViewHolder</strong>
+                                            <p>Menyimpan referensi view dalam satu item layout agar tidak perlu <code>findViewById</code> berulang</p>
+                                        </div>
+                                    </div>
+                                    <div class="comp-datasource">
+                                        <span class="comp-ds-label">Data Source</span>
+                                        <div class="comp-ds-items">
+                                            <span>[0]</span><span>[1]</span><span>[2]</span><span>[3]</span><span>…</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="comp-card comp-deco">
+                                <div class="comp-card-icon">🎨</div>
+                                <div class="comp-card-name">ItemDecoration</div>
+                                <div class="comp-card-desc">Menambahkan dekorasi visual seperti <em>divider</em> atau <em>spacing</em> antar item</div>
+                            </div>
+
+                            <div class="comp-card comp-anim">
+                                <div class="comp-card-icon">✨</div>
+                                <div class="comp-card-name">ItemAnimator</div>
+                                <div class="comp-card-desc">Animasi saat item <em>ditambah</em>, <em>dihapus</em>, atau <em>berubah</em></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kartu penjelasan per komponen -->
+                <div class="comp-cards-row">
+                    <div class="comp-explain-card" style="border-top-color:#3f51b5">
+                        <div class="comp-explain-icon" style="background:#e8eaf6;color:#3f51b5">⊞</div>
+                        <div>
+                            <strong>LayoutManager</strong>
+                            <p>Menentukan <em>bagaimana</em> item ditampilkan. Tanpa LayoutManager, RecyclerView tidak tahu harus menampilkan item secara vertikal, horizontal, atau grid.</p>
+                            <ul>
+                                <li><code>LinearLayoutManager</code> — list vertikal / horizontal</li>
+                                <li><code>GridLayoutManager</code> — grid dengan kolom tetap</li>
+                                <li><code>StaggeredGridLayoutManager</code> — grid dengan tinggi item bervariasi</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comp-explain-card" style="border-top-color:#e91e63">
+                        <div class="comp-explain-icon" style="background:#fce4ec;color:#e91e63">🔌</div>
+                        <div>
+                            <strong>Adapter</strong>
+                            <p>Komponen terpenting. Adapter "menerjemahkan" data (misal <code>List&lt;Contact&gt;</code>) menjadi tampilan yang bisa dirender RecyclerView. Wajib mengimplementasikan 3 method utama.</p>
+                        </div>
+                    </div>
+                    <div class="comp-explain-card" style="border-top-color:#009688">
+                        <div class="comp-explain-icon" style="background:#e0f2f1;color:#009688">📦</div>
+                        <div>
+                            <strong>ViewHolder</strong>
+                            <p>Menyimpan referensi ke semua View dalam satu item layout. Dibuat <em>sekali</em>, lalu didaur ulang. Ini yang membuat RecyclerView jauh lebih efisien dari ListView.</p>
+                        </div>
+                    </div>
+                    <div class="comp-explain-card" style="border-top-color:#ff9800">
+                        <div class="comp-explain-icon" style="background:#fff3e0;color:#ff9800">🎨</div>
+                        <div>
+                            <strong>ItemDecoration</strong>
+                            <p>Opsional. Digunakan untuk menambahkan garis pemisah (divider) atau jarak (spacing) antar item tanpa mengubah layout item itu sendiri.</p>
+                        </div>
+                    </div>
+                    <div class="comp-explain-card" style="border-top-color:#9c27b0">
+                        <div class="comp-explain-icon" style="background:#f3e5f5;color:#9c27b0">✨</div>
+                        <div>
+                            <strong>ItemAnimator</strong>
+                            <p>Opsional. Mengatur animasi default saat item ditambah (<code>notifyItemInserted</code>), dihapus (<code>notifyItemRemoved</code>), atau diperbarui (<code>notifyItemChanged</code>).</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="rv-dependency">
+                <h2>Menambahkan Dependency</h2>
+                <p>RecyclerView sudah termasuk dalam library AndroidX. Pastikan dependency berikut ada di file <code>build.gradle.kts (Module: app)</code>:</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buka build.gradle.kts (Module: app)</h4>
+                            <p>Di panel Project, buka <strong>Gradle Scripts → build.gradle.kts (Module :app)</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Tambahkan dependency</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+dependencies {
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // CardView (untuk tampilan item yang bagus)
+    implementation("com.google.android.material:material:1.11.0")
+
+    // dependency lainnya...
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Sync Gradle</h4>
+                            <p>Klik <strong>"Sync Now"</strong> yang muncul di toolbar atas setelah mengubah file gradle</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="rv-data-class">
+                <h2>Langkah 1: Membuat Data Class</h2>
+                <p>Data class adalah class Kotlin yang khusus menyimpan data. Kita akan membuat model data yang akan ditampilkan di RecyclerView.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat package baru</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Package</strong> → beri nama <code>model</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat file Kotlin baru</h4>
+                            <p>Klik kanan pada package <code>model</code> → <strong>New → Kotlin Class/File</strong> → pilih <strong>Data Class</strong> → beri nama <code>Contact</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>model/Contact.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp.model
+
+data class Contact(
+    val id: Int,
+    val name: String,
+    val phone: String,
+    val email: String
+)</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Apa itu Data Class?</h4>
+                    <p>Data class di Kotlin secara otomatis meng-generate method <code>toString()</code>, <code>equals()</code>, <code>hashCode()</code>, dan <code>copy()</code>. Sangat cocok untuk class yang hanya menyimpan data.</p>
+                </div>
+            </article>
+
+            <article id="rv-item-layout">
+                <h2>Langkah 2: Membuat Item Layout</h2>
+                <p>Item layout adalah tampilan untuk satu baris data di RecyclerView. Layout ini akan diduplikasi untuk setiap item dalam list.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat file layout baru</h4>
+                            <p>Klik kanan pada folder <code>res/layout</code> → <strong>New → Layout Resource File</strong> → beri nama <code>item_contact</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/item_contact.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardContact"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical"&gt;
+
+        &lt;!-- Inisial nama (avatar sederhana) --&gt;
+        &lt;TextView
+            android:id="@+id/tvInitial"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_circle"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" /&gt;
+
+        &lt;!-- Info kontak --&gt;
+        &lt;LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical"&gt;
+
+            &lt;TextView
+                android:id="@+id/tvName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#212121" /&gt;
+
+            &lt;TextView
+                android:id="@+id/tvPhone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="#757575"
+                android:layout_marginTop="2dp" /&gt;
+
+            &lt;TextView
+                android:id="@+id/tvEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:textColor="#9E9E9E"
+                android:layout_marginTop="2dp" /&gt;
+
+        &lt;/LinearLayout&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/com.google.android.material.card.MaterialCardView&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat drawable untuk circle background</h4>
+                            <p>Klik kanan pada folder <code>res/drawable</code> → <strong>New → Drawable Resource File</strong> → beri nama <code>bg_circle</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/drawable/bg_circle.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval"&gt;
+    &lt;solid android:color="#3F51B5" /&gt;
+    &lt;size
+        android:width="48dp"
+        android:height="48dp" /&gt;
+&lt;/shape&gt;</pre>
+                </div>
+            </article>
+
+            <article id="rv-adapter">
+                <h2>Langkah 3: Membuat Adapter</h2>
+                <p>Adapter adalah komponen paling penting dalam RecyclerView. Adapter bertanggung jawab untuk:</p>
+                <ul>
+                    <li>Membuat ViewHolder (tampilan satu item)</li>
+                    <li>Mengikat (bind) data ke ViewHolder</li>
+                    <li>Memberitahu jumlah total item</li>
+                </ul>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat package adapter</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Package</strong> → beri nama <code>adapter</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat file Kotlin baru</h4>
+                            <p>Klik kanan pada package <code>adapter</code> → <strong>New → Kotlin Class/File</strong> → beri nama <code>ContactAdapter</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>adapter/ContactAdapter.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapp.R
+import com.example.myapp.model.Contact
+
+class ContactAdapter(
+    private val contactList: List&lt;Contact&gt;
+) : RecyclerView.Adapter&lt;ContactAdapter.ContactViewHolder&gt;() {
+
+    // =============================================
+    // LANGKAH 1: Buat inner class ViewHolder
+    // ViewHolder menyimpan referensi ke views dalam item layout
+    // =============================================
+    inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvInitial: TextView = itemView.findViewById(R.id.tvInitial)
+        val tvName: TextView = itemView.findViewById(R.id.tvName)
+        val tvPhone: TextView = itemView.findViewById(R.id.tvPhone)
+        val tvEmail: TextView = itemView.findViewById(R.id.tvEmail)
+    }
+
+    // =============================================
+    // LANGKAH 2: onCreateViewHolder
+    // Dipanggil saat RecyclerView membutuhkan ViewHolder baru
+    // Di sini kita inflate (membuat) item layout
+    // =============================================
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_contact, parent, false)
+        return ContactViewHolder(view)
+    }
+
+    // =============================================
+    // LANGKAH 3: onBindViewHolder
+    // Dipanggil saat RecyclerView perlu menampilkan data pada posisi tertentu
+    // Di sini kita mengisi data ke views
+    // =============================================
+    override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
+        val contact = contactList[position]
+
+        holder.tvInitial.text = contact.name.first().uppercase()
+        holder.tvName.text = contact.name
+        holder.tvPhone.text = contact.phone
+        holder.tvEmail.text = contact.email
+    }
+
+    // =============================================
+    // LANGKAH 4: getItemCount
+    // Mengembalikan jumlah total item dalam list
+    // =============================================
+    override fun getItemCount(): Int = contactList.size
+}</pre>
+                </div>
+
+                <h3>Penjelasan Alur Kerja Adapter</h3>
+
+                <div class="adapter-flow">
+                    <div class="af-title">Bagaimana RecyclerView & Adapter Bekerja Bersama</div>
+
+                    <!-- Step 1 -->
+                    <div class="af-step">
+                        <div class="af-step-num" style="background:#3f51b5">1</div>
+                        <div class="af-step-body">
+                            <div class="af-step-header">
+                                <span class="af-method">getItemCount()</span>
+                                <span class="af-freq">Dipanggil pertama kali</span>
+                            </div>
+                            <p>RecyclerView bertanya ke Adapter: <em>"Berapa banyak item yang harus saya tampilkan?"</em></p>
+                            <div class="af-call-box">
+                                <span class="af-caller">RecyclerView</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-callee">adapter.getItemCount()</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-return">return <strong>100</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="af-connector"></div>
+
+                    <!-- Step 2 -->
+                    <div class="af-step">
+                        <div class="af-step-num" style="background:#e91e63">2</div>
+                        <div class="af-step-body">
+                            <div class="af-step-header">
+                                <span class="af-method">onCreateViewHolder()</span>
+                                <span class="af-freq">Dipanggil ~7–10× saja</span>
+                            </div>
+                            <p>RecyclerView meminta Adapter membuat ViewHolder baru. Ini hanya dipanggil untuk item yang <strong>pertama kali terlihat</strong> di layar — bukan 100 kali untuk 100 data!</p>
+                            <div class="af-call-box">
+                                <span class="af-caller">RecyclerView</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-callee">onCreateViewHolder(parent, viewType)</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-return">inflate <code>item_contact.xml</code><br>return <strong>ContactViewHolder</strong></span>
+                            </div>
+                            <div class="af-note">
+                                💡 ViewHolder yang sudah dibuat akan <strong>didaur ulang</strong> saat user scroll — tidak dibuat ulang dari nol.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="af-connector"></div>
+
+                    <!-- Step 3 -->
+                    <div class="af-step">
+                        <div class="af-step-num" style="background:#009688">3</div>
+                        <div class="af-step-body">
+                            <div class="af-step-header">
+                                <span class="af-method">onBindViewHolder()</span>
+                                <span class="af-freq">Dipanggil setiap item tampil / didaur ulang</span>
+                            </div>
+                            <p>Adapter mengisi data ke ViewHolder berdasarkan <code>position</code>. Inilah yang membuat item menampilkan data yang berbeda-beda.</p>
+                            <div class="af-call-box">
+                                <span class="af-caller">RecyclerView</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-callee">onBindViewHolder(holder, position=0)</span>
+                                <span class="af-arrow">──→</span>
+                                <span class="af-return">
+                                    holder.tvName.text = <strong>"Ahmad"</strong><br>
+                                    holder.tvPhone.text = <strong>"0812…"</strong>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ringkasan -->
+                    <div class="af-summary">
+                        <div class="af-summary-title">📊 Ringkasan Frekuensi Pemanggilan (100 data)</div>
+                        <div class="af-summary-row">
+                            <span class="af-summary-method">getItemCount()</span>
+                            <div class="af-bar-wrap">
+                                <div class="af-bar" style="width:5%;background:#3f51b5"></div>
+                            </div>
+                            <span class="af-summary-count">~beberapa kali</span>
+                        </div>
+                        <div class="af-summary-row">
+                            <span class="af-summary-method">onCreateViewHolder()</span>
+                            <div class="af-bar-wrap">
+                                <div class="af-bar" style="width:10%;background:#e91e63"></div>
+                            </div>
+                            <span class="af-summary-count">~7–10×</span>
+                        </div>
+                        <div class="af-summary-row">
+                            <span class="af-summary-method">onBindViewHolder()</span>
+                            <div class="af-bar-wrap">
+                                <div class="af-bar" style="width:100%;background:#009688"></div>
+                            </div>
+                            <span class="af-summary-count">100× (setiap item)</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="rv-activity">
+                <h2>Langkah 4: Setup RecyclerView di Activity</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Tambahkan RecyclerView ke layout Activity</h4>
+                            <p>Buka file <code>res/layout/activity_main.xml</code> dan tambahkan RecyclerView</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_main.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;!-- Toolbar/Header --&gt;
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Daftar Kontak"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:padding="16dp"
+        android:background="@color/colorPrimary"
+        android:textColor="@android:color/white" /&gt;
+
+    &lt;!-- RecyclerView --&gt;
+    &lt;androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvContacts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingVertical="8dp"
+        android:clipToPadding="false" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Setup RecyclerView di MainActivity.kt</h4>
+                            <p>Buka <code>MainActivity.kt</code> dan hubungkan RecyclerView dengan Adapter dan LayoutManager</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapp.adapter.ContactAdapter
+import com.example.myapp.model.Contact
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // 1. Siapkan data
+        val contacts = generateDummyContacts()
+
+        // 2. Buat Adapter
+        val adapter = ContactAdapter(contacts)
+
+        // 3. Setup RecyclerView
+        val rvContacts = findViewById&lt;RecyclerView&gt;(R.id.rvContacts)
+        rvContacts.layoutManager = LinearLayoutManager(this)
+        rvContacts.adapter = adapter
+    }
+
+    // Fungsi untuk membuat data dummy
+    private fun generateDummyContacts(): List&lt;Contact&gt; {
+        return listOf(
+            Contact(1, "Ahmad Fauzi", "081234567890", "ahmad@email.com"),
+            Contact(2, "Budi Santoso", "081234567891", "budi@email.com"),
+            Contact(3, "Clara Wijaya", "081234567892", "clara@email.com"),
+            Contact(4, "Deni Pratama", "081234567893", "deni@email.com"),
+            Contact(5, "Eva Susanti", "081234567894", "eva@email.com"),
+            Contact(6, "Fajar Hidayat", "081234567895", "fajar@email.com"),
+            Contact(7, "Gita Purnama", "081234567896", "gita@email.com"),
+            Contact(8, "Hadi Nugroho", "081234567897", "hadi@email.com"),
+            Contact(9, "Indah Lestari", "081234567898", "indah@email.com"),
+            Contact(10, "Joko Widodo", "081234567899", "joko@email.com"),
+            Contact(11, "Kartika Sari", "081234567800", "kartika@email.com"),
+            Contact(12, "Lukman Hakim", "081234567801", "lukman@email.com")
+        )
+    }
+}</pre>
+                </div>
+
+                <h3>Penjelasan Langkah Setup</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+    ┌──────────────────────────────────────────────────────┐
+    │                    MainActivity                       │
+    │                                                       │
+    │   1. Siapkan Data                                    │
+    │      val contacts = listOf(Contact(...), ...)        │
+    │                         │                             │
+    │   2. Buat Adapter       ▼                             │
+    │      val adapter = ContactAdapter(contacts)          │
+    │                         │                             │
+    │   3. Setup RecyclerView ▼                             │
+    │      rvContacts.layoutManager = LinearLayoutManager  │
+    │      rvContacts.adapter = adapter                    │
+    │                         │                             │
+    │                         ▼                             │
+    │      ┌─────────────────────────────────┐             │
+    │      │       RecyclerView              │             │
+    │      │  ┌───────────────────────────┐  │             │
+    │      │  │ Item 1 - Ahmad Fauzi      │  │             │
+    │      │  ├───────────────────────────┤  │             │
+    │      │  │ Item 2 - Budi Santoso     │  │             │
+    │      │  ├───────────────────────────┤  │             │
+    │      │  │ Item 3 - Clara Wijaya     │  │             │
+    │      │  └───────────────────────────┘  │             │
+    │      └─────────────────────────────────┘             │
+    └──────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+            </article>
+
+            <article id="rv-layoutmanager">
+                <h2>LayoutManager</h2>
+                <p>LayoutManager mengatur bagaimana item-item di RecyclerView ditampilkan. Ada 3 jenis LayoutManager bawaan:</p>
+
+                <h3>1. LinearLayoutManager</h3>
+                <p>Menampilkan item dalam bentuk list satu kolom (vertical) atau satu baris (horizontal).</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>LinearLayoutManager</span>
+                    </div>
+                    <pre class="no-copy">
+// Vertical list (default)
+rvContacts.layoutManager = LinearLayoutManager(this)
+
+// Horizontal list
+rvContacts.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+
+// Reversed vertical (item terbaru di atas)
+rvContacts.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, true)</pre>
+                </div>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+    LinearLayoutManager VERTICAL:       LinearLayoutManager HORIZONTAL:
+    ┌────────────────────┐              ┌────────────────────────────────┐
+    │ ┌────────────────┐ │              │ ┌──────┐┌──────┐┌──────┐     │
+    │ │    Item 1      │ │              │ │Item 1││Item 2││Item 3│ →   │
+    │ ├────────────────┤ │              │ └──────┘└──────┘└──────┘     │
+    │ │    Item 2      │ │              └────────────────────────────────┘
+    │ ├────────────────┤ │
+    │ │    Item 3      │ │
+    │ ├────────────────┤ │
+    │ │    Item 4      │ │
+    │ └────────────────┘ │
+    └────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>2. GridLayoutManager</h3>
+                <p>Menampilkan item dalam bentuk grid dengan jumlah kolom yang ditentukan.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>GridLayoutManager</span>
+                    </div>
+                    <pre class="no-copy">
+// Grid 2 kolom
+rvContacts.layoutManager = GridLayoutManager(this, 2)
+
+// Grid 3 kolom
+rvContacts.layoutManager = GridLayoutManager(this, 3)
+
+// Grid horizontal 2 baris
+rvContacts.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.HORIZONTAL, false)</pre>
+                </div>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+    GridLayoutManager (spanCount = 2):     GridLayoutManager (spanCount = 3):
+    ┌──────────────────────┐               ┌──────────────────────────┐
+    │ ┌────────┐┌────────┐ │               │ ┌──────┐┌──────┐┌──────┐│
+    │ │ Item 1 ││ Item 2 │ │               │ │ It 1 ││ It 2 ││ It 3 ││
+    │ └────────┘└────────┘ │               │ └──────┘└──────┘└──────┘│
+    │ ┌────────┐┌────────┐ │               │ ┌──────┐┌──────┐┌──────┐│
+    │ │ Item 3 ││ Item 4 │ │               │ │ It 4 ││ It 5 ││ It 6 ││
+    │ └────────┘└────────┘ │               │ └──────┘└──────┘└──────┘│
+    └──────────────────────┘               └──────────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>3. StaggeredGridLayoutManager</h3>
+                <p>Mirip dengan GridLayoutManager, tapi item bisa memiliki tinggi yang berbeda-beda (seperti layout Pinterest).</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>StaggeredGridLayoutManager</span>
+                    </div>
+                    <pre class="no-copy">
+// Staggered grid 2 kolom
+rvContacts.layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)</pre>
+                </div>
+            </article>
+
+            <article id="rv-click">
+                <h2>Langkah 5: Item Click Listener</h2>
+                <p>Berbeda dengan ListView yang memiliki <code>onItemClickListener</code> bawaan, di RecyclerView kita harus mengimplementasikan click listener secara manual. Ada beberapa cara, yang paling umum adalah menggunakan <strong>interface callback</strong>.</p>
+
+                <h3>Modifikasi Adapter dengan Click Listener</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>adapter/ContactAdapter.kt (dengan Click Listener)</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapp.R
+import com.example.myapp.model.Contact
+
+class ContactAdapter(
+    private val contactList: List&lt;Contact&gt;,
+    private val onItemClick: (Contact) -> Unit       // Parameter callback
+) : RecyclerView.Adapter&lt;ContactAdapter.ContactViewHolder&gt;() {
+
+    inner class ContactViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val tvInitial: TextView = itemView.findViewById(R.id.tvInitial)
+        val tvName: TextView = itemView.findViewById(R.id.tvName)
+        val tvPhone: TextView = itemView.findViewById(R.id.tvPhone)
+        val tvEmail: TextView = itemView.findViewById(R.id.tvEmail)
+
+        init {
+            // Set click listener pada itemView (seluruh card)
+            itemView.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onItemClick(contactList[position])
+                }
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_contact, parent, false)
+        return ContactViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
+        val contact = contactList[position]
+        holder.tvInitial.text = contact.name.first().uppercase()
+        holder.tvName.text = contact.name
+        holder.tvPhone.text = contact.phone
+        holder.tvEmail.text = contact.email
+    }
+
+    override fun getItemCount(): Int = contactList.size
+}</pre>
+                </div>
+
+                <h3>Menggunakan Click Listener di Activity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt (dengan Click Listener)</span>
+                    </div>
+                    <pre class="no-copy">
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val contacts = generateDummyContacts()
+
+        // Adapter dengan lambda sebagai click listener
+        val adapter = ContactAdapter(contacts) { contact ->
+            // Aksi saat item diklik
+            Toast.makeText(this, "Diklik: ${contact.name}", Toast.LENGTH_SHORT).show()
+        }
+
+        val rvContacts = findViewById&lt;RecyclerView&gt;(R.id.rvContacts)
+        rvContacts.layoutManager = LinearLayoutManager(this)
+        rvContacts.adapter = adapter
+    }
+
+    // ... generateDummyContacts() ...
+}</pre>
+                </div>
+            </article>
+
+            <article id="rv-detail">
+                <h2>Langkah 6: Navigasi ke Halaman Detail</h2>
+                <p>Setelah item diklik, kita bisa mengirim data ke Activity detail menggunakan Intent (konsep dari praktikum sebelumnya).</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat DetailContactActivity</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>DetailContactActivity</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_detail_contact.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="24dp"&gt;
+
+    &lt;!-- Avatar besar --&gt;
+    &lt;TextView
+        android:id="@+id/tvDetailInitial"
+        android:layout_width="96dp"
+        android:layout_height="96dp"
+        android:background="@drawable/bg_circle"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:layout_marginTop="32dp" /&gt;
+
+    &lt;!-- Nama --&gt;
+    &lt;TextView
+        android:id="@+id/tvDetailName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:layout_marginTop="16dp" /&gt;
+
+    &lt;!-- Telepon --&gt;
+    &lt;TextView
+        android:id="@+id/tvDetailPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#757575"
+        android:layout_marginTop="8dp" /&gt;
+
+    &lt;!-- Email --&gt;
+    &lt;TextView
+        android:id="@+id/tvDetailEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="#757575"
+        android:layout_marginTop="4dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Kembali"
+        android:layout_marginTop="32dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Kirim data dari MainActivity</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt - Navigasi ke Detail</span>
+                    </div>
+                    <pre class="no-copy">
+val adapter = ContactAdapter(contacts) { contact ->
+    val intent = Intent(this, DetailContactActivity::class.java).apply {
+        putExtra("EXTRA_NAME", contact.name)
+        putExtra("EXTRA_PHONE", contact.phone)
+        putExtra("EXTRA_EMAIL", contact.email)
+    }
+    startActivity(intent)
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Terima dan tampilkan data di DetailContactActivity</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>DetailContactActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class DetailContactActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_detail_contact)
+
+        // Terima data dari Intent
+        val name = intent.getStringExtra("EXTRA_NAME") ?: ""
+        val phone = intent.getStringExtra("EXTRA_PHONE") ?: ""
+        val email = intent.getStringExtra("EXTRA_EMAIL") ?: ""
+
+        // Tampilkan data
+        findViewById&lt;TextView&gt;(R.id.tvDetailInitial).text = name.first().uppercase()
+        findViewById&lt;TextView&gt;(R.id.tvDetailName).text = name
+        findViewById&lt;TextView&gt;(R.id.tvDetailPhone).text = phone
+        findViewById&lt;TextView&gt;(R.id.tvDetailEmail).text = email
+
+        // Tombol kembali
+        findViewById&lt;Button&gt;(R.id.btnBack).setOnClickListener {
+            finish()
+        }
+    }
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FRAGMENT -->
+        <!-- ============================================ -->
+        <section id="fragment" class="section">
+            <h1>Fragment</h1>
+
+            <article id="fg-pengenalan">
+                <h2>Pengenalan Fragment</h2>
+                <p>Fragment adalah komponen UI yang merepresentasikan sebagian dari tampilan dalam sebuah Activity. Fragment bisa dianggap sebagai <strong>"sub-Activity"</strong> atau <strong>"bagian modular dari Activity"</strong>.</p>
+
+                <h3>Mengapa Menggunakan Fragment?</h3>
+                <ul>
+                    <li><strong>Modularisasi UI</strong> - Memecah tampilan kompleks menjadi bagian-bagian yang lebih kecil dan reusable</li>
+                    <li><strong>Multi-pane Layout</strong> - Mendukung tampilan berbeda untuk phone dan tablet</li>
+                    <li><strong>Navigation</strong> - Navigasi modern di Android menggunakan Fragment, bukan Activity</li>
+                    <li><strong>Single Activity Architecture</strong> - Arsitektur yang direkomendasikan Google: satu Activity dengan banyak Fragment</li>
+                    <li><strong>Reusability</strong> - Satu Fragment bisa digunakan di berbagai Activity</li>
+                </ul>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+    Perbandingan: Multiple Activity vs Single Activity + Fragment
+
+    PENDEKATAN LAMA (Multiple Activity):
+    ┌──────────┐  ┌──────────┐  ┌──────────┐
+    │Activity A│→ │Activity B│→ │Activity C│
+    │  Login   │  │   Home   │  │  Detail  │
+    └──────────┘  └──────────┘  └──────────┘
+
+    PENDEKATAN MODERN (Single Activity + Fragments):
+    ┌─────────────────────────────────────────┐
+    │              MainActivity                │
+    │  ┌─────────────────────────────────┐    │
+    │  │        NavHostFragment          │    │
+    │  │  ┌────────┐ ┌────────┐ ┌─────┐ │    │
+    │  │  │Fragment│→│Fragment│→│Frag.│ │    │
+    │  │  │ Login  │ │  Home  │ │Detail│ │    │
+    │  │  └────────┘ └────────┘ └─────┘ │    │
+    │  └─────────────────────────────────┘    │
+    │  ┌─────────────────────────────────┐    │
+    │  │      BottomNavigationView       │    │
+    │  └─────────────────────────────────┘    │
+    └─────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Karakteristik Fragment</h4>
+                    <ul>
+                        <li>Fragment harus di-host oleh Activity (tidak bisa berdiri sendiri)</li>
+                        <li>Fragment memiliki lifecycle sendiri yang terikat dengan lifecycle Activity</li>
+                        <li>Satu Activity bisa memiliki banyak Fragment</li>
+                        <li>Fragment bisa ditambahkan, diganti, atau dihapus saat runtime</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="fg-lifecycle">
+                <h2>Fragment Lifecycle</h2>
+                <p>Fragment memiliki lifecycle yang mirip dengan Activity, tetapi dengan beberapa callback tambahan karena Fragment terikat dengan Activity host-nya.</p>
+
+                <div class="lifecycle-diagram">
+                    <div class="lifecycle-state">onAttach()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onCreate()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onCreateView()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onViewCreated()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStart()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onResume()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state running">ACTIVE / RUNNING</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onPause()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onStop()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onDestroyView()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onDestroy()</div>
+                    <div class="lifecycle-arrow">↓</div>
+                    <div class="lifecycle-state">onDetach()</div>
+                </div>
+
+                <h3>Penjelasan Callback</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Callback</th>
+                            <th>Kapan Dipanggil</th>
+                            <th>Kegunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>onAttach()</code></td>
+                            <td>Fragment terhubung ke Activity</td>
+                            <td>Mendapatkan referensi ke Activity host</td>
+                        </tr>
+                        <tr>
+                            <td><code>onCreate()</code></td>
+                            <td>Fragment dibuat</td>
+                            <td>Inisialisasi data (bukan UI)</td>
+                        </tr>
+                        <tr>
+                            <td><code>onCreateView()</code></td>
+                            <td>Membuat tampilan Fragment</td>
+                            <td>Inflate layout XML</td>
+                        </tr>
+                        <tr>
+                            <td><code>onViewCreated()</code></td>
+                            <td>View sudah dibuat</td>
+                            <td>Setup UI, bind views, set listeners</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStart()</code></td>
+                            <td>Fragment terlihat</td>
+                            <td>Mulai operasi yang terkait UI</td>
+                        </tr>
+                        <tr>
+                            <td><code>onResume()</code></td>
+                            <td>Fragment aktif dan interaktif</td>
+                            <td>Resume animasi, acquire resources</td>
+                        </tr>
+                        <tr>
+                            <td><code>onPause()</code></td>
+                            <td>Fragment kehilangan focus</td>
+                            <td>Pause operasi, save state</td>
+                        </tr>
+                        <tr>
+                            <td><code>onStop()</code></td>
+                            <td>Fragment tidak terlihat</td>
+                            <td>Stop operasi</td>
+                        </tr>
+                        <tr>
+                            <td><code>onDestroyView()</code></td>
+                            <td>View Fragment dihancurkan</td>
+                            <td>Cleanup view references</td>
+                        </tr>
+                        <tr>
+                            <td><code>onDestroy()</code></td>
+                            <td>Fragment dihancurkan</td>
+                            <td>Final cleanup</td>
+                        </tr>
+                        <tr>
+                            <td><code>onDetach()</code></td>
+                            <td>Fragment terlepas dari Activity</td>
+                            <td>Lepas referensi ke Activity</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="fg-membuat">
+                <h2>Membuat Fragment</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat layout untuk Fragment</h4>
+                            <p>Klik kanan pada <code>res/layout</code> → <strong>New → Layout Resource File</strong> → beri nama <code>fragment_home</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/fragment_home.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Home Fragment"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvHomeContacts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat class Fragment</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Kotlin Class/File</strong> → beri nama <code>HomeFragment</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>HomeFragment.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapp.adapter.ContactAdapter
+import com.example.myapp.model.Contact
+
+class HomeFragment : Fragment() {
+
+    // =============================================
+    // onCreateView: Inflate layout XML
+    // =============================================
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        // Inflate layout untuk Fragment ini
+        return inflater.inflate(R.layout.fragment_home, container, false)
+    }
+
+    // =============================================
+    // onViewCreated: Setup UI setelah view dibuat
+    // =============================================
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Setup RecyclerView di dalam Fragment
+        val contacts = generateDummyContacts()
+
+        val adapter = ContactAdapter(contacts) { contact ->
+            Toast.makeText(requireContext(), "Diklik: ${contact.name}", Toast.LENGTH_SHORT).show()
+        }
+
+        val rvContacts = view.findViewById&lt;RecyclerView&gt;(R.id.rvHomeContacts)
+        rvContacts.layoutManager = LinearLayoutManager(requireContext())
+        rvContacts.adapter = adapter
+    }
+
+    private fun generateDummyContacts(): List&lt;Contact&gt; {
+        return listOf(
+            Contact(1, "Ahmad Fauzi", "081234567890", "ahmad@email.com"),
+            Contact(2, "Budi Santoso", "081234567891", "budi@email.com"),
+            Contact(3, "Clara Wijaya", "081234567892", "clara@email.com"),
+            Contact(4, "Deni Pratama", "081234567893", "deni@email.com"),
+            Contact(5, "Eva Susanti", "081234567894", "eva@email.com")
+        )
+    }
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Perbedaan Penting: Fragment vs Activity</h4>
+                    <ul>
+                        <li>Di Fragment, gunakan <code>requireContext()</code> atau <code>requireActivity()</code> bukan <code>this</code></li>
+                        <li>Di Fragment, inflate layout di <code>onCreateView()</code>, bukan <code>setContentView()</code></li>
+                        <li>Setup UI di <code>onViewCreated()</code>, bukan <code>onCreate()</code></li>
+                        <li>Akses view dengan <code>view.findViewById()</code>, bukan langsung <code>findViewById()</code></li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="fg-manager">
+                <h2>FragmentManager & FragmentTransaction</h2>
+                <p>FragmentManager digunakan untuk mengelola Fragment di dalam Activity. FragmentTransaction digunakan untuk menambah, mengganti, atau menghapus Fragment.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Siapkan container di layout Activity</h4>
+                            <p>Tambahkan FrameLayout sebagai container Fragment di layout Activity</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_main.xml (dengan Fragment container)</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;!-- Container untuk Fragment --&gt;
+    &lt;FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+    &lt;!-- Tombol navigasi sederhana --&gt;
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="#F5F5F5"&gt;
+
+        &lt;Button
+            android:id="@+id/btnHome"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Home" /&gt;
+
+        &lt;Button
+            android:id="@+id/btnProfile"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Profile" /&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Kelola Fragment di Activity</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt (dengan FragmentManager)</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Tampilkan HomeFragment saat pertama kali
+        if (savedInstanceState == null) {
+            replaceFragment(HomeFragment())
+        }
+
+        // Tombol navigasi
+        findViewById&lt;Button&gt;(R.id.btnHome).setOnClickListener {
+            replaceFragment(HomeFragment())
+        }
+
+        findViewById&lt;Button&gt;(R.id.btnProfile).setOnClickListener {
+            replaceFragment(ProfileFragment())
+        }
+    }
+
+    // Fungsi helper untuk mengganti Fragment
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager
+            .beginTransaction()          // Mulai transaction
+            .replace(                     // Ganti fragment di container
+                R.id.fragmentContainer,
+                fragment
+            )
+            .addToBackStack(null)         // Tambah ke back stack (opsional)
+            .commit()                     // Eksekusi transaction
+    }
+}</pre>
+                </div>
+
+                <h3>Jenis FragmentTransaction</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>add(containerId, fragment)</code></td>
+                            <td>Menambahkan Fragment ke container (tidak menghapus yang lama)</td>
+                        </tr>
+                        <tr>
+                            <td><code>replace(containerId, fragment)</code></td>
+                            <td>Mengganti Fragment yang ada dengan Fragment baru</td>
+                        </tr>
+                        <tr>
+                            <td><code>remove(fragment)</code></td>
+                            <td>Menghapus Fragment dari container</td>
+                        </tr>
+                        <tr>
+                            <td><code>hide(fragment)</code></td>
+                            <td>Menyembunyikan Fragment (tetap ada di memori)</td>
+                        </tr>
+                        <tr>
+                            <td><code>show(fragment)</code></td>
+                            <td>Menampilkan Fragment yang disembunyikan</td>
+                        </tr>
+                        <tr>
+                            <td><code>addToBackStack(name)</code></td>
+                            <td>Menambah transaction ke back stack (agar bisa back)</td>
+                        </tr>
+                        <tr>
+                            <td><code>commit()</code></td>
+                            <td>Eksekusi transaction</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="fg-komunikasi">
+                <h2>Komunikasi antar Fragment</h2>
+                <p>Fragment tidak boleh berkomunikasi langsung satu sama lain. Komunikasi dilakukan melalui Activity host atau menggunakan shared ViewModel.</p>
+
+                <h3>Cara 1: Melalui Activity (Traditional)</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Komunikasi Fragment → Activity → Fragment</span>
+                    </div>
+                    <pre class="no-copy">
+// ===== Interface di Fragment pengirim =====
+class HomeFragment : Fragment() {
+
+    // Interface callback
+    interface OnContactSelectedListener {
+        fun onContactSelected(contact: Contact)
+    }
+
+    private var listener: OnContactSelectedListener? = null
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        // Pastikan Activity mengimplementasikan interface
+        listener = context as? OnContactSelectedListener
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val adapter = ContactAdapter(contacts) { contact ->
+            // Kirim ke Activity via interface
+            listener?.onContactSelected(contact)
+        }
+    }
+}
+
+// ===== Activity yang mengimplementasikan interface =====
+class MainActivity : AppCompatActivity(), HomeFragment.OnContactSelectedListener {
+
+    override fun onContactSelected(contact: Contact) {
+        // Terima data dari HomeFragment, kirim ke DetailFragment
+        val detailFragment = DetailFragment.newInstance(contact.name, contact.phone)
+        replaceFragment(detailFragment)
+    }
+}
+
+// ===== Fragment penerima dengan arguments =====
+class DetailFragment : Fragment() {
+
+    companion object {
+        fun newInstance(name: String, phone: String): DetailFragment {
+            val fragment = DetailFragment()
+            val args = Bundle().apply {
+                putString("ARG_NAME", name)
+                putString("ARG_PHONE", phone)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val name = arguments?.getString("ARG_NAME") ?: ""
+        val phone = arguments?.getString("ARG_PHONE") ?: ""
+
+        view.findViewById&lt;TextView&gt;(R.id.tvName).text = name
+        view.findViewById&lt;TextView&gt;(R.id.tvPhone).text = phone
+    }
+}</pre>
+                </div>
+
+                <h3>Cara 2: Fragment Result API (Modern)</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Fragment Result API</span>
+                    </div>
+                    <pre class="no-copy">
+// Fragment A: Mengirim hasil
+class FragmentA : Fragment() {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        view.findViewById&lt;Button&gt;(R.id.btnSend).setOnClickListener {
+            val result = Bundle().apply {
+                putString("key_data", "Hello dari Fragment A!")
+            }
+            parentFragmentManager.setFragmentResult("requestKey", result)
+        }
+    }
+}
+
+// Fragment B: Menerima hasil
+class FragmentB : Fragment() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        parentFragmentManager.setFragmentResultListener("requestKey", this) { _, bundle ->
+            val data = bundle.getString("key_data")
+            // Gunakan data
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="fg-viewpager">
+                <h2>ViewPager2 dan TabLayout</h2>
+                <p>ViewPager2 memungkinkan user untuk swipe antar Fragment. Dikombinasikan dengan TabLayout untuk menampilkan tab di atas.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Tambahkan dependency ViewPager2</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts</span>
+                    </div>
+                    <pre class="no-copy">
+dependencies {
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("com.google.android.material:material:1.11.0")
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Layout dengan TabLayout dan ViewPager2</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_tab.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabMode="fixed"
+        app:tabGravity="fill" /&gt;
+
+    &lt;androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Buat ViewPager Adapter</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>adapter/ViewPagerAdapter.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp.adapter
+
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.example.myapp.HomeFragment
+import com.example.myapp.ProfileFragment
+import com.example.myapp.SettingsFragment
+
+class ViewPagerAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
+
+    // Jumlah tab/halaman
+    override fun getItemCount(): Int = 3
+
+    // Fragment untuk setiap posisi
+    override fun createFragment(position: Int): Fragment {
+        return when (position) {
+            0 -> HomeFragment()
+            1 -> ProfileFragment()
+            2 -> SettingsFragment()
+            else -> HomeFragment()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Setup di Activity</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>TabActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.viewpager2.widget.ViewPager2
+import com.google.android.material.tabs.TabLayout
+import com.google.android.material.tabs.TabLayoutMediator
+import com.example.myapp.adapter.ViewPagerAdapter
+
+class TabActivity : AppCompatActivity() {
+
+    // Judul untuk setiap tab
+    private val tabTitles = arrayOf("Home", "Profile", "Settings")
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_tab)
+
+        val tabLayout = findViewById&lt;TabLayout&gt;(R.id.tabLayout)
+        val viewPager = findViewById&lt;ViewPager2&gt;(R.id.viewPager)
+
+        // Set adapter
+        viewPager.adapter = ViewPagerAdapter(this)
+
+        // Hubungkan TabLayout dengan ViewPager2
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = tabTitles[position]
+        }.attach()
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="fg-bottomnav">
+                <h2>BottomNavigationView</h2>
+                <p>BottomNavigationView adalah komponen Material Design untuk navigasi utama di bagian bawah layar.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat file menu</h4>
+                            <p>Klik kanan pada folder <code>res</code> → <strong>New → Android Resource Directory</strong> → Resource type: <strong>menu</strong>. Kemudian klik kanan pada folder <code>res/menu</code> → <strong>New → Menu Resource File</strong> → beri nama <code>bottom_nav_menu</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/menu/bottom_nav_menu.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;menu xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+
+    &lt;item
+        android:id="@+id/nav_home"
+        android:title="Home" /&gt;
+
+    &lt;item
+        android:id="@+id/nav_search"
+        android:title="Search" /&gt;
+
+    &lt;item
+        android:id="@+id/nav_profile"
+        android:title="Profile" /&gt;
+
+&lt;/menu&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_bottom_nav.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;!-- Container Fragment --&gt;
+    &lt;FrameLayout
+        android:id="@+id/fragmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+    &lt;!-- Bottom Navigation --&gt;
+    &lt;com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>BottomNavActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
+
+class BottomNavActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_bottom_nav)
+
+        val bottomNav = findViewById&lt;BottomNavigationView&gt;(R.id.bottomNav)
+
+        // Tampilkan Fragment awal
+        if (savedInstanceState == null) {
+            replaceFragment(HomeFragment())
+        }
+
+        // Handle bottom navigation item click
+        bottomNav.setOnItemSelectedListener { item ->
+            val fragment: Fragment = when (item.itemId) {
+                R.id.nav_home -> HomeFragment()
+                R.id.nav_search -> SearchFragment()
+                R.id.nav_profile -> ProfileFragment()
+                else -> HomeFragment()
+            }
+            replaceFragment(fragment)
+            true
+        }
+    }
+
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, fragment)
+            .commit()
+    }
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- NAVIGATION COMPONENT -->
+        <!-- ============================================ -->
+        <section id="navigation" class="section">
+            <h1>Navigation Component</h1>
+
+            <article id="nav-pengenalan">
+                <h2>Pengenalan Navigation Component</h2>
+                <p>Navigation Component adalah library Jetpack yang menyederhanakan implementasi navigasi dalam aplikasi Android. Library ini menyediakan framework yang konsisten untuk navigasi antar Fragment.</p>
+
+                <h3>Komponen Utama</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Komponen</th>
+                            <th>Fungsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Navigation Graph (nav_graph.xml)</strong></td>
+                            <td>File XML yang mendefinisikan semua destinasi (Fragment) dan aksi navigasi (action)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NavHostFragment</strong></td>
+                            <td>Container khusus di layout Activity yang menampilkan Fragment dari navigation graph</td>
+                        </tr>
+                        <tr>
+                            <td><strong>NavController</strong></td>
+                            <td>Object yang mengelola navigasi dalam NavHostFragment</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="nav-setup">
+                <h2>Setup Navigation Component</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Tambahkan dependency Navigation</h4>
+                            <p>Buka <code>build.gradle.kts (Module: app)</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+dependencies {
+    // Navigation Component
+    val navVersion = "2.7.7"
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
+
+    // RecyclerView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+
+    // Material Design
+    implementation("com.google.android.material:material:1.11.0")
+    
+    // ... dependency lainnya
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Sync Gradle</h4>
+                            <p>Klik <strong>"Sync Now"</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="nav-graph">
+                <h2>Membuat Navigation Graph</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat resource directory navigation</h4>
+                            <p>Klik kanan pada folder <code>res</code> → <strong>New → Android Resource Directory</strong> → Resource type: <strong>navigation</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat Navigation Graph file</h4>
+                            <p>Klik kanan pada folder <code>res/navigation</code> → <strong>New → Navigation Resource File</strong> → beri nama <code>nav_graph</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/navigation/nav_graph.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment"&gt;
+
+    &lt;!-- Home Fragment (Halaman Awal) --&gt;
+    &lt;fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.myapp.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home"&gt;
+
+        &lt;!-- Action navigasi ke Detail --&gt;
+        &lt;action
+            android:id="@+id/action_home_to_detail"
+            app:destination="@id/detailFragment" /&gt;
+
+    &lt;/fragment&gt;
+
+    &lt;!-- Detail Fragment --&gt;
+    &lt;fragment
+        android:id="@+id/detailFragment"
+        android:name="com.example.myapp.DetailFragment"
+        android:label="Detail"
+        tools:layout="@layout/fragment_detail"&gt;
+
+        &lt;!-- Argument yang diterima --&gt;
+        &lt;argument
+            android:name="contactName"
+            app:argType="string" /&gt;
+        &lt;argument
+            android:name="contactPhone"
+            app:argType="string" /&gt;
+
+    &lt;/fragment&gt;
+
+    &lt;!-- Search Fragment --&gt;
+    &lt;fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.myapp.SearchFragment"
+        android:label="Search"
+        tools:layout="@layout/fragment_search" /&gt;
+
+    &lt;!-- Profile Fragment --&gt;
+    &lt;fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.myapp.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" /&gt;
+
+&lt;/navigation&gt;</pre>
+                </div>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+    Navigation Graph Visual:
+
+    ┌──────────────┐      action_home_to_detail     ┌──────────────┐
+    │              │ ──────────────────────────────→ │              │
+    │ homeFragment │                                 │detailFragment│
+    │ (start dest) │ ←────────────────────────────── │              │
+    │              │          back                    │ args:        │
+    └──────────────┘                                 │  contactName │
+           │                                         │  contactPhone│
+           │                                         └──────────────┘
+           │
+    BottomNav connections:
+           │
+    ┌──────┴───────┐
+    │              │
+    ▼              ▼
+  ┌──────┐    ┌────────┐
+  │search│    │profile │
+  │Frag. │    │Frag.   │
+  └──────┘    └────────┘
+                    </pre>
+                </div>
+            </article>
+
+            <article id="nav-host">
+                <h2>Setup NavHostFragment</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_main.xml (dengan NavHostFragment)</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"&gt;
+
+    &lt;!-- NavHostFragment: Container untuk Fragment navigasi --&gt;
+    &lt;androidx.fragment.app.FragmentContainerView
+        android:id="@+id/navHostFragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" /&gt;
+
+    &lt;!-- Bottom Navigation --&gt;
+    &lt;com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_nav_menu" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan Atribut NavHostFragment</h4>
+                    <ul>
+                        <li><code>android:name</code> - Class NavHostFragment</li>
+                        <li><code>app:defaultNavHost="true"</code> - Agar tombol Back sistem ditangani oleh Navigation</li>
+                        <li><code>app:navGraph</code> - Menunjuk ke file navigation graph</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="nav-navigate">
+                <h2>Navigasi antar Fragment</h2>
+                <p>NavController digunakan untuk melakukan navigasi. Setiap Fragment bisa mendapatkan NavController untuk berpindah ke Fragment lain.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>HomeFragment.kt (dengan Navigation)</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.myapp.adapter.ContactAdapter
+import com.example.myapp.model.Contact
+
+class HomeFragment : Fragment() {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_home, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val contacts = generateDummyContacts()
+
+        val adapter = ContactAdapter(contacts) { contact ->
+            // Navigasi ke DetailFragment menggunakan NavController
+            val bundle = Bundle().apply {
+                putString("contactName", contact.name)
+                putString("contactPhone", contact.phone)
+            }
+            findNavController().navigate(R.id.action_home_to_detail, bundle)
+        }
+
+        val rv = view.findViewById&lt;RecyclerView&gt;(R.id.rvHomeContacts)
+        rv.layoutManager = LinearLayoutManager(requireContext())
+        rv.adapter = adapter
+    }
+
+    private fun generateDummyContacts(): List&lt;Contact&gt; {
+        return listOf(
+            Contact(1, "Ahmad Fauzi", "081234567890", "ahmad@email.com"),
+            Contact(2, "Budi Santoso", "081234567891", "budi@email.com"),
+            Contact(3, "Clara Wijaya", "081234567892", "clara@email.com")
+        )
+    }
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>DetailFragment.kt</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+
+class DetailFragment : Fragment() {
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_detail, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Terima argument
+        val name = arguments?.getString("contactName") ?: ""
+        val phone = arguments?.getString("contactPhone") ?: ""
+
+        view.findViewById&lt;TextView&gt;(R.id.tvDetailName).text = name
+        view.findViewById&lt;TextView&gt;(R.id.tvDetailPhone).text = phone
+
+        // Tombol kembali
+        view.findViewById&lt;Button&gt;(R.id.btnBack).setOnClickListener {
+            findNavController().navigateUp()  // Kembali ke Fragment sebelumnya
+        }
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="nav-args">
+                <h2>Safe Args</h2>
+                <p>Safe Args adalah plugin Gradle yang menghasilkan class untuk navigasi yang type-safe. Ini menghindari kesalahan key string saat passing data.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Tambahkan plugin Safe Args</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Project level)</span>
+                    </div>
+                    <pre class="no-copy">
+plugins {
+    // ... plugin lainnya
+    id("androidx.navigation.safeargs.kotlin") version "2.7.7" apply false
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("androidx.navigation.safeargs.kotlin")  // Tambahkan ini
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Gunakan Safe Args untuk navigasi</h4>
+                            <p>Setelah sync Gradle, Android Studio akan generate class <code>HomeFragmentDirections</code> dan <code>DetailFragmentArgs</code> berdasarkan nav_graph.xml</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Navigasi dengan Safe Args</span>
+                    </div>
+                    <pre class="no-copy">
+// ===== Di HomeFragment: Navigasi dengan Safe Args =====
+val adapter = ContactAdapter(contacts) { contact ->
+    // Safe Args: type-safe, tidak perlu string key
+    val action = HomeFragmentDirections.actionHomeToDetail(
+        contactName = contact.name,
+        contactPhone = contact.phone
+    )
+    findNavController().navigate(action)
+}
+
+// ===== Di DetailFragment: Terima args dengan Safe Args =====
+class DetailFragment : Fragment() {
+
+    // Ambil arguments menggunakan navArgs delegate
+    private val args: DetailFragmentArgs by navArgs()
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Langsung akses property, type-safe
+        view.findViewById&lt;TextView&gt;(R.id.tvDetailName).text = args.contactName
+        view.findViewById&lt;TextView&gt;(R.id.tvDetailPhone).text = args.contactPhone
+    }
+}</pre>
+                </div>
+            </article>
+
+            <article id="nav-bottomnav">
+                <h2>Navigation Component + BottomNavigationView</h2>
+                <p>Navigation Component terintegrasi langsung dengan BottomNavigationView menggunakan <code>NavigationUI</code>.</p>
+
+                <div class="warning-box">
+                    <h4>Penting</h4>
+                    <p>Pastikan <code>android:id</code> di <code>bottom_nav_menu.xml</code> sama persis dengan <code>android:id</code> Fragment di <code>nav_graph.xml</code>. Navigation Component akan otomatis mencocokkan keduanya.</p>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/menu/bottom_nav_menu.xml</span>
+                    </div>
+                    <pre class="no-copy">
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;menu xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+
+    &lt;!-- ID harus SAMA dengan ID fragment di nav_graph.xml --&gt;
+    &lt;item
+        android:id="@+id/homeFragment"
+        android:title="Home" /&gt;
+
+    &lt;item
+        android:id="@+id/searchFragment"
+        android:title="Search" /&gt;
+
+    &lt;item
+        android:id="@+id/profileFragment"
+        android:title="Profile" /&gt;
+
+&lt;/menu&gt;</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt (Navigation + BottomNav)</span>
+                    </div>
+                    <pre class="no-copy">
+package com.example.myapp
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
+
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Dapatkan NavController dari NavHostFragment
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.navHostFragment) as NavHostFragment
+        val navController = navHostFragment.navController
+
+        // Hubungkan BottomNavigationView dengan NavController
+        val bottomNav = findViewById&lt;BottomNavigationView&gt;(R.id.bottomNav)
+        bottomNav.setupWithNavController(navController)
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Keuntungan NavigationUI</h4>
+                    <p>Dengan <code>setupWithNavController()</code>, semua logika navigasi ditangani secara otomatis:</p>
+                    <ul>
+                        <li>Klik item di BottomNav otomatis navigasi ke Fragment yang sesuai</li>
+                        <li>Highlight item yang aktif otomatis</li>
+                        <li>Back stack dikelola secara otomatis</li>
+                        <li>Tidak perlu manual <code>setOnItemSelectedListener</code></li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- HANDS-ON PRAKTIKUM -->
+        <!-- ============================================ -->
+        <section id="handson" class="section">
+            <h1>Hands-On Praktikum</h1>
+            <p>Pada bagian ini Anda akan mempraktikkan materi yang telah dipelajari secara bertahap. Setiap hands-on melanjutkan dari project sebelumnya.</p>
+
+            <div class="info-box">
+                <h4>Persiapan</h4>
+                <p>Buat project baru dengan konfigurasi berikut:</p>
+                <ul>
+                    <li><strong>Name:</strong> StudentContactApp</li>
+                    <li><strong>Package:</strong> com.example.studentcontactapp</li>
+                    <li><strong>Language:</strong> Kotlin</li>
+                    <li><strong>Minimum SDK:</strong> API 24</li>
+                    <li><strong>Template:</strong> Empty Views Activity</li>
+                </ul>
+            </div>
+
+            <article id="handson-1">
+                <h2>Hands-On 1: Daftar Mahasiswa dengan RecyclerView</h2>
+                <p>Pada hands-on ini, Anda akan membuat aplikasi yang menampilkan daftar mahasiswa menggunakan RecyclerView.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+    ┌──────────────────────────┐         ┌──────────────────────────┐
+    │   Daftar Mahasiswa       │         │   Detail Mahasiswa       │
+    │ ┌──────────────────────┐ │         │                          │
+    │ │ [A] Ahmad Fauzi      │ │         │        ┌────┐            │
+    │ │     2024001           │ │  klik → │        │ AF │            │
+    │ │     Teknik Informatika│ │         │        └────┘            │
+    │ ├──────────────────────┤ │         │     Ahmad Fauzi          │
+    │ │ [B] Budi Santoso     │ │         │     NIM: 2024001         │
+    │ │     2024002           │ │         │     Prodi: T. Informatika│
+    │ │     Sistem Informasi  │ │         │     Email: ahmad@...     │
+    │ ├──────────────────────┤ │         │     Semester: 3          │
+    │ │ [C] Clara Wijaya     │ │         │                          │
+    │ │     2024003           │ │         │     [Kembali]            │
+    │ └──────────────────────┘ │         └──────────────────────────┘
+    └──────────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Tambahkan dependency</h4>
+                    <p>Buka <code>build.gradle.kts (Module: app)</code> dan tambahkan dependency RecyclerView dan Material Components. Jangan lupa <strong>Sync Gradle</strong>.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat Data Class</h4>
+                    <p>Buat package <code>model</code> dan file <code>Student.kt</code> dengan property:</p>
+                    <ul>
+                        <li><code>id: Int</code></li>
+                        <li><code>name: String</code></li>
+                        <li><code>nim: String</code></li>
+                        <li><code>prodi: String</code></li>
+                        <li><code>email: String</code></li>
+                        <li><code>semester: Int</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Buat Item Layout</h4>
+                    <p>Buat file <code>res/layout/item_student.xml</code> menggunakan <code>MaterialCardView</code> dengan tampilan:</p>
+                    <ul>
+                        <li>Inisial nama dalam lingkaran berwarna</li>
+                        <li>Nama mahasiswa (bold, 16sp)</li>
+                        <li>NIM (14sp, warna abu-abu)</li>
+                        <li>Prodi (12sp, warna abu-abu muda)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Buat Adapter</h4>
+                    <p>Buat package <code>adapter</code> dan file <code>StudentAdapter.kt</code>:</p>
+                    <ul>
+                        <li>Buat <code>StudentViewHolder</code> dengan referensi ke semua view</li>
+                        <li>Implementasikan <code>onCreateViewHolder</code>, <code>onBindViewHolder</code>, dan <code>getItemCount</code></li>
+                        <li>Tambahkan parameter <code>onItemClick: (Student) -> Unit</code> untuk click listener</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Setup di Activity</h4>
+                    <p>Di <code>MainActivity.kt</code>:</p>
+                    <ul>
+                        <li>Buat minimal 10 data dummy mahasiswa</li>
+                        <li>Setup RecyclerView dengan <code>LinearLayoutManager</code></li>
+                        <li>Hubungkan Adapter</li>
+                        <li>Saat item diklik, navigasi ke <code>DetailStudentActivity</code> dengan mengirim data via Intent</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Buat Detail Activity</h4>
+                    <p>Buat <code>DetailStudentActivity</code> yang menampilkan detail lengkap mahasiswa yang diklik. Tampilkan semua data (nama, NIM, prodi, email, semester) dengan layout yang rapi.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 7: Bonus - GridLayout</h4>
+                    <p>Tambahkan tombol toggle di toolbar untuk beralih antara <code>LinearLayoutManager</code> dan <code>GridLayoutManager(2)</code>.</p>
+                </div>
+            </article>
+
+            <article id="handson-2">
+                <h2>Hands-On 2: Modularisasi dengan Fragment</h2>
+                <p>Pada hands-on ini, Anda akan mengubah project dari Hands-On 1 menjadi arsitektur Fragment dengan BottomNavigationView.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+    ┌──────────────────────────────────────────┐
+    │              MainActivity                 │
+    │ ┌──────────────────────────────────────┐ │
+    │ │                                      │ │
+    │ │      Fragment Content Area           │ │
+    │ │                                      │ │
+    │ │  (HomeFragment / SearchFragment /    │ │
+    │ │   ProfileFragment)                   │ │
+    │ │                                      │ │
+    │ └──────────────────────────────────────┘ │
+    │ ┌──────────────────────────────────────┐ │
+    │ │   [Home]    [Search]    [Profile]    │ │
+    │ │         BottomNavigationView         │ │
+    │ └──────────────────────────────────────┘ │
+    └──────────────────────────────────────────┘
+
+    HomeFragment:     Daftar mahasiswa (RecyclerView dari Hands-On 1)
+    SearchFragment:   Form pencarian mahasiswa berdasarkan nama/NIM
+    ProfileFragment:  Profil user (data statis)
+                    </pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Buat 3 Fragment</h4>
+                    <p>Buat 3 Fragment beserta layout-nya:</p>
+                    <ul>
+                        <li><strong>HomeFragment</strong> + <code>fragment_home.xml</code> → Pindahkan logic RecyclerView dari MainActivity ke sini</li>
+                        <li><strong>SearchFragment</strong> + <code>fragment_search.xml</code> → Buat form pencarian sederhana dengan EditText dan Button</li>
+                        <li><strong>ProfileFragment</strong> + <code>fragment_profile.xml</code> → Tampilkan profil statis (foto placeholder, nama, NIM Anda sendiri)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat Menu untuk BottomNavigationView</h4>
+                    <p>Buat folder <code>res/menu</code> dan file <code>bottom_nav_menu.xml</code> dengan 3 item: Home, Search, Profile.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Update Layout Activity</h4>
+                    <p>Ubah <code>activity_main.xml</code> menjadi FrameLayout (container Fragment) + BottomNavigationView.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Setup di MainActivity</h4>
+                    <p>Implementasikan logika pergantian Fragment saat item BottomNav diklik menggunakan FragmentManager.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: RecyclerView dalam Fragment</h4>
+                    <p>Pastikan RecyclerView berjalan dengan baik di dalam HomeFragment. Perhatikan penggunaan <code>requireContext()</code> dan <code>view.findViewById()</code>.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Bonus - ViewPager2 + TabLayout</h4>
+                    <p>Di ProfileFragment, tambahkan ViewPager2 dengan TabLayout yang memiliki 2 tab: "Info" dan "Aktivitas".</p>
+                </div>
+            </article>
+
+            <article id="handson-3">
+                <h2>Hands-On 3: Navigasi dengan Navigation Component</h2>
+                <p>Pada hands-on ini, Anda akan mengubah navigasi manual (FragmentManager) menjadi menggunakan Navigation Component.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+    ┌───────────────────────────────────────────────────────────┐
+    │                       MainActivity                        │
+    │  ┌─────────────────────────────────────────────────────┐ │
+    │  │               NavHostFragment                        │ │
+    │  │                                                      │ │
+    │  │  homeFragment ──action──→ detailFragment             │ │
+    │  │       │                         │                    │ │
+    │  │       │                    navigateUp()              │ │
+    │  │       │                         │                    │ │
+    │  │       ←─────────────────────────┘                    │ │
+    │  │                                                      │ │
+    │  │  searchFragment                                      │ │
+    │  │  profileFragment                                     │ │
+    │  └─────────────────────────────────────────────────────┘ │
+    │  ┌─────────────────────────────────────────────────────┐ │
+    │  │  [Home]     [Search]     [Profile]                  │ │
+    │  │       BottomNav + setupWithNavController             │ │
+    │  └─────────────────────────────────────────────────────┘ │
+    └───────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Tambahkan Dependency Navigation</h4>
+                    <p>Tambahkan dependency <code>navigation-fragment-ktx</code> dan <code>navigation-ui-ktx</code> di build.gradle.kts.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat Navigation Graph</h4>
+                    <p>Buat folder <code>res/navigation</code> dan file <code>nav_graph.xml</code>. Daftarkan semua Fragment sebagai destination. Set <code>homeFragment</code> sebagai start destination.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Buat DetailFragment</h4>
+                    <p>Konversi <code>DetailStudentActivity</code> menjadi <code>DetailFragment</code>. Buat layout <code>fragment_detail.xml</code> dan pindahkan logic-nya.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Tambahkan Action dan Arguments</h4>
+                    <p>Di nav_graph.xml, tambahkan action dari <code>homeFragment</code> ke <code>detailFragment</code>. Tambahkan argument (contactName, contactNim, contactProdi) di detailFragment.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Update Layout Activity</h4>
+                    <p>Ganti FrameLayout dengan <code>FragmentContainerView</code> yang menunjuk ke NavHostFragment dan nav_graph.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Setup Navigation + BottomNav</h4>
+                    <p>Di MainActivity, gunakan <code>setupWithNavController()</code> untuk menghubungkan BottomNavigationView dengan NavController.</p>
+                    <p><strong>Penting:</strong> Pastikan ID menu item di <code>bottom_nav_menu.xml</code> sama dengan ID Fragment di <code>nav_graph.xml</code>.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 7: Navigasi dari HomeFragment ke DetailFragment</h4>
+                    <p>Di HomeFragment, saat item RecyclerView diklik, gunakan <code>findNavController().navigate()</code> dengan Bundle arguments.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 8: Terima Data di DetailFragment</h4>
+                    <p>Di DetailFragment, ambil data dari <code>arguments</code> dan tampilkan.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 9: Bonus - Safe Args</h4>
+                    <p>Tambahkan plugin Safe Args dan refactor navigasi menggunakan generated Directions dan Args class.</p>
+                </div>
+            </article>
+
+            <article id="handson-final">
+                <h2>Tugas Akhir: Aplikasi Daftar Mahasiswa Lengkap</h2>
+                <p>Gabungkan semua materi yang telah dipelajari dari Praktikum 1 dan Praktikum 2 menjadi satu aplikasi lengkap.</p>
+
+                <div class="task-box">
+                    <h2>Spesifikasi Tugas</h2>
+                    <p>Buat aplikasi <strong>"Student Directory"</strong> dengan fitur berikut:</p>
+
+                    <h4>1. Arsitektur</h4>
+                    <ul>
+                        <li>Single Activity dengan Navigation Component</li>
+                        <li>BottomNavigationView dengan 3 tab: Home, Search, Profile</li>
+                    </ul>
+
+                    <h4>2. Home (RecyclerView)</h4>
+                    <ul>
+                        <li>Menampilkan daftar mahasiswa dengan RecyclerView</li>
+                        <li>Minimal 15 data dummy</li>
+                        <li>Item menampilkan: inisial, nama, NIM, prodi</li>
+                        <li>Klik item membuka halaman detail</li>
+                    </ul>
+
+                    <h4>3. Detail</h4>
+                    <ul>
+                        <li>Menampilkan detail lengkap mahasiswa</li>
+                        <li>Data dikirim menggunakan Navigation Safe Args</li>
+                        <li>Tombol share untuk share info via Implicit Intent (materi praktikum 1)</li>
+                        <li>Tombol back untuk kembali</li>
+                    </ul>
+
+                    <h4>4. Search</h4>
+                    <ul>
+                        <li>EditText untuk input pencarian</li>
+                        <li>RecyclerView untuk menampilkan hasil pencarian</li>
+                        <li>Filter berdasarkan nama atau NIM</li>
+                    </ul>
+
+                    <h4>5. Profile</h4>
+                    <ul>
+                        <li>Tampilkan profil Anda sendiri</li>
+                        <li>Gunakan ViewPager2 + TabLayout dengan 2 tab:
+                            <ul>
+                                <li>Tab "Info": Nama, NIM, Prodi, angkatan</li>
+                                <li>Tab "About": Deskripsi singkat tentang aplikasi</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4>6. Tampilan</h4>
+                    <ul>
+                        <li>Gunakan Material Design components</li>
+                        <li>Terapkan Style dan Theme yang konsisten</li>
+                        <li>Gunakan String Resources (tidak hardcode)</li>
+                        <li>Implementasikan minimal 2 bahasa (Localization)</li>
+                        <li>Gunakan dimens.xml untuk konsistensi spacing</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>Kriteria Penilaian</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Aspek</th>
+                                <th>Bobot</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>RecyclerView (Adapter, ViewHolder, LayoutManager)</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Fragment (Lifecycle, modularisasi UI)</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Navigation Component (NavGraph, NavController, BottomNav)</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Tampilan UI (Style, Theme, Material Design)</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td>Localization dan String Resources</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Kualitas kode dan struktur project</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Bonus: Safe Args, ViewPager2, fitur tambahan</td>
+                                <td>5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3>Ketentuan Pengumpulan</h3>
+                    <ul>
+                        <li>Kumpulkan dalam format <strong>ZIP</strong> berisi project Android Studio lengkap</li>
+                        <li>Sertakan file <strong>README.md</strong> berisi:
+                            <ul>
+                                <li>Nama dan NIM</li>
+                                <li>Deskripsi singkat aplikasi</li>
+                                <li>Screenshot minimal 5 halaman</li>
+                                <li>Daftar fitur yang diimplementasikan</li>
+                                <li>Kendala yang dihadapi dan solusinya</li>
+                            </ul>
+                        </li>
+                        <li>Pastikan project bisa di-build tanpa error</li>
+                        <li>Deadline: <strong>satu minggu setelah pertemuan</strong></li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h3>Catatan Penting</h3>
+                    <ul>
+                        <li>Plagiasi akan mendapat nilai <strong>0</strong></li>
+                        <li>Ketik ulang kode, jangan copy-paste</li>
+                        <li>Pahami setiap baris kode yang Anda tulis</li>
+                        <li>Jangan ragu bertanya jika ada kesulitan</li>
+                        <li>Manfaatkan dokumentasi resmi Android Developer</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Mobile</strong></p>
+            <p>RecyclerView, Fragment & Navigation Component</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <!-- JavaScript untuk anti-copy -->
+    <script>
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || 
+                              e.key === 'u' || e.key === 'U' ||
+                              e.key === 's' || e.key === 'S' ||
+                              e.key === 'a' || e.key === 'A')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.querySelectorAll('.no-copy').forEach(function(element) {
+            element.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+            });
+            element.addEventListener('copy', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+        });
+
+        function showSection(id) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+            // Tampilkan section yang dituju
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Update active state pada nav-link (hanya untuk top-level)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + id) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Klik nav-link (top-level sidebar)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                showSection(id);
+            });
+        });
+
+        // Klik sub-menu link — tampilkan section induknya, lalu scroll ke artikel
+        document.querySelectorAll('.sub-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+
+                // Cari section induk yang mengandung artikel dengan id tersebut
+                const article = document.getElementById(targetId);
+                if (article) {
+                    const parentSection = article.closest('.section');
+                    if (parentSection) {
+                        // Sembunyikan semua section, tampilkan induk
+                        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                        parentSection.style.display = 'block';
+
+                        // Update active nav-link
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        const parentId = parentSection.getAttribute('id');
+                        const parentLink = document.querySelector('.nav-link[href="#' + parentId + '"]');
+                        if (parentLink) parentLink.classList.add('active');
+                    }
+                    // Scroll ke artikel
+                    article.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Tampilkan section pertama saat halaman dimuat
+        const firstSection = document.querySelector('.section');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+            const firstLink = document.querySelector('.nav-link[href="#' + firstSection.id + '"]');
+            if (firstLink) firstLink.classList.add('active');
+        }
+
+        console.log('%cPerhatian!', 'color: red; font-size: 30px; font-weight: bold;');
+        console.log('%cHalaman ini dilindungi. Silakan ketik ulang kode untuk belajar dengan lebih baik.', 'font-size: 16px;');
+    </script>
+</body>
+</html>
