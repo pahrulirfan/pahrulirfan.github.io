@@ -2092,62 +2092,253 @@ class MainActivity : AppCompatActivity() {
 
         <section id="handson-2" class="section">
                 <h2>Hands-On 2: Modularisasi dengan Fragment</h2>
-                <p>Ubah project dari Hands-On 1 menjadi arsitektur Fragment dengan BottomNavigationView.</p>
+                <p><strong>Lanjutan dari Hands-On 1.</strong> Kita tidak membuat project baru — kita <em>mengubah</em> project <code>DaftarMahasiswa</code> yang sudah jadi menjadi arsitektur Fragment dengan BottomNavigationView.</p>
 
+                <!-- Konteks: apa yang sudah ada -->
+                <div class="ho2-context">
+                    <div class="ho2-ctx-title">&#128196; Yang sudah ada dari Hands-On 1</div>
+                    <div class="ho2-ctx-files">
+                        <div class="ho2-ctx-file exist">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>Student.kt</strong>
+                                <span>Data class (id, name, nim, prodi, email, semester)</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file exist">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>StudentAdapter.kt</strong>
+                                <span>RecyclerView Adapter + click listener</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file exist">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>MainActivity.kt</strong>
+                                <span>Setup RecyclerView + navigasi ke Detail</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file exist">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>DetailStudentActivity.kt</strong>
+                                <span>Halaman detail mahasiswa</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ho2-ctx-arrow">&#8595; yang akan diubah &amp; ditambahkan</div>
+                    <div class="ho2-ctx-files">
+                        <div class="ho2-ctx-file new">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>HomeFragment.kt</strong>
+                                <span>Pindahkan RecyclerView dari MainActivity ke sini</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file new">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>SearchFragment.kt</strong>
+                                <span>Form pencarian mahasiswa berdasarkan nama/NIM</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file new">
+                            <span class="ho2-file-icon">&#128196;</span>
+                            <div>
+                                <strong>ProfileFragment.kt</strong>
+                                <span>Profil statis (isi dengan data diri sendiri)</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file modified">
+                            <span class="ho2-file-icon">&#9998;</span>
+                            <div>
+                                <strong>MainActivity.kt</strong>
+                                <span>Ubah: hapus logic RecyclerView, tambah BottomNav + FragmentManager</span>
+                            </div>
+                        </div>
+                        <div class="ho2-ctx-file modified">
+                            <span class="ho2-file-icon">&#9998;</span>
+                            <div>
+                                <strong>activity_main.xml</strong>
+                                <span>Ubah: ganti RecyclerView dengan FrameLayout + BottomNavigationView</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Hasil -->
                 <h3>Target Hasil</h3>
-                <div class="ho-mockup-wrapper" style="justify-content:center">
+                <div class="ho-mockup-wrapper" style="justify-content:center;gap:12px">
+
+                    <!-- Layar Home -->
                     <div class="ho-screen">
-                        <div class="ho-screen-label">Tampilan Akhir</div>
+                        <div class="ho-screen-label">Home &#8212; Daftar Mahasiswa</div>
                         <div class="ho-phone">
                             <div class="ho-phone-notch"></div>
                             <div class="ho-phone-screen">
-                                <div class="ho-toolbar"><span class="ho-toolbar-title">Student Directory</span></div>
-                                <div style="flex:1;background:#f5f5f5;padding:8px;font-size:0.7rem;color:#555">
-                                    <div style="background:#fff;border-radius:6px;padding:8px;margin-bottom:6px;font-size:0.68rem;color:#888;text-align:center">
-                                        Fragment Content Area<br>
-                                        <span style="color:#3f51b5;font-weight:700">HomeFragment / SearchFragment / ProfileFragment</span>
+                                <div class="ho-toolbar"><span class="ho-toolbar-title">Daftar Mahasiswa</span></div>
+                                <div class="ho-list" style="flex:1">
+                                    <div class="ho-item">
+                                        <span class="ho-avatar" style="background:#3f51b5">A</span>
+                                        <div class="ho-item-info">
+                                            <span class="ho-item-name">Ahmad Fauzi</span>
+                                            <span class="ho-item-nim">NIM: 2024001</span>
+                                            <span class="ho-item-prodi">Teknik Informatika</span>
+                                        </div>
+                                        <span class="ho-item-chevron">&#8250;</span>
                                     </div>
-                                    <div style="background:#e8eaf6;border-radius:6px;padding:6px 4px;display:flex;justify-content:space-around;font-size:0.65rem;font-weight:700;color:#3f51b5">
-                                        <span>&#127968; Home</span>
-                                        <span>&#128269; Search</span>
-                                        <span>&#128100; Profile</span>
+                                    <div class="ho-item">
+                                        <span class="ho-avatar" style="background:#e91e63">B</span>
+                                        <div class="ho-item-info">
+                                            <span class="ho-item-name">Budi Santoso</span>
+                                            <span class="ho-item-nim">NIM: 2024002</span>
+                                            <span class="ho-item-prodi">Sistem Informasi</span>
+                                        </div>
+                                        <span class="ho-item-chevron">&#8250;</span>
                                     </div>
+                                    <div class="ho-item ho-item-faded">
+                                        <span class="ho-avatar" style="background:#009688">C</span>
+                                        <div class="ho-item-info">
+                                            <span class="ho-item-name">Clara Wijaya</span>
+                                            <span class="ho-item-nim">NIM: 2024003</span>
+                                            <span class="ho-item-prodi">Teknik Elektro</span>
+                                        </div>
+                                        <span class="ho-item-chevron">&#8250;</span>
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-around;background:#e8eaf6;padding:7px 4px;font-size:0.62rem;font-weight:700;color:#3f51b5">
+                                    <span style="border-bottom:2px solid #3f51b5;padding-bottom:2px">&#127968; Home</span>
+                                    <span>&#128269; Search</span>
+                                    <span>&#128100; Profile</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div style="max-width:260px;font-size:0.83rem;color:#444;line-height:1.6;padding-top:40px">
-                        <div style="margin-bottom:8px"><span style="background:#3f51b5;color:#fff;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:700">HomeFragment</span> &nbsp;Daftar mahasiswa (RecyclerView dari Hands-On 1)</div>
-                        <div style="margin-bottom:8px"><span style="background:#e91e63;color:#fff;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:700">SearchFragment</span> &nbsp;Form pencarian berdasarkan nama/NIM</div>
-                        <div><span style="background:#009688;color:#fff;border-radius:4px;padding:2px 8px;font-size:0.72rem;font-weight:700">ProfileFragment</span> &nbsp;Profil user (data statis)</div>
+
+                    <!-- Layar Search -->
+                    <div class="ho-screen">
+                        <div class="ho-screen-label">Search &#8212; Cari Mahasiswa</div>
+                        <div class="ho-phone">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-toolbar"><span class="ho-toolbar-title">Cari Mahasiswa</span></div>
+                                <div style="padding:8px;flex:1">
+                                    <div style="background:#fff;border:1px solid #ddd;border-radius:6px;padding:6px 10px;font-size:0.65rem;color:#999;margin-bottom:8px">&#128269; Cari nama atau NIM...</div>
+                                    <div class="ho-item" style="opacity:0.5;font-size:0.7rem">
+                                        <span class="ho-avatar" style="background:#3f51b5;width:26px;height:26px;font-size:0.65rem">A</span>
+                                        <div class="ho-item-info"><span class="ho-item-name" style="font-size:0.72rem">Ahmad Fauzi</span><span class="ho-item-nim">2024001</span></div>
+                                    </div>
+                                    <div style="text-align:center;font-size:0.62rem;color:#bbb;margin-top:12px">Ketik untuk mencari...</div>
+                                </div>
+                                <div style="display:flex;justify-content:space-around;background:#e8eaf6;padding:7px 4px;font-size:0.62rem;font-weight:700;color:#3f51b5">
+                                    <span>&#127968; Home</span>
+                                    <span style="border-bottom:2px solid #3f51b5;padding-bottom:2px">&#128269; Search</span>
+                                    <span>&#128100; Profile</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layar Profile -->
+                    <div class="ho-screen">
+                        <div class="ho-screen-label">Profile &#8212; Profil Saya</div>
+                        <div class="ho-phone">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-toolbar"><span class="ho-toolbar-title">Profil Saya</span></div>
+                                <div style="padding:10px;flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+                                    <div style="width:44px;height:44px;border-radius:50%;background:#3f51b5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">N</div>
+                                    <div style="font-size:0.75rem;font-weight:700;color:#212121">Nama Mahasiswa</div>
+                                    <div style="font-size:0.65rem;color:#757575">NIM: 20240XX</div>
+                                    <div style="font-size:0.65rem;color:#757575">Teknik Informatika</div>
+                                    <div style="width:100%;background:#f5f5f5;border-radius:6px;padding:8px;margin-top:4px">
+                                        <div style="font-size:0.62rem;color:#888;text-align:center">Isi dengan data diri sendiri</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex;justify-content:space-around;background:#e8eaf6;padding:7px 4px;font-size:0.62rem;font-weight:700;color:#3f51b5">
+                                    <span>&#127968; Home</span>
+                                    <span>&#128269; Search</span>
+                                    <span style="border-bottom:2px solid #3f51b5;padding-bottom:2px">&#128100; Profile</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Ketentuan -->
+                <h3>Ketentuan</h3>
+                <div class="ho-requirements">
+                    <div class="ho-req-col">
+                        <div class="ho-req-title">&#127968; HomeFragment</div>
+                        <ul>
+                            <li>Pindahkan RecyclerView dari <code>MainActivity</code> ke sini</li>
+                            <li>Gunakan <code>StudentAdapter</code> yang sudah ada</li>
+                            <li>Klik item tetap membuka <code>DetailStudentActivity</code> via Intent</li>
+                            <li>Gunakan <code>requireContext()</code> dan <code>view.findViewById()</code></li>
+                        </ul>
+                    </div>
+                    <div class="ho-req-col">
+                        <div class="ho-req-title">&#128269; SearchFragment</div>
+                        <ul>
+                            <li>EditText untuk input pencarian</li>
+                            <li>RecyclerView hasil pencarian (gunakan <code>StudentAdapter</code> yang sama)</li>
+                            <li>Filter data berdasarkan nama atau NIM saat teks berubah</li>
+                        </ul>
+                    </div>
+                    <div class="ho-req-col">
+                        <div class="ho-req-title">&#128100; ProfileFragment</div>
+                        <ul>
+                            <li>Tampilkan data diri sendiri (nama, NIM, prodi)</li>
+                            <li>Data statis (tidak perlu dari database)</li>
+                        </ul>
+                    </div>
+                    <div class="ho-req-col">
+                        <div class="ho-req-title">&#9881; MainActivity (diubah)</div>
+                        <ul>
+                            <li>Hapus semua logic RecyclerView</li>
+                            <li>Tambah <code>BottomNavigationView</code></li>
+                            <li>Kelola pergantian Fragment via <code>FragmentManager</code></li>
+                            <li>Default: tampilkan <code>HomeFragment</code></li>
+                        </ul>
                     </div>
                 </div>
 
+                <!-- Langkah-langkah -->
                 <h3>Langkah-langkah</h3>
                 <ol class="">
                     <li>
-                        <strong>Buat 3 Fragment</strong>
-                        <p>Buat <code>HomeFragment</code>, <code>SearchFragment</code>, <code>ProfileFragment</code> beserta layout XML masing-masing. Pindahkan logic RecyclerView dari MainActivity ke HomeFragment.</p>
+                        <strong>Buka project DaftarMahasiswa dari Hands-On 1</strong>
+                        <p>Jangan buat project baru. Lanjutkan dari project yang sudah ada. Pastikan RecyclerView dan DetailStudentActivity sudah berjalan dengan benar.</p>
                     </li>
                     <li>
-                        <strong>Buat Menu BottomNavigationView</strong>
-                        <p>Buat folder <code>res/menu</code> dan file <code>bottom_nav_menu.xml</code> dengan 3 item: Home, Search, Profile (lengkap dengan icon).</p>
+                        <strong>Buat <code>HomeFragment.kt</code> + <code>fragment_home.xml</code></strong>
+                        <p>Pindahkan seluruh logic RecyclerView dari <code>MainActivity.kt</code> ke <code>HomeFragment.kt</code>. Ganti <code>this</code> dengan <code>requireContext()</code> dan <code>findViewById()</code> dengan <code>view.findViewById()</code>.</p>
+                    </li>
+                    <li>
+                        <strong>Buat <code>SearchFragment.kt</code> + <code>fragment_search.xml</code></strong>
+                        <p>Layout berisi <code>EditText</code> dan <code>RecyclerView</code>. Gunakan <code>StudentAdapter</code> yang sudah ada. Tambahkan <code>addTextChangedListener</code> untuk filter data saat user mengetik.</p>
+                    </li>
+                    <li>
+                        <strong>Buat <code>ProfileFragment.kt</code> + <code>fragment_profile.xml</code></strong>
+                        <p>Layout sederhana berisi avatar inisial, nama, NIM, dan prodi. Isi dengan data diri sendiri (hardcode).</p>
+                    </li>
+                    <li>
+                        <strong>Buat menu <code>res/menu/bottom_nav_menu.xml</code></strong>
+                        <p>Tiga item: <code>nav_home</code>, <code>nav_search</code>, <code>nav_profile</code> dengan title dan icon masing-masing.</p>
                     </li>
                     <li>
                         <strong>Update <code>activity_main.xml</code></strong>
-                        <p>Ubah layout menjadi <code>FrameLayout</code> (container Fragment) di atas + <code>BottomNavigationView</code> di bawah.</p>
+                        <p>Ganti isi layout: hapus RecyclerView, tambahkan <code>FrameLayout</code> (id: <code>fragmentContainer</code>) di atas dan <code>BottomNavigationView</code> di bawah.</p>
                     </li>
                     <li>
-                        <strong>Setup di <code>MainActivity.kt</code></strong>
-                        <p>Implementasikan pergantian Fragment saat item BottomNav diklik menggunakan <code>FragmentManager</code>. Tampilkan HomeFragment sebagai default.</p>
-                    </li>
-                    <li>
-                        <strong>Pastikan RecyclerView Berjalan di Fragment</strong>
-                        <p>Perhatikan penggunaan <code>requireContext()</code> dan <code>view.findViewById()</code> — berbeda dengan di Activity.</p>
+                        <strong>Update <code>MainActivity.kt</code></strong>
+                        <p>Hapus semua logic RecyclerView. Tambahkan <code>BottomNavigationView</code> dengan <code>setOnItemSelectedListener</code> yang mengganti Fragment sesuai tab yang diklik. Tampilkan <code>HomeFragment</code> sebagai default.</p>
                     </li>
                     <li class="ho-bonus">
-                        <strong>&#11088; Bonus: ViewPager2 + TabLayout di ProfileFragment</strong>
-                        <p>Tambahkan ViewPager2 dengan 2 tab: <em>Info</em> (nama, NIM, prodi) dan <em>Aktivitas</em>.</p>
+                        <strong>&#11088; Bonus: Filter real-time di SearchFragment</strong>
+                        <p>Saat user mengetik di EditText, list langsung difilter tanpa perlu tombol Search. Gunakan <code>addTextChangedListener</code> dan buat fungsi filter di adapter atau di Fragment.</p>
                     </li>
                 </ol>
             </article>
