@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi PHP - Pemrograman Web</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%) !important;
+        }
+        .sidebar h3 { color: #8e44ad !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #8e44ad !important; }
+        .sidebar ul li a.active { background-color: #8e44ad !important; }
+        section h2 { border-bottom: 3px solid #8e44ad !important; }
+        th { background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%) !important; }
+        .badge { background: #8e44ad !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #8e44ad !important; }
+
+        .php-tag { color: #8e44ad; font-weight: bold; }
+        .php-var { color: #e74c3c; }
+        .php-string { color: #27ae60; }
+        .php-keyword { color: #2980b9; font-weight: bold; }
+        .php-function { color: #e67e22; }
+        .php-comment { color: #7f8c8d; font-style: italic; }
+        .php-number { color: #d35400; }
+
+        .file-label {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: -1px;
+            position: relative;
+            z-index: 1;
+        }
+        .file-php {
+            background: #8e44ad;
+            color: white;
+        }
+        .file-html {
+            background: #e67e22;
+            color: white;
+        }
+        .file-output {
+            background: #27ae60;
+            color: white;
+        }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .flow-box {
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            min-width: 120px;
+        }
+        .flow-arrow {
+            font-size: 1.5em;
+            color: #7f8c8d;
+        }
+
+        .hands-on-box {
+            background: linear-gradient(135deg, #f5f0ff, #efe5ff);
+            border: 2px solid #8e44ad;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .hands-on-box h4 {
+            color: #8e44ad;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            display: inline-flex;
+            width: 30px;
+            height: 30px;
+            background: #8e44ad;
+            color: white;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .pros-box {
+            background: #e8f8f5;
+            border: 2px solid #27ae60;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .cons-box {
+            background: #fdedec;
+            border: 2px solid #e74c3c;
+            border-radius: 8px;
+            padding: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Materi PHP - Pemrograman Web</h1>
+        <p>Sub-CPMK 5: Membangun Halaman Web di Sisi Server dengan PHP</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#server-side" class="active">1. Cara Kerja Server Side</a></li>
+                <li><a href="#kelebihan-kekurangan">2. Kelebihan & Kekurangan</a></li>
+                <li><a href="#pengenalan-php">3. Pengenalan PHP</a></li>
+                <li><a href="#variabel-tipe">4. Variabel & Tipe Data</a></li>
+                <li><a href="#operator">5. Operator PHP</a></li>
+                <li><a href="#percabangan">6. Percabangan</a></li>
+                <li><a href="#perulangan">7. Perulangan</a></li>
+                <li><a href="#function">8. Function</a></li>
+                <li><a href="#array-php">9. Array</a></li>
+                <li><a href="#string-php">10. String & Fungsi Bawaan</a></li>
+                <li><a href="#form-handling">11. Form Handling (GET/POST)</a></li>
+                <li><a href="#hands-on">12. Hands-On: Form → PHP</a></li>
+                <li><a href="#superglobal">13. Superglobal Variables</a></li>
+                <li><a href="#class-oop">14. Class & OOP</a></li>
+                <li><a href="#latihan">15. Latihan & Tugas</a></li>
+            </ul>
+            
+            <h3>Capaian Pembelajaran</h3>
+            <ul>
+                <li><a href="#cpmk">CPMK 5.1 - 5.5</a></li>
+            </ul>
+
+            <h3>Link Terkait</h3>
+            <ul>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">eLearning</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+
+            <!-- Section 1: Cara Kerja Server Side -->
+            <section id="server-side">
+                <h2>1. Cara Kerja Server Side <span class="badge">CPMK 5.1</span></h2>
+                
+                <h3>Client Side vs Server Side</h3>
+                <p>Dalam pengembangan web, kode bisa dijalankan di dua tempat: <strong>client (browser)</strong> atau <strong>server</strong>. Pada pertemuan sebelumnya kita sudah belajar HTML, CSS, dan JavaScript yang berjalan di sisi client. Sekarang kita akan belajar <strong>PHP</strong> yang berjalan di sisi server.</p>
+
+                <table>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>Client Side</th>
+                        <th>Server Side</th>
+                    </tr>
+                    <tr>
+                        <td>Eksekusi di</td>
+                        <td>Browser pengguna</td>
+                        <td>Web Server</td>
+                    </tr>
+                    <tr>
+                        <td>Bahasa</td>
+                        <td>HTML, CSS, JavaScript</td>
+                        <td>PHP, Python, Java, Node.js, Ruby</td>
+                    </tr>
+                    <tr>
+                        <td>Kode bisa dilihat user?</td>
+                        <td>Ya (View Source)</td>
+                        <td>Tidak (hanya output HTML yang dikirim)</td>
+                    </tr>
+                    <tr>
+                        <td>Akses Database</td>
+                        <td>Tidak langsung</td>
+                        <td>Ya (MySQL, PostgreSQL, dll)</td>
+                    </tr>
+                    <tr>
+                        <td>Akses File Server</td>
+                        <td>Tidak</td>
+                        <td>Ya</td>
+                    </tr>
+                    <tr>
+                        <td>Contoh</td>
+                        <td>Animasi, validasi form, DOM</td>
+                        <td>Login, simpan data, kirim email</td>
+                    </tr>
+                </table>
+
+                <h3>Alur Kerja Server Side</h3>
+
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background: #3498db;">🖥️<br>Browser<br>(Client)</div>
+                    <div class="flow-arrow">→<br><small>HTTP Request</small></div>
+                    <div class="flow-box" style="background: #e67e22;">🌐<br>Web Server<br>(Apache/Nginx)</div>
+                    <div class="flow-arrow">→<br><small>Proses</small></div>
+                    <div class="flow-box" style="background: #8e44ad;">🐘<br>PHP<br>Engine</div>
+                    <div class="flow-arrow">↔<br><small>Query</small></div>
+                    <div class="flow-box" style="background: #27ae60;">🗄️<br>Database<br>(MySQL)</div>
+                </div>
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background: #8e44ad;">🐘<br>PHP Engine</div>
+                    <div class="flow-arrow">→<br><small>Generate HTML</small></div>
+                    <div class="flow-box" style="background: #e67e22;">🌐<br>Web Server</div>
+                    <div class="flow-arrow">→<br><small>HTTP Response</small></div>
+                    <div class="flow-box" style="background: #3498db;">🖥️<br>Browser<br>(Tampilkan HTML)</div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Alur detail:</strong>
+                    <ol>
+                        <li>User membuka URL di browser → browser mengirim <strong>HTTP Request</strong></li>
+                        <li>Request diterima oleh <strong>Web Server</strong> (Apache/Nginx)</li>
+                        <li>Jika file berekstensi <code>.php</code>, web server meneruskan ke <strong>PHP Engine</strong></li>
+                        <li>PHP Engine mengeksekusi kode PHP, bisa juga mengakses <strong>Database</strong></li>
+                        <li>PHP menghasilkan output berupa <strong>HTML</strong></li>
+                        <li>Web Server mengirim HTML sebagai <strong>HTTP Response</strong> ke browser</li>
+                        <li>Browser menampilkan HTML (user hanya melihat HTML, bukan kode PHP)</li>
+                    </ol>
+                </div>
+
+                <h3>Apa yang Dibutuhkan untuk Menjalankan PHP?</h3>
+                <table>
+                    <tr>
+                        <th>Software</th>
+                        <th>Fungsi</th>
+                        <th>Contoh</th>
+                    </tr>
+                    <tr>
+                        <td>Web Server</td>
+                        <td>Menerima request dan mengirim response</td>
+                        <td>Apache, Nginx</td>
+                    </tr>
+                    <tr>
+                        <td>PHP Engine</td>
+                        <td>Mengeksekusi kode PHP</td>
+                        <td>PHP 8.x</td>
+                    </tr>
+                    <tr>
+                        <td>Database</td>
+                        <td>Menyimpan data</td>
+                        <td>MySQL, MariaDB</td>
+                    </tr>
+                    <tr>
+                        <td>All-in-One</td>
+                        <td>Paket lengkap</td>
+                        <td><strong>XAMPP</strong>, Laragon, WAMP, MAMP</td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Penting:</strong> File PHP <strong>tidak bisa</strong> dibuka langsung di browser seperti HTML. Harus dijalankan melalui web server! Simpan file di folder <code>htdocs</code> (XAMPP) lalu akses melalui <code>http://localhost/namafile.php</code>
+                </div>
+            </section>
+
+            <!-- Section 2: Kelebihan & Kekurangan -->
+            <section id="kelebihan-kekurangan">
+                <h2>2. Kelebihan & Kekurangan Server Side <span class="badge">CPMK 5.2</span></h2>
+                
+                <div class="comparison-grid">
+                    <div class="pros-box">
+                        <h4>Kelebihan Server Side</h4>
+                        <ul>
+                            <li><strong>Keamanan</strong> - Kode tidak bisa dilihat oleh user</li>
+                            <li><strong>Akses Database</strong> - Bisa menyimpan dan mengambil data</li>
+                            <li><strong>Akses File System</strong> - Bisa membaca/menulis file di server</li>
+                            <li><strong>Otentikasi</strong> - Bisa mengelola login dan session</li>
+                            <li><strong>Konsisten</strong> - Hasilnya sama di semua browser</li>
+                            <li><strong>Tidak bergantung pada browser</strong> - Output sudah HTML final</li>
+                            <li><strong>Proses data besar</strong> - Bisa menangani data dalam jumlah besar</li>
+                        </ul>
+                    </div>
+                    <div class="cons-box">
+                        <h4>Kekurangan Server Side</h4>
+                        <ul>
+                            <li><strong>Beban server</strong> - Semua request diproses di server</li>
+                            <li><strong>Latency</strong> - Setiap interaksi butuh request ke server</li>
+                            <li><strong>Biaya hosting</strong> - Butuh server yang cukup kuat</li>
+                            <li><strong>Tidak interaktif</strong> - Tidak bisa manipulasi DOM langsung</li>
+                            <li><strong>Page reload</strong> - Perlu refresh halaman untuk update (tanpa AJAX)</li>
+                            <li><strong>Butuh environment khusus</strong> - Harus ada web server + interpreter</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Perbandingan Script Server Side</h3>
+                <table>
+                    <tr>
+                        <th>Bahasa</th>
+                        <th>Kelebihan</th>
+                        <th>Kekurangan</th>
+                        <th>Contoh Framework</th>
+                    </tr>
+                    <tr>
+                        <td><strong>PHP</strong></td>
+                        <td>Mudah dipelajari, hosting murah, komunitas besar</td>
+                        <td>Desain bahasa kurang konsisten</td>
+                        <td>Laravel, CodeIgniter</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Node.js</strong></td>
+                        <td>JavaScript di server, cepat, real-time</td>
+                        <td>Callback hell, single-threaded</td>
+                        <td>Express, NestJS</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Python</strong></td>
+                        <td>Sintaks bersih, powerful, AI/ML</td>
+                        <td>Lebih lambat dari compiled</td>
+                        <td>Django, Flask</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Java</strong></td>
+                        <td>Enterprise, scalable, type-safe</td>
+                        <td>Verbose, setup kompleks</td>
+                        <td>Spring Boot</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ruby</strong></td>
+                        <td>Elegant syntax, developer-friendly</td>
+                        <td>Performa lebih rendah</td>
+                        <td>Ruby on Rails</td>
+                    </tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>💡 Mengapa Belajar PHP?</strong>
+                    <ul>
+                        <li>Digunakan oleh <strong>~77%</strong> website di dunia (termasuk WordPress, Facebook awal)</li>
+                        <li>Mudah dipelajari untuk pemula</li>
+                        <li>Hosting sangat murah dan tersedia di mana-mana</li>
+                        <li>Ekosistem framework matang (Laravel, CodeIgniter)</li>
+                        <li>Cocok untuk pemrograman web fundamental</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 3: Pengenalan PHP -->
+            <section id="pengenalan-php">
+                <h2>3. Pengenalan PHP <span class="badge">CPMK 5.3</span></h2>
+                
+                <h3>Apa itu PHP?</h3>
+                <p><strong>PHP (PHP: Hypertext Preprocessor)</strong> adalah bahasa pemrograman server-side yang dirancang khusus untuk pengembangan web. PHP diciptakan oleh <strong>Rasmus Lerdorf</strong> pada tahun 1994.</p>
+
+                <h3>Struktur Dasar PHP</h3>
+                <span class="file-label file-php">📄 hello.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+    <span class="php-comment">// Kode PHP ditulis di antara tag php</span>
+    <span class="php-keyword">echo</span> <span class="php-string">"Hello, World!"</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>PHP di dalam HTML</h3>
+                <span class="file-label file-php">📄 index.php</span>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;PHP dalam HTML&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Selamat Datang&lt;/h1&gt;
+    
+    <span class="php-tag">&lt;?php</span>
+        <span class="php-comment">// Variabel PHP</span>
+        <span class="php-var">$nama</span> = <span class="php-string">"Mahasiswa"</span>;
+        <span class="php-var">$tahun</span> = <span class="php-function">date</span>(<span class="php-string">"Y"</span>);
+    <span class="php-tag">?&gt;</span>
+    
+    &lt;p&gt;Halo, <span class="php-tag">&lt;?php</span> <span class="php-keyword">echo</span> <span class="php-var">$nama</span>; <span class="php-tag">?&gt;</span>!&lt;/p&gt;
+    &lt;p&gt;Tahun sekarang: <span class="php-tag">&lt;?php</span> <span class="php-keyword">echo</span> <span class="php-var">$tahun</span>; <span class="php-tag">?&gt;</span>&lt;/p&gt;
+    
+    <span class="php-comment">&lt;!-- Shorthand echo --&gt;</span>
+    &lt;p&gt;Tahun: <span class="php-tag">&lt;?=</span> <span class="php-var">$tahun</span> <span class="php-tag">?&gt;</span>&lt;/p&gt;
+    
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <span class="file-label file-output">Output di Browser</span>
+                <pre><code>Selamat Datang
+Halo, Mahasiswa!
+Tahun sekarang: 2024
+Tahun: 2024</code></pre>
+
+                <h3>Cara Menjalankan PHP</h3>
+                <div class="info-box">
+                    <strong>Langkah-langkah:</strong>
+                    <ol>
+                        <li>Install <strong>XAMPP</strong> (download dari <a href="https://www.apachefriends.org/" target="_blank">apachefriends.org</a>)</li>
+                        <li>Jalankan <strong>Apache</strong> dari XAMPP Control Panel</li>
+                        <li>Simpan file <code>.php</code> di folder <code>C:\xampp\htdocs\</code></li>
+                        <li>Buka browser, akses <code>http://localhost/namafile.php</code></li>
+                    </ol>
+                </div>
+
+                <h3>Output di PHP</h3>
+                <span class="file-label file-php">📄 output.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// echo - menampilkan output (bisa multiple value)</span>
+<span class="php-keyword">echo</span> <span class="php-string">"Hello"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">" World"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;br&gt;"</span>;   <span class="php-comment">// bisa output HTML</span>
+
+<span class="php-comment">// echo dengan concatenation</span>
+<span class="php-var">$nama</span> = <span class="php-string">"John"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">"Halo, "</span> . <span class="php-var">$nama</span> . <span class="php-string">"!&lt;br&gt;"</span>;
+
+<span class="php-comment">// print - mirip echo, tapi hanya 1 value</span>
+<span class="php-keyword">print</span>(<span class="php-string">"Hello Print&lt;br&gt;"</span>);
+
+<span class="php-comment">// print_r - untuk array/object</span>
+<span class="php-var">$arr</span> = [<span class="php-number">1</span>, <span class="php-number">2</span>, <span class="php-number">3</span>];
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;pre&gt;"</span>;
+<span class="php-function">print_r</span>(<span class="php-var">$arr</span>);
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;/pre&gt;"</span>;
+
+<span class="php-comment">// var_dump - info lengkap (tipe + nilai)</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$nama</span>);  <span class="php-comment">// string(4) "John"</span>
+<span class="php-function">var_dump</span>(<span class="php-number">42</span>);      <span class="php-comment">// int(42)</span>
+<span class="php-function">var_dump</span>(<span class="php-keyword">true</span>);    <span class="php-comment">// bool(true)</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Komentar di PHP</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Komentar satu baris</span>
+
+<span class="php-comment"># Komentar satu baris (style Python)</span>
+
+<span class="php-comment">/*
+   Komentar
+   multi baris
+*/</span>
+
+<span class="php-keyword">echo</span> <span class="php-string">"Hello"</span>; <span class="php-comment">// komentar di samping kode</span>
+<span class="php-tag">?&gt;</span></code></pre>
+            </section>
+
+            <!-- Section 4: Variabel & Tipe Data -->
+            <section id="variabel-tipe">
+                <h2>4. Variabel & Tipe Data PHP <span class="badge">CPMK 5.3</span></h2>
+
+                <h3>Apa itu Variabel?</h3>
+                <p>Variabel adalah <strong>wadah untuk menyimpan data</strong> sementara di memori selama program berjalan. Bayangkan variabel seperti sebuah kotak berlabel — labelnya adalah nama variabel, isinya adalah nilainya.</p>
+
+                <div class="info-box">
+                    <strong>Ciri khas variabel PHP:</strong>
+                    <ul>
+                        <li>Selalu diawali tanda <code>$</code> — ini wajib, bukan opsional</li>
+                        <li><strong>Case-sensitive</strong> — <code>$Nama</code> dan <code>$nama</code> adalah dua variabel berbeda</li>
+                        <li><strong>Loosely typed</strong> — tidak perlu deklarasi tipe, PHP menentukan tipe secara otomatis dari nilai yang diisi</li>
+                        <li>Nilai bisa diubah kapan saja, bahkan berganti tipe</li>
+                    </ul>
+                </div>
+
+                <h3>Aturan Penamaan Variabel</h3>
+                <table>
+                    <tr>
+                        <th>Aturan</th>
+                        <th>Contoh Benar ✅</th>
+                        <th>Contoh Salah ❌</th>
+                    </tr>
+                    <tr>
+                        <td>Dimulai dengan <code>$</code></td>
+                        <td><code>$nama</code></td>
+                        <td><code>nama</code></td>
+                    </tr>
+                    <tr>
+                        <td>Karakter pertama: huruf atau <code>_</code></td>
+                        <td><code>$_data</code>, <code>$namaUser</code></td>
+                        <td><code>$1nama</code>, <code>$9x</code></td>
+                    </tr>
+                    <tr>
+                        <td>Hanya huruf, angka, dan <code>_</code></td>
+                        <td><code>$nama_depan</code></td>
+                        <td><code>$nama-depan</code>, <code>$nama depan</code></td>
+                    </tr>
+                    <tr>
+                        <td>Case-sensitive</td>
+                        <td><code>$Nama</code> ≠ <code>$nama</code></td>
+                        <td>—</td>
+                    </tr>
+                </table>
+
+                <h3>Variabel vs Konstanta</h3>
+                <div class="comparison-grid">
+                    <div class="pros-box">
+                        <h4>Variabel</h4>
+                        <ul>
+                            <li>Nilainya <strong>bisa berubah</strong></li>
+                            <li>Diawali <code>$</code></li>
+                            <li>Berlaku di scope tertentu (lokal/global)</li>
+                            <li>Contoh: <code>$harga = 50000;</code></li>
+                        </ul>
+                    </div>
+                    <div class="cons-box" style="border-color: #2980b9; background: #eaf4fb;">
+                        <h4>Konstanta</h4>
+                        <ul>
+                            <li>Nilainya <strong>tidak bisa diubah</strong> setelah ditetapkan</li>
+                            <li>Tanpa <code>$</code>, biasanya HURUF_BESAR</li>
+                            <li>Berlaku global di seluruh script</li>
+                            <li>Contoh: <code>define("PAJAK", 0.11);</code></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Variabel PHP</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Variabel dimulai dengan tanda $</span>
+<span class="php-var">$nama</span> = <span class="php-string">"John Doe"</span>;
+<span class="php-var">$umur</span> = <span class="php-number">20</span>;
+<span class="php-var">$ipk</span> = <span class="php-number">3.75</span>;
+<span class="php-var">$aktif</span> = <span class="php-keyword">true</span>;
+
+<span class="php-comment">// PHP bersifat loosely typed (tipe otomatis)</span>
+<span class="php-var">$x</span> = <span class="php-number">10</span>;       <span class="php-comment">// integer</span>
+<span class="php-var">$x</span> = <span class="php-string">"hello"</span>;  <span class="php-comment">// sekarang string (otomatis berubah)</span>
+
+<span class="php-comment">// Aturan penamaan variabel:</span>
+<span class="php-var">$namaDepan</span> = <span class="php-string">"John"</span>;     <span class="php-comment">// camelCase</span>
+<span class="php-var">$nama_depan</span> = <span class="php-string">"John"</span>;    <span class="php-comment">// snake_case</span>
+<span class="php-var">$_private</span> = <span class="php-string">"data"</span>;      <span class="php-comment">// boleh dimulai _</span>
+<span class="php-comment">// $1nama = "salah";       // tidak boleh dimulai angka</span>
+
+<span class="php-comment">// Konstanta</span>
+<span class="php-function">define</span>(<span class="php-string">"PI"</span>, <span class="php-number">3.14159</span>);
+<span class="php-keyword">const</span> NAMA_APP = <span class="php-string">"My Website"</span>;
+
+<span class="php-keyword">echo</span> PI;        <span class="php-comment">// 3.14159</span>
+<span class="php-keyword">echo</span> NAMA_APP;  <span class="php-comment">// My Website</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Tipe Data PHP</h3>
+                <p>PHP memiliki <strong>8 tipe data</strong> yang dibagi menjadi 3 kelompok:</p>
+
+                <div class="flow-diagram" style="justify-content: flex-start; gap: 20px;">
+                    <div class="flow-box" style="background: #8e44ad; min-width: 140px;">
+                        <strong>Scalar</strong><br>
+                        <small>String, Integer,<br>Float, Boolean</small>
+                    </div>
+                    <div class="flow-box" style="background: #2980b9; min-width: 140px;">
+                        <strong>Compound</strong><br>
+                        <small>Array, Object</small>
+                    </div>
+                    <div class="flow-box" style="background: #7f8c8d; min-width: 140px;">
+                        <strong>Special</strong><br>
+                        <small>NULL, Resource</small>
+                    </div>
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Tipe</th>
+                        <th>Kelompok</th>
+                        <th>Keterangan</th>
+                        <th>Contoh</th>
+                    </tr>
+                    <tr>
+                        <td><code>String</code></td>
+                        <td>Scalar</td>
+                        <td>Teks, diapit tanda kutip</td>
+                        <td><code>$s = "Hello";</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Integer</code></td>
+                        <td>Scalar</td>
+                        <td>Bilangan bulat (positif/negatif)</td>
+                        <td><code>$i = 42;</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Float</code></td>
+                        <td>Scalar</td>
+                        <td>Bilangan desimal / pecahan</td>
+                        <td><code>$f = 3.14;</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Boolean</code></td>
+                        <td>Scalar</td>
+                        <td>Hanya dua nilai: <code>true</code> atau <code>false</code></td>
+                        <td><code>$b = true;</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Array</code></td>
+                        <td>Compound</td>
+                        <td>Kumpulan banyak nilai dalam satu variabel</td>
+                        <td><code>$a = [1, 2, 3];</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Object</code></td>
+                        <td>Compound</td>
+                        <td>Instance dari sebuah class</td>
+                        <td><code>$o = new User();</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>NULL</code></td>
+                        <td>Special</td>
+                        <td>Variabel tanpa nilai / kosong</td>
+                        <td><code>$n = null;</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>Resource</code></td>
+                        <td>Special</td>
+                        <td>Referensi ke sumber eksternal (file, koneksi DB)</td>
+                        <td><code>$f = fopen("file.txt", "r");</code></td>
+                    </tr>
+                </table>
+
+                <h3>Penjelasan Tiap Tipe Data</h3>
+
+                <h4>1. String</h4>
+                <p>String adalah urutan karakter — bisa berupa kata, kalimat, angka dalam tanda kutip, bahkan HTML. Panjangnya tidak terbatas.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$nama</span>    = <span class="php-string">"John Doe"</span>;       <span class="php-comment">// double quotes</span>
+<span class="php-var">$kota</span>    = <span class="php-string">'Mataram'</span>;        <span class="php-comment">// single quotes</span>
+<span class="php-var">$kosong</span>  = <span class="php-string">""</span>;               <span class="php-comment">// string kosong</span>
+<span class="php-var">$angka</span>   = <span class="php-string">"42"</span>;             <span class="php-comment">// ini STRING, bukan integer!</span>
+<span class="php-var">$panjang</span> = <span class="php-function">strlen</span>(<span class="php-var">$nama</span>);    <span class="php-comment">// 8 (jumlah karakter)</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h4>2. Integer</h4>
+                <p>Integer adalah bilangan bulat tanpa koma. PHP mendukung notasi desimal, heksadesimal, oktal, dan biner.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$positif</span> = <span class="php-number">100</span>;
+<span class="php-var">$negatif</span> = -<span class="php-number">50</span>;
+<span class="php-var">$hex</span>     = <span class="php-number">0x1A</span>;    <span class="php-comment">// heksadesimal = 26</span>
+<span class="php-var">$oktal</span>   = <span class="php-number">0755</span>;   <span class="php-comment">// oktal = 493</span>
+<span class="php-var">$biner</span>   = <span class="php-number">0b1010</span>; <span class="php-comment">// biner = 10</span>
+
+<span class="php-keyword">echo</span> PHP_INT_MAX; <span class="php-comment">// nilai integer maksimum di sistem</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h4>3. Float</h4>
+                <p>Float (juga disebut <em>double</em>) adalah bilangan dengan koma desimal. Hati-hati dengan presisi float saat membandingkan nilai.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$ipk</span>   = <span class="php-number">3.75</span>;
+<span class="php-var">$suhu</span>  = -<span class="php-number">12.5</span>;
+<span class="php-var">$sains</span> = <span class="php-number">1.5e3</span>;   <span class="php-comment">// notasi ilmiah = 1500</span>
+
+<span class="php-comment">// ⚠️ Hati-hati perbandingan float!</span>
+<span class="php-var">$a</span> = <span class="php-number">0.1</span> + <span class="php-number">0.2</span>;
+<span class="php-function">var_dump</span>(<span class="php-var">$a</span> == <span class="php-number">0.3</span>);   <span class="php-comment">// false! (masalah presisi floating point)</span>
+<span class="php-function">var_dump</span>(<span class="php-function">round</span>(<span class="php-var">$a</span>, <span class="php-number">1</span>) == <span class="php-number">0.3</span>); <span class="php-comment">// true (gunakan round)</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h4>4. Boolean</h4>
+                <p>Boolean hanya punya dua nilai: <code>true</code> atau <code>false</code>. Sering digunakan dalam kondisi percabangan. PHP juga mengenal nilai yang dianggap <strong>falsy</strong> (dianggap false) dan <strong>truthy</strong>.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$login</span>  = <span class="php-keyword">true</span>;
+<span class="php-var">$aktif</span>  = <span class="php-keyword">false</span>;
+
+<span class="php-comment">// Nilai yang dianggap FALSE (falsy):</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-number">0</span>);        <span class="php-comment">// false</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-string">""</span>);       <span class="php-comment">// false (string kosong)</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-string">"0"</span>);      <span class="php-comment">// false (string "0")</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) []);       <span class="php-comment">// false (array kosong)</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-keyword">null</span>);    <span class="php-comment">// false</span>
+
+<span class="php-comment">// Nilai yang dianggap TRUE (truthy):</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-number">1</span>);        <span class="php-comment">// true</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) -<span class="php-number">1</span>);       <span class="php-comment">// true (angka non-nol)</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) <span class="php-string">"hello"</span>);  <span class="php-comment">// true (string non-kosong)</span>
+<span class="php-function">var_dump</span>((<span class="php-keyword">bool</span>) [<span class="php-number">1</span>]);      <span class="php-comment">// true (array tidak kosong)</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h4>5. NULL</h4>
+                <p>NULL berarti variabel <strong>tidak memiliki nilai</strong>. Sebuah variabel bernilai NULL jika: belum diisi, di-assign <code>null</code>, atau di-<code>unset()</code>.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$a</span> = <span class="php-keyword">null</span>;
+<span class="php-var">$b</span>;                        <span class="php-comment">// variabel belum diisi = NULL</span>
+
+<span class="php-function">var_dump</span>(<span class="php-function">is_null</span>(<span class="php-var">$a</span>));     <span class="php-comment">// true</span>
+<span class="php-function">var_dump</span>(<span class="php-function">isset</span>(<span class="php-var">$a</span>));       <span class="php-comment">// false (NULL dianggap tidak di-set)</span>
+
+<span class="php-var">$c</span> = <span class="php-string">"ada"</span>;
+<span class="php-keyword">unset</span>(<span class="php-var">$c</span>);                 <span class="php-comment">// hapus variabel → jadi NULL</span>
+<span class="php-function">var_dump</span>(<span class="php-function">isset</span>(<span class="php-var">$c</span>));       <span class="php-comment">// false</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>isset() vs empty() vs is_null()</strong>
+                    <ul>
+                        <li><code>isset($x)</code> — <code>true</code> jika variabel ada dan nilainya bukan NULL</li>
+                        <li><code>empty($x)</code> — <code>true</code> jika variabel kosong, 0, "", null, false, atau array kosong</li>
+                        <li><code>is_null($x)</code> — <code>true</code> hanya jika nilainya benar-benar NULL</li>
+                    </ul>
+                </div>
+
+                <h3>String: Single vs Double Quotes</h3>
+                <p>Perbedaan paling penting: double quotes <strong>memproses variabel</strong> di dalamnya, single quotes <strong>tidak</strong>. Pilih sesuai kebutuhan.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$nama</span> = <span class="php-string">"John"</span>;
+
+<span class="php-comment">// Double quotes - variabel diparse ⭐</span>
+<span class="php-keyword">echo</span> <span class="php-string">"Halo, $nama!"</span>;        <span class="php-comment">// Output: Halo, John!</span>
+<span class="php-keyword">echo</span> <span class="php-string">"Halo, {$nama}!"</span>;      <span class="php-comment">// Output: Halo, John!</span>
+
+<span class="php-comment">// Single quotes - variabel TIDAK diparse</span>
+<span class="php-keyword">echo</span> <span class="php-string">'Halo, $nama!'</span>;        <span class="php-comment">// Output: Halo, $nama!</span>
+
+<span class="php-comment">// Concatenation (titik .)</span>
+<span class="php-keyword">echo</span> <span class="php-string">'Halo, '</span> . <span class="php-var">$nama</span> . <span class="php-string">'!'</span>; <span class="php-comment">// Output: Halo, John!</span>
+
+<span class="php-comment">// Heredoc (multi-line, variabel diparse)</span>
+<span class="php-var">$html</span> = &lt;&lt;&lt;HTML
+    &lt;h1&gt;Selamat Datang&lt;/h1&gt;
+    &lt;p&gt;Halo, <span class="php-var">$nama</span>!&lt;/p&gt;
+HTML;
+
+<span class="php-keyword">echo</span> <span class="php-var">$html</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Type Casting & Checking</h3>
+                <p>Karena PHP <em>loosely typed</em>, kadang kita perlu <strong>memaksa konversi tipe</strong> (casting) atau <strong>memeriksa tipe</strong> sebuah variabel — terutama saat menerima input dari user.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Mengecek tipe data</span>
+<span class="php-var">$x</span> = <span class="php-number">42</span>;
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span>);              <span class="php-comment">// int(42)</span>
+<span class="php-keyword">echo</span> <span class="php-function">gettype</span>(<span class="php-var">$x</span>);          <span class="php-comment">// "integer"</span>
+<span class="php-keyword">echo</span> <span class="php-function">is_int</span>(<span class="php-var">$x</span>);            <span class="php-comment">// true</span>
+<span class="php-keyword">echo</span> <span class="php-function">is_string</span>(<span class="php-var">$x</span>);         <span class="php-comment">// false</span>
+
+<span class="php-comment">// Type casting (konversi paksa)</span>
+<span class="php-var">$str</span> = <span class="php-string">"123"</span>;
+<span class="php-var">$int</span> = (<span class="php-keyword">int</span>) <span class="php-var">$str</span>;         <span class="php-comment">// 123</span>
+<span class="php-var">$float</span> = (<span class="php-keyword">float</span>) <span class="php-string">"3.14"</span>;   <span class="php-comment">// 3.14</span>
+<span class="php-var">$bool</span> = (<span class="php-keyword">bool</span>) <span class="php-number">1</span>;          <span class="php-comment">// true</span>
+<span class="php-var">$arr</span> = (<span class="php-keyword">array</span>) <span class="php-string">"hello"</span>;    <span class="php-comment">// ["hello"]</span>
+
+<span class="php-comment">// Konversi function</span>
+<span class="php-var">$angka</span> = <span class="php-function">intval</span>(<span class="php-string">"42abc"</span>);   <span class="php-comment">// 42</span>
+<span class="php-var">$desimal</span> = <span class="php-function">floatval</span>(<span class="php-string">"3.14"</span>); <span class="php-comment">// 3.14</span>
+<span class="php-var">$teks</span> = <span class="php-function">strval</span>(<span class="php-number">100</span>);        <span class="php-comment">// "100"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="success-box">
+                    <strong>💡 Ringkasan Penting:</strong>
+                    <ul>
+                        <li>Variabel PHP selalu diawali <code>$</code> dan bersifat <strong>case-sensitive</strong></li>
+                        <li>PHP <strong>loosely typed</strong> — tipe ditentukan otomatis, tapi bisa berubah</li>
+                        <li>Gunakan <code>var_dump()</code> untuk debug tipe + nilai sekaligus</li>
+                        <li>Double quotes <code>"..."</code> memproses variabel; single quotes <code>'...'</code> tidak</li>
+                        <li>Gunakan <code>===</code> (bukan <code>==</code>) untuk perbandingan yang memeriksa tipe juga</li>
+                        <li><code>isset()</code> untuk cek variabel ada; <code>empty()</code> untuk cek variabel kosong/falsy</li>
+                        <li>Konstanta (<code>define</code> / <code>const</code>) nilainya tidak bisa diubah dan berlaku global</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 5: Operator -->
+            <section id="operator">
+                <h2>5. Operator PHP <span class="badge">CPMK 5.3</span></h2>
+
+                <p><strong>Operator</strong> adalah simbol yang digunakan untuk memproses data. Operator dipakai untuk menghitung, membandingkan, menggabungkan kondisi, memperbarui nilai variabel, dan menyusun string.</p>
+
+                <p>Hampir semua logika program bergantung pada operator. Jika mahasiswa paham operator, maka materi percabangan, perulangan, dan function akan jauh lebih mudah dipahami.</p>
+
+                <h3>Jenis Operator yang Sering Dipakai</h3>
+                <table>
+                    <tr>
+                        <th>Jenis</th>
+                        <th>Contoh</th>
+                        <th>Fungsi</th>
+                    </tr>
+                    <tr>
+                        <td>Aritmatika</td>
+                        <td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code></td>
+                        <td>Melakukan perhitungan</td>
+                    </tr>
+                    <tr>
+                        <td>Perbandingan</td>
+                        <td><code>==</code>, <code>===</code>, <code>&gt;</code>, <code>&lt;</code></td>
+                        <td>Menghasilkan nilai <code>true</code> atau <code>false</code></td>
+                    </tr>
+                    <tr>
+                        <td>Logika</td>
+                        <td><code>&amp;&amp;</code>, <code>||</code>, <code>!</code></td>
+                        <td>Menggabungkan beberapa kondisi</td>
+                    </tr>
+                    <tr>
+                        <td>Assignment</td>
+                        <td><code>=</code>, <code>+=</code>, <code>-=</code></td>
+                        <td>Mengisi atau mengubah nilai variabel</td>
+                    </tr>
+                    <tr>
+                        <td>String</td>
+                        <td><code>.</code>, <code>.=</code></td>
+                        <td>Menggabungkan teks</td>
+                    </tr>
+                </table>
+                
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// === OPERATOR ARITMATIKA ===</span>
+<span class="php-var">$a</span> = <span class="php-number">10</span>; <span class="php-var">$b</span> = <span class="php-number">3</span>;
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> + <span class="php-var">$b</span>;    <span class="php-comment">// 13</span>
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> - <span class="php-var">$b</span>;    <span class="php-comment">// 7</span>
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> * <span class="php-var">$b</span>;    <span class="php-comment">// 30</span>
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> / <span class="php-var">$b</span>;    <span class="php-comment">// 3.333...</span>
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> % <span class="php-var">$b</span>;    <span class="php-comment">// 1 (modulus)</span>
+<span class="php-keyword">echo</span> <span class="php-var">$a</span> ** <span class="php-var">$b</span>;   <span class="php-comment">// 1000 (pangkat)</span>
+
+<span class="php-comment">// === OPERATOR PERBANDINGAN ===</span>
+<span class="php-var">$x</span> = <span class="php-number">5</span>; <span class="php-var">$y</span> = <span class="php-string">"5"</span>;
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> == <span class="php-var">$y</span>);     <span class="php-comment">// true (sama nilai)</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> === <span class="php-var">$y</span>);    <span class="php-comment">// false (beda tipe) ⭐</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> != <span class="php-var">$y</span>);     <span class="php-comment">// false</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> !== <span class="php-var">$y</span>);    <span class="php-comment">// true ⭐</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> > <span class="php-number">3</span>);       <span class="php-comment">// true</span>
+<span class="php-function">var_dump</span>(<span class="php-var">$x</span> <=> <span class="php-number">10</span>);    <span class="php-comment">// -1 (spaceship operator PHP7)</span>
+
+<span class="php-comment">// === OPERATOR LOGIKA ===</span>
+<span class="php-function">var_dump</span>(<span class="php-keyword">true</span> && <span class="php-keyword">false</span>);  <span class="php-comment">// false (AND)</span>
+<span class="php-function">var_dump</span>(<span class="php-keyword">true</span> || <span class="php-keyword">false</span>);  <span class="php-comment">// true (OR)</span>
+<span class="php-function">var_dump</span>(!<span class="php-keyword">true</span>);           <span class="php-comment">// false (NOT)</span>
+
+<span class="php-comment">// === OPERATOR STRING ===</span>
+<span class="php-var">$str</span> = <span class="php-string">"Hello"</span> . <span class="php-string">" World"</span>;  <span class="php-comment">// concatenation (titik)</span>
+<span class="php-var">$str</span> .= <span class="php-string">"!"</span>;                <span class="php-comment">// "Hello World!"</span>
+
+<span class="php-comment">// === ASSIGNMENT ===</span>
+<span class="php-var">$x</span> = <span class="php-number">10</span>;
+<span class="php-var">$x</span> += <span class="php-number">5</span>;   <span class="php-comment">// $x = $x + 5  → 15</span>
+<span class="php-var">$x</span> -= <span class="php-number">3</span>;   <span class="php-comment">// $x = $x - 3  → 12</span>
+<span class="php-var">$x</span> *= <span class="php-number">2</span>;   <span class="php-comment">// $x = $x * 2  → 24</span>
+<span class="php-var">$x</span> /= <span class="php-number">4</span>;   <span class="php-comment">// $x = $x / 4  → 6</span>
+
+<span class="php-comment">// === NULL COALESCING (PHP 7) ===</span>
+<span class="php-var">$nama</span> = <span class="php-var">$_GET</span>[<span class="php-string">'nama'</span>] ?? <span class="php-string">"Guest"</span>;
+<span class="php-comment">// Jika $_GET['nama'] null/tidak ada, gunakan "Guest"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Catatan penting:</strong>
+                    <ul>
+                        <li><code>==</code> mengecek kesamaan nilai, sedangkan <code>===</code> mengecek nilai sekaligus tipe data.</li>
+                        <li>Untuk string, PHP memakai operator <code>.</code>, bukan tanda <code>+</code>.</li>
+                        <li><code>&amp;&amp;</code> berarti semua kondisi harus benar, sedangkan <code>||</code> berarti cukup salah satu benar.</li>
+                        <li><code>??</code> berguna saat membaca data dari <code>$_GET</code>, <code>$_POST</code>, atau array yang mungkin belum ada.</li>
+                    </ul>
+                </div>
+
+                <h3>Contoh Kasus Nyata</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$harga</span> = <span class="php-number">150000</span>;
+<span class="php-var">$diskon</span> = <span class="php-number">20</span>;
+<span class="php-var">$member</span> = <span class="php-keyword">true</span>;
+
+<span class="php-var">$potongan</span> = <span class="php-var">$harga</span> * <span class="php-var">$diskon</span> / <span class="php-number">100</span>;
+<span class="php-var">$total</span> = <span class="php-var">$harga</span> - <span class="php-var">$potongan</span>;
+
+<span class="php-keyword">if</span> (<span class="php-var">$member</span> &amp;&amp; <span class="php-var">$total</span> &gt; <span class="php-number">100000</span>) {
+    <span class="php-var">$total</span> -= <span class="php-number">10000</span>;
+}
+
+<span class="php-keyword">echo</span> <span class="php-string">"Total bayar: Rp "</span> . <span class="php-function">number_format</span>(<span class="php-var">$total</span>, <span class="php-number">0</span>, <span class="php-string">","</span>, <span class="php-string">"."</span>);
+<span class="php-tag">?&gt;</span></code></pre>
+            </section>
+
+            <!-- Section 6: Percabangan -->
+            <section id="percabangan">
+                <h2>6. Percabangan <span class="badge">CPMK 5.3</span></h2>
+
+                <p><strong>Percabangan</strong> adalah cara program memilih aksi berdasarkan kondisi tertentu. Jika kondisi benar, jalankan blok A. Jika salah, jalankan blok B.</p>
+
+                <p>Konsep ini dipakai di hampir semua aplikasi web: login berhasil atau gagal, nilai lulus atau tidak, stok tersedia atau habis, admin atau user biasa.</p>
+                
+                <h3>If - Else If - Else</h3>
+                <span class="file-label file-php">📄 grade.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$nilai</span> = <span class="php-number">85</span>;
+
+<span class="php-keyword">if</span> (<span class="php-var">$nilai</span> >= <span class="php-number">90</span>) {
+    <span class="php-var">$grade</span> = <span class="php-string">"A"</span>;
+    <span class="php-var">$keterangan</span> = <span class="php-string">"Sangat Baik"</span>;
+} <span class="php-keyword">elseif</span> (<span class="php-var">$nilai</span> >= <span class="php-number">80</span>) {
+    <span class="php-var">$grade</span> = <span class="php-string">"B"</span>;
+    <span class="php-var">$keterangan</span> = <span class="php-string">"Baik"</span>;
+} <span class="php-keyword">elseif</span> (<span class="php-var">$nilai</span> >= <span class="php-number">70</span>) {
+    <span class="php-var">$grade</span> = <span class="php-string">"C"</span>;
+    <span class="php-var">$keterangan</span> = <span class="php-string">"Cukup"</span>;
+} <span class="php-keyword">elseif</span> (<span class="php-var">$nilai</span> >= <span class="php-number">60</span>) {
+    <span class="php-var">$grade</span> = <span class="php-string">"D"</span>;
+    <span class="php-var">$keterangan</span> = <span class="php-string">"Kurang"</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-var">$grade</span> = <span class="php-string">"E"</span>;
+    <span class="php-var">$keterangan</span> = <span class="php-string">"Sangat Kurang"</span>;
+}
+
+<span class="php-keyword">echo</span> <span class="php-string">"Nilai: $nilai → Grade: $grade ($keterangan)"</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Cara kerja struktur ini:</strong>
+                    <ol>
+                        <li>Program mengecek kondisi pada <code>if</code> terlebih dahulu.</li>
+                        <li>Jika salah, program lanjut mengecek <code>elseif</code> berikutnya.</li>
+                        <li>Jika semua salah, maka blok <code>else</code> dijalankan.</li>
+                    </ol>
+                </div>
+
+                <h3>If di dalam HTML (Alternative Syntax)</h3>
+                <pre><code><span class="php-tag">&lt;?php</span> <span class="php-var">$isLogin</span> = <span class="php-keyword">true</span>; <span class="php-var">$nama</span> = <span class="php-string">"John"</span>; <span class="php-tag">?&gt;</span>
+
+&lt;div class="header"&gt;
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">if</span> (<span class="php-var">$isLogin</span>): <span class="php-tag">?&gt;</span>
+        &lt;p&gt;Selamat datang, <span class="php-tag">&lt;?=</span> <span class="php-var">$nama</span> <span class="php-tag">?&gt;</span>!&lt;/p&gt;
+        &lt;a href="logout.php"&gt;Logout&lt;/a&gt;
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">else</span>: <span class="php-tag">?&gt;</span>
+        &lt;a href="login.php"&gt;Login&lt;/a&gt;
+        &lt;a href="register.php"&gt;Daftar&lt;/a&gt;
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">endif</span>; <span class="php-tag">?&gt;</span>
+&lt;/div&gt;</code></pre>
+
+                <h3>Switch</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$hari</span> = <span class="php-function">date</span>(<span class="php-string">"l"</span>); <span class="php-comment">// nama hari saat ini</span>
+
+<span class="php-keyword">switch</span> (<span class="php-var">$hari</span>) {
+    <span class="php-keyword">case</span> <span class="php-string">"Monday"</span>:
+        <span class="php-keyword">echo</span> <span class="php-string">"Hari Senin - Semangat awal pekan!"</span>;
+        <span class="php-keyword">break</span>;
+    <span class="php-keyword">case</span> <span class="php-string">"Friday"</span>:
+        <span class="php-keyword">echo</span> <span class="php-string">"Hari Jumat - Weekend segera!"</span>;
+        <span class="php-keyword">break</span>;
+    <span class="php-keyword">case</span> <span class="php-string">"Saturday"</span>:
+    <span class="php-keyword">case</span> <span class="php-string">"Sunday"</span>:
+        <span class="php-keyword">echo</span> <span class="php-string">"Weekend! Istirahat 😊"</span>;
+        <span class="php-keyword">break</span>;
+    <span class="php-keyword">default</span>:
+        <span class="php-keyword">echo</span> <span class="php-string">"Hari biasa, tetap semangat!"</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Ternary Operator & Match (PHP 8)</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Ternary</span>
+<span class="php-var">$umur</span> = <span class="php-number">20</span>;
+<span class="php-var">$status</span> = (<span class="php-var">$umur</span> >= <span class="php-number">17</span>) ? <span class="php-string">"Dewasa"</span> : <span class="php-string">"Anak-anak"</span>;
+
+<span class="php-comment">// Match expression (PHP 8+)</span>
+<span class="php-var">$nilai</span> = <span class="php-number">85</span>;
+<span class="php-var">$grade</span> = <span class="php-keyword">match</span>(<span class="php-keyword">true</span>) {
+    <span class="php-var">$nilai</span> >= <span class="php-number">90</span> => <span class="php-string">"A"</span>,
+    <span class="php-var">$nilai</span> >= <span class="php-number">80</span> => <span class="php-string">"B"</span>,
+    <span class="php-var">$nilai</span> >= <span class="php-number">70</span> => <span class="php-string">"C"</span>,
+    <span class="php-keyword">default</span>      => <span class="php-string">"D"</span>,
+};
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Kapan Menggunakan yang Mana?</h3>
+                <table>
+                    <tr>
+                        <th>Bentuk</th>
+                        <th>Cocok untuk</th>
+                    </tr>
+                    <tr>
+                        <td><code>if / elseif / else</code></td>
+                        <td>Kondisi yang fleksibel dan kompleks</td>
+                    </tr>
+                    <tr>
+                        <td><code>switch</code></td>
+                        <td>Satu variabel dibandingkan dengan banyak pilihan tetap</td>
+                    </tr>
+                    <tr>
+                        <td><code>ternary</code></td>
+                        <td>Keputusan singkat dalam satu baris</td>
+                    </tr>
+                    <tr>
+                        <td><code>match</code></td>
+                        <td>Alternatif yang lebih ringkas dan tegas pada PHP 8+</td>
+                    </tr>
+                </table>
+
+                <h3>Contoh Kasus Nyata</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$stok</span> = <span class="php-number">0</span>;
+
+<span class="php-keyword">if</span> (<span class="php-var">$stok</span> &gt; <span class="php-number">0</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Produk tersedia"</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Produk habis"</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+            </section>
+
+            <!-- Section 7: Perulangan -->
+            <section id="perulangan">
+                <h2>7. Perulangan <span class="badge">CPMK 5.3</span></h2>
+
+                <p><strong>Perulangan</strong> digunakan untuk menjalankan blok kode yang sama berkali-kali. Ini membuat kode lebih singkat dibanding menulis perintah yang sama secara manual.</p>
+
+                <p>Perulangan sangat berguna saat membuat daftar, tabel, nomor urut, menghitung total, atau memproses sekumpulan data dari array dan database.</p>
+                
+                <h3>For Loop</h3>
+                <span class="file-label file-php">📄 tabel_perkalian.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Membuat tabel perkalian</span>
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;table border='1'&gt;"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;caption&gt;Tabel Perkalian&lt;/caption&gt;"</span>;
+
+<span class="php-keyword">for</span> (<span class="php-var">$i</span> = <span class="php-number">1</span>; <span class="php-var">$i</span> <= <span class="php-number">5</span>; <span class="php-var">$i</span>++) {
+    <span class="php-keyword">echo</span> <span class="php-string">"&lt;tr&gt;"</span>;
+    <span class="php-keyword">for</span> (<span class="php-var">$j</span> = <span class="php-number">1</span>; <span class="php-var">$j</span> <= <span class="php-number">5</span>; <span class="php-var">$j</span>++) {
+        <span class="php-var">$hasil</span> = <span class="php-var">$i</span> * <span class="php-var">$j</span>;
+        <span class="php-keyword">echo</span> <span class="php-string">"&lt;td&gt;$i × $j = $hasil&lt;/td&gt;"</span>;
+    }
+    <span class="php-keyword">echo</span> <span class="php-string">"&lt;/tr&gt;"</span>;
+}
+
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;/table&gt;"</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <p><code>for</code> biasanya dipakai jika jumlah perulangan sudah diketahui dengan jelas, misalnya dari 1 sampai 10.</p>
+
+                <h3>While & Do-While</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// While</span>
+<span class="php-var">$i</span> = <span class="php-number">1</span>;
+<span class="php-keyword">while</span> (<span class="php-var">$i</span> <= <span class="php-number">5</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Iterasi ke-$i&lt;br&gt;"</span>;
+    <span class="php-var">$i</span>++;
+}
+
+<span class="php-comment">// Do-While</span>
+<span class="php-var">$j</span> = <span class="php-number">1</span>;
+<span class="php-keyword">do</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Angka: $j&lt;br&gt;"</span>;
+<span class="php-var">$j</span>++;
+} <span class="php-keyword">while</span> (<span class="php-var">$j</span> <= <span class="php-number">5</span>);
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="comparison-grid">
+                    <div class="pros-box">
+                        <h4>while</h4>
+                        <ul>
+                            <li>Kondisi dicek di awal</li>
+                            <li>Bisa tidak berjalan sama sekali</li>
+                            <li>Cocok saat jumlah iterasi belum pasti</li>
+                        </ul>
+                    </div>
+                    <div class="cons-box" style="border-color: #2980b9; background: #eaf4fb;">
+                        <h4>do-while</h4>
+                        <ul>
+                            <li>Blok dijalankan minimal sekali</li>
+                            <li>Kondisi dicek di akhir</li>
+                            <li>Cocok jika aksi harus dicoba dulu</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>Foreach (untuk Array) ⭐</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Foreach - indexed array</span>
+<span class="php-var">$buah</span> = [<span class="php-string">"Apel"</span>, <span class="php-string">"Jeruk"</span>, <span class="php-string">"Mangga"</span>];
+
+<span class="php-keyword">foreach</span> (<span class="php-var">$buah</span> <span class="php-keyword">as</span> <span class="php-var">$item</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Buah: $item&lt;br&gt;"</span>;
+}
+
+<span class="php-comment">// Foreach - dengan index</span>
+<span class="php-keyword">foreach</span> (<span class="php-var">$buah</span> <span class="php-keyword">as</span> <span class="php-var">$index</span> => <span class="php-var">$item</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"$index: $item&lt;br&gt;"</span>;
+}
+
+<span class="php-comment">// Foreach - associative array</span>
+<span class="php-var">$mahasiswa</span> = [
+    <span class="php-string">"nama"</span> => <span class="php-string">"John"</span>,
+    <span class="php-string">"nim"</span> => <span class="php-string">"12345"</span>,
+    <span class="php-string">"jurusan"</span> => <span class="php-string">"Informatika"</span>
+];
+
+<span class="php-keyword">foreach</span> (<span class="php-var">$mahasiswa</span> <span class="php-keyword">as</span> <span class="php-var">$key</span> => <span class="php-var">$value</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"$key: $value&lt;br&gt;"</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Foreach di dalam HTML (Membuat Tabel Dinamis)</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$data_mahasiswa</span> = [
+    [<span class="php-string">"nama"</span> => <span class="php-string">"John"</span>,  <span class="php-string">"nim"</span> => <span class="php-string">"001"</span>, <span class="php-string">"jurusan"</span> => <span class="php-string">"Informatika"</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Jane"</span>,  <span class="php-string">"nim"</span> => <span class="php-string">"002"</span>, <span class="php-string">"jurusan"</span> => <span class="php-string">"Sistem Informasi"</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Ahmad"</span>, <span class="php-string">"nim"</span> => <span class="php-string">"003"</span>, <span class="php-string">"jurusan"</span> => <span class="php-string">"Teknik Komputer"</span>],
+];
+<span class="php-tag">?&gt;</span>
+
+&lt;table border="1"&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;No&lt;/th&gt;
+            &lt;th&gt;Nama&lt;/th&gt;
+            &lt;th&gt;NIM&lt;/th&gt;
+            &lt;th&gt;Jurusan&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+    &lt;tbody&gt;
+        <span class="php-tag">&lt;?php</span> <span class="php-var">$no</span> = <span class="php-number">1</span>; <span class="php-tag">?&gt;</span>
+        <span class="php-tag">&lt;?php</span> <span class="php-keyword">foreach</span> (<span class="php-var">$data_mahasiswa</span> <span class="php-keyword">as</span> <span class="php-var">$mhs</span>): <span class="php-tag">?&gt;</span>
+        &lt;tr&gt;
+            &lt;td&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$no</span>++ <span class="php-tag">?&gt;</span>&lt;/td&gt;
+            &lt;td&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$mhs</span>[<span class="php-string">'nama'</span>] <span class="php-tag">?&gt;</span>&lt;/td&gt;
+            &lt;td&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$mhs</span>[<span class="php-string">'nim'</span>] <span class="php-tag">?&gt;</span>&lt;/td&gt;
+            &lt;td&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$mhs</span>[<span class="php-string">'jurusan'</span>] <span class="php-tag">?&gt;</span>&lt;/td&gt;
+        &lt;/tr&gt;
+        <span class="php-tag">&lt;?php</span> <span class="php-keyword">endforeach</span>; <span class="php-tag">?&gt;</span>
+    &lt;/tbody&gt;
+&lt;/table&gt;</code></pre>
+
+                <h3>Kapan Memakai Loop Tertentu?</h3>
+                <table>
+                    <tr>
+                        <th>Loop</th>
+                        <th>Cocok untuk</th>
+                    </tr>
+                    <tr>
+                        <td><code>for</code></td>
+                        <td>Jumlah iterasi sudah diketahui</td>
+                    </tr>
+                    <tr>
+                        <td><code>while</code></td>
+                        <td>Berjalan selama kondisi masih benar</td>
+                    </tr>
+                    <tr>
+                        <td><code>do-while</code></td>
+                        <td>Harus dijalankan minimal satu kali</td>
+                    </tr>
+                    <tr>
+                        <td><code>foreach</code></td>
+                        <td>Menelusuri isi array atau daftar data</td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Jebakan umum:</strong>
+                    <ul>
+                        <li>Lupa menambah counter seperti <code>$i++</code>, sehingga loop tidak berhenti.</li>
+                        <li>Salah menentukan batas loop, misalnya memakai <code>&lt;</code> padahal seharusnya <code>&lt;=</code>.</li>
+                        <li>Memakai <code>for</code> untuk array padahal <code>foreach</code> lebih sederhana dan aman.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 8: Function -->
+            <section id="function">
+                <h2>8. Function PHP <span class="badge">CPMK 5.4</span></h2>
+
+                <p><strong>Function</strong> adalah sekumpulan kode yang diberi nama agar bisa dipanggil kembali saat dibutuhkan. Dengan function, kita tidak perlu menulis logika yang sama berulang-ulang.</p>
+
+                <p>Manfaat function adalah membuat kode lebih rapi, mudah dibaca, mudah diuji, dan mudah diperbaiki jika ada perubahan aturan.</p>
+                
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Function dasar</span>
+<span class="php-keyword">function</span> <span class="php-function">sapa</span>() {
+    <span class="php-keyword">echo</span> <span class="php-string">"Halo, Selamat Datang!&lt;br&gt;"</span>;
+}
+<span class="php-function">sapa</span>();
+
+<span class="php-comment">// Function dengan parameter</span>
+<span class="php-keyword">function</span> <span class="php-function">sapaUser</span>(<span class="php-var">$nama</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Halo, $nama!&lt;br&gt;"</span>;
+}
+<span class="php-function">sapaUser</span>(<span class="php-string">"John"</span>);
+
+<span class="php-comment">// Function dengan return</span>
+<span class="php-keyword">function</span> <span class="php-function">tambah</span>(<span class="php-var">$a</span>, <span class="php-var">$b</span>) {
+    <span class="php-keyword">return</span> <span class="php-var">$a</span> + <span class="php-var">$b</span>;
+}
+<span class="php-var">$hasil</span> = <span class="php-function">tambah</span>(<span class="php-number">5</span>, <span class="php-number">3</span>); <span class="php-comment">// 8</span>
+
+<span class="php-comment">// Default parameter</span>
+<span class="php-keyword">function</span> <span class="php-function">hitungDiskon</span>(<span class="php-var">$harga</span>, <span class="php-var">$diskon</span> = <span class="php-number">10</span>) {
+    <span class="php-keyword">return</span> <span class="php-var">$harga</span> - (<span class="php-var">$harga</span> * <span class="php-var">$diskon</span> / <span class="php-number">100</span>);
+}
+<span class="php-keyword">echo</span> <span class="php-function">hitungDiskon</span>(<span class="php-number">100000</span>);      <span class="php-comment">// 90000</span>
+<span class="php-keyword">echo</span> <span class="php-function">hitungDiskon</span>(<span class="php-number">100000</span>, <span class="php-number">25</span>); <span class="php-comment">// 75000</span>
+
+<span class="php-comment">// Type declaration (PHP 7+)</span>
+<span class="php-keyword">function</span> <span class="php-function">jumlah</span>(<span class="php-keyword">int</span> <span class="php-var">$a</span>, <span class="php-keyword">int</span> <span class="php-var">$b</span>): <span class="php-keyword">int</span> {
+    <span class="php-keyword">return</span> <span class="php-var">$a</span> + <span class="php-var">$b</span>;
+}
+
+<span class="php-comment">// Nullable type</span>
+<span class="php-keyword">function</span> <span class="php-function">cariUser</span>(<span class="php-keyword">int</span> <span class="php-var">$id</span>): ?<span class="php-keyword">string</span> {
+    <span class="php-keyword">if</span> (<span class="php-var">$id</span> === <span class="php-number">1</span>) <span class="php-keyword">return</span> <span class="php-string">"John"</span>;
+    <span class="php-keyword">return</span> <span class="php-keyword">null</span>;
+}
+
+<span class="php-comment">// Arrow function (PHP 7.4+)</span>
+<span class="php-var">$kuadrat</span> = <span class="php-keyword">fn</span>(<span class="php-var">$x</span>) => <span class="php-var">$x</span> * <span class="php-var">$x</span>;
+<span class="php-keyword">echo</span> <span class="php-var">$kuadrat</span>(<span class="php-number">5</span>); <span class="php-comment">// 25</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Bagian Penting Function</h3>
+                <table>
+                    <tr>
+                        <th>Bagian</th>
+                        <th>Penjelasan</th>
+                    </tr>
+                    <tr>
+                        <td>Nama function</td>
+                        <td>Nama proses yang ingin dipanggil, misalnya <code>hitungDiskon()</code></td>
+                    </tr>
+                    <tr>
+                        <td>Parameter</td>
+                        <td>Data masukan yang dibutuhkan function</td>
+                    </tr>
+                    <tr>
+                        <td>Argumen</td>
+                        <td>Nilai nyata yang dikirim saat function dipanggil</td>
+                    </tr>
+                    <tr>
+                        <td><code>return</code></td>
+                        <td>Nilai hasil yang dikembalikan oleh function</td>
+                    </tr>
+                </table>
+
+                <h3>Contoh Kasus Nyata</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">function</span> <span class="php-function">hitungNilaiAkhir</span>(<span class="php-var">$tugas</span>, <span class="php-var">$uts</span>, <span class="php-var">$uas</span>) {
+    <span class="php-keyword">return</span> (<span class="php-var">$tugas</span> * <span class="php-number">0.3</span>) + (<span class="php-var">$uts</span> * <span class="php-number">0.3</span>) + (<span class="php-var">$uas</span> * <span class="php-number">0.4</span>);
+}
+
+<span class="php-var">$nilaiAkhir</span> = <span class="php-function">hitungNilaiAkhir</span>(<span class="php-number">80</span>, <span class="php-number">75</span>, <span class="php-number">90</span>);
+<span class="php-keyword">echo</span> <span class="php-var">$nilaiAkhir</span>; <span class="php-comment">// 82.5</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Jebakan umum:</strong>
+                    <ul>
+                        <li>Jika hasil function ingin dipakai lagi, gunakan <code>return</code>, bukan hanya <code>echo</code>.</li>
+                        <li>Gunakan nama function yang jelas agar maksudnya langsung terlihat.</li>
+                        <li>Jangan membuat satu function mengerjakan terlalu banyak tugas sekaligus.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 9: Array -->
+            <section id="array-php">
+                <h2>9. Array PHP <span class="badge">CPMK 5.4</span></h2>
+
+                <p><strong>Array</strong> adalah variabel yang dapat menyimpan banyak data sekaligus. Ini sangat berguna karena data di aplikasi web biasanya berbentuk kumpulan, bukan hanya satu nilai.</p>
+
+                <p>Contohnya: daftar mahasiswa, daftar produk, daftar nilai, daftar menu, atau hasil query dari database. Semua itu sangat sering direpresentasikan dengan array.</p>
+                
+                <h3>Jenis Array</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// 1. Indexed Array</span>
+<span class="php-var">$buah</span> = [<span class="php-string">"Apel"</span>, <span class="php-string">"Jeruk"</span>, <span class="php-string">"Mangga"</span>];
+<span class="php-var">$angka</span> = <span class="php-keyword">array</span>(<span class="php-number">1</span>, <span class="php-number">2</span>, <span class="php-number">3</span>, <span class="php-number">4</span>, <span class="php-number">5</span>);
+<span class="php-keyword">echo</span> <span class="php-var">$buah</span>[<span class="php-number">0</span>]; <span class="php-comment">// "Apel"</span>
+
+<span class="php-comment">// 2. Associative Array</span>
+<span class="php-var">$mahasiswa</span> = [
+    <span class="php-string">"nama"</span>    => <span class="php-string">"John Doe"</span>,
+    <span class="php-string">"nim"</span>     => <span class="php-string">"12345"</span>,
+    <span class="php-string">"jurusan"</span> => <span class="php-string">"Informatika"</span>,
+    <span class="php-string">"ipk"</span>     => <span class="php-number">3.75</span>
+];
+<span class="php-keyword">echo</span> <span class="php-var">$mahasiswa</span>[<span class="php-string">"nama"</span>]; <span class="php-comment">// "John Doe"</span>
+
+<span class="php-comment">// 3. Multidimensional Array</span>
+<span class="php-var">$kelas</span> = [
+    [<span class="php-string">"nama"</span> => <span class="php-string">"John"</span>,  <span class="php-string">"nilai"</span> => <span class="php-number">85</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Jane"</span>,  <span class="php-string">"nilai"</span> => <span class="php-number">92</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Ahmad"</span>, <span class="php-string">"nilai"</span> => <span class="php-number">78</span>],
+];
+<span class="php-keyword">echo</span> <span class="php-var">$kelas</span>[<span class="php-number">1</span>][<span class="php-string">"nama"</span>]; <span class="php-comment">// "Jane"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <table>
+                    <tr>
+                        <th>Jenis</th>
+                        <th>Ciri</th>
+                        <th>Contoh Akses</th>
+                    </tr>
+                    <tr>
+                        <td>Indexed Array</td>
+                        <td>Menggunakan index angka</td>
+                        <td><code>$buah[0]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Associative Array</td>
+                        <td>Menggunakan key bernama</td>
+                        <td><code>$mahasiswa["nama"]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Multidimensional Array</td>
+                        <td>Array di dalam array</td>
+                        <td><code>$kelas[1]["nama"]</code></td>
+                    </tr>
+                </table>
+
+                <h3>Array Functions</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$arr</span> = [<span class="php-number">3</span>, <span class="php-number">1</span>, <span class="php-number">4</span>, <span class="php-number">1</span>, <span class="php-number">5</span>, <span class="php-number">9</span>];
+
+<span class="php-function">count</span>(<span class="php-var">$arr</span>);              <span class="php-comment">// 6 (jumlah elemen)</span>
+<span class="php-function">array_push</span>(<span class="php-var">$arr</span>, <span class="php-number">2</span>);      <span class="php-comment">// tambah di akhir</span>
+<span class="php-function">array_pop</span>(<span class="php-var">$arr</span>);           <span class="php-comment">// hapus dari akhir</span>
+<span class="php-function">array_unshift</span>(<span class="php-var">$arr</span>, <span class="php-number">0</span>);   <span class="php-comment">// tambah di awal</span>
+<span class="php-function">array_shift</span>(<span class="php-var">$arr</span>);         <span class="php-comment">// hapus dari awal</span>
+<span class="php-function">sort</span>(<span class="php-var">$arr</span>);                <span class="php-comment">// urutkan ascending</span>
+<span class="php-function">rsort</span>(<span class="php-var">$arr</span>);               <span class="php-comment">// urutkan descending</span>
+<span class="php-function">in_array</span>(<span class="php-number">5</span>, <span class="php-var">$arr</span>);        <span class="php-comment">// true (cek keberadaan)</span>
+<span class="php-function">array_search</span>(<span class="php-number">5</span>, <span class="php-var">$arr</span>);    <span class="php-comment">// index dari 5</span>
+<span class="php-function">array_reverse</span>(<span class="php-var">$arr</span>);       <span class="php-comment">// balik urutan</span>
+<span class="php-function">array_merge</span>(<span class="php-var">$arr1</span>, <span class="php-var">$arr2</span>); <span class="php-comment">// gabung 2 array</span>
+<span class="php-function">array_unique</span>(<span class="php-var">$arr</span>);        <span class="php-comment">// hapus duplikat</span>
+<span class="php-function">array_slice</span>(<span class="php-var">$arr</span>, <span class="php-number">1</span>, <span class="php-number">3</span>); <span class="php-comment">// potong array</span>
+<span class="php-function">implode</span>(<span class="php-string">", "</span>, <span class="php-var">$arr</span>);      <span class="php-comment">// array → string</span>
+<span class="php-function">explode</span>(<span class="php-string">","</span>, <span class="php-var">$str</span>);       <span class="php-comment">// string → array</span>
+
+<span class="php-comment">// Array map / filter</span>
+<span class="php-var">$doubled</span> = <span class="php-function">array_map</span>(<span class="php-keyword">fn</span>(<span class="php-var">$x</span>) => <span class="php-var">$x</span> * <span class="php-number">2</span>, <span class="php-var">$arr</span>);
+<span class="php-var">$even</span> = <span class="php-function">array_filter</span>(<span class="php-var">$arr</span>, <span class="php-keyword">fn</span>(<span class="php-var">$x</span>) => <span class="php-var">$x</span> % <span class="php-number">2</span> === <span class="php-number">0</span>);
+<span class="php-var">$sum</span> = <span class="php-function">array_sum</span>(<span class="php-var">$arr</span>);
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Contoh Kasus Nyata</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$mahasiswa</span> = [
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Andi"</span>, <span class="php-string">"nilai"</span> => <span class="php-number">85</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Siti"</span>, <span class="php-string">"nilai"</span> => <span class="php-number">92</span>],
+    [<span class="php-string">"nama"</span> => <span class="php-string">"Budi"</span>, <span class="php-string">"nilai"</span> => <span class="php-number">78</span>],
+];
+
+<span class="php-keyword">foreach</span> (<span class="php-var">$mahasiswa</span> <span class="php-keyword">as</span> <span class="php-var">$mhs</span>) {
+    <span class="php-keyword">echo</span> <span class="php-var">$mhs</span>[<span class="php-string">"nama"</span>] . <span class="php-string">" - "</span> . <span class="php-var">$mhs</span>[<span class="php-string">"nilai"</span>] . <span class="php-string">"&lt;br&gt;"</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <p>Dalam praktiknya, array hampir selalu dipadukan dengan <code>foreach</code> untuk menampilkan data secara berulang.</p>
+
+                <div class="warning-box">
+                    <strong>Jebakan umum:</strong>
+                    <ul>
+                        <li>Index array biasanya dimulai dari <code>0</code>, bukan <code>1</code>.</li>
+                        <li>Jangan tertukar antara key string dan index angka.</li>
+                        <li>Pastikan key yang diakses memang ada agar tidak muncul warning.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 10: String & Fungsi Bawaan -->
+            <section id="string-php">
+                <h2>10. String & Fungsi Bawaan PHP <span class="badge">CPMK 5.4</span></h2>
+
+                <p><strong>String</strong> adalah tipe data untuk menyimpan teks, misalnya nama user, email, alamat, judul artikel, atau isi pesan. Dalam PHP, string sangat sering diproses sebelum ditampilkan ke halaman, disimpan ke database, atau dicek isinya.</p>
+
+                <p>Karena itu, memahami <strong>fungsi bawaan</strong> sangat penting. Fungsi bawaan adalah fungsi yang sudah disediakan oleh PHP, sehingga kita tidak perlu membuat semuanya dari nol. Tinggal panggil fungsi yang sesuai, lalu kirim data yang ingin diproses.</p>
+
+                <h3>Konsep Dasar String</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$nama</span> = <span class="php-string">"Budi"</span>;
+<span class="php-var">$umur</span> = <span class="php-number">20</span>;
+
+<span class="php-comment">// 1. Concatenation (menggabungkan string)</span>
+<span class="php-var">$pesan1</span> = <span class="php-string">"Halo, "</span> . <span class="php-var">$nama</span> . <span class="php-string">"!"</span>;
+
+<span class="php-comment">// 2. Interpolation dengan double quote</span>
+<span class="php-var">$pesan2</span> = <span class="php-string">"Halo, $nama! Umur kamu $umur tahun."</span>;
+
+<span class="php-comment">// 3. Single quote tidak membaca variabel secara langsung</span>
+<span class="php-var">$pesan3</span> = <span class="php-string">'Halo, $nama!'</span>;
+
+<span class="php-keyword">echo</span> <span class="php-var">$pesan1</span>; <span class="php-comment">// Halo, Budi!</span>
+<span class="php-keyword">echo</span> <span class="php-var">$pesan2</span>; <span class="php-comment">// Halo, Budi! Umur kamu 20 tahun.</span>
+<span class="php-keyword">echo</span> <span class="php-var">$pesan3</span>; <span class="php-comment">// Halo, $nama!</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Poin penting:</strong>
+                    <ul>
+                        <li>Gunakan tanda titik <code>.</code> untuk menggabungkan string.</li>
+                        <li><code>"double quote"</code> bisa membaca variabel langsung di dalam string.</li>
+                        <li><code>'single quote'</code> lebih literal, sehingga isi string dianggap teks biasa.</li>
+                    </ul>
+                </div>
+                
+                <h3>String Functions</h3>
+                <p>Fungsi-fungsi berikut dipakai untuk kebutuhan yang berbeda. Ada yang untuk menghitung panjang teks, membersihkan spasi, mengubah huruf besar-kecil, mencari kata tertentu, sampai memotong sebagian isi string.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$str</span> = <span class="php-string">"  Hello World  "</span>;
+
+<span class="php-function">strlen</span>(<span class="php-var">$str</span>);                <span class="php-comment">// 15 (panjang string)</span>
+<span class="php-function">trim</span>(<span class="php-var">$str</span>);                  <span class="php-comment">// "Hello World"</span>
+<span class="php-function">strtoupper</span>(<span class="php-var">$str</span>);             <span class="php-comment">// "  HELLO WORLD  "</span>
+<span class="php-function">strtolower</span>(<span class="php-var">$str</span>);             <span class="php-comment">// "  hello world  "</span>
+<span class="php-function">ucfirst</span>(<span class="php-string">"hello"</span>);             <span class="php-comment">// "Hello"</span>
+<span class="php-function">ucwords</span>(<span class="php-string">"hello world"</span>);       <span class="php-comment">// "Hello World"</span>
+<span class="php-function">str_replace</span>(<span class="php-string">"World"</span>, <span class="php-string">"PHP"</span>, <span class="php-var">$str</span>); <span class="php-comment">// "Hello PHP"</span>
+<span class="php-function">strpos</span>(<span class="php-var">$str</span>, <span class="php-string">"World"</span>);       <span class="php-comment">// 8 (posisi ditemukan)</span>
+<span class="php-function">substr</span>(<span class="php-var">$str</span>, <span class="php-number">2</span>, <span class="php-number">5</span>);          <span class="php-comment">// "Hello"</span>
+<span class="php-function">str_contains</span>(<span class="php-var">$str</span>, <span class="php-string">"Hello"</span>); <span class="php-comment">// true (PHP 8)</span>
+<span class="php-function">str_starts_with</span>(<span class="php-var">$str</span>, <span class="php-string">"  H"</span>); <span class="php-comment">// true (PHP 8)</span>
+<span class="php-function">nl2br</span>(<span class="php-string">"baris1\nbaris2"</span>);     <span class="php-comment">// "baris1&lt;br&gt;baris2"</span>
+<span class="php-function">number_format</span>(<span class="php-number">1234567.89</span>, <span class="php-number">2</span>, <span class="php-string">","</span>, <span class="php-string">"."</span>); <span class="php-comment">// "1.234.567,89"</span>
+<span class="php-function">str_pad</span>(<span class="php-string">"5"</span>, <span class="php-number">3</span>, <span class="php-string">"0"</span>, STR_PAD_LEFT); <span class="php-comment">// "005"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <table>
+                    <tr>
+                        <th>Fungsi</th>
+                        <th>Kegunaan</th>
+                        <th>Contoh Hasil</th>
+                    </tr>
+                    <tr>
+                        <td><code>strlen()</code></td>
+                        <td>Menghitung jumlah karakter</td>
+                        <td><code>strlen("PHP")</code> → <code>3</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>trim()</code></td>
+                        <td>Menghapus spasi di awal dan akhir</td>
+                        <td><code>"  Budi  "</code> → <code>"Budi"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>strtoupper()</code></td>
+                        <td>Mengubah semua huruf menjadi kapital</td>
+                        <td><code>"php"</code> → <code>"PHP"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>strtolower()</code></td>
+                        <td>Mengubah semua huruf menjadi kecil</td>
+                        <td><code>"PHP"</code> → <code>"php"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>str_replace()</code></td>
+                        <td>Mengganti teks tertentu</td>
+                        <td><code>"Hello World"</code> → <code>"Hello PHP"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>strpos()</code></td>
+                        <td>Mencari posisi teks</td>
+                        <td><code>strpos("Hello", "e")</code> → <code>1</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>substr()</code></td>
+                        <td>Mengambil sebagian string</td>
+                        <td><code>substr("Informatika", 0, 5)</code> → <code>"Infor"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>str_contains()</code></td>
+                        <td>Mengecek apakah teks mengandung substring</td>
+                        <td><code>true</code> atau <code>false</code></td>
+                    </tr>
+                </table>
+
+                <h3>Contoh Pemakaian String dalam Kasus Nyata</h3>
+                <p>Biasanya string tidak diproses satu fungsi saja. Dalam program nyata, satu data bisa dibersihkan dulu, dicek, lalu diformat sebelum ditampilkan.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$namaInput</span> = <span class="php-string">"  aNiSa putri  "</span>;
+
+<span class="php-comment">// Bersihkan spasi di awal/akhir</span>
+<span class="php-var">$namaBersih</span> = <span class="php-function">trim</span>(<span class="php-var">$namaInput</span>);
+
+<span class="php-comment">// Ubah jadi huruf kecil semua</span>
+<span class="php-var">$namaLower</span> = <span class="php-function">strtolower</span>(<span class="php-var">$namaBersih</span>);
+
+<span class="php-comment">// Jadikan setiap kata diawali huruf kapital</span>
+<span class="php-var">$namaTampil</span> = <span class="php-function">ucwords</span>(<span class="php-var">$namaLower</span>);
+
+<span class="php-keyword">echo</span> <span class="php-var">$namaTampil</span>; <span class="php-comment">// "Anisa Putri"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Alur logikanya:</strong>
+                    <ol>
+                        <li><code>trim()</code> dipakai agar input tidak memiliki spasi berlebih.</li>
+                        <li><code>strtolower()</code> membuat format huruf menjadi konsisten.</li>
+                        <li><code>ucwords()</code> dipakai agar tampilan nama lebih rapi.</li>
+                    </ol>
+                </div>
+
+                <h3>Jebakan Umum Saat Mengolah String</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$teks</span> = <span class="php-string">"Halo Dunia"</span>;
+
+<span class="php-comment">// Hati-hati: strpos() bisa mengembalikan 0</span>
+<span class="php-keyword">if</span> (<span class="php-function">strpos</span>(<span class="php-var">$teks</span>, <span class="php-string">"Halo"</span>) !== <span class="php-keyword">false</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Kata ditemukan"</span>;
+}
+
+<span class="php-comment">// Jangan pakai == false, karena posisi 0 bisa dianggap false</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <p><code>strpos()</code> mengembalikan posisi karakter pertama. Jika teks ditemukan di posisi awal, hasilnya adalah <code>0</code>. Karena <code>0</code> sering dianggap <code>false</code>, maka pengecekan yang aman adalah <code>!== false</code>.</p>
+
+                <h3>Date & Time Functions</h3>
+                <p>Selain string, PHP juga menyediakan banyak fungsi bawaan lain. Dua kelompok yang paling sering dipakai adalah fungsi tanggal/waktu dan fungsi matematika.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">echo</span> <span class="php-function">date</span>(<span class="php-string">"Y-m-d"</span>);         <span class="php-comment">// 2024-01-15</span>
+<span class="php-keyword">echo</span> <span class="php-function">date</span>(<span class="php-string">"d/m/Y"</span>);         <span class="php-comment">// 15/01/2024</span>
+<span class="php-keyword">echo</span> <span class="php-function">date</span>(<span class="php-string">"H:i:s"</span>);         <span class="php-comment">// 14:30:00</span>
+<span class="php-keyword">echo</span> <span class="php-function">date</span>(<span class="php-string">"l, d F Y"</span>);     <span class="php-comment">// Monday, 15 January 2024</span>
+<span class="php-keyword">echo</span> <span class="php-function">time</span>();                 <span class="php-comment">// Unix timestamp</span>
+<span class="php-keyword">echo</span> <span class="php-function">strtotime</span>(<span class="php-string">"next Monday"</span>); <span class="php-comment">// timestamp Senin depan</span>
+
+<span class="php-comment">// Format: Y=tahun4, m=bulan2, d=tanggal2, H=jam24, i=menit, s=detik</span>
+<span class="php-comment">// l=nama hari, F=nama bulan lengkap, D=nama hari singkat</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <p>Fungsi tanggal berguna untuk membuat timestamp posting, deadline tugas, log aktivitas, atau menampilkan waktu saat ini. Biasanya <code>time()</code> menghasilkan angka timestamp, lalu <code>date()</code> dipakai untuk memformatnya agar mudah dibaca manusia.</p>
+
+                <h3>Math Functions</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">echo</span> <span class="php-function">abs</span>(-<span class="php-number">5</span>);         <span class="php-comment">// 5</span>
+<span class="php-keyword">echo</span> <span class="php-function">round</span>(<span class="php-number">3.7</span>);      <span class="php-comment">// 4</span>
+<span class="php-keyword">echo</span> <span class="php-function">ceil</span>(<span class="php-number">3.2</span>);       <span class="php-comment">// 4</span>
+<span class="php-keyword">echo</span> <span class="php-function">floor</span>(<span class="php-number">3.9</span>);      <span class="php-comment">// 3</span>
+<span class="php-keyword">echo</span> <span class="php-function">max</span>(<span class="php-number">1</span>, <span class="php-number">5</span>, <span class="php-number">3</span>);   <span class="php-comment">// 5</span>
+<span class="php-keyword">echo</span> <span class="php-function">min</span>(<span class="php-number">1</span>, <span class="php-number">5</span>, <span class="php-number">3</span>);   <span class="php-comment">// 1</span>
+<span class="php-keyword">echo</span> <span class="php-function">pow</span>(<span class="php-number">2</span>, <span class="php-number">3</span>);      <span class="php-comment">// 8</span>
+<span class="php-keyword">echo</span> <span class="php-function">sqrt</span>(<span class="php-number">16</span>);       <span class="php-comment">// 4</span>
+<span class="php-keyword">echo</span> <span class="php-function">rand</span>(<span class="php-number">1</span>, <span class="php-number">100</span>);   <span class="php-comment">// random 1-100</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <p>Fungsi matematika umum dipakai saat menghitung total harga, rata-rata nilai, pembulatan diskon, atau membuat angka acak untuk simulasi dan kuis.</p>
+            </section>
+
+            <!-- Section 11: Form Handling -->
+            <section id="form-handling">
+                <h2>11. Form Handling (GET & POST) <span class="badge">CPMK 5.5</span></h2>
+                
+                <p>PHP menerima data dari form HTML melalui <strong>superglobal</strong> <code>$_GET</code> dan <code>$_POST</code>.</p>
+
+                <h3>Perbedaan GET dan POST</h3>
+                <table>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>GET</th>
+                        <th>POST</th>
+                    </tr>
+                    <tr>
+                        <td>Data di URL</td>
+                        <td>Ya (query string)</td>
+                        <td>Tidak (di body request)</td>
+                    </tr>
+                    <tr>
+                        <td>Keamanan</td>
+                        <td>Kurang (terlihat di URL)</td>
+                        <td>Lebih aman</td>
+                    </tr>
+                    <tr>
+                        <td>Batas data</td>
+                        <td>~2048 karakter</td>
+                        <td>Tidak terbatas</td>
+                    </tr>
+                    <tr>
+                        <td>Bookmark</td>
+                        <td>Bisa</td>
+                        <td>Tidak bisa</td>
+                    </tr>
+                    <tr>
+                        <td>Cache</td>
+                        <td>Bisa di-cache</td>
+                        <td>Tidak di-cache</td>
+                    </tr>
+                    <tr>
+                        <td>Gunakan untuk</td>
+                        <td>Pencarian, filter</td>
+                        <td>Login, register, kirim data sensitif</td>
+                    </tr>
+                    <tr>
+                        <td>PHP Variable</td>
+                        <td><code>$_GET['nama']</code></td>
+                        <td><code>$_POST['nama']</code></td>
+                    </tr>
+                </table>
+
+                <h3>Contoh Method GET</h3>
+                <span class="file-label file-html">📄 search.html</span>
+                <pre><code>&lt;form <span class="php-var">action</span>=<span class="php-string">"hasil_search.php"</span> <span class="php-var">method</span>=<span class="php-string">"GET"</span>&gt;
+    &lt;label&gt;Kata Kunci:&lt;/label&gt;
+    &lt;input type="text" name="keyword" placeholder="Cari..."&gt;
+    &lt;button type="submit"&gt;Cari&lt;/button&gt;
+&lt;/form&gt;
+
+<span class="php-comment">&lt;!-- URL setelah submit: hasil_search.php?keyword=PHP --&gt;</span></code></pre>
+
+                <span class="file-label file-php">📄 hasil_search.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Mengambil data dari GET</span>
+<span class="php-var">$keyword</span> = <span class="php-var">$_GET</span>[<span class="php-string">'keyword'</span>] ?? <span class="php-string">''</span>;
+
+<span class="php-keyword">if</span> (!<span class="php-function">empty</span>(<span class="php-var">$keyword</span>)) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Anda mencari: &lt;strong&gt;"</span> . <span class="php-function">htmlspecialchars</span>(<span class="php-var">$keyword</span>) . <span class="php-string">"&lt;/strong&gt;"</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Silakan masukkan kata kunci."</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Contoh Method POST</h3>
+                <span class="file-label file-html">📄 login.html</span>
+                <pre><code>&lt;form <span class="php-var">action</span>=<span class="php-string">"proses_login.php"</span> <span class="php-var">method</span>=<span class="php-string">"POST"</span>&gt;
+    &lt;label&gt;Username:&lt;/label&gt;
+    &lt;input type="text" name="username" required&gt;
+    
+    &lt;label&gt;Password:&lt;/label&gt;
+    &lt;input type="password" name="password" required&gt;
+    
+    &lt;button type="submit"&gt;Login&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+
+                <span class="file-label file-php">📄 proses_login.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Mengambil data dari POST</span>
+<span class="php-var">$username</span> = <span class="php-var">$_POST</span>[<span class="php-string">'username'</span>] ?? <span class="php-string">''</span>;
+<span class="php-var">$password</span> = <span class="php-var">$_POST</span>[<span class="php-string">'password'</span>] ?? <span class="php-string">''</span>;
+
+<span class="php-comment">// Validasi sederhana</span>
+<span class="php-keyword">if</span> (<span class="php-var">$username</span> === <span class="php-string">"admin"</span> && <span class="php-var">$password</span> === <span class="php-string">"12345"</span>) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Login berhasil! Selamat datang, $username."</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Username atau password salah!"</span>;
+}
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Keamanan:</strong> Selalu gunakan <code>htmlspecialchars()</code> saat menampilkan data dari user untuk mencegah XSS attack!
+                </div>
+            </section>
+
+            <!-- Section 12: Hands-On -->
+            <section id="hands-on">
+                <h2>12. Hands-On: Pengiriman Data HTML → PHP <span class="badge badge-important">Praktek!</span></h2>
+
+                <p>Kita akan berlatih mengirim data dari form HTML ke PHP melalui <strong>3 contoh bertahap</strong>. Fokus pada cara kerja pengiriman data — belum perlu CSS.</p>
+
+                <div class="info-box">
+                    <strong>Persiapan:</strong>
+                    <ol>
+                        <li>Jalankan <strong>Apache</strong> di XAMPP Control Panel</li>
+                        <li>Buat folder <code>C:\xampp\htdocs\latihan\</code></li>
+                        <li>Simpan semua file latihan di folder tersebut</li>
+                        <li>Akses via browser: <code>http://localhost/latihan/namafile.php</code></li>
+                    </ol>
+                </div>
+
+                <!-- Contoh 1 -->
+                <div class="hands-on-box">
+                    <h4><span class="step-number">1</span> Form GET — Sapa Pengguna</h4>
+                    <p>Form paling sederhana: input nama, kirim via <strong>GET</strong>, tampilkan di halaman baru. Perhatikan nama muncul di URL setelah submit.</p>
+
+                    <span class="file-label file-php">📄 sapa.php (form)</span>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h2&gt;Form Sapa&lt;/h2&gt;
+    &lt;form action="hasil_sapa.php" method="GET"&gt;
+        Nama: &lt;input type="text" name="nama"&gt;
+        &lt;button type="submit"&gt;Kirim&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <span class="file-label file-php">📄 hasil_sapa.php (proses)</span>
+                    <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$nama</span> = <span class="php-var">$_GET</span>[<span class="php-string">'nama'</span>] ?? <span class="php-string">'Tamu'</span>;
+<span class="php-keyword">echo</span> <span class="php-string">"&lt;h2&gt;Halo, $nama!&lt;/h2&gt;"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">'&lt;a href="sapa.php"&gt;Kembali&lt;/a&gt;'</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                    <div class="info-box" style="margin-top:10px;">
+                        <strong>Coba perhatikan:</strong> setelah submit, URL berubah menjadi <code>hasil_sapa.php?nama=John</code> — itulah cara kerja GET, data terlihat di URL.
+                    </div>
+                </div>
+
+                <!-- Contoh 2 -->
+                <div class="hands-on-box">
+                    <h4><span class="step-number">2</span> Form POST — Data Biodata</h4>
+                    <p>Kirim beberapa field sekaligus via <strong>POST</strong>. Data tidak muncul di URL. Cocok untuk data yang lebih sensitif. Pada contoh ini, PHP hanya memproses data jika tombol <strong>submit</strong> benar-benar diklik.</p>
+
+                    <span class="file-label file-php">📄 biodata.php (form)</span>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h2&gt;Form Biodata&lt;/h2&gt;
+    &lt;form action="hasil_biodata.php" method="POST"&gt;
+        Nama : &lt;input type="text" name="nama"&gt;&lt;br&gt;&lt;br&gt;
+        NIM  : &lt;input type="text" name="nim"&gt;&lt;br&gt;&lt;br&gt;
+        Umur : &lt;input type="number" name="umur"&gt;&lt;br&gt;&lt;br&gt;
+        &lt;button type="submit" name="kirim"&gt;Kirim&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <span class="file-label file-php">📄 hasil_biodata.php (proses)</span>
+                    <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">if</span> (<span class="php-function">isset</span>(<span class="php-var">$_POST</span>[<span class="php-string">'kirim'</span>])) {
+    <span class="php-var">$nama</span> = <span class="php-function">trim</span>(<span class="php-var">$_POST</span>[<span class="php-string">'nama'</span>] ?? <span class="php-string">''</span>);
+    <span class="php-var">$nim</span>  = <span class="php-function">trim</span>(<span class="php-var">$_POST</span>[<span class="php-string">'nim'</span>]  ?? <span class="php-string">''</span>);
+    <span class="php-var">$umur</span> = <span class="php-function">trim</span>(<span class="php-var">$_POST</span>[<span class="php-string">'umur'</span>] ?? <span class="php-string">''</span>);
+
+    <span class="php-keyword">echo</span> <span class="php-string">"&lt;h2&gt;Data Biodata&lt;/h2&gt;"</span>;
+
+    <span class="php-keyword">if</span> (<span class="php-var">$nama</span> === <span class="php-string">''</span> || <span class="php-var">$nim</span> === <span class="php-string">''</span> || <span class="php-var">$umur</span> === <span class="php-string">''</span>) {
+        <span class="php-keyword">echo</span> <span class="php-string">"Semua field wajib diisi.&lt;br&gt;"</span>;
+    } <span class="php-keyword">else</span> {
+        <span class="php-keyword">echo</span> <span class="php-string">"Nama : $nama&lt;br&gt;"</span>;
+        <span class="php-keyword">echo</span> <span class="php-string">"NIM  : $nim&lt;br&gt;"</span>;
+        <span class="php-keyword">echo</span> <span class="php-string">"Umur : $umur tahun&lt;br&gt;"</span>;
+    }
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Data belum dikirim melalui tombol submit.&lt;br&gt;"</span>;
+}
+
+<span class="php-keyword">echo</span> <span class="php-string">'&lt;br&gt;&lt;a href="biodata.php"&gt;Kembali&lt;/a&gt;'</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                    <div class="info-box" style="margin-top:10px;">
+                        <strong>Catatan:</strong> pengecekan <code>isset($_POST['kirim'])</code> memastikan file proses hanya berjalan ketika form dikirim lewat tombol bernama <code>kirim</code>, bukan saat file dibuka langsung.
+                    </div>
+                </div>
+
+                <!-- Contoh 3 -->
+                <div class="hands-on-box">
+                    <h4><span class="step-number">3</span> Self-Processing Form — Satu File</h4>
+                    <p>Form dan proses PHP digabung dalam <strong>satu file</strong>. Pada versi ini, PHP memproses data hanya jika request berupa <code>POST</code> dan tombol <code>submit</code> benar-benar diklik.</p>
+
+                    <span class="file-label file-php">📄 nilai.php (form + proses)</span>
+                    <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-var">$hasil</span> = <span class="php-string">''</span>;
+<span class="php-var">$error</span> = <span class="php-string">''</span>;
+
+<span class="php-keyword">if</span> (<span class="php-var">$_SERVER</span>[<span class="php-string">'REQUEST_METHOD'</span>] === <span class="php-string">'POST'</span> &amp;&amp; <span class="php-function">isset</span>(<span class="php-var">$_POST</span>[<span class="php-string">'kirim'</span>])) {
+    <span class="php-var">$nama</span>  = <span class="php-function">trim</span>(<span class="php-var">$_POST</span>[<span class="php-string">'nama'</span>]  ?? <span class="php-string">''</span>);
+    <span class="php-var">$nilai</span> = (<span class="php-keyword">int</span>) (<span class="php-var">$_POST</span>[<span class="php-string">'nilai'</span>] ?? <span class="php-number">0</span>);
+
+    <span class="php-keyword">if</span> (<span class="php-var">$nama</span> === <span class="php-string">''</span>) {
+        <span class="php-var">$error</span> = <span class="php-string">'Nama wajib diisi.'</span>;
+    } <span class="php-keyword">else</span> {
+        <span class="php-keyword">if</span> (<span class="php-var">$nilai</span> >= <span class="php-number">80</span>) {
+            <span class="php-var">$grade</span> = <span class="php-string">'A'</span>;
+        } <span class="php-keyword">elseif</span> (<span class="php-var">$nilai</span> >= <span class="php-number">70</span>) {
+            <span class="php-var">$grade</span> = <span class="php-string">'B'</span>;
+        } <span class="php-keyword">elseif</span> (<span class="php-var">$nilai</span> >= <span class="php-number">60</span>) {
+            <span class="php-var">$grade</span> = <span class="php-string">'C'</span>;
+        } <span class="php-keyword">else</span> {
+            <span class="php-var">$grade</span> = <span class="php-string">'D'</span>;
+        }
+
+        <span class="php-var">$hasil</span> = <span class="php-string">"$nama mendapat nilai $nilai → Grade: $grade"</span>;
+    }
+}
+<span class="php-tag">?&gt;</span>
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;body&gt;
+    &lt;h2&gt;Cek Nilai&lt;/h2&gt;
+
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">if</span> (<span class="php-var">$error</span>): <span class="php-tag">?&gt;</span>
+        &lt;p&gt;&lt;strong&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$error</span> <span class="php-tag">?&gt;</span>&lt;/strong&gt;&lt;/p&gt;
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">endif</span>; <span class="php-tag">?&gt;</span>
+
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">if</span> (<span class="php-var">$hasil</span>): <span class="php-tag">?&gt;</span>
+        &lt;p&gt;&lt;strong&gt;<span class="php-tag">&lt;?=</span> <span class="php-var">$hasil</span> <span class="php-tag">?&gt;</span>&lt;/strong&gt;&lt;/p&gt;
+    <span class="php-tag">&lt;?php</span> <span class="php-keyword">endif</span>; <span class="php-tag">?&gt;</span>
+
+    &lt;form method="POST"&gt;
+        Nama  : &lt;input type="text" name="nama"&gt;&lt;br&gt;&lt;br&gt;
+        Nilai : &lt;input type="number" name="nilai" min="0" max="100"&gt;&lt;br&gt;&lt;br&gt;
+        &lt;button type="submit" name="kirim"&gt;Cek Grade&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="info-box" style="margin-top:10px;">
+                        <strong>Cara kerjanya:</strong> Saat halaman pertama dibuka, <code>REQUEST_METHOD</code> adalah <code>GET</code> sehingga blok PHP dilewati dan hanya form yang tampil. Setelah tombol bernama <code>kirim</code> diklik, request menjadi <code>POST</code> dan <code>$_POST['kirim']</code> akan terisi, lalu PHP memvalidasi input dan menampilkan hasilnya.
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong>Poin penting dari 3 latihan ini:</strong>
+                    <ul>
+                        <li><strong>GET</strong> → data dikirim lewat URL, cocok untuk pencarian/filter</li>
+                        <li><strong>POST</strong> → data dikirim di body request, tidak terlihat di URL</li>
+                        <li><strong>Self-processing</strong> → satu file menangani form sekaligus prosesnya, cek dengan <code>$_SERVER['REQUEST_METHOD']</code></li>
+                        <li>Atribut <code>name</code> di input HTML = kunci untuk mengambil data di PHP (<code>$_GET['name']</code> / <code>$_POST['name']</code>)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 13: Superglobal -->
+            <section id="superglobal">
+                <h2>13. Superglobal Variables <span class="badge">CPMK 5.5</span></h2>
+                
+                <table>
+                    <tr>
+                        <th>Superglobal</th>
+                        <th>Fungsi</th>
+                    </tr>
+                    <tr>
+                        <td><code>$_GET</code></td>
+                        <td>Data dari URL query string (method GET)</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_POST</code></td>
+                        <td>Data dari form method POST</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_REQUEST</code></td>
+                        <td>Gabungan $_GET, $_POST, dan $_COOKIE</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_SERVER</code></td>
+                        <td>Informasi server dan request</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_SESSION</code></td>
+                        <td>Data session pengguna</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_COOKIE</code></td>
+                        <td>Data cookie</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_FILES</code></td>
+                        <td>Data file yang diupload</td>
+                    </tr>
+                    <tr>
+                        <td><code>$_ENV</code></td>
+                        <td>Environment variables</td>
+                    </tr>
+                    <tr>
+                        <td><code>$GLOBALS</code></td>
+                        <td>Semua variabel global</td>
+                    </tr>
+                </table>
+
+                <h3>Contoh $_SERVER</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">echo</span> <span class="php-var">$_SERVER</span>[<span class="php-string">'PHP_SELF'</span>];        <span class="php-comment">// /index.php</span>
+<span class="php-keyword">echo</span> <span class="php-var">$_SERVER</span>[<span class="php-string">'SERVER_NAME'</span>];     <span class="php-comment">// localhost</span>
+<span class="php-keyword">echo</span> <span class="php-var">$_SERVER</span>[<span class="php-string">'REQUEST_METHOD'</span>];  <span class="php-comment">// GET atau POST</span>
+<span class="php-keyword">echo</span> <span class="php-var">$_SERVER</span>[<span class="php-string">'REMOTE_ADDR'</span>];     <span class="php-comment">// IP client</span>
+<span class="php-keyword">echo</span> <span class="php-var">$_SERVER</span>[<span class="php-string">'HTTP_USER_AGENT'</span>]; <span class="php-comment">// info browser</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Contoh $_SESSION</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// Mulai session (HARUS di baris paling awal)</span>
+<span class="php-function">session_start</span>();
+
+<span class="php-comment">// Simpan data ke session</span>
+<span class="php-var">$_SESSION</span>[<span class="php-string">'username'</span>] = <span class="php-string">"john"</span>;
+<span class="php-var">$_SESSION</span>[<span class="php-string">'role'</span>]     = <span class="php-string">"admin"</span>;
+
+<span class="php-comment">// Mengakses session</span>
+<span class="php-keyword">echo</span> <span class="php-string">"Login sebagai: "</span> . <span class="php-var">$_SESSION</span>[<span class="php-string">'username'</span>];
+
+<span class="php-comment">// Cek session</span>
+<span class="php-keyword">if</span> (<span class="php-function">isset</span>(<span class="php-var">$_SESSION</span>[<span class="php-string">'username'</span>])) {
+    <span class="php-keyword">echo</span> <span class="php-string">"Sudah login"</span>;
+} <span class="php-keyword">else</span> {
+    <span class="php-keyword">echo</span> <span class="php-string">"Belum login"</span>;
+}
+
+<span class="php-comment">// Hapus session tertentu</span>
+<span class="php-keyword">unset</span>(<span class="php-var">$_SESSION</span>[<span class="php-string">'username'</span>]);
+
+<span class="php-comment">// Hapus semua session (logout)</span>
+<span class="php-function">session_destroy</span>();
+<span class="php-tag">?&gt;</span></code></pre>
+            </section>
+
+            <!-- Section 14: Class & OOP -->
+            <section id="class-oop">
+                <h2>14. Class & OOP PHP <span class="badge">CPMK 5.4</span></h2>
+
+                <h3>Apa itu OOP?</h3>
+                <p><strong>Object-Oriented Programming (OOP)</strong> adalah paradigma pemrograman yang mengorganisir kode berdasarkan <strong>objek</strong> — representasi dari benda atau konsep di dunia nyata. Setiap objek memiliki <em>data (properti)</em> dan <em>perilaku (method)</em>.</p>
+
+                <div class="info-box">
+                    <strong>Analogi Sederhana:</strong><br>
+                    Bayangkan sebuah <strong>Mobil</strong>:
+                    <ul>
+                        <li><strong>Properti (data):</strong> warna, merek, kecepatan, bahan bakar</li>
+                        <li><strong>Method (perilaku):</strong> nyalakan(), rem(), tambahKecepatan(), isi_bensin()</li>
+                    </ul>
+                    Dalam OOP, kita membuat <strong>blueprint (class)</strong> Mobil, lalu dari blueprint itu kita bisa membuat banyak <strong>objek</strong> mobil yang berbeda-beda.
+                </div>
+
+                <h3>Pemrograman Prosedural vs OOP</h3>
+                <table>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>Prosedural</th>
+                        <th>OOP</th>
+                    </tr>
+                    <tr>
+                        <td>Struktur kode</td>
+                        <td>Urutan fungsi dan variabel terpisah</td>
+                        <td>Data dan fungsi dibungkus dalam class</td>
+                    </tr>
+                    <tr>
+                        <td>Reusability</td>
+                        <td>Fungsi bisa dipakai ulang</td>
+                        <td>Class bisa dipakai ulang & diwariskan</td>
+                    </tr>
+                    <tr>
+                        <td>Skalabilitas</td>
+                        <td>Sulit untuk proyek besar</td>
+                        <td>Lebih mudah dikembangkan</td>
+                    </tr>
+                    <tr>
+                        <td>Contoh</td>
+                        <td><code>hitungNilai($nama, $uts, $uas)</code></td>
+                        <td><code>$mhs->hitungNilai()</code></td>
+                    </tr>
+                </table>
+
+                <h3>4 Pilar OOP</h3>
+                <div class="comparison-grid">
+                    <div class="pros-box">
+                        <h4>1. Encapsulation (Enkapsulasi)</h4>
+                        <p>Menyembunyikan detail internal dan hanya mengekspos apa yang perlu. Data dilindungi dari akses langsung luar.</p>
+                        <p><em>Analogi: Mesin mobil tersembunyi di balik kap, kita cukup pakai setir & pedal.</em></p>
+                    </div>
+                    <div class="pros-box">
+                        <h4>2. Inheritance (Pewarisan)</h4>
+                        <p>Class baru bisa mewarisi properti dan method dari class yang sudah ada, lalu menambah atau mengubahnya.</p>
+                        <p><em>Analogi: Mobil Sport mewarisi sifat Mobil, tapi punya turbo tambahan.</em></p>
+                    </div>
+                    <div class="pros-box">
+                        <h4>3. Polymorphism (Polimorfisme)</h4>
+                        <p>Satu method yang sama bisa berperilaku berbeda tergantung objeknya (method overriding).</p>
+                        <p><em>Analogi: Hewan berbeda-beda cara "bersuara()" — anjing gonggong, kucing mengeong.</em></p>
+                    </div>
+                    <div class="pros-box">
+                        <h4>4. Abstraction (Abstraksi)</h4>
+                        <p>Menyederhanakan kompleksitas dengan hanya menampilkan fitur penting, menyembunyikan detail implementasi.</p>
+                        <p><em>Analogi: Kita tahu tombol "ON" menyalakan TV, tanpa perlu tahu rangkaian elektroniknya.</em></p>
+                    </div>
+                </div>
+
+                <h3>Konsep Dasar: Class & Object</h3>
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background: #8e44ad; min-width: 160px;">
+                        📐 <strong>Class</strong><br>
+                        <small>Blueprint / Cetakan</small>
+                    </div>
+                    <div class="flow-arrow">→<br><small>new Mahasiswa()</small></div>
+                    <div class="flow-box" style="background: #2980b9; min-width: 160px;">
+                        📦 <strong>Object</strong><br>
+                        <small>Instansi nyata</small>
+                    </div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-box" style="background: #2980b9; min-width: 160px;">
+                        📦 <strong>Object</strong><br>
+                        <small>Instansi lain</small>
+                    </div>
+                </div>
+                <p>Satu <strong>class</strong> bisa menghasilkan banyak <strong>object</strong>. Seperti cetakan kue yang sama bisa menghasilkan banyak kue.</p>
+
+                <h3>Anatomi Sebuah Class</h3>
+                <div class="info-box">
+                    Sebuah class PHP terdiri dari:
+                    <ul>
+                        <li><strong>Properties</strong> — variabel milik class (data/atribut)</li>
+                        <li><strong>Constructor</strong> — method khusus <code>__construct()</code> yang otomatis dipanggil saat object dibuat</li>
+                        <li><strong>Methods</strong> — fungsi milik class (perilaku/aksi)</li>
+                        <li><strong>Access Modifier</strong> — <code>public</code>, <code>protected</code>, <code>private</code> untuk mengatur siapa yang bisa mengakses</li>
+                    </ul>
+                </div>
+
+                <h3>Getter & Setter (Enkapsulasi)</h3>
+                <p>Karena properti <code>private</code> tidak bisa diakses langsung dari luar, kita gunakan <strong>getter</strong> (untuk membaca) dan <strong>setter</strong> (untuk mengubah) sebagai "pintu resmi" akses data.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-comment">// TANPA enkapsulasi (berbahaya)</span>
+<span class="php-keyword">class</span> <span class="php-function">BankBuruk</span> {
+    <span class="php-keyword">public</span> <span class="php-keyword">float</span> <span class="php-var">$saldo</span> = <span class="php-number">0</span>;
+}
+<span class="php-var">$akun</span> = <span class="php-keyword">new</span> <span class="php-function">BankBuruk</span>();
+<span class="php-var">$akun</span>-><span class="php-var">saldo</span> = -<span class="php-number">999999</span>; <span class="php-comment">// ❌ bisa diisi nilai negatif!</span>
+
+<span class="php-comment">// DENGAN enkapsulasi (aman)</span>
+<span class="php-keyword">class</span> <span class="php-function">Bank</span> {
+    <span class="php-keyword">private</span> <span class="php-keyword">float</span> <span class="php-var">$saldo</span> = <span class="php-number">0</span>;
+
+    <span class="php-comment">// Getter</span>
+    <span class="php-keyword">public function</span> <span class="php-function">getSaldo</span>(): <span class="php-keyword">float</span> {
+        <span class="php-keyword">return</span> <span class="php-var">$this</span>-><span class="php-var">saldo</span>;
+    }
+
+    <span class="php-comment">// Setter dengan validasi</span>
+    <span class="php-keyword">public function</span> <span class="php-function">setor</span>(<span class="php-keyword">float</span> <span class="php-var">$jumlah</span>): <span class="php-keyword">void</span> {
+        <span class="php-keyword">if</span> (<span class="php-var">$jumlah</span> > <span class="php-number">0</span>) {
+            <span class="php-var">$this</span>-><span class="php-var">saldo</span> += <span class="php-var">$jumlah</span>;
+        }
+    }
+}
+<span class="php-var">$akun</span> = <span class="php-keyword">new</span> <span class="php-function">Bank</span>();
+<span class="php-var">$akun</span>-><span class="php-function">setor</span>(<span class="php-number">500000</span>);
+<span class="php-keyword">echo</span> <span class="php-var">$akun</span>-><span class="php-function">getSaldo</span>(); <span class="php-comment">// 500000</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Membuat Class</h3>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">class</span> <span class="php-function">Mahasiswa</span> {
+    <span class="php-comment">// Properties</span>
+    <span class="php-keyword">public</span> <span class="php-keyword">string</span> <span class="php-var">$nama</span>;
+    <span class="php-keyword">public</span> <span class="php-keyword">string</span> <span class="php-var">$nim</span>;
+    <span class="php-keyword">private</span> <span class="php-keyword">float</span> <span class="php-var">$ipk</span>;
+    
+    <span class="php-comment">// Constructor</span>
+    <span class="php-keyword">public function</span> <span class="php-function">__construct</span>(<span class="php-keyword">string</span> <span class="php-var">$nama</span>, <span class="php-keyword">string</span> <span class="php-var">$nim</span>, <span class="php-keyword">float</span> <span class="php-var">$ipk</span> = <span class="php-number">0</span>) {
+        <span class="php-var">$this</span>-><span class="php-var">nama</span> = <span class="php-var">$nama</span>;
+        <span class="php-var">$this</span>-><span class="php-var">nim</span>  = <span class="php-var">$nim</span>;
+        <span class="php-var">$this</span>-><span class="php-var">ipk</span>  = <span class="php-var">$ipk</span>;
+    }
+    
+    <span class="php-comment">// Methods</span>
+    <span class="php-keyword">public function</span> <span class="php-function">perkenalan</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"Halo, saya {$this->nama} (NIM: {$this->nim})"</span>;
+    }
+    
+    <span class="php-keyword">public function</span> <span class="php-function">setIpk</span>(<span class="php-keyword">float</span> <span class="php-var">$ipk</span>): <span class="php-keyword">void</span> {
+        <span class="php-keyword">if</span> (<span class="php-var">$ipk</span> >= <span class="php-number">0</span> && <span class="php-var">$ipk</span> <= <span class="php-number">4</span>) {
+            <span class="php-var">$this</span>-><span class="php-var">ipk</span> = <span class="php-var">$ipk</span>;
+        }
+    }
+    
+    <span class="php-keyword">public function</span> <span class="php-function">getIpk</span>(): <span class="php-keyword">float</span> {
+        <span class="php-keyword">return</span> <span class="php-var">$this</span>-><span class="php-var">ipk</span>;
+    }
+    
+    <span class="php-keyword">public function</span> <span class="php-function">getPredikat</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-keyword">match</span>(<span class="php-keyword">true</span>) {
+            <span class="php-var">$this</span>-><span class="php-var">ipk</span> >= <span class="php-number">3.5</span> => <span class="php-string">"Cum Laude"</span>,
+            <span class="php-var">$this</span>-><span class="php-var">ipk</span> >= <span class="php-number">3.0</span> => <span class="php-string">"Sangat Memuaskan"</span>,
+            <span class="php-var">$this</span>-><span class="php-var">ipk</span> >= <span class="php-number">2.5</span> => <span class="php-string">"Memuaskan"</span>,
+            <span class="php-keyword">default</span>             => <span class="php-string">"Cukup"</span>,
+        };
+    }
+}
+
+<span class="php-comment">// Membuat object</span>
+<span class="php-var">$mhs1</span> = <span class="php-keyword">new</span> <span class="php-function">Mahasiswa</span>(<span class="php-string">"John Doe"</span>, <span class="php-string">"12345"</span>, <span class="php-number">3.75</span>);
+<span class="php-var">$mhs2</span> = <span class="php-keyword">new</span> <span class="php-function">Mahasiswa</span>(<span class="php-string">"Jane Doe"</span>, <span class="php-string">"12346"</span>);
+
+<span class="php-keyword">echo</span> <span class="php-var">$mhs1</span>-><span class="php-function">perkenalan</span>() . <span class="php-string">"&lt;br&gt;"</span>;
+<span class="php-keyword">echo</span> <span class="php-string">"IPK: "</span> . <span class="php-var">$mhs1</span>-><span class="php-function">getIpk</span>() . <span class="php-string">" → "</span> . <span class="php-var">$mhs1</span>-><span class="php-function">getPredikat</span>();
+
+<span class="php-var">$mhs2</span>-><span class="php-function">setIpk</span>(<span class="php-number">3.2</span>);
+<span class="php-keyword">echo</span> <span class="php-var">$mhs2</span>-><span class="php-function">perkenalan</span>() . <span class="php-string">"&lt;br&gt;"</span>;
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Inheritance (Pewarisan)</h3>
+                <p>Inheritance memungkinkan sebuah class <strong>mewarisi</strong> properti dan method dari class lain. Class yang mewarisi disebut <strong>child class</strong>, class yang diwarisi disebut <strong>parent class</strong>. Gunakan keyword <code>extends</code>.</p>
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background: #8e44ad;">👤 <strong>Orang</strong><br><small>nama, umur<br>sapa()</small></div>
+                    <div class="flow-arrow">↓<br><small>extends</small></div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="flow-box" style="background: #2980b9;">🎓 <strong>Mahasiswa</strong><br><small>+ nim, jurusan<br>+ getInfo()</small></div>
+                        <div class="flow-box" style="background: #27ae60;">👨‍🏫 <strong>Dosen</strong><br><small>+ nip, matkul<br>+ getMengajar()</small></div>
+                    </div>
+                </div>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">class</span> <span class="php-function">Orang</span> {
+    <span class="php-keyword">public function</span> <span class="php-function">__construct</span>(
+        <span class="php-keyword">protected</span> <span class="php-keyword">string</span> <span class="php-var">$nama</span>,
+        <span class="php-keyword">protected</span> <span class="php-keyword">int</span> <span class="php-var">$umur</span>
+    ) {}
+    
+    <span class="php-keyword">public function</span> <span class="php-function">sapa</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"Halo, saya {$this->nama}"</span>;
+    }
+}
+
+<span class="php-keyword">class</span> <span class="php-function">Mahasiswa</span> <span class="php-keyword">extends</span> <span class="php-function">Orang</span> {
+    <span class="php-keyword">public function</span> <span class="php-function">__construct</span>(
+        <span class="php-keyword">string</span> <span class="php-var">$nama</span>,
+        <span class="php-keyword">int</span> <span class="php-var">$umur</span>,
+        <span class="php-keyword">private</span> <span class="php-keyword">string</span> <span class="php-var">$nim</span>,
+        <span class="php-keyword">private</span> <span class="php-keyword">string</span> <span class="php-var">$jurusan</span>
+    ) {
+        <span class="php-keyword">parent</span>::<span class="php-function">__construct</span>(<span class="php-var">$nama</span>, <span class="php-var">$umur</span>);
+    }
+    
+    <span class="php-comment">// Override method parent</span>
+    <span class="php-keyword">public function</span> <span class="php-function">sapa</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-keyword">parent</span>::<span class="php-function">sapa</span>() . <span class="php-string">", mahasiswa {$this->jurusan}"</span>;
+    }
+    
+    <span class="php-keyword">public function</span> <span class="php-function">getInfo</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"{$this->nama} | NIM: {$this->nim} | {$this->jurusan}"</span>;
+    }
+}
+
+<span class="php-var">$mhs</span> = <span class="php-keyword">new</span> <span class="php-function">Mahasiswa</span>(<span class="php-string">"John"</span>, <span class="php-number">20</span>, <span class="php-string">"12345"</span>, <span class="php-string">"Informatika"</span>);
+<span class="php-keyword">echo</span> <span class="php-var">$mhs</span>-><span class="php-function">sapa</span>();      <span class="php-comment">// "Halo, saya John, mahasiswa Informatika"</span>
+<span class="php-keyword">echo</span> <span class="php-var">$mhs</span>-><span class="php-function">getInfo</span>();   <span class="php-comment">// "John | NIM: 12345 | Informatika"</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Polymorphism (Polimorfisme)</h3>
+                <p>Polymorphism terjadi ketika child class <strong>mengubah perilaku method</strong> yang diwarisi dari parent class (method overriding). Satu nama method, perilaku berbeda tergantung objeknya.</p>
+                <pre><code><span class="php-tag">&lt;?php</span>
+<span class="php-keyword">class</span> <span class="php-function">Hewan</span> {
+    <span class="php-keyword">public function</span> <span class="php-function">bersuara</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"..."</span>;
+    }
+}
+
+<span class="php-keyword">class</span> <span class="php-function">Anjing</span> <span class="php-keyword">extends</span> <span class="php-function">Hewan</span> {
+    <span class="php-keyword">public function</span> <span class="php-function">bersuara</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"Guk guk!"</span>;
+    }
+}
+
+<span class="php-keyword">class</span> <span class="php-function">Kucing</span> <span class="php-keyword">extends</span> <span class="php-function">Hewan</span> {
+    <span class="php-keyword">public function</span> <span class="php-function">bersuara</span>(): <span class="php-keyword">string</span> {
+        <span class="php-keyword">return</span> <span class="php-string">"Meow!"</span>;
+    }
+}
+
+<span class="php-comment">// Polimorfisme: method sama, hasil berbeda</span>
+<span class="php-var">$hewan</span> = [<span class="php-keyword">new</span> <span class="php-function">Anjing</span>(), <span class="php-keyword">new</span> <span class="php-function">Kucing</span>(), <span class="php-keyword">new</span> <span class="php-function">Anjing</span>()];
+<span class="php-keyword">foreach</span> (<span class="php-var">$hewan</span> <span class="php-keyword">as</span> <span class="php-var">$h</span>) {
+    <span class="php-keyword">echo</span> <span class="php-function">get_class</span>(<span class="php-var">$h</span>) . <span class="php-string">": "</span> . <span class="php-var">$h</span>-><span class="php-function">bersuara</span>() . <span class="php-string">"&lt;br&gt;"</span>;
+}
+<span class="php-comment">// Anjing: Guk guk!</span>
+<span class="php-comment">// Kucing: Meow!</span>
+<span class="php-comment">// Anjing: Guk guk!</span>
+<span class="php-tag">?&gt;</span></code></pre>
+
+                <h3>Visibility (Access Modifier)</h3>
+                <p>Access modifier menentukan <strong>siapa yang boleh mengakses</strong> properti atau method sebuah class.</p>
+                    <tr>
+                        <th>Modifier</th>
+                        <th>Dari Class Sendiri</th>
+                        <th>Dari Child Class</th>
+                        <th>Dari Luar Class</th>
+                    </tr>
+                    <tr>
+                        <td><code>public</code></td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td><code>protected</code></td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>❌</td>
+                    </tr>
+                    <tr>
+                        <td><code>private</code></td>
+                        <td>✅</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                    </tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>💡 Ringkasan OOP PHP:</strong>
+                    <ul>
+                        <li><strong>Class</strong> = blueprint/cetakan; <strong>Object</strong> = hasil cetakan (instansi)</li>
+                        <li><strong>$this</strong> = merujuk ke object itu sendiri di dalam class</li>
+                        <li><strong>__construct()</strong> = otomatis dipanggil saat <code>new NamaClass()</code></li>
+                        <li><strong>Encapsulation</strong> = lindungi data dengan <code>private</code> + getter/setter</li>
+                        <li><strong>Inheritance</strong> = <code>extends</code> untuk mewarisi class lain</li>
+                        <li><strong>parent::</strong> = memanggil method/constructor dari parent class</li>
+                        <li><strong>Polymorphism</strong> = override method parent di child class</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 15: Latihan dan Tugas -->
+            <section id="latihan">
+                <h2>15. Latihan & Tugas <span class="badge badge-important">Tugas 4</span></h2>
+                
+                <h3>Tugas 4: Membuat Halaman Web dengan PHP</h3>
+
+                <div class="info-box">
+                    <strong>Instruksi:</strong>
+                    <ul>
+                        <li>Kerjakan <strong>2 dari 3 soal</strong> di bawah ini (pilih sesuai kemampuan)</li>
+                        <li>Semua file harus berekstensi <code>.php</code></li>
+                        <li>Jalankan melalui XAMPP (<code>http://localhost/tugas4/</code>)</li>
+                        <li>Tambahkan CSS agar tampilan menarik</li>
+                        <li>Upload kode ke <strong>GitHub</strong> dalam satu repository</li>
+                        <li>Kumpulkan <strong>link repository GitHub</strong> melalui eLearning Berajah</li>
+                    </ul>
+                </div>
+
+                <div class="demo-box" style="border-color: #e74c3c;">
+                    <h4>Tugas 4A: Konversi Suhu</h4>
+                    <p>Buat aplikasi konversi suhu dengan PHP:</p>
+                    <ul>
+                        <li>Form input angka suhu dan pilihan konversi (Celsius → Fahrenheit / Fahrenheit → Celsius / Celsius → Kelvin)</li>
+                        <li>Proses konversi menggunakan PHP (self-processing form)</li>
+                        <li>Tampilkan hasil di halaman yang sama</li>
+                        <li>Gunakan <strong>function PHP</strong> untuk setiap konversi</li>
+                        <li>Validasi: input harus angka</li>
+                    </ul>
+                    <p><strong>Rumus:</strong></p>
+                    <ul>
+                        <li>C → F: <code>(C × 9/5) + 32</code></li>
+                        <li>F → C: <code>(F - 32) × 5/9</code></li>
+                        <li>C → K: <code>C + 273.15</code></li>
+                    </ul>
+                </div>
+
+                <div class="demo-box" style="border-color: #27ae60;">
+                    <h4>Tugas 4B: Biodata dengan Form Multi-Page</h4>
+                    <p>Buat aplikasi biodata dengan 2 halaman:</p>
+                    <ul>
+                        <li><strong>Halaman 1 (form.php):</strong> Form input biodata (Nama, NIM, Email, Telepon, Alamat, Jenis Kelamin, Hobi [checkbox multiple], Jurusan [dropdown])</li>
+                        <li><strong>Halaman 2 (hasil.php):</strong> Tampilkan semua data yang diinputkan dalam format tabel yang rapi</li>
+                        <li>Gunakan method <strong>POST</strong></li>
+                        <li>Validasi semua input wajib</li>
+                        <li>Tampilkan pesan error jika ada field kosong</li>
+                        <li><strong>Bonus:</strong> Tambahkan tombol "Kembali ke Form" dengan data sebelumnya tetap terisi</li>
+                    </ul>
+                </div>
+
+                <div class="demo-box" style="border-color: #3498db;">
+                    <h4>Tugas 4C: Tabel Nilai Mahasiswa</h4>
+                    <p>Buat halaman yang menampilkan tabel nilai:</p>
+                    <ul>
+                        <li>Buat <strong>array multidimensi</strong> berisi data minimal 5 mahasiswa (Nama, NIM, Nilai UTS, Nilai UAS)</li>
+                        <li>Tampilkan dalam <strong>tabel HTML</strong> yang di-generate PHP</li>
+                        <li>Hitung <strong>Nilai Akhir</strong> secara otomatis: <code>NA = (UTS × 40%) + (UAS × 60%)</code></li>
+                        <li>Tentukan <strong>Grade</strong> otomatis (A/B/C/D/E) menggunakan function</li>
+                        <li>Beri warna berbeda pada baris yang nilainya < 60 (merah/kuning)</li>
+                        <li>Tampilkan <strong>rata-rata kelas</strong> di bawah tabel</li>
+                        <li><strong>Bonus:</strong> Buat class <code>Mahasiswa</code> untuk menyimpan data</li>
+                    </ul>
+                </div>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr>
+                        <th>No</th>
+                        <th>Kriteria</th>
+                        <th>Bobot</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>Fungsionalitas PHP berjalan benar</td>
+                        <td>30%</td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Penggunaan percabangan & perulangan</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Form handling (GET/POST) benar</td>
+                        <td>20%</td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>Penggunaan function/class</td>
+                        <td>15%</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>Tampilan rapi dan kode terstruktur</td>
+                        <td>15%</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"><strong>Bonus (class OOP)</strong></td>
+                        <td>+10%</td>
+                    </tr>
+                </table>
+
+                <h3>Struktur Repository GitHub</h3>
+                <pre><code>tugas4-pweb-NIM-Nama/
+├── tugas4a/           ← jika mengerjakan soal A
+│   └── konversi.php
+├── tugas4b/           ← jika mengerjakan soal B
+│   ├── form.php
+│   └── hasil.php
+├── tugas4c/           ← jika mengerjakan soal C
+│   └── tabel_nilai.php
+└── css/
+    └── style.css</code></pre>
+
+                <div class="success-box">
+                    <strong>Deadline:</strong> Sesuai dengan jadwal di eLearning<br>
+                    <strong>Pengumpulan:</strong>
+                    <ol style="margin-top: 8px;">
+                        <li>Upload semua file tugas ke <strong>GitHub</strong> dalam satu repository</li>
+                        <li>Kumpulkan <strong>link repository GitHub</strong> ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">eLearning Berajah</a></li>
+                    </ol>
+                    <strong>Nama Repository:</strong> <code>tugas4-pweb-NIM-Nama</code>
+                </div>
+            </section>
+
+            <!-- Section CPMK -->
+            <section id="cpmk">
+                <h2>📎 Capaian Pembelajaran (CPMK)</h2>
+                
+                <table>
+                    <tr>
+                        <th>CPMK</th>
+                        <th>Deskripsi</th>
+                        <th>Materi Terkait</th>
+                    </tr>
+                    <tr>
+                        <td>5.1</td>
+                        <td>Menjelaskan cara kerja server side</td>
+                        <td>Section 1: Cara Kerja Server Side</td>
+                    </tr>
+                    <tr>
+                        <td>5.2</td>
+                        <td>Menjelaskan kelebihan dan kekurangan script server side</td>
+                        <td>Section 2: Kelebihan & Kekurangan</td>
+                    </tr>
+                    <tr>
+                        <td>5.3</td>
+                        <td>Membuat program PHP sederhana (percabangan & perulangan)</td>
+                        <td>Section 3-7: Pengenalan PHP, Variabel, Percabangan, Perulangan</td>
+                    </tr>
+                    <tr>
+                        <td>5.4</td>
+                        <td>Membuat program dengan class/fungsi bawaan PHP</td>
+                        <td>Section 8-10, 14: Function, Array, String, Class</td>
+                    </tr>
+                    <tr>
+                        <td>5.5</td>
+                        <td>Membuat program yang menangani pengiriman data client-server</td>
+                        <td>Section 11-13: Form Handling, Hands-On, Superglobal</td>
+                    </tr>
+                </table>
+
+                <h3>Referensi</h3>
+                <ul>
+                    <li><a href="https://www.php.net/manual/en/" target="_blank">PHP Official Documentation</a></li>
+                    <li><a href="https://www.w3schools.com/php/" target="_blank">W3Schools PHP Tutorial</a></li>
+                    <li><a href="https://www.phptutorial.net/" target="_blank">PHP Tutorial.net</a></li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Materi Pemrograman Web - PHP</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2024</p>
+    </footer>
+
+    <script>
+        // Show only the selected section
+        function showSection(id) {
+            document.querySelectorAll('main.content section').forEach(sec => {
+                sec.style.display = 'none';
+            });
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Sidebar click handler
+        document.querySelectorAll('.sidebar a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+                this.classList.add('active');
+                showSection(id);
+            });
+        });
+
+        // Show first section by default on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const firstLink = document.querySelector('.sidebar a[href^="#"]');
+            if (firstLink) {
+                const id = firstLink.getAttribute('href').substring(1);
+                firstLink.classList.add('active');
+                showSection(id);
+            }
+        });
+
+        // Anti-copy protection
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.msUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault(); showCopyWarning(); return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault(); return false;
+                    }
+                }
+            });
+
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var selectedElement = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (selectedElement && (selectedElement.closest('pre') || selectedElement.closest('code'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan!');
+                    showCopyWarning();
+                }
+            });
+
+            function showCopyWarning() {
+                var existing = document.getElementById('copy-warning-modal');
+                if (existing) existing.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;"><div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);"><div style="font-size:50px;margin-bottom:15px;">🚫</div><h3 style="color:#8e44ad;margin-bottom:10px;">Copy Tidak Diizinkan!</h3><p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan.</p><button onclick="this.closest(\'#copy-warning-modal\').remove()" style="background:#8e44ad;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button></div></div>';
+                document.body.appendChild(modal);
+                setTimeout(function() {
+                    if (document.getElementById('copy-warning-modal')) document.getElementById('copy-warning-modal').remove();
+                }, 3000);
+            }
+        })();
+    </script>
+</body>
+</html>
