@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Android Kotlin - Penyimpanan Data</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+    <link rel="shortcut icon" href="../assets/img/logo-unram.png" type="image/x-icon">
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>Penyimpanan Data</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#overview" class="nav-link">Overview Penyimpanan</a>
+                <ul class="sub-menu">
+                    <li><a href="#ov-jenis">Jenis Penyimpanan</a></li>
+                    <li><a href="#ov-kapan">Kapan Menggunakan</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#sharedpref" class="nav-link">SharedPreferences</a>
+                <ul class="sub-menu">
+                    <li><a href="#sp-pengenalan">Pengenalan</a></li>
+                    <li><a href="#sp-menulis">Menulis Data</a></li>
+                    <li><a href="#sp-membaca">Membaca Data</a></li>
+                    <li><a href="#sp-menghapus">Menghapus Data</a></li>
+                    <li><a href="#sp-contoh">Contoh: Remember Me</a></li>
+                    <li><a href="#sp-settings">Contoh: App Settings</a></li>
+                    <li><a href="#handson-1">Hands-On 1</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#internal" class="nav-link">App-Specific Storage</a>
+                <ul class="sub-menu">
+                    <li><a href="#as-pengenalan">Pengenalan</a></li>
+                    <li><a href="#as-internal">Internal Storage</a></li>
+                    <li><a href="#as-menulis-file">Menulis File</a></li>
+                    <li><a href="#as-membaca-file">Membaca File</a></li>
+                    <li><a href="#as-contoh">Contoh: Catatan Teks</a></li>
+                    <li><a href="#handson-2">Hands-On 2</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#sqlite" class="nav-link">SQLite Database</a>
+                <ul class="sub-menu">
+                    <li><a href="#sq-pengenalan">Pengenalan SQLite</a></li>
+                    <li><a href="#sq-contoh">Contoh Project</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#room" class="nav-link">Room Database</a>
+                <ul class="sub-menu">
+                    <li><a href="#rm-pengenalan">Pengenalan Room</a></li>
+                    <li><a href="#rm-contoh">Contoh Project</a></li>
+                    <li><a href="#handson-3">Tugas Akhir</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#handson-final" class="nav-link" style="display:none;">Tugas Akhir</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- ============================================ -->
+        <!-- PENDAHULUAN -->
+        <!-- ============================================ -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Penyimpanan Data di Android</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami berbagai metode penyimpanan data di Android</li>
+                    <li>Mampu mengimplementasikan SharedPreferences untuk data key-value sederhana</li>
+                    <li>Mampu menyimpan dan membaca file di App-Specific Storage</li>
+                    <li>Memahami konsep SQLite dan operasi CRUD dasar</li>
+                    <li>Mampu mengimplementasikan Room Database sebagai abstraksi SQLite</li>
+                    <li>Dapat memilih metode penyimpanan yang tepat sesuai kebutuhan</li>
+                </ul>
+            </div>
+
+            <h2>Prasyarat</h2>
+            <p>Pastikan Anda sudah memahami materi dari praktikum sebelumnya:</p>
+            <ul>
+                <li>Activity, Fragment, dan Navigation Component</li>
+                <li>RecyclerView dan Adapter</li>
+                <li>Layout XML dan Basic Widgets</li>
+                <li>Kotlin dasar (data class, lambda, coroutines dasar)</li>
+            </ul>
+
+            <h2>Mengapa Penyimpanan Data Penting?</h2>
+            <p>Secara default, data dalam aplikasi Android bersifat sementara (volatile). Ketika aplikasi ditutup atau device di-restart, semua data di memori akan hilang. Penyimpanan data (data persistence) memungkinkan aplikasi menyimpan data secara permanen sehingga tetap tersedia meskipun aplikasi ditutup.</p>
+
+            <div class="persist-compare">
+                <div class="persist-row">
+                    <div class="persist-card persist-bad">
+                        <div class="persist-card-header">
+                            <span>Tanpa Penyimpanan</span>
+                        </div>
+                        <div class="persist-flow">
+                            <div class="persist-step">User login</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Tutup app</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Buka lagi</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step persist-step-bad">Harus login ulang!</div>
+                        </div>
+                    </div>
+                    <div class="persist-card persist-good">
+                        <div class="persist-card-header">
+                            <span>Dengan Penyimpanan</span>
+                        </div>
+                        <div class="persist-flow">
+                            <div class="persist-step">User login</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Simpan status</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Tutup app</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Buka lagi</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step persist-step-good">Langsung masuk!</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="persist-pipeline">
+                    <div class="persist-pipe-step">
+                        <div class="persist-pipe-icon" style="background:#e3f2fd;color:#1565c0;">📥</div>
+                        <div class="persist-pipe-label">Input Data</div>
+                    </div>
+                    <div class="persist-pipe-arrow">→</div>
+                    <div class="persist-pipe-step">
+                        <div class="persist-pipe-icon" style="background:#e8f5e9;color:#2e7d32;">💾</div>
+                        <div class="persist-pipe-label">Simpan ke Disk</div>
+                    </div>
+                    <div class="persist-pipe-arrow">→</div>
+                    <div class="persist-pipe-step">
+                        <div class="persist-pipe-icon" style="background:#fff3e0;color:#e65100;">📤</div>
+                        <div class="persist-pipe-label">Baca dari Disk</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- OVERVIEW PENYIMPANAN -->
+        <!-- ============================================ -->
+        <section id="overview" class="section">
+            <h1>Overview Metode Penyimpanan</h1>
+
+            <article id="ov-jenis">
+                <h2>Jenis-Jenis Penyimpanan Data di Android</h2>
+
+                <div class="storage-grid">
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num">1</div>
+                            <div class="storage-card-title">SharedPreferences</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-blue">Key-Value XML</span>
+                                <span class="storage-tag tag-green">Kecil (KB)</span>
+                            </div>
+                            <div class="storage-card-desc">Settings, token login, preferensi user</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num">2</div>
+                            <div class="storage-card-title">App-Specific Storage</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-green">File (teks/gambar)</span>
+                                <span class="storage-tag tag-orange">Sedang (MB)</span>
+                            </div>
+                            <div class="storage-card-desc">Catatan teks, cache gambar, log file</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num">3</div>
+                            <div class="storage-card-title">SQLite Database</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-orange">Relasional (SQL)</span>
+                                <span class="storage-tag tag-red">Besar (GB)</span>
+                            </div>
+                            <div class="storage-card-desc">Daftar kontak, data transaksi, inventory</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num">4</div>
+                            <div class="storage-card-title">Room Database</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-purple">ORM (abstraksi SQLite)</span>
+                                <span class="storage-tag tag-red">Besar (GB)</span>
+                            </div>
+                            <div class="storage-card-desc">Sama seperti SQLite, lebih modern &amp; aman</div>
+                        </div>
+                    </div>
+                    <div class="storage-card storage-card-muted">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#e0e0e0;color:#9e9e9e;">5</div>
+                            <div class="storage-card-title" style="color:#9e9e9e;">DataStore</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-gray">Tidak dibahas</span>
+                            </div>
+                            <div class="storage-card-desc" style="color:#bdbdbd;">Pengganti modern SharedPreferences</div>
+                        </div>
+                    </div>
+                    <div class="storage-card storage-card-muted">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#e0e0e0;color:#9e9e9e;">6</div>
+                            <div class="storage-card-title" style="color:#9e9e9e;">Cloud Storage</div>
+                            <div class="storage-card-meta">
+                                <span class="storage-tag tag-gray">Tidak dibahas</span>
+                            </div>
+                            <div class="storage-card-desc" style="color:#bdbdbd;">Firebase, REST API</div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="ov-kapan">
+                <h2>Kapan Menggunakan Metode Yang Mana?</h2>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Metode</th>
+                            <th>Tipe Data</th>
+                            <th>Kapasitas</th>
+                            <th>Kompleksitas</th>
+                            <th>Contoh Penggunaan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>SharedPreferences</strong></td>
+                            <td>Key-Value primitif (String, Int, Boolean)</td>
+                            <td>Kecil</td>
+                            <td>Sangat Mudah</td>
+                            <td>Status login, tema gelap/terang, bahasa, onboarding flag</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Internal Storage</strong></td>
+                            <td>File (teks, binary)</td>
+                            <td>Sedang</td>
+                            <td>Mudah</td>
+                            <td>Catatan teks, file JSON, log, cache</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SQLite</strong></td>
+                            <td>Data terstruktur (tabel)</td>
+                            <td>Besar</td>
+                            <td>Sedang</td>
+                            <td>Daftar kontak, data transaksi, inventory</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Room</strong></td>
+                            <td>Data terstruktur (ORM)</td>
+                            <td>Besar</td>
+                            <td>Sedang</td>
+                            <td>Sama seperti SQLite, lebih aman dan modern</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="decision-tree">
+                    <div class="dt-question">Apakah datanya sederhana (key-value)?</div>
+                    <div class="dt-branches">
+                        <div class="dt-branch">
+                            <div class="dt-branch-label dt-yes">YA</div>
+                            <div class="dt-result" style="border-color:#1565c0;background:#e3f2fd;">
+                                <strong>SharedPreferences</strong>
+                                <span>settings, preferensi, token</span>
+                            </div>
+                        </div>
+                        <div class="dt-branch">
+                            <div class="dt-branch-label dt-no">TIDAK</div>
+                            <div class="dt-sub-question">Apakah berupa file (teks, gambar)?</div>
+                            <div class="dt-branches">
+                                <div class="dt-branch">
+                                    <div class="dt-branch-label dt-yes">YA</div>
+                                    <div class="dt-result" style="border-color:#2e7d32;background:#e8f5e9;">
+                                        <strong>App-Specific Storage</strong>
+                                        <span>catatan, cache, download</span>
+                                    </div>
+                                </div>
+                                <div class="dt-branch">
+                                    <div class="dt-branch-label dt-no">TIDAK</div>
+                                    <div class="dt-sub-question">Data terstruktur (tabel)?</div>
+                                    <div class="dt-branches">
+                                        <div class="dt-branch">
+                                            <div class="dt-branch-label dt-yes">YA</div>
+                                            <div class="dt-result" style="border-color:#6a1b9a;background:#f3e5f5;">
+                                                <strong>Room Database</strong>
+                                                <span>recommended</span>
+                                            </div>
+                                        </div>
+                                        <div class="dt-branch">
+                                            <div class="dt-branch-label dt-no">ONLINE</div>
+                                            <div class="dt-result" style="border-color:#0277bd;background:#e1f5fe;">
+                                                <strong>Cloud / REST API</strong>
+                                                <span>Firebase, backend</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Lokasi Penyimpanan di Device</h4>
+                    <ul>
+                        <li><strong>SharedPreferences:</strong> <code>/data/data/com.example.app/shared_prefs/</code></li>
+                        <li><strong>Internal Storage:</strong> <code>/data/data/com.example.app/files/</code></li>
+                        <li><strong>SQLite/Room:</strong> <code>/data/data/com.example.app/databases/</code></li>
+                        <li><strong>Cache:</strong> <code>/data/data/com.example.app/cache/</code></li>
+                    </ul>
+                    <p>Semua lokasi di atas bersifat <strong>private</strong> — hanya aplikasi Anda yang bisa mengaksesnya. Data akan dihapus saat aplikasi di-uninstall.</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SHARED PREFERENCES -->
+        <!-- ============================================ -->
+        <section id="sharedpref" class="section">
+            <h1>SharedPreferences</h1>
+
+            <article id="sp-pengenalan">
+                <h2>Pengenalan SharedPreferences</h2>
+                <p>SharedPreferences adalah mekanisme penyimpanan data sederhana yang menyimpan data dalam format <strong>key-value pairs</strong>. Data disimpan dalam file XML di internal storage aplikasi.</p>
+
+                <h3>Karakteristik SharedPreferences</h3>
+                <ul>
+                    <li>Menyimpan data primitif: <code>String</code>, <code>Int</code>, <code>Long</code>, <code>Float</code>, <code>Boolean</code>, <code>Set&lt;String&gt;</code></li>
+                    <li>Data tersimpan secara <strong>persisten</strong> (tetap ada setelah app ditutup)</li>
+                    <li>Data <strong>private</strong> — hanya bisa diakses oleh aplikasi Anda</li>
+                    <li>Operasi bersifat <strong>synchronous</strong> (blocking)</li>
+                    <li>Cocok untuk data kecil dan sederhana</li>
+                    <li><strong>Tidak cocok</strong> untuk data besar atau data yang sering berubah</li>
+                </ul>
+
+                <h3>Format Penyimpanan</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>File XML yang dibuat oleh SharedPreferences</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;!-- /data/data/com.example.app/shared_prefs/MyPrefs.xml --&gt;
+&lt;?xml version='1.0' encoding='utf-8' standalone='yes' ?&gt;
+&lt;map&gt;
+    &lt;string name="username"&gt;john_doe&lt;/string&gt;
+    &lt;boolean name="is_logged_in" value="true" /&gt;
+    &lt;int name="login_count" value="5" /&gt;
+    &lt;string name="theme"&gt;dark&lt;/string&gt;
+&lt;/map&gt;</pre>
+                </div>
+
+                <h3>Cara Mendapatkan Instance SharedPreferences</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan SharedPreferences</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Cara 1: SharedPreferences dengan nama spesifik
+// Bisa diakses dari Activity manapun dengan nama yang sama
+val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+
+// Cara 2: SharedPreferences default untuk Activity ini saja
+// Nama file otomatis berdasarkan nama Activity
+val sharedPref = getPreferences(Context.MODE_PRIVATE)
+
+// Cara 3: Di dalam Fragment
+val sharedPref = requireContext().getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Mode SharedPreferences</h4>
+                    <p>Parameter kedua <code>getSharedPreferences()</code> menentukan mode akses file. Berikut semua mode yang pernah ada di Android:</p>
+                    <table class="data-table" style="margin-top:12px;">
+                        <thead>
+                            <tr>
+                                <th>Mode</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>MODE_PRIVATE</code></td>
+                                <td><span style="color:#2e7d32;font-weight:700;">Gunakan ini</span></td>
+                                <td>File hanya bisa diakses oleh aplikasi sendiri. Satu-satunya pilihan yang aman dan valid di Android modern.</td>
+                            </tr>
+                            <tr>
+                                <td><code>MODE_WORLD_READABLE</code></td>
+                                <td><span style="color:#c62828;font-weight:700;">Deprecated API 17</span></td>
+                                <td>Mengizinkan aplikasi lain <em>membaca</em> file SharedPreferences Anda. Dihapus karena membuka celah kebocoran data sensitif.</td>
+                            </tr>
+                            <tr>
+                                <td><code>MODE_WORLD_WRITEABLE</code></td>
+                                <td><span style="color:#c62828;font-weight:700;">Deprecated API 17</span></td>
+                                <td>Mengizinkan aplikasi lain <em>menulis</em> ke file SharedPreferences Anda. Sangat berbahaya karena data bisa dimanipulasi app lain.</td>
+                            </tr>
+                            <tr>
+                                <td><code>MODE_MULTI_PROCESS</code></td>
+                                <td><span style="color:#e65100;font-weight:700;">Deprecated API 23</span></td>
+                                <td>Dirancang untuk skenario multi-process, namun tidak reliable dan menyebabkan race condition. Gunakan <code>ContentProvider</code> sebagai gantinya.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:12px;margin-bottom:0;">Untuk berbagi data antar aplikasi secara aman di Android modern, gunakan <code>ContentProvider</code>. Untuk menyimpan data sensitif (token, password), gunakan <code>EncryptedSharedPreferences</code> dari library <strong>Jetpack Security</strong>.</p>
+                </div>
+            </article>
+
+            <article id="sp-menulis">
+                <h2>Menulis Data ke SharedPreferences</h2>
+                <p>Untuk menulis data, gunakan objek <code>SharedPreferences.Editor</code>. Setiap operasi tulis harus diakhiri dengan <code>apply()</code> atau <code>commit()</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menulis berbagai tipe data</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+
+// Mendapatkan Editor
+val editor = sharedPref.edit()
+
+// Menulis berbagai tipe data
+editor.putString("username", "john_doe")
+editor.putInt("user_age", 25)
+editor.putBoolean("is_logged_in", true)
+editor.putFloat("rating", 4.5f)
+editor.putLong("last_login", System.currentTimeMillis())
+editor.putStringSet("hobbies", setOf("Reading", "Coding", "Gaming"))
+
+// Simpan perubahan
+editor.apply()  // Asynchronous (recommended)
+// atau
+editor.commit()  // Synchronous (mengembalikan boolean)</pre>
+                </div>
+
+                <h3>Cara Ringkas dengan apply {}</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Cara ringkas menulis data</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+
+// Menggunakan apply block (lebih ringkas)
+sharedPref.edit().apply {
+    putString("username", "john_doe")
+    putInt("user_age", 25)
+    putBoolean("is_logged_in", true)
+    apply()  // Jangan lupa apply() di akhir
+}</pre>
+                </div>
+
+                <h3>Perbedaan apply() vs commit()</h3>
+                <p>Keduanya berfungsi menyimpan perubahan ke file SharedPreferences, tapi cara kerjanya berbeda.</p>
+
+                <p><strong>apply()</strong> menyimpan perubahan secara <em>asynchronous</em> — artinya perintah simpan langsung diterima dan dijalankan di background thread, sementara kode berikutnya di main thread terus berjalan tanpa menunggu. Hasilnya tidak dikembalikan, jadi Anda tidak tahu apakah berhasil atau gagal. Karena tidak memblokir main thread, UI tetap responsif dan tidak ada risiko lag.</p>
+
+                <p><strong>commit()</strong> menyimpan secara <em>synchronous</em> — kode akan berhenti dan menunggu sampai proses tulis ke disk selesai, baru kemudian melanjutkan ke baris berikutnya. Ia mengembalikan nilai <code>Boolean</code>: <code>true</code> jika berhasil, <code>false</code> jika gagal. Karena berjalan di main thread dan harus menunggu operasi disk, ini bisa menyebabkan UI terasa lambat jika dipanggil terlalu sering.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>apply()</th>
+                            <th>commit()</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Cara kerja</td>
+                            <td>Simpan di background, kode lanjut jalan</td>
+                            <td>Tunggu sampai selesai, baru lanjut</td>
+                        </tr>
+                        <tr>
+                            <td>Return value</td>
+                            <td><code>void</code> — tidak ada</td>
+                            <td><code>Boolean</code> — sukses/gagal</td>
+                        </tr>
+                        <tr>
+                            <td>Efek ke UI</td>
+                            <td>Tidak memblokir, UI tetap lancar</td>
+                            <td>Memblokir main thread sementara</td>
+                        </tr>
+                        <tr>
+                            <td>Kapan pakai</td>
+                            <td>Hampir semua kasus</td>
+                            <td>Saat perlu konfirmasi berhasil/gagal</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <h4>Mana yang lebih baik?</h4>
+                    <p>Gunakan <strong>apply()</strong> untuk hampir semua kasus. SharedPreferences dirancang untuk data kecil yang jarang gagal disimpan, sehingga nilai return dari <code>commit()</code> jarang benar-benar dibutuhkan.</p>
+                    <p style="margin-bottom:0;">Gunakan <strong>commit()</strong> hanya jika ada alasan spesifik untuk memastikan data sudah tersimpan sebelum melanjutkan — misalnya sebelum aplikasi langsung ditutup paksa (<code>System.exit()</code>) atau sebelum berpindah ke proses lain yang langsung membaca data tersebut.</p>
+                </div>
+            </article>
+
+            <article id="sp-membaca">
+                <h2>Membaca Data dari SharedPreferences</h2>
+                <p>Untuk membaca data, gunakan method <code>get...(key, defaultValue)</code>. Parameter <code>defaultValue</code> akan dikembalikan jika key tidak ditemukan.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Membaca berbagai tipe data</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+
+// Membaca data dengan default value
+val username = sharedPref.getString("username", "Guest")        // Default: "Guest"
+val age = sharedPref.getInt("user_age", 0)                      // Default: 0
+val isLoggedIn = sharedPref.getBoolean("is_logged_in", false)   // Default: false
+val rating = sharedPref.getFloat("rating", 0.0f)                // Default: 0.0
+val lastLogin = sharedPref.getLong("last_login", 0L)            // Default: 0
+val hobbies = sharedPref.getStringSet("hobbies", emptySet())   // Default: emptySet
+
+// Mengecek apakah key ada
+val hasUsername = sharedPref.contains("username")  // true/false
+
+// Mengambil semua data
+val allData = sharedPref.all  // Map&lt;String, *&gt;</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Penting: Default Value</h4>
+                    <p>Selalu berikan <strong>default value</strong> yang masuk akal. Jika key belum pernah disimpan, default value akan digunakan. Ini mencegah crash akibat data null atau tidak terduga.</p>
+                </div>
+            </article>
+
+            <article id="sp-menghapus">
+                <h2>Menghapus Data dari SharedPreferences</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menghapus data</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+val sharedPref = getSharedPreferences("MyAppPrefs", Context.MODE_PRIVATE)
+
+// Menghapus satu key
+sharedPref.edit().apply {
+    remove("username")
+    apply()
+}
+
+// Menghapus SEMUA data
+sharedPref.edit().apply {
+    clear()
+    apply()
+}</pre>
+                </div>
+            </article>
+
+            <article id="sp-contoh">
+                <h2>Contoh Lengkap: Fitur Remember Me (Login)</h2>
+
+                <p>Fitur "Remember Me" memungkinkan user tidak perlu login ulang setiap kali membuka aplikasi. SharedPreferences digunakan di sini karena data yang disimpan bersifat sederhana (key-value), ukurannya kecil, dan perlu tetap ada meskipun aplikasi ditutup.</p>
+
+                <div class="info-box">
+                    <h4>Mengapa SharedPreferences untuk kasus ini?</h4>
+                    <p>Saat user login dan mencentang "Remember Me", kita perlu menyimpan tiga hal: status login, nama user, dan flag remember me. Ketiganya adalah data primitif sederhana yang tidak memerlukan struktur tabel atau query kompleks. SharedPreferences adalah pilihan paling ringan dan tepat — tidak perlu setup database, tidak perlu dependency tambahan, dan bisa dibaca dalam satu baris kode kapanpun dibutuhkan.</p>
+                    <p style="margin-bottom:0;">Tanpa SharedPreferences, setiap kali user membuka app mereka harus login ulang karena data di memori hilang saat app ditutup.</p>
+                </div>
+
+                <h3>Struktur Project</h3>
+                <p>Sebelum mulai coding, berikut struktur file yang akan dibuat:</p>
+                <div class="code-block">
+                    <div class="code-header"><span>Struktur project</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+app/
+└── src/main/
+    ├── java/com/example/myapp/
+    │   ├── utils/
+    │   │   └── PrefManager.kt        ← Helper SharedPreferences
+    │   ├── LoginActivity.kt          ← Halaman login
+    │   └── MainActivity.kt           ← Halaman utama (setelah login)
+    └── res/layout/
+        ├── activity_login.xml        ← Layout halaman login
+        └── activity_main.xml         ← Layout halaman utama</pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat project baru di Android Studio</h4>
+                            <p>File → New → New Project → pilih <strong>Empty Views Activity</strong> → isi nama project, package, pilih bahasa <strong>Kotlin</strong>, minimum SDK <strong>API 24</strong> → Finish.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat package utils</h4>
+                            <p>Di panel Project, klik kanan pada package utama (misal <code>com.example.myapp</code>) → <strong>New → Package</strong> → ketik <code>utils</code> → Enter.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Buat class PrefManager</h4>
+                            <p>Klik kanan pada package <code>utils</code> → <strong>New → Kotlin Class/File</strong> → pilih <strong>Class</strong> → beri nama <code>PrefManager</code>. Class ini bertugas sebagai satu-satunya pintu masuk untuk semua operasi SharedPreferences terkait login, sehingga kode tidak tersebar di banyak tempat.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>utils/PrefManager.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.myapp.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+
+class PrefManager(context: Context) {
+
+    private val sharedPref: SharedPreferences =
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+    companion object {
+        private const val PREF_NAME = "LoginPrefs"
+        private const val KEY_IS_LOGGED_IN = "is_logged_in"
+        private const val KEY_USERNAME = "username"
+        private const val KEY_EMAIL = "email"
+        private const val KEY_REMEMBER_ME = "remember_me"
+    }
+
+    // ===== SIMPAN STATUS LOGIN =====
+    fun saveLoginSession(username: String, email: String, rememberMe: Boolean) {
+        sharedPref.edit().apply {
+            putBoolean(KEY_IS_LOGGED_IN, true)
+            putString(KEY_USERNAME, username)
+            putString(KEY_EMAIL, email)
+            putBoolean(KEY_REMEMBER_ME, rememberMe)
+            apply()
+        }
+    }
+
+    // ===== CEK STATUS LOGIN =====
+    fun isLoggedIn(): Boolean {
+        return sharedPref.getBoolean(KEY_IS_LOGGED_IN, false)
+    }
+
+    fun isRememberMe(): Boolean {
+        return sharedPref.getBoolean(KEY_REMEMBER_ME, false)
+    }
+
+    // ===== AMBIL DATA USER =====
+    fun getUsername(): String {
+        return sharedPref.getString(KEY_USERNAME, "") ?: ""
+    }
+
+    fun getEmail(): String {
+        return sharedPref.getString(KEY_EMAIL, "") ?: ""
+    }
+
+    // ===== LOGOUT (HAPUS SESSION) =====
+    fun logout() {
+        sharedPref.edit().apply {
+            clear()
+            apply()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Buat LoginActivity</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>LoginActivity</code> → Finish. Android Studio otomatis membuat file <code>LoginActivity.kt</code> dan <code>res/layout/activity_login.xml</code> sekaligus.</p>
+                            <p style="margin-bottom:0;">Setelah dibuat, buka <code>AndroidManifest.xml</code> dan pindahkan <code>intent-filter</code> MAIN/LAUNCHER dari <code>MainActivity</code> ke <code>LoginActivity</code>, agar LoginActivity yang pertama dibuka saat app dijalankan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>AndroidManifest.xml — jadikan LoginActivity sebagai launcher</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;application ... &gt;
+
+    &lt;!-- LoginActivity sebagai launcher (dibuka pertama kali) --&gt;
+    &lt;activity android:name=".LoginActivity"&gt;
+        &lt;intent-filter&gt;
+            &lt;action android:name="android.intent.action.MAIN" /&gt;
+            &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+        &lt;/intent-filter&gt;
+    &lt;/activity&gt;
+
+    &lt;!-- MainActivity TIDAK punya intent-filter LAUNCHER --&gt;
+    &lt;activity android:name=".MainActivity" /&gt;
+
+&lt;/application&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Edit layout activity_login.xml</h4>
+                            <p>Buka file <code>res/layout/activity_login.xml</code> yang sudah otomatis dibuat, lalu ganti isinya dengan layout berikut. Layout ini berisi form username, password, checkbox Remember Me, dan tombol Login.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_login.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Username"
+        android:inputType="text"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;CheckBox
+        android:id="@+id/cbRememberMe"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Remember Me"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Login" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">6</span>
+                        <div class="step-content">
+                            <h4>Implementasi LoginActivity</h4>
+                            <p>Di sinilah SharedPreferences bekerja. Saat Activity dibuka, kita langsung cek apakah user sudah pernah login dengan Remember Me aktif. Jika ya, skip halaman login dan langsung ke MainActivity. Ini adalah keuntungan utama SharedPreferences — data tersedia instan tanpa query database.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>LoginActivity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.myapp
+
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.example.myapp.utils.PrefManager
+
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var prefManager: PrefManager
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        prefManager = PrefManager(this)
+
+        // Cek apakah user sudah login dan remember me aktif
+        if (prefManager.isLoggedIn() && prefManager.isRememberMe()) {
+            // Langsung ke MainActivity, skip login
+            navigateToMain()
+            return
+        }
+
+        setContentView(R.layout.activity_login)
+
+        val etUsername = findViewById&lt;EditText&gt;(R.id.etUsername)
+        val etPassword = findViewById&lt;EditText&gt;(R.id.etPassword)
+        val cbRememberMe = findViewById&lt;CheckBox&gt;(R.id.cbRememberMe)
+        val btnLogin = findViewById&lt;Button&gt;(R.id.btnLogin)
+
+        // Jika sebelumnya remember me aktif, isi username
+        if (prefManager.isRememberMe()) {
+            etUsername.setText(prefManager.getUsername())
+            cbRememberMe.isChecked = true
+        }
+
+        btnLogin.setOnClickListener {
+            val username = etUsername.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Username dan password harus diisi", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Simulasi validasi login (di real app, cek ke server/database)
+            if (username == "admin" && password == "123456") {
+                // Simpan session
+                prefManager.saveLoginSession(
+                    username = username,
+                    email = "$username@email.com",
+                    rememberMe = cbRememberMe.isChecked
+                )
+                Toast.makeText(this, "Login berhasil!", Toast.LENGTH_SHORT).show()
+                navigateToMain()
+            } else {
+                Toast.makeText(this, "Username atau password salah", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun navigateToMain() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()  // Tutup LoginActivity agar tidak bisa back
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">7</span>
+                        <div class="step-content">
+                            <h4>Tambahkan tombol Logout di MainActivity</h4>
+                            <p>Saat logout, cukup panggil <code>prefManager.logout()</code> yang akan menghapus semua data di SharedPreferences. Sederhana dan bersih.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Di MainActivity.kt - Logout</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Di dalam MainActivity
+private lateinit var prefManager: PrefManager
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_main)
+
+    prefManager = PrefManager(this)
+
+    // Tampilkan nama user
+    val tvWelcome = findViewById&lt;TextView&gt;(R.id.tvWelcome)
+    tvWelcome.text = "Selamat datang, ${prefManager.getUsername()}!"
+
+    // Tombol logout
+    val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
+    btnLogout.setOnClickListener {
+        prefManager.logout()
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
+    }
+}</pre>
+                </div>
+
+                <div class="remember-flow">
+                    <div class="rf-title">Alur Aplikasi dengan Remember Me</div>
+
+                    <div class="rf-row">
+                        <div class="rf-node rf-node-start">App Dibuka</div>
+                    </div>
+                    <div class="rf-connector"></div>
+                    <div class="rf-row">
+                        <div class="rf-node rf-node-check">Cek SharedPreferences<br><small>isLoggedIn &amp;&amp; isRememberMe?</small></div>
+                    </div>
+                    <div class="rf-branch-row">
+                        <div class="rf-branch-line rf-branch-line-left"></div>
+                        <div class="rf-branch-line rf-branch-line-right"></div>
+                    </div>
+                    <div class="rf-split-row">
+                        <div class="rf-split-col">
+                            <div class="rf-branch-label rf-yes">YA</div>
+                            <div class="rf-node rf-node-main">MainActivity<br><small>Langsung masuk</small></div>
+                        </div>
+                        <div class="rf-split-col">
+                            <div class="rf-branch-label rf-no">TIDAK</div>
+                            <div class="rf-node rf-node-login">LoginActivity<br><small>Tampilkan form login</small></div>
+                            <div class="rf-connector"></div>
+                            <div class="rf-node rf-node-action">User mengisi form &amp; klik Login</div>
+                            <div class="rf-connector"></div>
+                            <div class="rf-node rf-node-save">Simpan ke SharedPreferences<br><small>username, status login, remember me</small></div>
+                            <div class="rf-connector"></div>
+                            <div class="rf-node rf-node-main">MainActivity</div>
+                        </div>
+                    </div>
+                    <div class="rf-connector"></div>
+                    <div class="rf-row">
+                        <div class="rf-node rf-node-action">User klik Logout</div>
+                    </div>
+                    <div class="rf-connector"></div>
+                    <div class="rf-row">
+                        <div class="rf-node rf-node-clear">Clear SharedPreferences<br><small>Hapus semua data sesi</small></div>
+                    </div>
+                    <div class="rf-connector"></div>
+                    <div class="rf-row">
+                        <div class="rf-node rf-node-login">LoginActivity</div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="sp-settings">
+                <h2>Contoh: App Settings</h2>
+                <p>SharedPreferences sangat cocok untuk menyimpan pengaturan aplikasi seperti tema, ukuran font, dan notifikasi.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>utils/SettingsManager.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.myapp.utils
+
+import android.content.Context
+import android.content.SharedPreferences
+
+class SettingsManager(context: Context) {
+
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("AppSettings", Context.MODE_PRIVATE)
+
+    companion object {
+        private const val KEY_DARK_MODE = "dark_mode"
+        private const val KEY_FONT_SIZE = "font_size"
+        private const val KEY_NOTIFICATION = "notification_enabled"
+        private const val KEY_LANGUAGE = "language"
+    }
+
+    // Dark Mode
+    var isDarkMode: Boolean
+        get() = prefs.getBoolean(KEY_DARK_MODE, false)
+        set(value) = prefs.edit().putBoolean(KEY_DARK_MODE, value).apply()
+
+    // Font Size
+    var fontSize: Int
+        get() = prefs.getInt(KEY_FONT_SIZE, 14)
+        set(value) = prefs.edit().putInt(KEY_FONT_SIZE, value).apply()
+
+    // Notification
+    var isNotificationEnabled: Boolean
+        get() = prefs.getBoolean(KEY_NOTIFICATION, true)
+        set(value) = prefs.edit().putBoolean(KEY_NOTIFICATION, value).apply()
+
+    // Language
+    var language: String
+        get() = prefs.getString(KEY_LANGUAGE, "id") ?: "id"
+        set(value) = prefs.edit().putString(KEY_LANGUAGE, value).apply()
+}
+
+// ===== Penggunaan di Activity =====
+// val settings = SettingsManager(this)
+//
+// // Baca
+// if (settings.isDarkMode) { /* aktifkan dark mode */ }
+//
+// // Tulis
+// settings.isDarkMode = true
+// settings.fontSize = 18</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- APP-SPECIFIC STORAGE -->
+        <!-- ============================================ -->
+        <section id="internal" class="section">
+            <h1>App-Specific Storage</h1>
+
+            <article id="as-pengenalan">
+                <h2>Pengenalan App-Specific Storage</h2>
+                <p>App-Specific Storage adalah area penyimpanan file yang hanya bisa diakses oleh aplikasi Anda. File-file ini otomatis dihapus saat aplikasi di-uninstall.</p>
+
+                <h3>Jenis App-Specific Storage</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Jenis</th>
+                            <th>Lokasi</th>
+                            <th>Perlu Permission?</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Internal Storage</strong></td>
+                            <td>/data/data/package/files/</td>
+                            <td>Tidak</td>
+                            <td>Selalu tersedia, private</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Internal Cache</strong></td>
+                            <td>/data/data/package/cache/</td>
+                            <td>Tidak</td>
+                            <td>Untuk file temporary, bisa dihapus sistem</td>
+                        </tr>
+                        <tr>
+                            <td><strong>External App Storage</strong></td>
+                            <td>/sdcard/Android/data/package/</td>
+                            <td>Tidak (API 19+)</td>
+                            <td>Bisa tidak tersedia jika SD card dicabut</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="as-internal">
+                <h2>Internal Storage</h2>
+                <p>Internal Storage adalah tempat paling aman untuk menyimpan file karena tidak bisa diakses oleh aplikasi lain atau user (tanpa root).</p>
+
+                <h3>Mendapatkan Direktori</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan path direktori</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Direktori files internal
+val filesDir = filesDir
+// Path: /data/data/com.example.app/files/
+
+// Direktori cache internal
+val cacheDir = cacheDir
+// Path: /data/data/com.example.app/cache/
+
+// Membuat sub-direktori di files
+val customDir = File(filesDir, "notes")
+if (!customDir.exists()) {
+    customDir.mkdirs()
+}
+// Path: /data/data/com.example.app/files/notes/</pre>
+                </div>
+            </article>
+
+            <article id="as-menulis-file">
+                <h2>Menulis File ke Internal Storage</h2>
+
+                <h3>Menulis File Teks</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menulis teks ke file</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Cara 1: Menggunakan openFileOutput (Activity method)
+fun saveTextToFile(filename: String, content: String) {
+    openFileOutput(filename, Context.MODE_PRIVATE).use { outputStream ->
+        outputStream.write(content.toByteArray())
+    }
+    // File tersimpan di: /data/data/package/files/filename
+}
+
+// Cara 2: Menggunakan File object
+fun saveTextToFile2(filename: String, content: String) {
+    val file = File(filesDir, filename)
+    file.writeText(content)
+}
+
+// Cara 3: Append (menambahkan ke file yang sudah ada)
+fun appendTextToFile(filename: String, content: String) {
+    openFileOutput(filename, Context.MODE_APPEND).use { outputStream ->
+        outputStream.write(content.toByteArray())
+    }
+}
+
+// Penggunaan:
+saveTextToFile("catatan.txt", "Ini adalah isi catatan saya")
+appendTextToFile("log.txt", "Log entry: ${System.currentTimeMillis()}\n")</pre>
+                </div>
+
+                <h3>Mode Penulisan</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Context.MODE_PRIVATE</code></td>
+                            <td>Membuat file baru atau menimpa file yang sudah ada</td>
+                        </tr>
+                        <tr>
+                            <td><code>Context.MODE_APPEND</code></td>
+                            <td>Menambahkan data ke akhir file yang sudah ada</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="as-membaca-file">
+                <h2>Membaca File dari Internal Storage</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Membaca teks dari file</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Cara 1: Menggunakan openFileInput
+fun readTextFromFile(filename: String): String {
+    return openFileInput(filename).bufferedReader().use { reader ->
+        reader.readText()
+    }
+}
+
+// Cara 2: Menggunakan File object
+fun readTextFromFile2(filename: String): String {
+    val file = File(filesDir, filename)
+    return if (file.exists()) {
+        file.readText()
+    } else {
+        ""
+    }
+}
+
+// Cara 3: Membaca per baris
+fun readLinesFromFile(filename: String): List&lt;String&gt; {
+    val file = File(filesDir, filename)
+    return if (file.exists()) {
+        file.readLines()
+    } else {
+        emptyList()
+    }
+}
+
+// Penggunaan:
+val content = readTextFromFile("catatan.txt")
+val lines = readLinesFromFile("log.txt")</pre>
+                </div>
+
+                <h3>Operasi File Lainnya</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Operasi file tambahan</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+// Mengecek apakah file ada
+fun isFileExists(filename: String): Boolean {
+    val file = File(filesDir, filename)
+    return file.exists()
+}
+
+// Menghapus file
+fun deleteFile(filename: String): Boolean {
+    val file = File(filesDir, filename)
+    return file.delete()
+}
+
+// atau menggunakan method bawaan Context
+deleteFile("catatan.txt")  // return Boolean
+
+// Mendapatkan daftar file
+fun getFileList(): Array&lt;String&gt; {
+    return fileList()  // method bawaan Context
+}
+
+// Mendapatkan ukuran file
+fun getFileSize(filename: String): Long {
+    val file = File(filesDir, filename)
+    return file.length()  // dalam bytes
+}</pre>
+                </div>
+            </article>
+
+            <article id="as-contoh">
+                <h2>Contoh Lengkap: Aplikasi Catatan Teks</h2>
+
+                <p>Kita akan membuat aplikasi sederhana yang bisa menyimpan dan memuat catatan teks ke Internal Storage. File catatan disimpan di direktori private aplikasi sehingga tidak bisa diakses aplikasi lain.</p>
+
+                <div class="info-box">
+                    <h4>Di mana file disimpan?</h4>
+                    <p>Saat kita memanggil <code>filesDir</code> di dalam Activity, Android mengarahkan ke path:</p>
+                    <code>/data/data/com.example.notesapp/files/</code>
+                    <p style="margin-top:8px;margin-bottom:0;">Setiap catatan disimpan sebagai file <code>.txt</code> di folder tersebut, misalnya <code>belajar_kotlin.txt</code>. Folder ini bersifat private — hanya aplikasi Anda yang bisa membaca dan menulisnya. File akan otomatis terhapus saat aplikasi di-uninstall.</p>
+                </div>
+
+                <h3>Struktur Project</h3>
+                <div class="code-block">
+                    <div class="code-header"><span>Struktur file yang akan dibuat</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+app/
+└── src/main/
+    ├── java/com/example/notesapp/
+    │   └── NotesActivity.kt          ← Logic simpan & muat file
+    ├── res/layout/
+    │   └── activity_notes.xml        ← Layout UI catatan
+    └── AndroidManifest.xml           ← Daftarkan NotesActivity</pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat project baru</h4>
+                            <p>File → New → New Project → <strong>Empty Views Activity</strong> → isi nama <code>NotesApp</code>, package <code>com.example.notesapp</code>, bahasa <strong>Kotlin</strong>, minimum SDK <strong>API 24</strong> → Finish.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat NotesActivity</h4>
+                            <p>Klik kanan pada package utama → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>NotesActivity</code> → Finish. Android Studio otomatis membuat <code>NotesActivity.kt</code> dan <code>res/layout/activity_notes.xml</code>.</p>
+                            <p style="margin-bottom:0;">Kemudian buka <code>AndroidManifest.xml</code>, pindahkan <code>intent-filter</code> LAUNCHER ke <code>NotesActivity</code> agar langsung terbuka saat app dijalankan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>AndroidManifest.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;application ... &gt;
+
+    &lt;activity android:name=".NotesActivity"&gt;
+        &lt;intent-filter&gt;
+            &lt;action android:name="android.intent.action.MAIN" /&gt;
+            &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+        &lt;/intent-filter&gt;
+    &lt;/activity&gt;
+
+&lt;/application&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Buat layout activity_notes.xml</h4>
+                            <p>Buka <code>res/layout/activity_notes.xml</code> lalu ganti isinya. Layout ini berisi field judul, area teks catatan, dua tombol (Simpan &amp; Muat), dan label status.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_notes.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Catatan Saya"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Judul catatan"
+        android:layout_marginBottom="8dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etContent"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:hint="Tulis catatan di sini..."
+        android:inputType="textMultiLine"
+        android:gravity="top"
+        android:layout_marginBottom="8dp" /&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"&gt;
+
+        &lt;Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Simpan"
+            android:layout_marginEnd="4dp" /&gt;
+
+        &lt;Button
+            android:id="@+id/btnLoad"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Muat"
+            android:layout_marginStart="4dp" /&gt;
+
+    &lt;/LinearLayout&gt;
+
+    &lt;TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#757575"
+        android:layout_marginTop="8dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Implementasi NotesActivity.kt</h4>
+                            <p>Buka <code>NotesActivity.kt</code> dan isi dengan kode berikut. Fungsi <code>saveNote()</code> menyimpan isi EditText ke file <code>.txt</code> di <code>filesDir</code>, sedangkan <code>loadNote()</code> membacanya kembali. Nama file dibuat otomatis dari judul catatan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>NotesActivity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.notesapp
+
+import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import java.io.File
+
+class NotesActivity : AppCompatActivity() {
+
+    private lateinit var etTitle: EditText
+    private lateinit var etContent: EditText
+    private lateinit var tvStatus: TextView
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_notes)
+
+        etTitle = findViewById(R.id.etTitle)
+        etContent = findViewById(R.id.etContent)
+        tvStatus = findViewById(R.id.tvStatus)
+
+        findViewById&lt;Button&gt;(R.id.btnSave).setOnClickListener { saveNote() }
+        findViewById&lt;Button&gt;(R.id.btnLoad).setOnClickListener { loadNote() }
+    }
+
+    private fun saveNote() {
+        val title = etTitle.text.toString().trim()
+        val content = etContent.text.toString().trim()
+
+        if (title.isEmpty()) {
+            etTitle.error = "Judul tidak boleh kosong"
+            return
+        }
+
+        try {
+            // Nama file dibuat dari judul, spasi diganti underscore
+            // Contoh judul "Belajar Kotlin" → file "belajar_kotlin.txt"
+            val filename = "${title.replace(" ", "_").lowercase()}.txt"
+
+            // filesDir → /data/data/com.example.notesapp/files/
+            val file = File(filesDir, filename)
+            file.writeText(content)
+
+            // Tampilkan path lengkap agar mahasiswa tahu di mana file disimpan
+            tvStatus.text = "Tersimpan: ${file.absolutePath}"
+            Toast.makeText(this, "Catatan berhasil disimpan!", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadNote() {
+        val title = etTitle.text.toString().trim()
+
+        if (title.isEmpty()) {
+            etTitle.error = "Masukkan judul catatan yang akan dimuat"
+            return
+        }
+
+        try {
+            val filename = "${title.replace(" ", "_").lowercase()}.txt"
+            val file = File(filesDir, filename)
+
+            if (file.exists()) {
+                val content = file.readText()
+                etContent.setText(content)
+                tvStatus.text = "Dimuat: $filename (${file.length()} bytes)"
+                Toast.makeText(this, "Catatan berhasil dimuat!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "File tidak ditemukan: $filename", Toast.LENGTH_SHORT).show()
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Gagal memuat: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Jalankan dan verifikasi</h4>
+                            <p>Jalankan app, tulis judul dan isi catatan, lalu klik <strong>Simpan</strong>. Status di bawah tombol akan menampilkan path lengkap file yang tersimpan, misalnya:</p>
+                            <code>/data/data/com.example.notesapp/files/belajar_kotlin.txt</code>
+                            <p style="margin-top:8px;margin-bottom:0;">Untuk memverifikasi file benar-benar tersimpan, buka <strong>Device File Explorer</strong> di Android Studio (View → Tool Windows → Device File Explorer) → navigasi ke path tersebut.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SQLITE DATABASE -->
+        <!-- ============================================ -->
+        <section id="sqlite" class="section">
+            <h1>SQLite Database</h1>
+
+            <article id="sq-pengenalan">
+                <h2>Pengenalan SQLite</h2>
+                <p>SQLite adalah database relasional ringan yang sudah terintegrasi langsung di dalam Android. Berbeda dengan MySQL atau PostgreSQL yang memerlukan server terpisah, SQLite berjalan sepenuhnya di dalam aplikasi itu sendiri — tidak ada proses server, tidak ada koneksi jaringan, tidak ada konfigurasi tambahan.</p>
+
+                <div class="info-box">
+                    <h4>Mengapa bukan MySQL?</h4>
+                    <p>MySQL dirancang untuk berjalan sebagai server yang melayani banyak klien sekaligus melalui jaringan. Di aplikasi mobile, pendekatan ini tidak praktis karena:</p>
+                    <ul>
+                        <li><strong>Tidak ada server</strong> — perangkat Android tidak menjalankan server database. MySQL butuh proses server yang selalu aktif dan mengonsumsi banyak memori.</li>
+                        <li><strong>Tidak ada jaringan lokal</strong> — MySQL berkomunikasi lewat TCP/IP. Koneksi ke server MySQL eksternal berarti butuh internet, latensi, dan penanganan error jaringan.</li>
+                        <li><strong>Overkill untuk data lokal</strong> — MySQL cocok untuk data yang diakses banyak pengguna secara bersamaan. Data lokal di satu perangkat tidak memerlukan fitur sebesar itu.</li>
+                    </ul>
+                    <p style="margin-bottom:0;">SQLite hadir sebagai solusi: database penuh yang berjalan dalam satu file, tanpa server, tanpa konfigurasi, langsung tersedia di setiap perangkat Android.</p>
+                </div>
+
+                <h3>Karakteristik SQLite</h3>
+                <ul>
+                    <li><strong>Serverless</strong> — tidak memerlukan proses server terpisah, berjalan langsung di dalam aplikasi</li>
+                    <li><strong>Zero Configuration</strong> — tidak perlu setup, instalasi, atau administrasi apapun</li>
+                    <li><strong>Self-contained</strong> — seluruh database tersimpan dalam satu file <code>.db</code></li>
+                    <li><strong>ACID Compliant</strong> — mendukung transaction untuk menjaga konsistensi data</li>
+                    <li><strong>SQL Standard</strong> — mendukung sebagian besar sintaks SQL standar</li>
+                </ul>
+
+                <div class="sqlite-concept">
+                    <div class="sqlite-concept-header">
+                        <span class="sqlite-concept-icon">🗄️</span>
+                        <span>DATABASE: PhoneDB — Contoh yang akan kita buat</span>
+                    </div>
+                    <div class="sqlite-concept-body">
+                        <div class="sqlite-table-label">TABLE: phones</div>
+                        <div class="sqlite-table-wrap">
+                            <table class="sqlite-table">
+                                <thead>
+                                    <tr><th>id</th><th>merek</th><th>produsen</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>1</td><td>Galaxy S24</td><td>Samsung</td></tr>
+                                    <tr><td>2</td><td>iPhone 15</td><td>Apple</td></tr>
+                                    <tr><td>3</td><td>Pixel 8</td><td>Google</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="crud-pills">
+                            <span class="crud-pill crud-c">C — INSERT INTO phones ...</span>
+                            <span class="crud-pill crud-r">R — SELECT * FROM phones ...</span>
+                            <span class="crud-pill crud-u">U — UPDATE phones SET ... WHERE ...</span>
+                            <span class="crud-pill crud-d">D — DELETE FROM phones WHERE ...</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="sq-contoh">
+                <h2>Contoh Project: Daftar Ponsel</h2>
+                <p>Kita akan membuat aplikasi sederhana untuk menyimpan daftar ponsel dengan tiga kolom: <code>id</code>, <code>merek</code>, dan <code>produsen</code>. Aplikasi ini menampilkan daftar ponsel di ListView, bisa menambah data baru, dan menghapus data.</p>
+
+                <h3>Struktur Project</h3>
+                <div class="code-block">
+                    <div class="code-header"><span>Struktur file yang akan dibuat</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+app/
+└── src/main/
+    ├── java/com/example/phoneapp/
+    │   ├── database/
+    │   │   └── PhoneDbHelper.kt      ← SQLiteOpenHelper (buat & kelola DB)
+    │   ├── model/
+    │   │   └── Phone.kt              ← Data class (id, merek, produsen)
+    │   └── MainActivity.kt           ← UI + operasi CRUD
+    ├── res/layout/
+    │   └── activity_main.xml         ← Layout utama (ListView + form input)
+    └── AndroidManifest.xml</pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat project baru</h4>
+                            <p>File → New → New Project → <strong>Empty Views Activity</strong> → nama <code>PhoneApp</code>, package <code>com.example.phoneapp</code>, bahasa <strong>Kotlin</strong>, minimum SDK <strong>API 24</strong> → Finish.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat data class Phone</h4>
+                            <p>Klik kanan package utama → <strong>New → Package</strong> → beri nama <code>model</code>. Lalu klik kanan package <code>model</code> → <strong>New → Kotlin Class/File</strong> → pilih <strong>Data Class</strong> → beri nama <code>Phone</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>model/Phone.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneapp.model
+
+data class Phone(
+    val id: Int = 0,
+    val merek: String,
+    val produsen: String
+)</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Buat PhoneDbHelper</h4>
+                            <p>Buat package <code>database</code>, lalu buat class <code>PhoneDbHelper</code> di dalamnya. Class ini meng-extend <code>SQLiteOpenHelper</code> dan berisi semua operasi CRUD untuk tabel <code>phones</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>database/PhoneDbHelper.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneapp.database
+
+import android.content.ContentValues
+import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+import com.example.phoneapp.model.Phone
+
+class PhoneDbHelper(context: Context) : SQLiteOpenHelper(
+    context, "PhoneDB", null, 1
+) {
+
+    companion object {
+        const val TABLE      = "phones"
+        const val COL_ID     = "id"
+        const val COL_MEREK  = "merek"
+        const val COL_PRODUSEN = "produsen"
+    }
+
+    // Dipanggil SEKALI saat database pertama kali dibuat
+    override fun onCreate(db: SQLiteDatabase?) {
+        db?.execSQL("""
+            CREATE TABLE $TABLE (
+                $COL_ID       INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_MEREK    TEXT NOT NULL,
+                $COL_PRODUSEN TEXT NOT NULL
+            )
+        """.trimIndent())
+    }
+
+    // Dipanggil saat versi database dinaikkan
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        db?.execSQL("DROP TABLE IF EXISTS $TABLE")
+        onCreate(db)
+    }
+
+    // INSERT — tambah data baru, kembalikan ID baris baru (-1 jika gagal)
+    fun insert(phone: Phone): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_MEREK, phone.merek)
+            put(COL_PRODUSEN, phone.produsen)
+        }
+        val id = db.insert(TABLE, null, values)
+        db.close()
+        return id
+    }
+
+    // SELECT ALL — ambil semua data, urutkan berdasarkan merek
+    fun getAll(): List&lt;Phone&gt; {
+        val list = mutableListOf&lt;Phone&gt;()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE ORDER BY $COL_MEREK ASC", null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                list.add(
+                    Phone(
+                        id       = cursor.getInt(cursor.getColumnIndexOrThrow(COL_ID)),
+                        merek    = cursor.getString(cursor.getColumnIndexOrThrow(COL_MEREK)),
+                        produsen = cursor.getString(cursor.getColumnIndexOrThrow(COL_PRODUSEN))
+                    )
+                )
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+        return list
+    }
+
+    // UPDATE — perbarui data berdasarkan ID, kembalikan jumlah baris terpengaruh
+    fun update(phone: Phone): Int {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_MEREK, phone.merek)
+            put(COL_PRODUSEN, phone.produsen)
+        }
+        val rows = db.update(TABLE, values, "$COL_ID = ?", arrayOf(phone.id.toString()))
+        db.close()
+        return rows
+    }
+
+    // DELETE — hapus data berdasarkan ID, kembalikan jumlah baris terhapus
+    fun delete(id: Int): Int {
+        val db = writableDatabase
+        val rows = db.delete(TABLE, "$COL_ID = ?", arrayOf(id.toString()))
+        db.close()
+        return rows
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Buat layout activity_main.xml</h4>
+                            <p>Layout berisi dua EditText untuk input merek dan produsen, tombol Tambah, dan ListView untuk menampilkan daftar ponsel.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>res/layout/activity_main.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daftar Ponsel"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etMerek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Merek (contoh: Galaxy S24)"
+        android:layout_marginBottom="8dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etProdusen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Produsen (contoh: Samsung)"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnTambah"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tambah"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Implementasi MainActivity.kt</h4>
+                            <p>Di sini kita hubungkan UI dengan <code>PhoneDbHelper</code>. Tombol Tambah memanggil <code>insert()</code>, ListView menampilkan hasil <code>getAll()</code>, dan long-press pada item memanggil <code>delete()</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>MainActivity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneapp
+
+import android.os.Bundle
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.example.phoneapp.database.PhoneDbHelper
+import com.example.phoneapp.model.Phone
+
+class MainActivity : AppCompatActivity() {
+
+    private lateinit var dbHelper: PhoneDbHelper
+    private lateinit var listView: ListView
+    private lateinit var etMerek: EditText
+    private lateinit var etProdusen: EditText
+    private var phoneList = listOf&lt;Phone&gt;()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        dbHelper   = PhoneDbHelper(this)
+        listView   = findViewById(R.id.listView)
+        etMerek    = findViewById(R.id.etMerek)
+        etProdusen = findViewById(R.id.etProdusen)
+
+        refreshList()
+
+        // Tombol Tambah — panggil insert() lalu refresh tampilan
+        findViewById&lt;Button&gt;(R.id.btnTambah).setOnClickListener {
+            val merek    = etMerek.text.toString().trim()
+            val produsen = etProdusen.text.toString().trim()
+
+            if (merek.isEmpty() || produsen.isEmpty()) {
+                Toast.makeText(this, "Merek dan produsen harus diisi", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val id = dbHelper.insert(Phone(merek = merek, produsen = produsen))
+            if (id != -1L) {
+                Toast.makeText(this, "Berhasil ditambahkan (ID: $id)", Toast.LENGTH_SHORT).show()
+                etMerek.text.clear()
+                etProdusen.text.clear()
+                refreshList()
+            }
+        }
+
+        // Long-press item untuk hapus — gunakan ID dari database, bukan posisi list
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            val phone = phoneList[position]
+            AlertDialog.Builder(this)
+                .setTitle("Hapus Data")
+                .setMessage("Hapus \"${phone.merek}\" dari daftar?")
+                .setPositiveButton("Hapus") { _, _ ->
+                    dbHelper.delete(phone.id)
+                    refreshList()
+                    Toast.makeText(this, "${phone.merek} dihapus", Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+            true
+        }
+    }
+
+    // Ambil semua data dari DB dan tampilkan di ListView
+    private fun refreshList() {
+        phoneList = dbHelper.getAll()
+        val items = phoneList.map { "${it.merek}  —  ${it.produsen}" }
+        listView.adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, items)
+    }
+
+    override fun onDestroy() {
+        dbHelper.close()
+        super.onDestroy()
+    }
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Kelemahan SQLite Manual</h4>
+                    <ul>
+                        <li>Banyak boilerplate code — <code>ContentValues</code>, <code>Cursor</code>, <code>getColumnIndexOrThrow</code> harus ditulis manual setiap saat</li>
+                        <li>Tidak ada validasi query saat compile time — typo pada nama kolom baru ketahuan saat runtime (app crash)</li>
+                        <li>Pengelolaan versi dan migration database cukup rumit</li>
+                        <li>Tidak thread-safe secara default — operasi database di main thread bisa membekukan UI</li>
+                    </ul>
+                    <p style="margin-bottom:0;">Karena kelemahan ini, Google merekomendasikan <strong>Room Database</strong> sebagai abstraksi di atas SQLite yang mengatasi semua masalah di atas.</p>
+                </div>
+            </article>
+        </section>
+        <!-- ============================================ -->
+        <!-- ROOM DATABASE -->
+        <!-- ============================================ -->
+        <section id="room" class="section">
+            <h1>Room Database</h1>
+
+            <article id="rm-pengenalan">
+                <h2>Pengenalan Room</h2>
+                <p>Room adalah library Jetpack yang menyediakan abstraksi di atas SQLite. Alih-alih menulis <code>ContentValues</code>, <code>Cursor</code>, dan query SQL secara manual seperti di SQLite, Room menggunakan <strong>annotation</strong> pada Kotlin class sehingga kode jauh lebih ringkas dan aman.</p>
+
+                <p>Room tetap menggunakan SQLite di balik layar — bedanya, Room yang mengurus semua boilerplate. Validasi query juga dilakukan saat <em>compile time</em>, bukan saat app berjalan, sehingga typo pada nama kolom langsung ketahuan sebelum app dijalankan.</p>
+
+                <h3>Perbandingan dengan SQLite Manual</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>SQLite Manual</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Validasi query</td>
+                            <td>Runtime — crash saat app jalan</td>
+                            <td>Compile time — error saat build</td>
+                        </tr>
+                        <tr>
+                            <td>Boilerplate code</td>
+                            <td>Banyak (ContentValues, Cursor, getColumnIndex)</td>
+                            <td>Minimal — cukup annotation</td>
+                        </tr>
+                        <tr>
+                            <td>Mapping ke object</td>
+                            <td>Manual, baris per baris dari Cursor</td>
+                            <td>Otomatis via @Entity</td>
+                        </tr>
+                        <tr>
+                            <td>Threading</td>
+                            <td>Harus dikelola sendiri</td>
+                            <td>Built-in dengan suspend/coroutines</td>
+                        </tr>
+                        <tr>
+                            <td>Migration</td>
+                            <td>Manual dan rawan error</td>
+                            <td>Terstruktur dan lebih aman</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Tiga Komponen Room</h3>
+                <p>Room dibangun dari tiga bagian yang bekerja bersama:</p>
+
+                <div class="room-arch">
+                    <div class="room-arch-title">Arsitektur Room Database</div>
+                    <div class="room-arch-flow">
+                        <div class="room-arch-card" style="border-top:4px solid #3f51b5;">
+                            <div class="room-arch-badge" style="background:#3f51b5;">@Entity</div>
+                            <div class="room-arch-name">PhoneEntity</div>
+                            <div class="room-arch-desc">Data class yang merepresentasikan tabel. Setiap property = satu kolom di database.</div>
+                            <div class="room-arch-tags">
+                                <span>id</span><span>merek</span><span>produsen</span>
+                            </div>
+                        </div>
+                        <div class="room-arch-arrow">&#8595;</div>
+                        <div class="room-arch-card" style="border-top:4px solid #e91e63;">
+                            <div class="room-arch-badge" style="background:#e91e63;">@Dao</div>
+                            <div class="room-arch-name">PhoneDao</div>
+                            <div class="room-arch-desc">Interface berisi operasi database. Room otomatis generate implementasinya — kita hanya tulis annotation.</div>
+                            <div class="room-arch-tags">
+                                <span>insert</span><span>getAll</span><span>update</span><span>delete</span>
+                            </div>
+                        </div>
+                        <div class="room-arch-arrow">&#8595;</div>
+                        <div class="room-arch-card" style="border-top:4px solid #009688;">
+                            <div class="room-arch-badge" style="background:#009688;">@Database</div>
+                            <div class="room-arch-name">PhoneDatabase</div>
+                            <div class="room-arch-desc">Abstract class sebagai pintu masuk ke database. Dibuat sekali (Singleton) dan menghubungkan Entity dengan DAO.</div>
+                            <div class="room-arch-tags">
+                                <span>Singleton</span><span>RoomDatabase</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="room-arch-footer">
+                        Activity &#8594; PhoneDao &#8594; PhoneEntity &#8596; SQLite Table
+                    </div>
+                </div>
+            </article>
+
+            <article id="rm-contoh">
+                <h2>Contoh Project: Daftar Ponsel dengan Room</h2>
+                <p>Kita akan membuat ulang aplikasi Daftar Ponsel dari contoh SQLite sebelumnya — dengan kolom yang sama (<code>id</code>, <code>merek</code>, <code>produsen</code>) — menggunakan Room. Perhatikan betapa lebih ringkas kodenya dibanding SQLite manual.</p>
+
+                <h3>Struktur Project</h3>
+                <div class="code-block">
+                    <div class="code-header"><span>Struktur file yang akan dibuat</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+app/
+&#9492;&#9472;&#9472; src/main/
+    &#9500;&#9472;&#9472; java/com/example/phoneroom/
+    &#9474;   &#9500;&#9472;&#9472; database/
+    &#9474;   &#9474;   &#9500;&#9472;&#9472; PhoneEntity.kt       &#8592; @Entity  (menggantikan data class + tabel manual)
+    &#9474;   &#9474;   &#9500;&#9472;&#9472; PhoneDao.kt          &#8592; @Dao    (menggantikan semua method CRUD manual)
+    &#9474;   &#9474;   &#9492;&#9472;&#9472; PhoneDatabase.kt     &#8592; @Database (menggantikan SQLiteOpenHelper)
+    &#9474;   &#9492;&#9472;&#9472; MainActivity.kt          &#8592; UI + lifecycleScope
+    &#9492;&#9472;&#9472; res/layout/
+        &#9492;&#9472;&#9472; activity_main.xml</pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat project baru</h4>
+                            <p>File &#8594; New &#8594; New Project &#8594; <strong>Empty Views Activity</strong> &#8594; nama <code>PhoneRoom</code>, package <code>com.example.phoneroom</code>, bahasa <strong>Kotlin</strong>, minimum SDK <strong>API 26</strong> &#8594; Finish.</p>
+
+                            <p>Setelah project dibuat, buka <code>gradle/libs.versions.toml</code>. Android Studio terbaru otomatis menggunakan <strong>AGP 9.x</strong> yang belum kompatibel dengan KAPT maupun KSP untuk Room. Kita perlu downgrade ke versi yang stabil.</p>
+
+                            <div class="info-box" style="margin-top:12px;">
+                                <h4>Apa itu AGP (Android Gradle Plugin)?</h4>
+                                <p>AGP adalah plugin Gradle yang menjadi "mesin" build aplikasi Android. AGP yang mengurus proses kompilasi kode, packaging APK, menjalankan ProGuard, dan banyak hal lain di balik layar saat kamu klik Run atau Build.</p>
+                                <p>Versi AGP biasanya mengikuti versi Android Studio — semakin baru Android Studio, semakin baru AGP yang di-generate otomatis. Masalahnya, tool lain seperti KAPT dan KSP butuh waktu untuk menyesuaikan diri dengan perubahan AGP baru. AGP 9.x (dirilis Januari 2026) masih terlalu baru dan menyebabkan error saat dipakai bersama Room.</p>
+                                <p style="margin-bottom:0;">Untuk praktikum ini, kita gunakan <strong>AGP 8.7.3</strong> yang sudah stabil dan terbukti kompatibel.</p>
+                            </div>
+
+                            <p style="margin-top:12px;">Ganti baris <code>agp</code> di <code>libs.versions.toml</code> dari versi yang di-generate Android Studio menjadi <code>8.7.3</code>, kemudian ikuti langkah berikutnya untuk menambahkan dependency Room.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Tambahkan dependency Room di gradle</h4>
+                            <p>Room memerlukan annotation processor <strong>KAPT</strong> (Kotlin Annotation Processing Tool) yang membaca annotation seperti <code>@Entity</code> dan <code>@Dao</code> saat build, lalu otomatis men-generate kode implementasinya.</p>
+                            <p style="margin-bottom:0;">Setup dilakukan di tiga file: <code>libs.versions.toml</code> untuk mendaftarkan versi dan library, lalu dua file <code>build.gradle.kts</code> untuk mengaktifkannya.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>gradle/libs.versions.toml — tambahkan baris yang ditandai</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+[versions]
+agp = "8.7.3"               # edit
+kotlin = "2.0.21"          # tambahkan
+coreKtx = "1.15.0"          # edit
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.0"
+material = "1.12.0"
+activity = "1.9.3"
+constraintlayout = "2.2.0"
+room = "2.6.1"             # tambahkan
+
+[libraries]
+# ... library lainnya tetap ...
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }       # tambahkan
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }               # tambahkan
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }     # tambahkan
+lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version = "2.8.7" }  # tambahkan
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }  # tambahkan
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }        # tambahkan</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Mengapa plugin didaftarkan di TOML dan di dua file gradle?</h4>
+                    <p><code>libs.versions.toml</code> adalah "katalog" terpusat — semua versi dan nama plugin cukup ditulis sekali di sini. File gradle tinggal merujuk ke katalog dengan <code>alias(libs.plugins.xxx)</code>.</p>
+                    <p>Project-level gradle mendaftarkan plugin dengan <code>apply false</code> — artinya plugin dikenalkan ke Gradle tapi belum diaktifkan. App-level gradle mengaktifkannya tanpa <code>apply false</code>.</p>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>build.gradle.kts (Project level — root)</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false   // tambahkan
+    alias(libs.plugins.kotlin.kapt) apply false      // tambahkan
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>build.gradle.kts (Module: app) — lengkap</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.kapt)
+}
+
+android {
+    namespace = "com.example.phoneroom"
+    compileSdk = 35   // sesuai AGP 8.7.3, maksimal SDK 35
+
+    defaultConfig {
+        applicationId = "com.example.phoneroom"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+
+    // Room Database
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)       // untuk suspend/coroutines
+    kapt(libs.room.compiler)            // annotation processor — membaca @Entity, @Dao, @Database
+
+    // lifecycleScope untuk menjalankan coroutine di Activity
+    implementation(libs.lifecycle.runtime)
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Versi AGP, Kotlin, dan KAPT harus kompatibel</h4>
+                    <p>Versi KAPT mengikuti versi Kotlin — keduanya harus sama. Contoh di atas menggunakan AGP <code>8.7.3</code> + Kotlin <code>2.0.21</code> yang sudah terbukti kompatibel. AGP 9.x belum stabil dengan KAPT maupun KSP saat ini, sebaiknya hindari dulu untuk keperluan belajar.</p>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Buat package database, lalu buat PhoneEntity.kt</h4>
+                            <p>Klik kanan package utama &#8594; <strong>New &#8594; Package</strong> &#8594; beri nama <code>database</code>. Lalu klik kanan package <code>database</code> &#8594; <strong>New &#8594; Kotlin Class/File</strong> &#8594; pilih <strong>Data Class</strong> &#8594; beri nama <code>PhoneEntity</code>.</p>
+                            <p style="margin-bottom:0;"><strong>@Entity</strong> adalah pengganti data class biasa sekaligus definisi tabel. Tidak perlu lagi menulis <code>CREATE TABLE</code> secara manual — Room membacanya dari annotation ini.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>database/PhoneEntity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneroom.database
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+// @Entity memberitahu Room bahwa class ini adalah sebuah tabel di database.
+// tableName = nama tabel yang akan dibuat di SQLite (boleh berbeda dari nama class).
+@Entity(tableName = "phones")
+data class PhoneEntity(
+
+    // @PrimaryKey(autoGenerate = true) = kolom id yang auto increment.
+    // Sama seperti "id INTEGER PRIMARY KEY AUTOINCREMENT" di SQLite manual.
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+
+    // @ColumnInfo(name = "...") = nama kolom di tabel.
+    // Jika nama property sama dengan nama kolom, annotation ini bisa dihilangkan.
+    @ColumnInfo(name = "merek")
+    val merek: String,
+
+    @ColumnInfo(name = "produsen")
+    val produsen: String
+)
+
+// Bandingkan dengan SQLite manual:
+// Tidak ada lagi CREATE TABLE, tidak ada COL_ID, COL_MEREK, COL_PRODUSEN.
+// Semua sudah terdefinisi di sini lewat annotation.</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Buat PhoneDao.kt</h4>
+                            <p>Klik kanan package <code>database</code> &#8594; <strong>New &#8594; Kotlin Class/File</strong> &#8594; pilih <strong>Interface</strong> &#8594; beri nama <code>PhoneDao</code>.</p>
+                            <p style="margin-bottom:0;"><strong>@Dao</strong> adalah pengganti semua method <code>insert()</code>, <code>getAll()</code>, <code>update()</code>, <code>delete()</code> yang kita tulis manual di <code>PhoneDbHelper</code>. Di sini kita hanya deklarasikan <em>apa</em> yang ingin dilakukan — Room yang generate implementasinya saat build.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>database/PhoneDao.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneroom.database
+
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+
+// @Dao menandai interface ini sebagai Data Access Object.
+// Room akan otomatis generate class implementasinya saat project di-build.
+@Dao
+interface PhoneDao {
+
+    // @Insert: Room generate query INSERT secara otomatis.
+    // onConflict = REPLACE artinya jika ada data dengan id sama, timpa data lama.
+    // suspend = harus dipanggil dari coroutine (tidak boleh di main thread).
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(phone: PhoneEntity): Long
+
+    // @Query: untuk SELECT, kita tulis SQL-nya sendiri.
+    // Room memvalidasi query ini saat compile time — typo nama kolom langsung error saat build.
+    @Query("SELECT * FROM phones ORDER BY merek ASC")
+    suspend fun getAll(): List&lt;PhoneEntity&gt;
+
+    // @Update: Room generate UPDATE berdasarkan primary key (id) secara otomatis.
+    // Mengembalikan jumlah baris yang berhasil diperbarui.
+    @Update
+    suspend fun update(phone: PhoneEntity): Int
+
+    // @Delete: Room generate DELETE berdasarkan primary key secara otomatis.
+    // Mengembalikan jumlah baris yang berhasil dihapus.
+    @Delete
+    suspend fun delete(phone: PhoneEntity): Int
+}
+
+// Bandingkan dengan SQLite manual:
+// Tidak ada lagi ContentValues, writableDatabase, readableDatabase,
+// Cursor, moveToFirst(), getColumnIndexOrThrow(), cursor.close(), db.close().
+// Semua itu digantikan oleh 4 baris annotation di atas.</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Buat PhoneDatabase.kt</h4>
+                            <p>Klik kanan package <code>database</code> &#8594; <strong>New &#8594; Kotlin Class/File</strong> &#8594; beri nama <code>PhoneDatabase</code>.</p>
+                            <p style="margin-bottom:0;"><strong>@Database</strong> adalah pengganti <code>SQLiteOpenHelper</code>. Class ini menjadi satu-satunya pintu masuk ke database dan dibuat sebagai Singleton agar tidak ada lebih dari satu koneksi database yang terbuka sekaligus.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>database/PhoneDatabase.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneroom.database
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+
+// @Database mendaftarkan semua Entity dan menentukan versi database.
+// Jika struktur tabel berubah (tambah kolom, dll), naikkan version dan buat Migration.
+@Database(
+    entities = [PhoneEntity::class],  // daftar semua tabel
+    version = 1,
+    exportSchema = false
+)
+abstract class PhoneDatabase : RoomDatabase() {
+
+    // Room akan generate implementasi fungsi ini secara otomatis.
+    abstract fun phoneDao(): PhoneDao
+
+    companion object {
+        @Volatile
+        private var INSTANCE: PhoneDatabase? = null
+
+        // Singleton: pastikan hanya ada satu instance database di seluruh app.
+        // @Volatile memastikan perubahan INSTANCE langsung terlihat oleh semua thread.
+        fun getInstance(context: Context): PhoneDatabase {
+            return INSTANCE ?: synchronized(this) {
+                Room.databaseBuilder(
+                    context.applicationContext,
+                    PhoneDatabase::class.java,
+                    "phone_database"  // nama file .db yang tersimpan di /data/data/package/databases/
+                )
+                .fallbackToDestructiveMigration()  // untuk development: hapus & buat ulang jika versi naik
+                .build()
+                .also { INSTANCE = it }
+            }
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">6</span>
+                        <div class="step-content">
+                            <h4>Buat layout activity_main.xml</h4>
+                            <p>Layout sama persis dengan versi SQLite — dua EditText, satu Button, satu ListView.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>res/layout/activity_main.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daftar Ponsel (Room)"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etMerek"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Merek (contoh: Galaxy S24)"
+        android:layout_marginBottom="8dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etProdusen"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Produsen (contoh: Samsung)"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnTambah"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tambah"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">7</span>
+                        <div class="step-content">
+                            <h4>Implementasi MainActivity.kt</h4>
+                            <p>Perbedaan utama dari versi SQLite: semua operasi database dipanggil di dalam <code>lifecycleScope.launch</code> karena Room menggunakan <code>suspend</code> function. Tidak ada lagi <code>dbHelper.close()</code> — Room mengelola koneksi secara otomatis.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>MainActivity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+package com.example.phoneroom
+
+import android.os.Bundle
+import android.widget.*
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.phoneroom.database.PhoneDatabase
+import com.example.phoneroom.database.PhoneEntity
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+
+    // Akses database lewat DAO, bukan lewat helper class seperti SQLite manual
+    private lateinit var dao: com.example.phoneroom.database.PhoneDao
+    private lateinit var listView: ListView
+    private lateinit var etMerek: EditText
+    private lateinit var etProdusen: EditText
+    private var phoneList = listOf&lt;PhoneEntity&gt;()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Inisialisasi database — Room membuat file .db secara otomatis jika belum ada
+        dao        = PhoneDatabase.getInstance(this).phoneDao()
+        listView   = findViewById(R.id.listView)
+        etMerek    = findViewById(R.id.etMerek)
+        etProdusen = findViewById(R.id.etProdusen)
+
+        refreshList()
+
+        // Tombol Tambah
+        // lifecycleScope.launch diperlukan karena dao.insert() adalah suspend function
+        findViewById&lt;Button&gt;(R.id.btnTambah).setOnClickListener {
+            val merek    = etMerek.text.toString().trim()
+            val produsen = etProdusen.text.toString().trim()
+
+            if (merek.isEmpty() || produsen.isEmpty()) {
+                Toast.makeText(this, "Merek dan produsen harus diisi", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            lifecycleScope.launch {
+                // Tidak perlu ContentValues, cukup buat object PhoneEntity
+                val id = dao.insert(PhoneEntity(merek = merek, produsen = produsen))
+                Toast.makeText(this@MainActivity, "Ditambahkan (ID: $id)", Toast.LENGTH_SHORT).show()
+                etMerek.text.clear()
+                etProdusen.text.clear()
+                refreshList()
+            }
+        }
+
+        // Long-press untuk hapus
+        listView.setOnItemLongClickListener { _, _, position, _ ->
+            val phone = phoneList[position]
+            AlertDialog.Builder(this)
+                .setTitle("Hapus Data")
+                .setMessage("Hapus \"${phone.merek}\" dari daftar?")
+                .setPositiveButton("Hapus") { dialog, _ ->
+                    lifecycleScope.launch {
+                        dao.delete(phone)  // cukup kirim object, Room tahu ID-nya
+                        refreshList()
+                        Toast.makeText(this@MainActivity, "${phone.merek} dihapus", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Batal", null)
+                .show()
+            true
+        }
+    }
+
+    private fun refreshList() {
+        // lifecycleScope: coroutine yang otomatis batal saat Activity dihancurkan
+        lifecycleScope.launch {
+            phoneList = dao.getAll()
+            val items = phoneList.map { "${it.merek}  —  ${it.produsen}" }
+            listView.adapter = ArrayAdapter(this@MainActivity, android.R.layout.simple_list_item_1, items)
+        }
+    }
+
+    // Tidak perlu override onDestroy() untuk menutup database
+    // Room mengelola koneksi secara otomatis
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Di mana database Room disimpan?</h4>
+                    <p>Room tetap menyimpan database di lokasi yang sama dengan SQLite manual:</p>
+                    <code>/data/data/com.example.phoneroom/databases/phone_database</code>
+                    <p style="margin-top:10px;margin-bottom:0;">Nama file sesuai dengan string yang ditulis di <code>Room.databaseBuilder()</code>. Room pada dasarnya <strong>adalah</strong> SQLite — hanya lapisan abstraksinya yang berbeda. Di balik layar Room tetap membuat file <code>.db</code> di folder <code>databases/</code> yang sama. Untuk memverifikasi, buka <strong>Device File Explorer</strong> di Android Studio → navigasi ke path tersebut.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>Ringkasan perbedaan Room vs SQLite Manual (kasus yang sama)</h4>
+                    <table class="data-table" style="margin-top:10px;">
+                        <thead>
+                            <tr><th>Yang dihilangkan di Room</th><th>Digantikan oleh</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>CREATE TABLE phones (...)</code></td><td><code>@Entity</code> di PhoneEntity</td></tr>
+                            <tr><td><code>SQLiteOpenHelper</code> + <code>onCreate()</code></td><td><code>@Database</code> di PhoneDatabase</td></tr>
+                            <tr><td><code>ContentValues</code> untuk insert/update</td><td>Langsung kirim object <code>PhoneEntity</code></td></tr>
+                            <tr><td><code>Cursor</code> + <code>moveToFirst()</code> + <code>getColumnIndexOrThrow()</code></td><td><code>@Query</code> di PhoneDao, Room mapping otomatis</td></tr>
+                            <tr><td><code>db.close()</code> + <code>cursor.close()</code></td><td>Tidak perlu — Room kelola otomatis</td></tr>
+                            <tr><td>Operasi di main thread (risiko ANR)</td><td><code>suspend</code> + <code>lifecycleScope.launch</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+        <!-- ============================================ -->
+
+        <!-- ============================================ -->
+        <!-- HANDS-ON PRAKTIKUM -->
+        <!-- ============================================ -->
+        <section id="handson" class="section">
+            <h1>Hands-On Praktikum</h1>
+            <p>Pada bagian ini Anda akan mempraktikkan materi penyimpanan data secara bertahap. Setiap hands-on melanjutkan project <strong>StudentContactApp</strong> dari praktikum sebelumnya.</p>
+
+            <div class="info-box">
+                <h4>Persiapan</h4>
+                <p>Buka project <strong>StudentContactApp</strong> dari praktikum sebelumnya. Jika belum ada, buat project baru dengan konfigurasi:</p>
+                <ul>
+                    <li><strong>Name:</strong> StudentContactApp</li>
+                    <li><strong>Package:</strong> com.example.studentcontactapp</li>
+                    <li><strong>Language:</strong> Kotlin</li>
+                    <li><strong>Minimum SDK:</strong> API 24</li>
+                </ul>
+            </div>
+
+            <article id="handson-1">
+                <h2>Hands-On 1: SharedPreferences - Login & Settings</h2>
+                <p>Pada hands-on ini, Anda akan menambahkan fitur Login dengan Remember Me dan halaman Settings menggunakan SharedPreferences.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="ho-target-grid">
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Login Screen</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;">Login</div>
+                                <div class="ho-mock-body" style="padding:12px;display:flex;flex-direction:column;gap:8px;">
+                                    <div style="text-align:center;font-size:1.8rem;padding:8px 0;">🎓</div>
+                                    <div class="ho-mock-input">Username</div>
+                                    <div class="ho-mock-input">Password</div>
+                                    <div style="display:flex;align-items:center;gap:6px;font-size:0.72rem;color:#555;">
+                                        <div style="width:14px;height:14px;border:2px solid #3f51b5;border-radius:3px;background:#3f51b5;display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.6rem;">✓</div>
+                                        Remember Me
+                                    </div>
+                                    <div class="ho-mock-btn">LOGIN</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ho-target-arrow">→</div>
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Main Screen</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;">Student App</div>
+                                <div class="ho-mock-body" style="padding:8px;display:flex;flex-direction:column;gap:4px;">
+                                    <div style="font-size:0.68rem;color:#555;padding:4px 0;">Welcome, Ahmad!</div>
+                                    <div class="ho-mock-list-item"><div class="ho-mock-avatar" style="background:#3f51b5;">AF</div><div>Ahmad Fauzi</div></div>
+                                    <div class="ho-mock-list-item"><div class="ho-mock-avatar" style="background:#e91e63;">BS</div><div>Budi Santoso</div></div>
+                                    <div class="ho-mock-list-item"><div class="ho-mock-avatar" style="background:#009688;">CW</div><div>Clara Wijaya</div></div>
+                                </div>
+                                <div class="ho-mock-bottomnav">
+                                    <span>🏠</span><span>🔍</span><span>👤</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ho-target-arrow">→</div>
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Profile / Settings</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;">Profile</div>
+                                <div class="ho-mock-body" style="padding:10px;display:flex;flex-direction:column;gap:8px;">
+                                    <div class="ho-mock-setting-row"><span>Dark Mode</span><div class="ho-mock-toggle on"></div></div>
+                                    <div class="ho-mock-setting-row"><span>Font Size</span><div class="ho-mock-toggle"></div></div>
+                                    <div class="ho-mock-setting-row"><span>Notifikasi</span><div class="ho-mock-toggle on"></div></div>
+                                    <div class="ho-mock-btn" style="background:#f44336;margin-top:8px;">LOGOUT</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Buat PrefManager</h4>
+                    <p>Buat package <code>utils</code> dan class <code>PrefManager.kt</code> dengan fitur:</p>
+                    <ul>
+                        <li>Simpan dan baca status login (<code>isLoggedIn</code>, <code>username</code>, <code>email</code>)</li>
+                        <li>Simpan dan baca remember me flag</li>
+                        <li>Method <code>logout()</code> untuk clear session</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat LoginActivity</h4>
+                    <p>Buat <code>LoginActivity</code> dengan layout yang berisi:</p>
+                    <ul>
+                        <li>EditText untuk username dan password</li>
+                        <li>CheckBox untuk "Remember Me"</li>
+                        <li>Button Login</li>
+                        <li>Validasi: username = <code>admin</code>, password = <code>123456</code></li>
+                        <li>Jika Remember Me aktif dan sudah login, langsung ke MainActivity</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Buat SettingsManager</h4>
+                    <p>Buat class <code>SettingsManager.kt</code> untuk menyimpan pengaturan:</p>
+                    <ul>
+                        <li>Dark mode (Boolean)</li>
+                        <li>Font size (Int)</li>
+                        <li>Notification enabled (Boolean)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Update ProfileFragment</h4>
+                    <p>Di ProfileFragment (dari praktikum sebelumnya), tambahkan:</p>
+                    <ul>
+                        <li>Tampilkan nama user yang login (dari PrefManager)</li>
+                        <li>Switch untuk Dark Mode</li>
+                        <li>Switch untuk Notification</li>
+                        <li>Tombol Logout yang membersihkan session dan kembali ke LoginActivity</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Set LoginActivity sebagai Launcher</h4>
+                    <p>Update <code>AndroidManifest.xml</code> agar <code>LoginActivity</code> menjadi Activity pertama yang dibuka. Pindahkan intent-filter MAIN/LAUNCHER ke LoginActivity.</p>
+                </div>
+            </article>
+
+            <article id="handson-2">
+                <h2>Hands-On 2: Internal Storage - Catatan Mahasiswa</h2>
+                <p>Pada hands-on ini, Anda akan menambahkan fitur catatan teks yang disimpan ke Internal Storage.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="ho-target-grid" style="justify-content:center;">
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Detail Mahasiswa</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;display:flex;gap:6px;align-items:center;"><span style="font-size:0.8rem;">←</span> Detail</div>
+                                <div class="ho-mock-body" style="padding:10px;display:flex;flex-direction:column;gap:6px;">
+                                    <div style="text-align:center;">
+                                        <div class="ho-mock-avatar" style="background:#3f51b5;width:40px;height:40px;font-size:1rem;margin:0 auto 4px;">AF</div>
+                                        <div style="font-size:0.75rem;font-weight:700;">Ahmad Fauzi</div>
+                                        <div style="font-size:0.65rem;color:#777;">2024001 · T. Informatika</div>
+                                    </div>
+                                    <div style="font-size:0.68rem;font-weight:700;color:#3f51b5;border-top:1px solid #e0e0e0;padding-top:6px;">📝 Catatan</div>
+                                    <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:6px;font-size:0.65rem;color:#999;min-height:50px;">Tulis catatan di sini...</div>
+                                    <div style="display:flex;gap:4px;">
+                                        <div class="ho-mock-btn" style="flex:1;font-size:0.6rem;padding:5px;">Simpan</div>
+                                        <div class="ho-mock-btn" style="flex:1;font-size:0.6rem;padding:5px;background:#757575;">Muat</div>
+                                    </div>
+                                    <div style="font-size:0.6rem;color:#4caf50;">✓ Tersimpan (128 bytes)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Update layout Detail</h4>
+                    <p>Tambahkan area catatan di DetailFragment/DetailActivity:</p>
+                    <ul>
+                        <li>EditText multiline untuk menulis catatan</li>
+                        <li>Button "Simpan Catatan" dan "Muat Catatan"</li>
+                        <li>TextView untuk menampilkan status (tersimpan, ukuran file, dll)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat FileHelper</h4>
+                    <p>Buat class <code>utils/FileHelper.kt</code> dengan method:</p>
+                    <ul>
+                        <li><code>saveNote(context, studentNim, content)</code> - Simpan catatan ke file (nama file: note_[nim].txt)</li>
+                        <li><code>loadNote(context, studentNim)</code> - Muat catatan dari file</li>
+                        <li><code>deleteNote(context, studentNim)</code> - Hapus file catatan</li>
+                        <li><code>isNoteExists(context, studentNim)</code> - Cek apakah catatan ada</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Implementasi di Detail</h4>
+                    <p>Hubungkan UI dengan FileHelper:</p>
+                    <ul>
+                        <li>Saat halaman detail dibuka, otomatis cek dan muat catatan jika ada</li>
+                        <li>Tombol Simpan menyimpan isi EditText ke file</li>
+                        <li>Tampilkan status: "Belum ada catatan" atau "Tersimpan (X bytes)"</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Bonus - Daftar Catatan</h4>
+                    <p>Buat Fragment baru yang menampilkan daftar semua file catatan yang tersimpan menggunakan <code>fileList()</code>. Tampilkan nama file dan ukurannya di RecyclerView.</p>
+                </div>
+            </article>
+
+            <article id="handson-3">
+                <h2>Tugas Akhir: Room Database - CRUD Mahasiswa</h2>
+                <p>Gabungkan semua materi SharedPreferences, Internal Storage, dan Room Database yang telah dipelajari. Kerjakan secara mandiri — ini adalah tugas akhir praktikum.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="ho-target-grid">
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Home (RecyclerView)</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;">Student Directory</div>
+                                <div class="ho-mock-body" style="padding:6px;display:flex;flex-direction:column;gap:4px;">
+                                    <div class="ho-mock-list-item" style="justify-content:space-between;">
+                                        <div style="display:flex;align-items:center;gap:6px;"><div class="ho-mock-avatar" style="background:#3f51b5;">AF</div><div><div style="font-size:0.7rem;font-weight:700;">Ahmad Fauzi</div><div style="font-size:0.6rem;color:#999;">2024001</div></div></div>
+                                        <div style="display:flex;gap:3px;"><span style="font-size:0.6rem;background:#e3f2fd;color:#1565c0;padding:2px 5px;border-radius:3px;">Edit</span><span style="font-size:0.6rem;background:#ffebee;color:#c62828;padding:2px 5px;border-radius:3px;">Del</span></div>
+                                    </div>
+                                    <div class="ho-mock-list-item" style="justify-content:space-between;">
+                                        <div style="display:flex;align-items:center;gap:6px;"><div class="ho-mock-avatar" style="background:#e91e63;">BS</div><div><div style="font-size:0.7rem;font-weight:700;">Budi Santoso</div><div style="font-size:0.6rem;color:#999;">2024002</div></div></div>
+                                        <div style="display:flex;gap:3px;"><span style="font-size:0.6rem;background:#e3f2fd;color:#1565c0;padding:2px 5px;border-radius:3px;">Edit</span><span style="font-size:0.6rem;background:#ffebee;color:#c62828;padding:2px 5px;border-radius:3px;">Del</span></div>
+                                    </div>
+                                    <div class="ho-mock-list-item" style="justify-content:space-between;">
+                                        <div style="display:flex;align-items:center;gap:6px;"><div class="ho-mock-avatar" style="background:#009688;">CW</div><div><div style="font-size:0.7rem;font-weight:700;">Clara Wijaya</div><div style="font-size:0.6rem;color:#999;">2024003</div></div></div>
+                                        <div style="display:flex;gap:3px;"><span style="font-size:0.6rem;background:#e3f2fd;color:#1565c0;padding:2px 5px;border-radius:3px;">Edit</span><span style="font-size:0.6rem;background:#ffebee;color:#c62828;padding:2px 5px;border-radius:3px;">Del</span></div>
+                                    </div>
+                                    <div style="text-align:right;padding:4px 2px;"><span style="font-size:1.2rem;background:#3f51b5;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;">+</span></div>
+                                </div>
+                                <div class="ho-mock-bottomnav"><span>🏠</span><span>🔍</span><span>👤</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ho-target-arrow">→</div>
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Form Tambah / Edit</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;display:flex;gap:6px;align-items:center;"><span style="font-size:0.8rem;">←</span> Tambah Mahasiswa</div>
+                                <div class="ho-mock-body" style="padding:10px;display:flex;flex-direction:column;gap:6px;">
+                                    <div class="ho-mock-input">Nama</div>
+                                    <div class="ho-mock-input">NIM</div>
+                                    <div class="ho-mock-input" style="color:#bbb;">▼ Pilih Prodi</div>
+                                    <div class="ho-mock-input">Email</div>
+                                    <div class="ho-mock-input">Semester</div>
+                                    <div class="ho-mock-btn" style="margin-top:4px;">SIMPAN</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ho-target-arrow">→</div>
+                    <div class="ho-target-phone">
+                        <div class="ho-target-label">Dialog Konfirmasi</div>
+                        <div class="ho-phone-mock">
+                            <div class="ho-phone-notch"></div>
+                            <div class="ho-phone-screen" style="position:relative;">
+                                <div class="ho-mock-toolbar" style="background:#3f51b5;">Student Directory</div>
+                                <div style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;border-radius:0 0 18px 18px;">
+                                    <div style="background:#fff;border-radius:10px;padding:14px;width:80%;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+                                        <div style="font-size:0.75rem;font-weight:700;color:#212121;margin-bottom:6px;">Hapus Data?</div>
+                                        <div style="font-size:0.65rem;color:#555;margin-bottom:12px;">Hapus "Ahmad Fauzi"? Tindakan ini tidak dapat dibatalkan.</div>
+                                        <div style="display:flex;gap:6px;">
+                                            <div style="flex:1;text-align:center;padding:5px;border:1px solid #e0e0e0;border-radius:5px;font-size:0.65rem;color:#555;">Batal</div>
+                                            <div style="flex:1;text-align:center;padding:5px;background:#f44336;border-radius:5px;font-size:0.65rem;color:#fff;">Hapus</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Tambahkan Dependency Room</h4>
+                    <p>Tambahkan dependency Room, KAPT, dan Coroutines di <code>build.gradle.kts</code>. Jangan lupa Sync Gradle.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat Entity</h4>
+                    <p>Buat <code>database/entity/StudentEntity.kt</code> dengan kolom: id (auto), name, nim, prodi, email, semester, createdAt.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Buat DAO</h4>
+                    <p>Buat <code>database/dao/StudentDao.kt</code> dengan operasi:</p>
+                    <ul>
+                        <li><code>insert(student)</code> dan <code>insertAll(list)</code></li>
+                        <li><code>getAllStudents()</code> - Ambil semua, urutkan berdasarkan nama</li>
+                        <li><code>getStudentById(id)</code> - Ambil satu berdasarkan ID</li>
+                        <li><code>searchStudents(keyword)</code> - Cari berdasarkan nama atau NIM</li>
+                        <li><code>update(student)</code></li>
+                        <li><code>deleteById(id)</code></li>
+                        <li><code>getStudentCount()</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Buat Database</h4>
+                    <p>Buat <code>database/AppDatabase.kt</code> dengan singleton pattern. Daftarkan StudentEntity dan StudentDao.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Update HomeFragment</h4>
+                    <p>Ubah HomeFragment agar mengambil data dari Room Database, bukan dari list hardcoded:</p>
+                    <ul>
+                        <li>Inisialisasi <code>AppDatabase</code> dan <code>StudentDao</code></li>
+                        <li>Gunakan <code>lifecycleScope.launch</code> untuk load data</li>
+                        <li>Insert sample data jika database kosong</li>
+                        <li>Tambahkan FloatingActionButton untuk menambah data baru</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Buat Form Tambah/Edit</h4>
+                    <p>Buat Fragment atau Activity baru untuk form input data mahasiswa:</p>
+                    <ul>
+                        <li>EditText untuk: Nama, NIM, Email, Semester</li>
+                        <li>Spinner untuk Prodi</li>
+                        <li>Validasi semua input</li>
+                        <li>Jika mode "Tambah" → insert data baru</li>
+                        <li>Jika mode "Edit" → update data existing (terima data via arguments/intent)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 7: Implementasi Delete</h4>
+                    <p>Tambahkan fitur hapus pada item RecyclerView:</p>
+                    <ul>
+                        <li>Tambahkan tombol Delete di item layout</li>
+                        <li>Saat diklik, tampilkan AlertDialog konfirmasi</li>
+                        <li>Jika dikonfirmasi, hapus dari database dan refresh list</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 8: Update SearchFragment</h4>
+                    <p>Ubah SearchFragment agar search dari database:</p>
+                    <ul>
+                        <li>Saat user mengetik keyword, panggil <code>studentDao.searchStudents(keyword)</code></li>
+                        <li>Tampilkan hasil di RecyclerView</li>
+                        <li>Jika keyword kosong, tampilkan semua data</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 9: Bonus - Swipe to Delete</h4>
+                    <p>Implementasikan <code>ItemTouchHelper</code> untuk fitur swipe-to-delete pada RecyclerView.</p>
+                </div>
+
+                <div class="info-box">
+                    <h3>Ketentuan Pengumpulan</h3>
+                    <ul>
+                        <li>Upload project ke <strong>GitHub</strong> (repository public)</li>
+                        <li>Kumpulkan <strong>link repository GitHub</strong> melalui <strong>Berajah</strong> — lihat deadline di Berajah</li>
+                        <li>Sertakan file <strong>README.md</strong> di repository berisi:
+                            <ul>
+                                <li>Nama dan NIM</li>
+                                <li>Deskripsi singkat aplikasi</li>
+                                <li>Screenshot minimal 4 halaman (Login, Daftar, Detail, Form Tambah) — tambahkan gambar langsung di README menggunakan sintaks <code>![nama](screenshots/nama.png)</code> dengan menyimpan file gambar di folder <code>screenshots/</code> dalam repository</li>
+                                <li>Penjelasan singkat metode penyimpanan yang digunakan dan alasannya</li>
+                                <li>Kendala yang dihadapi dan cara mengatasinya</li>
+                            </ul>
+                        </li>
+                        <li>Pastikan project bisa di-clone dan di-build tanpa error</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h3>Catatan Penting</h3>
+                    <ul>
+                        <li>Plagiasi akan mendapat nilai <strong>0</strong></li>
+                        <li>Pahami setiap baris kode yang Anda tulis — bukan sekadar copy-paste</li>
+                        <li>Fitur yang sederhana tapi berjalan dengan benar lebih baik dari fitur banyak tapi crash</li>
+                        <li>Pastikan data tetap tersimpan setelah aplikasi ditutup dan dibuka kembali</li>
+                        <li>Jangan ragu bertanya jika ada kesulitan</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="handson-final" style="display:none;">
+                <h2>Tugas Akhir: Aplikasi Student Directory Lengkap</h2>
+                <p>Gabungkan semua materi dari Praktikum 1, 2, dan 3 menjadi satu aplikasi lengkap.</p>
+
+                <div class="task-box">
+                    <h2>Spesifikasi Tugas</h2>
+                    <p>Buat aplikasi <strong>"Student Directory"</strong> yang mengimplementasikan ketiga metode penyimpanan data yang telah dipelajari dalam satu project.</p>
+
+                    <h4>1. Autentikasi (SharedPreferences)</h4>
+                    <ul>
+                        <li>Halaman login dengan validasi username dan password</li>
+                        <li>Fitur Remember Me — jika dicentang, user tidak perlu login ulang saat membuka app</li>
+                        <li>Tombol Logout yang menghapus session</li>
+                    </ul>
+
+                    <h4>2. Data Mahasiswa — CRUD (Room Database)</h4>
+                    <ul>
+                        <li><strong>Create:</strong> Form tambah mahasiswa baru (nama, NIM, prodi) dengan validasi input tidak boleh kosong</li>
+                        <li><strong>Read:</strong> Daftar mahasiswa ditampilkan di RecyclerView atau ListView</li>
+                        <li><strong>Delete:</strong> Hapus data dengan konfirmasi AlertDialog</li>
+                        <li><strong>Search:</strong> Pencarian berdasarkan nama atau NIM</li>
+                    </ul>
+
+                    <h4>3. Catatan per Mahasiswa (Internal Storage)</h4>
+                    <ul>
+                        <li>Di halaman detail mahasiswa, tersedia area untuk menulis catatan</li>
+                        <li>Catatan disimpan ke file dan otomatis dimuat saat halaman detail dibuka</li>
+                    </ul>
+
+                    <h4>4. Navigasi</h4>
+                    <ul>
+                        <li>Minimal 3 halaman: Login, Daftar Mahasiswa, Detail Mahasiswa</li>
+                        <li>Boleh menggunakan Activity biasa atau Fragment — bebas pilih</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>Kriteria Penilaian</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Aspek</th>
+                                <th>Bobot</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>SharedPreferences — Login &amp; Remember Me berfungsi</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Room Database — CRUD (tambah, tampil, hapus, search)</td>
+                                <td>35%</td>
+                            </tr>
+                            <tr>
+                                <td>Internal Storage — catatan per mahasiswa tersimpan &amp; termuat</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Navigasi antar halaman berjalan dengan benar</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Kualitas kode — struktur rapi, ada komentar, tidak crash</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td>Bonus — fitur Update data, dark mode, atau fitur tambahan lain</td>
+                                <td>+10%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3>Ketentuan Pengumpulan</h3>
+                    <ul>
+                        <li>Upload project ke <strong>GitHub</strong> (repository public)</li>
+                        <li>Kumpulkan <strong>link repository GitHub</strong> melalui <strong>Berajah</strong> — lihat deadline di Berajah</li>
+                        <li>Sertakan file <strong>README.md</strong> di repository berisi:
+                            <ul>
+                                <li>Nama dan NIM</li>
+                                <li>Deskripsi singkat aplikasi</li>
+                                <li>Screenshot minimal 4 halaman (Login, Daftar, Detail, Form Tambah) — tambahkan gambar langsung di README menggunakan sintaks <code>![nama](screenshots/nama.png)</code> dengan menyimpan file gambar di folder <code>screenshots/</code> dalam repository</li>
+                                <li>Penjelasan singkat metode penyimpanan yang digunakan dan alasannya</li>
+                                <li>Kendala yang dihadapi dan cara mengatasinya</li>
+                            </ul>
+                        </li>
+                        <li>Pastikan project bisa di-clone dan di-build tanpa error</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h3>Catatan Penting</h3>
+                    <ul>
+                        <li>Plagiasi akan mendapat nilai <strong>0</strong></li>
+                        <li>Pahami setiap baris kode yang Anda tulis — bukan sekadar copy-paste</li>
+                        <li>Fitur yang sederhana tapi berjalan dengan benar lebih baik dari fitur banyak tapi crash</li>
+                        <li>Pastikan data tetap tersimpan setelah aplikasi ditutup dan dibuka kembali</li>
+                        <li>Jangan ragu bertanya jika ada kesulitan</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Mobile</strong></p>
+            <p>Penyimpanan Data: SharedPreferences, Internal Storage, SQLite & Room</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        function showSection(id) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+            // Tampilkan section yang dituju
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Update active state pada nav-link (hanya untuk top-level)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + id) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Klik nav-link (top-level sidebar)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                const target = document.getElementById(id);
+                if (!target) return;
+
+                // Jika target adalah section, tampilkan langsung
+                if (target.classList.contains('section')) {
+                    showSection(id);
+                } else {
+                    // Jika target adalah article (misal handson-final), tampilkan section induknya
+                    const parentSection = target.closest('.section');
+                    if (parentSection) {
+                        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                        parentSection.style.display = 'block';
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Klik sub-menu link — tampilkan section induknya, lalu scroll ke artikel
+        document.querySelectorAll('.sub-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                // Kasus 1: target sendiri adalah .section (misal handson-1/2/3)
+                if (target.classList.contains('section')) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    target.style.display = 'block';
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentLink = document.querySelector('.nav-link[href="#' + targetId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                    return;
+                }
+
+                // Kasus 2: target adalah artikel di dalam section
+                const parentSection = target.closest('.section');
+                if (parentSection) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    parentSection.style.display = 'block';
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentId = parentSection.getAttribute('id');
+                    const parentLink = document.querySelector('.nav-link[href="#' + parentId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                }
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Tampilkan section pertama saat halaman dimuat
+        const firstSection = document.querySelector('.section');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+            const firstLink = document.querySelector('.nav-link[href="#' + firstSection.id + '"]');
+            if (firstLink) firstLink.classList.add('active');
+        }
+
+        // Copy kode ke clipboard
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(function() {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function() {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(function() {
+                // Fallback untuk browser lama
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function() {
+                    btn.innerHTML = '&#128203;';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
