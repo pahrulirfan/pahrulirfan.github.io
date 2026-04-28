@@ -639,16 +639,14 @@ class PrefManager(context: Context) {
         private const val PREF_NAME = "LoginPrefs"
         private const val KEY_IS_LOGGED_IN = "is_logged_in"
         private const val KEY_USERNAME = "username"
-        private const val KEY_EMAIL = "email"
         private const val KEY_REMEMBER_ME = "remember_me"
     }
 
     // ===== SIMPAN STATUS LOGIN =====
-    fun saveLoginSession(username: String, email: String, rememberMe: Boolean) {
+    fun saveLoginSession(username: String, rememberMe: Boolean) {
         sharedPref.edit().apply {
             putBoolean(KEY_IS_LOGGED_IN, true)
             putString(KEY_USERNAME, username)
-            putString(KEY_EMAIL, email)
             putBoolean(KEY_REMEMBER_ME, rememberMe)
             apply()
         }
@@ -666,10 +664,6 @@ class PrefManager(context: Context) {
     // ===== AMBIL DATA USER =====
     fun getUsername(): String {
         return sharedPref.getString(KEY_USERNAME, "") ?: ""
-    }
-
-    fun getEmail(): String {
-        return sharedPref.getString(KEY_EMAIL, "") ?: ""
     }
 
     // ===== LOGOUT (HAPUS SESSION) =====
@@ -843,7 +837,6 @@ class LoginActivity : AppCompatActivity() {
                 // Simpan session
                 prefManager.saveLoginSession(
                     username = username,
-                    email = "$username@email.com",
                     rememberMe = cbRememberMe.isChecked
                 )
                 Toast.makeText(this, "Login berhasil!", Toast.LENGTH_SHORT).show()
@@ -2502,7 +2495,7 @@ class MainActivity : AppCompatActivity() {
                     <h4>Langkah 1: Buat PrefManager</h4>
                     <p>Buat package <code>utils</code> dan class <code>PrefManager.kt</code> dengan fitur:</p>
                     <ul>
-                        <li>Simpan dan baca status login (<code>isLoggedIn</code>, <code>username</code>, <code>email</code>)</li>
+                        <li>Simpan dan baca status login (<code>isLoggedIn</code>, <code>username</code>)</li>
                         <li>Simpan dan baca remember me flag</li>
                         <li>Method <code>logout()</code> untuk clear session</li>
                     </ul>
