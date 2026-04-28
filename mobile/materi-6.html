@@ -858,7 +858,47 @@ class LoginActivity : AppCompatActivity() {
                     <div class="step">
                         <span class="step-number">7</span>
                         <div class="step-content">
-                            <h4>Tambahkan tombol Logout di MainActivity</h4>
+                            <h4>Buat layout activity_main.xml</h4>
+                            <p>Buka <code>res/layout/activity_main.xml</code> — ini layout halaman utama setelah login. Berisi teks sambutan yang menampilkan nama user dan tombol Logout.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header"><span>res/layout/activity_main.xml</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                    <pre>
+&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selamat datang!"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">8</span>
+                        <div class="step-content">
+                            <h4>Implementasi MainActivity.kt</h4>
                             <p>Saat logout, cukup panggil <code>prefManager.logout()</code> yang akan menghapus semua data di SharedPreferences. Sederhana dan bersih.</p>
                         </div>
                     </div>
@@ -866,27 +906,38 @@ class LoginActivity : AppCompatActivity() {
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>Di MainActivity.kt - Logout</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
+                        <span>MainActivity.kt</span><button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button></div>
                     <pre>
-// Di dalam MainActivity
-private lateinit var prefManager: PrefManager
+package com.example.myapp
 
-override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
-    setContentView(R.layout.activity_main)
+import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.example.myapp.utils.PrefManager
 
-    prefManager = PrefManager(this)
+class MainActivity : AppCompatActivity() {
 
-    // Tampilkan nama user
-    val tvWelcome = findViewById&lt;TextView&gt;(R.id.tvWelcome)
-    tvWelcome.text = "Selamat datang, ${prefManager.getUsername()}!"
+    private lateinit var prefManager: PrefManager
 
-    // Tombol logout
-    val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
-    btnLogout.setOnClickListener {
-        prefManager.logout()
-        startActivity(Intent(this, LoginActivity::class.java))
-        finish()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        prefManager = PrefManager(this)
+
+        // Tampilkan nama user yang sedang login
+        val tvWelcome = findViewById&lt;TextView&gt;(R.id.tvWelcome)
+        tvWelcome.text = "Selamat datang, ${prefManager.getUsername()}!"
+
+        // Tombol logout — hapus session lalu kembali ke LoginActivity
+        val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
+        btnLogout.setOnClickListener {
+            prefManager.logout()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
     }
 }</pre>
                 </div>
