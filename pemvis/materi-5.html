@@ -1,0 +1,2493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - Threading & REST API</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Threading & REST API</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Threading Dasar</div>
+                    <a href="#ui-freeze" class="nav-link active">
+                        <span class="nav-number">1</span>UI Freeze Problem
+                    </a>
+                    <a href="#worker-pattern" class="nav-link">
+                        <span class="nav-number">2</span>Thread, Race Condition & Worker Pattern
+                    </a>
+                    <a href="#progress-cancel" class="nav-link">
+                        <span class="nav-number">3</span>Progress & Cancel
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">REST API</div>
+                    <a href="#konsep-api" class="nav-link">
+                        <span class="nav-number">4</span>Konsep REST API
+                    </a>
+                    <a href="#http-methods" class="nav-link">
+                        <span class="nav-number">5</span>HTTP Methods
+                    </a>
+                    <a href="#requests-library" class="nav-link">
+                        <span class="nav-number">6</span>Library Requests
+                    </a>
+                    <a href="#api-thread" class="nav-link">
+                        <span class="nav-number">7</span>API Call di Thread
+                    </a>
+                    <a href="#state-handling" class="nav-link">
+                        <span class="nav-number">8</span>State Handling
+                    </a>
+                    <a href="#crud-api" class="nav-link">
+                        <span class="nav-number">9</span>CRUD via API
+                    </a>
+                    <a href="#api-client-app" class="nav-link">
+                        <span class="nav-number">10</span>Aplikasi API Client
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Multi-Threading & REST API di PySide6</h1>
+                <p class="subtitle">Membangun aplikasi desktop responsif yang terhubung dengan layanan eksternal</p>
+            </header>
+
+            <!-- Capaian -->
+            <section class="section">
+                <h2>Capaian Pembelajaran</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Sub-CPMK 2.2</div>
+                    <p>Mahasiswa mampu mengimplementasikan multi-threading dan mengintegrasikan REST API untuk membangun aplikasi yang responsif dan terhubung dengan layanan eksternal.</p>
+                </div>
+                <div class="info-box concept">
+                    <div class="info-box-title">Indikator Pencapaian</div>
+                    <ol>
+                        <li>Mampu menjelaskan UI freeze dan menggunakan QThread Worker Pattern</li>
+                        <li>Mampu melakukan HTTP request di thread terpisah</li>
+                        <li>Mampu parsing JSON dan menampilkan ke UI</li>
+                        <li>Mampu consume minimal 2 endpoint REST API</li>
+                    </ol>
+                </div>
+
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- BAGIAN 1: THREADING DASAR -->
+            <!-- ============================================================ -->
+
+            <!-- Section 1: UI Freeze -->
+            <section class="section" id="ui-freeze">
+                <h2>1. UI Freeze Problem</h2>
+
+                <p>Dalam aplikasi GUI, seluruh tampilan dijalankan di <strong>Main Thread (UI Thread)</strong>. Jika kita menjalankan proses berat (seperti network request, baca file besar, kalkulasi kompleks) di thread yang sama, maka UI akan <strong>freeze/hang</strong> sampai proses selesai.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Golden Rule of Threading</div>
+                    <div class="flow-container">
+                        <div class="flow-box highlight" style="background: rgba(231,76,60,0.9); color:white;">JANGAN pernah jalankan<br>proses berat di Main Thread</div>
+                    </div>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Tanpa Threading (FREEZE)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>API call di main thread</li>
+                                <li>UI membeku 2-10 detik</li>
+                                <li>Tombol tidak bisa diklik</li>
+                                <li>"Not Responding" muncul</li>
+                                <li>User experience buruk</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Dengan Threading (RESPONSIF)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>API call di worker thread</li>
+                                <li>UI tetap responsif</li>
+                                <li>Loading indicator aktif</li>
+                                <li>User bisa cancel request</li>
+                                <li>Professional experience</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Contoh UI Freeze</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">tanpa_thread.py</span>
+                        <span class="code-badge">TANPA THREAD</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> time
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget
+)
+
+<span class="keyword">class</span> <span class="class-name">FreezeDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"UI Freeze Demo"</span>)
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        <span class="self">self</span>.status = QLabel(<span class="string">"Status: menunggu..."</span>)
+        layout.addWidget(<span class="self">self</span>.status)
+
+        <span class="self">self</span>.list_widget = QListWidget()
+        layout.addWidget(<span class="self">self</span>.list_widget)
+
+        <span class="comment"># Proses berat di main thread = UI FREEZE</span>
+        btn_proses = QPushButton(<span class="string">"Mulai Proses"</span>)
+        btn_proses.clicked.connect(<span class="self">self</span>.proses_berat)
+        layout.addWidget(btn_proses)
+
+        <span class="comment"># Tombol ini TIDAK bisa diklik saat proses_berat() berjalan</span>
+        <span class="self">self</span>.counter = <span class="number">0</span>
+        <span class="self">self</span>.btn_test = QPushButton(<span class="string">"Cek Responsif (0)"</span>)
+        <span class="self">self</span>.btn_test.clicked.connect(<span class="self">self</span>.tambah_counter)
+        layout.addWidget(<span class="self">self</span>.btn_test)
+
+    <span class="keyword">def</span> <span class="function">tambah_counter</span>(<span class="self">self</span>):
+        <span class="self">self</span>.counter += <span class="number">1</span>
+        <span class="self">self</span>.btn_test.setText(<span class="string">f"Cek Responsif (</span>{<span class="self">self</span>.counter}<span class="string">)"</span>)
+
+    <span class="keyword">def</span> <span class="function">proses_berat</span>(<span class="self">self</span>):
+        <span class="self">self</span>.list_widget.clear()
+        <span class="self">self</span>.status.setText(<span class="string">"Status: memproses..."</span>)
+
+        <span class="comment"># Loop ini memblokir main thread — UI freeze total selama 5 detik</span>
+        <span class="comment"># Data tidak muncul satu per satu, melainkan sekaligus di akhir</span>
+        <span class="keyword">for</span> item <span class="keyword">in</span> [<span class="string">"Data A"</span>, <span class="string">"Data B"</span>, <span class="string">"Data C"</span>, <span class="string">"Data D"</span>, <span class="string">"Data E"</span>]:
+            time.sleep(<span class="number">1</span>)
+            <span class="self">self</span>.list_widget.addItem(item)  <span class="comment"># tidak langsung tampil karena UI freeze</span>
+
+        <span class="self">self</span>.status.setText(<span class="string">"Status: selesai"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    w = FreezeDemo()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Coba Jalankan!</div>
+                    <p>Klik <strong>Mulai Proses</strong>, lalu langsung coba klik <strong>"Cek Responsif"</strong> berkali-kali. Perhatikan dua hal:</p>
+                    <ul>
+                        <li>Counter tidak bertambah — tombol tidak merespons sama sekali</li>
+                        <li>Data tidak muncul satu per satu — semua muncul sekaligus setelah 5 detik, padahal kode sudah memanggil <code>addItem()</code> di setiap iterasi</li>
+                    </ul>
+                    <p style="margin-top: 8px;">Ini karena Qt tidak sempat me-render perubahan UI selama main thread sibuk. Inilah mengapa kita membutuhkan threading.</p>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Apa Solusinya?</div>
+                    <p>Pindahkan proses berat ke <strong>thread terpisah</strong> agar main thread tetap bebas melayani UI. Cara melakukannya dibahas di Section 2 berikutnya.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: QThread Worker Pattern -->
+            <section class="section" id="worker-pattern">
+                <h2>2. QThread + Worker Pattern</h2>
+
+                <h3>Apa itu Thread?</h3>
+
+                <p>Secara default, sebuah program berjalan dalam satu alur eksekusi yang disebut <strong>thread</strong>. Thread adalah unit terkecil dari eksekusi yang dikelola oleh sistem operasi. Bayangkan thread seperti seorang pekerja yang mengerjakan tugas satu per satu secara berurutan.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Single Thread vs Multi Thread</div>
+                    <div class="flow-container">
+                        <div class="flow-box" style="background:rgba(231,76,60,0.15);">Single Thread<br><small>Tugas A → B → C<br>(antri, satu per satu)</small></div>
+                        <span class="flow-arrow">vs</span>
+                        <div class="flow-box highlight">Multi Thread<br><small>Thread 1: Tugas A<br>Thread 2: Tugas B (bersamaan)</small></div>
+                    </div>
+                </div>
+
+                <p>Dengan <strong>multi-threading</strong>, kita bisa menjalankan beberapa tugas secara bersamaan (concurrent). Di PySide6, <strong>Main Thread</strong> bertugas menggambar UI dan merespons input user. Tugas berat seperti network request harus dipindahkan ke <strong>Worker Thread</strong> agar Main Thread tetap bebas.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Istilah</th>
+                                <th>Penjelasan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">Main Thread</span></td>
+                                <td>Thread utama tempat UI berjalan. Semua update widget HARUS dari sini.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Worker Thread</span></td>
+                                <td>Thread tambahan untuk menjalankan proses berat di latar belakang.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Concurrency</span></td>
+                                <td>Beberapa tugas berjalan "seolah bersamaan" (bisa bergantian cepat).</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Parallelism</span></td>
+                                <td>Beberapa tugas benar-benar berjalan bersamaan di CPU berbeda.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>QThread Sederhana: Solusi untuk tanpa_thread.py</h3>
+
+                <p>Sebelum masuk ke pola yang lebih lengkap, lihat dulu cara paling sederhana memperbaiki masalah di Section 1. Bandingkan strukturnya dengan <code>tanpa_thread.py</code> — perbedaannya hanya pada <em>di mana</em> proses berat diletakkan:</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>tanpa_thread.py</th>
+                                <th>dengan_thread.py</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>time.sleep(5)</code> langsung di slot tombol (main thread)</td>
+                                <td>Proses berat di dalam <code>WorkerThread.run()</code> (thread terpisah)</td>
+                            </tr>
+                            <tr>
+                                <td>Tidak ada komunikasi balik ke UI</td>
+                                <td>Gunakan <code>Signal</code> untuk kirim data ke main thread</td>
+                            </tr>
+                            <tr>
+                                <td>UI freeze total</td>
+                                <td>UI tetap responsif — tombol lain masih bisa diklik</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">dengan_thread.py</span>
+                        <span class="code-badge">DENGAN THREAD</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> time
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QThread, Signal
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget
+)
+
+
+<span class="comment"># ─── Worker: class yang mewarisi QThread ───────────────────────────────────</span>
+<span class="comment"># Semua proses berat diletakkan di dalam method run()</span>
+<span class="comment"># Method run() dieksekusi di thread terpisah, BUKAN di main thread</span>
+<span class="keyword">class</span> <span class="class-name">WorkerThread</span>(QThread):
+
+    <span class="comment"># Signal untuk mengirim data ke UI — satu-satunya cara aman</span>
+    <span class="comment"># berkomunikasi dari worker thread ke main thread</span>
+    item_ready = Signal(<span class="builtin">str</span>)   <span class="comment"># dikirim setiap kali satu item selesai diproses</span>
+    finished   = Signal()       <span class="comment"># dikirim saat semua item selesai</span>
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="comment"># Ini berjalan di thread terpisah — main thread tetap bebas</span>
+        data = [<span class="string">"Data A"</span>, <span class="string">"Data B"</span>, <span class="string">"Data C"</span>, <span class="string">"Data D"</span>, <span class="string">"Data E"</span>]
+        <span class="keyword">for</span> item <span class="keyword">in</span> data:
+            time.sleep(<span class="number">1</span>)
+            <span class="self">self</span>.item_ready.emit(item)   <span class="comment"># kirim item ke UI — tidak freeze!</span>
+        <span class="self">self</span>.finished.emit()
+
+
+<span class="keyword">class</span> <span class="class-name">GoodDemo</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"No Freeze Demo"</span>)
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        <span class="self">self</span>.label = QLabel(<span class="string">"Klik tombol untuk mulai proses"</span>)
+        layout.addWidget(<span class="self">self</span>.label)
+
+        <span class="self">self</span>.list_widget = QListWidget()
+        layout.addWidget(<span class="self">self</span>.list_widget)
+
+        <span class="self">self</span>.btn_start = QPushButton(<span class="string">"Mulai Proses (tidak freeze!)"</span>)
+        <span class="self">self</span>.btn_start.clicked.connect(<span class="self">self</span>.mulai_proses)
+        layout.addWidget(<span class="self">self</span>.btn_start)
+
+        <span class="comment"># Tombol ini tetap bisa diklik saat proses berjalan di background</span>
+        btn_test = QPushButton(<span class="string">"Cek Responsif"</span>)
+        btn_test.clicked.connect(<span class="keyword">lambda</span>: <span class="self">self</span>.label.setText(<span class="string">"UI tetap responsif!"</span>))
+        layout.addWidget(btn_test)
+
+        <span class="self">self</span>.worker = <span class="keyword">None</span>
+
+    <span class="keyword">def</span> <span class="function">mulai_proses</span>(<span class="self">self</span>):
+        <span class="self">self</span>.list_widget.clear()
+        <span class="self">self</span>.label.setText(<span class="string">"Memproses..."</span>)
+        <span class="self">self</span>.btn_start.setEnabled(<span class="keyword">False</span>)
+
+        <span class="self">self</span>.worker = WorkerThread()
+        <span class="self">self</span>.worker.item_ready.connect(<span class="self">self</span>.tambah_item)
+        <span class="self">self</span>.worker.finished.connect(<span class="self">self</span>.proses_selesai)
+        <span class="self">self</span>.worker.start()   <span class="comment"># mulai thread — run() dieksekusi di background</span>
+
+    <span class="keyword">def</span> <span class="function">tambah_item</span>(<span class="self">self</span>, <span class="parameter">item</span>):
+        <span class="self">self</span>.list_widget.addItem(item)
+
+    <span class="keyword">def</span> <span class="function">proses_selesai</span>(<span class="self">self</span>):
+        <span class="self">self</span>.label.setText(<span class="string">"Selesai!"</span>)
+        <span class="self">self</span>.btn_start.setEnabled(<span class="keyword">True</span>)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    w = GoodDemo()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Coba Jalankan dengan_thread.py</div>
+                    <ul>
+                        <li>Klik <strong>Mulai Proses</strong> — item muncul satu per satu setiap detik</li>
+                        <li>Selama proses berjalan, klik <strong>Cek Responsif</strong> — label langsung berubah</li>
+                        <li>Tombol aktif kembali otomatis setelah semua item selesai</li>
+                    </ul>
+                </div>
+
+                <h3>Perbandingan Langsung: compare.py</h3>
+
+                <p>File <code>compare.py</code> menggabungkan <code>tanpa_thread.py</code> dan <code>dengan_thread.py</code> dalam satu jendela menggunakan <code>QTabWidget</code>. Jalankan ini untuk merasakan perbedaannya secara langsung tanpa harus berpindah file.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">compare.py</span>
+                        <span class="code-badge">Demo Interaktif</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> time
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QThread, Signal
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget, QTabWidget
+)
+
+
+<span class="keyword">class</span> <span class="class-name">WorkerThread</span>(QThread):
+    item_ready = Signal(<span class="builtin">str</span>)
+    finished   = Signal()
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="keyword">for</span> item <span class="keyword">in</span> [<span class="string">"Data A"</span>, <span class="string">"Data B"</span>, <span class="string">"Data C"</span>, <span class="string">"Data D"</span>, <span class="string">"Data E"</span>]:
+            time.sleep(<span class="number">1</span>)
+            <span class="self">self</span>.item_ready.emit(item)
+        <span class="self">self</span>.finished.emit()
+
+
+<span class="comment"># Tab 1: tanpa thread — counter tidak bisa diklik saat proses berjalan</span>
+<span class="keyword">class</span> <span class="class-name">TabMasalah</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        layout = QVBoxLayout(<span class="self">self</span>)
+        layout.setSpacing(<span class="number">8</span>)
+        <span class="self">self</span>.status = QLabel(<span class="string">"Status: menunggu..."</span>)
+        layout.addWidget(<span class="self">self</span>.status)
+        <span class="self">self</span>.list_widget = QListWidget()
+        layout.addWidget(<span class="self">self</span>.list_widget)
+        btn_proses = QPushButton(<span class="string">"Mulai Proses"</span>)
+        btn_proses.clicked.connect(<span class="self">self</span>.proses_berat)
+        layout.addWidget(btn_proses)
+        <span class="self">self</span>.counter = <span class="number">0</span>
+        <span class="self">self</span>.btn_test = QPushButton(<span class="string">"Cek Responsif (0)"</span>)
+        <span class="self">self</span>.btn_test.clicked.connect(<span class="self">self</span>.tambah_counter)
+        layout.addWidget(<span class="self">self</span>.btn_test)
+
+    <span class="keyword">def</span> <span class="function">tambah_counter</span>(<span class="self">self</span>):
+        <span class="self">self</span>.counter += <span class="number">1</span>
+        <span class="self">self</span>.btn_test.setText(<span class="string">f"Cek Responsif (</span>{<span class="self">self</span>.counter}<span class="string">)"</span>)
+
+    <span class="keyword">def</span> <span class="function">proses_berat</span>(<span class="self">self</span>):
+        <span class="self">self</span>.list_widget.clear()
+        <span class="self">self</span>.status.setText(<span class="string">"Status: memproses..."</span>)
+        <span class="comment"># Loop ini memblokir main thread — UI freeze total</span>
+        <span class="keyword">for</span> item <span class="keyword">in</span> [<span class="string">"Data A"</span>, <span class="string">"Data B"</span>, <span class="string">"Data C"</span>, <span class="string">"Data D"</span>, <span class="string">"Data E"</span>]:
+            time.sleep(<span class="number">1</span>)
+            <span class="self">self</span>.list_widget.addItem(item)
+        <span class="self">self</span>.status.setText(<span class="string">"Status: selesai"</span>)
+
+
+<span class="comment"># Tab 2: dengan QThread — counter tetap bisa diklik kapan saja</span>
+<span class="keyword">class</span> <span class="class-name">TabSolusi</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        layout = QVBoxLayout(<span class="self">self</span>)
+        layout.setSpacing(<span class="number">8</span>)
+        <span class="self">self</span>.status = QLabel(<span class="string">"Status: menunggu..."</span>)
+        layout.addWidget(<span class="self">self</span>.status)
+        <span class="self">self</span>.list_widget = QListWidget()
+        layout.addWidget(<span class="self">self</span>.list_widget)
+        <span class="self">self</span>.btn_proses = QPushButton(<span class="string">"Mulai Proses"</span>)
+        <span class="self">self</span>.btn_proses.clicked.connect(<span class="self">self</span>.mulai_proses)
+        layout.addWidget(<span class="self">self</span>.btn_proses)
+        <span class="self">self</span>.counter = <span class="number">0</span>
+        <span class="self">self</span>.btn_test = QPushButton(<span class="string">"Cek Responsif (0)"</span>)
+        <span class="self">self</span>.btn_test.clicked.connect(<span class="self">self</span>.tambah_counter)
+        layout.addWidget(<span class="self">self</span>.btn_test)
+        <span class="self">self</span>.worker = <span class="keyword">None</span>
+
+    <span class="keyword">def</span> <span class="function">tambah_counter</span>(<span class="self">self</span>):
+        <span class="self">self</span>.counter += <span class="number">1</span>
+        <span class="self">self</span>.btn_test.setText(<span class="string">f"Cek Responsif (</span>{<span class="self">self</span>.counter}<span class="string">)"</span>)
+
+    <span class="keyword">def</span> <span class="function">mulai_proses</span>(<span class="self">self</span>):
+        <span class="self">self</span>.list_widget.clear()
+        <span class="self">self</span>.status.setText(<span class="string">"Status: memproses..."</span>)
+        <span class="self">self</span>.btn_proses.setEnabled(<span class="keyword">False</span>)
+        <span class="self">self</span>.worker = WorkerThread()
+        <span class="self">self</span>.worker.item_ready.connect(<span class="self">self</span>.list_widget.addItem)
+        <span class="self">self</span>.worker.finished.connect(<span class="self">self</span>.proses_selesai)
+        <span class="self">self</span>.worker.start()
+
+    <span class="keyword">def</span> <span class="function">proses_selesai</span>(<span class="self">self</span>):
+        <span class="self">self</span>.status.setText(<span class="string">"Status: selesai"</span>)
+        <span class="self">self</span>.btn_proses.setEnabled(<span class="keyword">True</span>)
+
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Thread Demo"</span>)
+        <span class="self">self</span>.setFixedSize(<span class="number">380</span>, <span class="number">380</span>)
+        tabs = QTabWidget()
+        tabs.addTab(TabMasalah(), <span class="string">"Tanpa Thread (freeze)"</span>)
+        tabs.addTab(TabSolusi(),  <span class="string">"Dengan QThread (ok)"</span>)
+        <span class="self">self</span>.setCentralWidget(tabs)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Cara Menggunakan compare.py</div>
+                    <ol style="margin: 8px 0 0; padding-left: 20px; line-height: 1.9;">
+                        <li>Tab <strong>"Tanpa Thread"</strong> → klik Mulai Proses → coba klik counter → tidak bisa, UI freeze</li>
+                        <li>Tab <strong>"Dengan QThread"</strong> → klik Mulai Proses → klik counter berkali-kali → counter bertambah normal</li>
+                    </ol>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">dengan_thread.py vs worker_pattern.py — Apa Bedanya?</div>
+                    <p><code>dengan_thread.py</code> menggunakan cara paling sederhana: <strong>mewarisi QThread langsung</strong> dan override <code>run()</code>. Ini cukup untuk kasus sederhana, tapi punya keterbatasan — sulit mengirim banyak jenis signal dan tidak fleksibel untuk reuse.</p>
+                    <p style="margin-top: 8px;"><strong>Worker Pattern</strong> (di bawah) menggunakan pendekatan yang direkomendasikan Qt: pisahkan logika ke class <code>QObject</code> terpisah, lalu pindahkan ke thread dengan <code>moveToThread()</code>. Ini lebih fleksibel dan lebih mudah dikembangkan.</p>
+                </div>
+
+                <h3>Race Condition — Risiko dari Threading</h3>
+
+                <p>Threading memang membuat UI tetap responsif, tapi ada risiko yang perlu diwaspadai: <strong>race condition</strong>. Ini terjadi ketika dua thread mengakses dan memodifikasi data yang sama secara bersamaan, sehingga hasilnya tidak bisa diprediksi.</p>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Analogi Sederhana</div>
+                    <p>Bayangkan dua kasir di toko yang sama melihat stok barang = 1, lalu keduanya menjual barang itu ke pelanggan berbeda secara bersamaan. Hasilnya: stok jadi -1 karena keduanya tidak tahu satu sama lain sudah menjual.</p>
+                </div>
+
+                <p>Contoh berikut menunjukkan perbedaan antara eksekusi <strong>berurutan (aman)</strong> vs <strong>bersamaan dengan thread (berpotensi salah)</strong>:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">tanpa_thread.py — Berurutan, Selalu Benar</span>
+                        <span class="code-badge">AMAN</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Tanpa thread: eksekusi berurutan, hasil selalu konsisten</span>
+saldo = <span class="number">100</span>
+
+<span class="keyword">def</span> <span class="function">tarik_tunai</span>(<span class="parameter">jumlah</span>):
+    <span class="keyword">global</span> saldo
+    <span class="keyword">if</span> saldo >= jumlah:
+        saldo -= jumlah
+        <span class="builtin">print</span>(<span class="string">f"Berhasil tarik </span>{jumlah}<span class="string">, saldo: </span>{saldo}<span class="string">"</span>)
+    <span class="keyword">else</span>:
+        <span class="builtin">print</span>(<span class="string">f"Gagal, saldo tidak cukup: </span>{saldo}<span class="string">"</span>)
+
+<span class="comment"># Dijalankan satu per satu, tidak ada yang "menyela"</span>
+tarik_tunai(<span class="number">80</span>)
+tarik_tunai(<span class="number">80</span>)
+
+<span class="comment"># Output selalu konsisten:</span>
+<span class="comment"># Berhasil tarik 80, saldo: 20</span>
+<span class="comment"># Gagal, saldo tidak cukup: 20  </span></code></pre>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">dengan_thread.py — Bersamaan, Bisa Salah</span>
+                        <span class="code-badge">RACE CONDITION</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> threading
+<span class="keyword">import</span> time
+
+saldo = <span class="number">100</span>
+
+<span class="keyword">def</span> <span class="function">tarik_tunai</span>(<span class="parameter">nama</span>, <span class="parameter">jumlah</span>):
+    <span class="keyword">global</span> saldo
+    
+    <span class="comment"># STEP 1: Baca saldo saat ini</span>
+    saldo_dibaca = saldo
+    <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Cek saldo: </span>{saldo_dibaca}<span class="string">"</span>)
+    
+    <span class="comment"># Simulasi jeda (misal: verifikasi PIN, koneksi jaringan)</span>
+    <span class="comment"># Di sinilah thread lain bisa "menyela" dan mengubah saldo!</span>
+    time.sleep(<span class="number">0.1</span>)
+    
+    <span class="comment"># STEP 2: Cek dan kurangi — tapi saldo mungkin sudah berubah!</span>
+    <span class="keyword">if</span> saldo_dibaca >= jumlah:
+        saldo = saldo_dibaca - jumlah  <span class="comment"># Pakai nilai lama yang sudah stale</span>
+        <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Berhasil tarik </span>{jumlah}<span class="string">, saldo: </span>{saldo}<span class="string">"</span>)
+    <span class="keyword">else</span>:
+        <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Gagal, saldo tidak cukup"</span>)
+
+<span class="comment"># Dua thread berjalan BERSAMAAN mengakses saldo yang sama</span>
+t1 = threading.Thread(target=tarik_tunai, args=(<span class="string">"ATM-1"</span>, <span class="number">80</span>))
+t2 = threading.Thread(target=tarik_tunai, args=(<span class="string">"ATM-2"</span>, <span class="number">80</span>))
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+
+<span class="comment"># Output yang terjadi (SALAH!):</span>
+<span class="comment"># [ATM-1] Cek saldo: 100  ← baca 100</span>
+<span class="comment"># [ATM-2] Cek saldo: 100  ← juga baca 100, belum ada yang kurangi</span>
+<span class="comment"># [ATM-1] Berhasil tarik 80, saldo: 20</span>
+<span class="comment"># [ATM-2] Berhasil tarik 80, saldo: 20  ← harusnya ditolak!</span>
+<span class="builtin">print</span>(<span class="string">f"Saldo akhir: </span>{saldo}<span class="string">"</span>)  <span class="comment"># 20, padahal uang sudah ditarik 160!</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Kesimpulan: Threading Membawa Risiko Race Condition</div>
+                    <p>Threading <strong>bukan solusi</strong> untuk race condition — justru threading yang <strong>menyebabkan</strong> race condition bisa terjadi. Tanpa thread, kode berjalan berurutan sehingga tidak ada masalah. Begitu kita pakai thread, kita harus waspada terhadap akses data bersama.</p>
+                    <p style="margin-top:8px;">Di PySide6, solusinya adalah <strong>Signal</strong>: worker thread tidak boleh langsung mengubah data UI, melainkan mengirim Signal ke main thread, dan Qt yang mengurus eksekusinya secara aman.</p>
+                </div>
+
+                <h3>Solusi Race Condition: threading.Lock()</h3>
+
+                <p>Seperti di Java yang mengenal <code>synchronized</code>, Python menyediakan <code>threading.Lock()</code> untuk mengunci akses ke data bersama. Selama satu thread memegang lock, thread lain yang mencoba mengaksesnya akan <strong>menunggu</strong> sampai lock dilepas.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">dengan_lock.py — Race Condition Teratasi</span>
+                        <span class="code-badge">AMAN</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> threading
+<span class="keyword">import</span> time
+
+saldo = <span class="number">100</span>
+lock = threading.Lock()   <span class="comment"># buat satu lock yang dipakai bersama</span>
+
+<span class="keyword">def</span> <span class="function">tarik_tunai</span>(<span class="parameter">nama</span>, <span class="parameter">jumlah</span>):
+    <span class="keyword">global</span> saldo
+
+    <span class="comment"># with lock: → acquire lock saat masuk, release otomatis saat keluar</span>
+    <span class="comment"># Thread lain yang sampai di baris ini akan MENUNGGU sampai lock bebas</span>
+    <span class="keyword">with</span> lock:
+        saldo_dibaca = saldo
+        <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Cek saldo: </span>{saldo_dibaca}<span class="string">"</span>)
+
+        time.sleep(<span class="number">0.1</span>)   <span class="comment"># simulasi jeda — tapi thread lain tetap menunggu</span>
+
+        <span class="keyword">if</span> saldo_dibaca >= jumlah:
+            saldo = saldo_dibaca - jumlah
+            <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Berhasil tarik </span>{jumlah}<span class="string">, saldo: </span>{saldo}<span class="string">"</span>)
+        <span class="keyword">else</span>:
+            <span class="builtin">print</span>(<span class="string">f"[</span>{nama}<span class="string">] Gagal, saldo tidak cukup"</span>)
+
+t1 = threading.Thread(target=tarik_tunai, args=(<span class="string">"ATM-1"</span>, <span class="number">80</span>))
+t2 = threading.Thread(target=tarik_tunai, args=(<span class="string">"ATM-2"</span>, <span class="number">80</span>))
+t1.start()
+t2.start()
+t1.join()
+t2.join()
+
+<span class="comment"># Output yang benar (salah satu urutan yang mungkin):</span>
+<span class="comment"># [ATM-1] Cek saldo: 100</span>
+<span class="comment"># [ATM-1] Berhasil tarik 80, saldo: 20</span>
+<span class="comment"># [ATM-2] Cek saldo: 20   ← ATM-2 baru bisa masuk setelah ATM-1 selesai</span>
+<span class="comment"># [ATM-2] Gagal, saldo tidak cukup</span></code></pre>
+                    </div>
+                </div>
+
+                <h3>GIL — Kenapa Race Condition Masih Bisa Terjadi di Python?</h3>
+
+                <p>Python punya <strong>GIL (Global Interpreter Lock)</strong> — lock bawaan di level interpreter yang memastikan hanya satu thread yang mengeksekusi bytecode Python pada satu waktu. Sekilas ini terdengar seperti race condition tidak mungkin terjadi, tapi kenyataannya tetap bisa.</p>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Mengapa GIL Tidak Cukup?</div>
+                    <p>GIL bisa dilepas di antara instruksi bytecode — termasuk di tengah operasi yang terlihat sederhana. Baris <code>saldo -= jumlah</code> sebenarnya terdiri dari beberapa instruksi bytecode (baca, kurangi, tulis), dan GIL bisa berpindah ke thread lain di antaranya.</p>
+                    <p style="margin-top: 8px;">GIL juga dilepas saat operasi I/O dan <code>time.sleep()</code> — itulah mengapa contoh ATM di atas bisa mengalami race condition meski Python punya GIL.</p>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mekanisme</th>
+                                <th>Bahasa</th>
+                                <th>Cara Kerja</th>
+                                <th>Kapan Dipakai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">synchronized</span></td>
+                                <td>Java</td>
+                                <td>Lock otomatis pada method atau blok kode</td>
+                                <td>Akses data bersama antar thread</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">threading.Lock()</span></td>
+                                <td>Python</td>
+                                <td>Lock manual dengan <code>with lock:</code></td>
+                                <td>Akses data bersama antar thread</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Signal</span></td>
+                                <td>PySide6 / Qt</td>
+                                <td>Kirim data via event queue, dieksekusi di main thread</td>
+                                <td>Update UI dari worker thread</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">GIL</span></td>
+                                <td>Python</td>
+                                <td>Lock global di level interpreter, bukan per-variabel</td>
+                                <td>Otomatis — tapi tidak cukup untuk data bersama</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Lock vs Signal di PySide6 — Kapan Pakai yang Mana?</div>
+                    <ul>
+                        <li><strong>Signal</strong> — untuk update widget UI dari worker thread. Ini cara yang direkomendasikan Qt dan sudah thread-safe secara otomatis.</li>
+                        <li><strong>threading.Lock()</strong> — untuk melindungi <em>data non-UI</em> yang diakses dari beberapa thread sekaligus, misalnya list hasil, counter, atau dict cache yang dibaca/ditulis banyak worker.</li>
+                    </ul>
+                    <p style="margin-top: 8px;">Dalam aplikasi PySide6 sederhana, kita jarang perlu <code>Lock</code> secara eksplisit karena pola Worker + Signal sudah menghindari akses data bersama. <code>Lock</code> baru diperlukan saat ada beberapa worker thread yang berbagi data yang sama di luar UI.</p>
+                </div>
+
+                <h3>Masalah Umum dalam Threading</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Masalah</th>
+                                <th>Penjelasan</th>
+                                <th>Solusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">Race Condition</span></td>
+                                <td>Dua thread memodifikasi data yang sama bersamaan</td>
+                                <td>Gunakan Lock / Signal</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Deadlock</span></td>
+                                <td>Dua thread saling menunggu satu sama lain selamanya</td>
+                                <td>Hindari nested lock, gunakan timeout</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">UI Update dari Thread</span></td>
+                                <td>Update widget langsung dari worker thread → crash/undefined behavior</td>
+                                <td>Selalu gunakan Signal untuk kirim data ke Main Thread</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Dangling Thread</span></td>
+                                <td>Thread masih berjalan setelah window ditutup</td>
+                                <td>Hubungkan <span class="inline-code">finished</span> ke <span class="inline-code">thread.quit</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Mengapa Signal Aman untuk Update UI?</div>
+                    <p>Qt's Signal-Slot mechanism secara otomatis menangani komunikasi antar thread. Ketika signal dikirim dari worker thread ke slot di main thread, Qt akan mengantri pesan tersebut dan mengeksekusinya di main thread melalui event loop — sehingga tidak ada race condition pada UI.</p>
+                </div>
+
+                <h3>Ringkasan: Aturan Dasar Threading di PySide6</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Aturan</th>
+                                <th>Penjelasan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Proses berat masuk ke <code>run()</code></td>
+                                <td>Method <code>run()</code> dieksekusi di thread terpisah — main thread tetap bebas melayani UI</td>
+                            </tr>
+                            <tr>
+                                <td>Update UI hanya via Signal</td>
+                                <td>Jangan langsung ubah widget dari dalam <code>run()</code>. Kirim data lewat <code>emit()</code>, biarkan slot di main thread yang mengubah widget</td>
+                            </tr>
+                            <tr>
+                                <td>Simpan worker sebagai <code>self.worker</code></td>
+                                <td>Variabel lokal akan dihapus setelah fungsi selesai. Simpan sebagai atribut agar thread tidak berhenti tiba-tiba</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 3: Progress & Cancel -->
+            <section class="section" id="progress-cancel">
+                <h2>3. Progress Reporting & Cancellation</h2>
+
+                <p>Untuk proses yang lama, user perlu melihat progress dan bisa membatalkan proses. Gunakan flag <span class="inline-code">_is_cancelled</span> pada worker.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">cancel_pattern.py</span>
+                        <span class="code-badge">Pattern</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">class</span> <span class="class-name">CancellableWorker</span>(QObject):
+    finished = Signal()
+    progress = Signal(<span class="builtin">int</span>)   <span class="comment"># Signal bertipe int — akan membawa angka progress</span>
+    result = Signal(<span class="builtin">str</span>)
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>._is_cancelled = <span class="keyword">False</span>
+    
+    <span class="keyword">def</span> <span class="function">cancel</span>(<span class="self">self</span>):
+        <span class="string">"""Dipanggil dari main thread untuk cancel"""</span>
+        <span class="self">self</span>._is_cancelled = <span class="keyword">True</span>
+    
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="builtin">range</span>(<span class="number">100</span>):
+            <span class="comment"># Cek apakah sudah di-cancel</span>
+            <span class="keyword">if</span> <span class="self">self</span>._is_cancelled:
+                <span class="self">self</span>.result.emit(<span class="string">"Dibatalkan oleh user"</span>)
+                <span class="keyword">break</span>
+            
+            time.sleep(<span class="number">0.1</span>)
+            <span class="comment"># emit(i + 1) → "kirimkan nilai i+1 ke semua slot yang terhubung"</span>
+            <span class="comment"># i dimulai dari 0, jadi i+1 = 1,2,3,...,100 (lebih intuitif sebagai progress)</span>
+            <span class="comment"># Slot yang menerima (misal: progress_bar.setValue) akan dipanggil dengan nilai ini</span>
+            <span class="self">self</span>.progress.emit(i + <span class="number">1</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.result.emit(<span class="string">"Selesai!"</span>)
+        
+        <span class="self">self</span>.finished.emit()
+
+<span class="comment"># Di MainWindow:</span>
+<span class="comment"># self.cancel_btn.clicked.connect(self.worker.cancel)</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Apa itu emit()?</div>
+                    <p><code>emit()</code> adalah cara worker thread <strong>mengirimkan data ke main thread</strong> melalui Signal. Analoginya seperti menekan tombol bel — siapa pun yang sudah "mendaftar" untuk mendengar bel itu (slot) akan dipanggil secara otomatis.</p>
+                    <div class="table-container" style="margin-top: 12px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Baris</th>
+                                    <th>Artinya</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>progress = Signal(int)</code></td>
+                                    <td>Deklarasi: "Signal ini akan membawa satu nilai bertipe <code>int</code>"</td>
+                                </tr>
+                                <tr>
+                                    <td><code>self.progress.emit(i + 1)</code></td>
+                                    <td>Kirim nilai <code>i+1</code> ke semua slot yang terhubung ke signal ini</td>
+                                </tr>
+                                <tr>
+                                    <td><code>worker.progress.connect(progress_bar.setValue)</code></td>
+                                    <td>Daftarkan <code>setValue</code> sebagai penerima — setiap <code>emit</code> akan memanggil <code>setValue(nilai)</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p style="margin-top: 12px;">Jadi alurnya: worker memanggil <code>self.progress.emit(45)</code> → Qt meneruskan nilai <code>45</code> ke main thread → <code>progress_bar.setValue(45)</code> dieksekusi di main thread → progress bar bergerak ke 45%.</p>
+                    <p style="margin-top: 8px;">Nilai yang dikirim via <code>emit()</code> harus sesuai tipe dengan deklarasi Signal-nya. <code>Signal(int)</code> hanya bisa membawa <code>int</code>, <code>Signal(str)</code> hanya bisa membawa <code>str</code>, dan seterusnya.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- BAGIAN 2: REST API -->
+            <!-- ============================================================ -->
+
+            <!-- Section 4: Konsep REST API -->
+            <section class="section" id="konsep-api">
+                <h2>4. Konsep REST API</h2>
+
+                <p><strong>REST API</strong> (Representational State Transfer) adalah arsitektur komunikasi antara client dan server melalui protokol HTTP. Dalam konteks ini, aplikasi PySide6 kita bertindak sebagai <strong>client</strong> yang mengirim request ke server.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Aplikasi Desktop sebagai API Client</div>
+                    <div class="flow-container">
+                        <div class="flow-box">PySide6 App<br><small>(Client)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">HTTP Request<br><small>(GET/POST/PUT/DELETE)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">REST API Server<br><small>(JSONPlaceholder)</small></div>
+                    </div>
+                    <div style="margin-top: 15px;"></div>
+                    <div class="flow-container">
+                        <div class="flow-box">Update UI</div>
+                        <span class="flow-arrow">←</span>
+                        <div class="flow-box highlight">JSON Response</div>
+                        <span class="flow-arrow">←</span>
+                        <div class="flow-box">Server Process</div>
+                    </div>
+                </div>
+
+                <h3>API yang Akan Digunakan: JSONPlaceholder</h3>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">JSONPlaceholder (jsonplaceholder.typicode.com)</div>
+                    <p>JSONPlaceholder adalah <strong></strong>fake REST API</strong> gratis untuk testing dan prototyping. Menyediakan endpoint untuk posts, comments, users, albums, dll. Data bersifat dummy tetapi response-nya realistis.</p>
+                    <p style="margin-top: 8px;"><strong>Penting dipahami:</strong> JSONPlaceholder <em>menerima</em> semua request POST, PUT, dan DELETE dan mengembalikan response yang valid — tetapi <strong>data tidak benar-benar tersimpan atau berubah di server</strong>. Ini disengaja agar aman dipakai untuk latihan tanpa risiko merusak data sungguhan.</p>
+                    <div class="table-container" style="margin-top: 12px;">
+                        <table>
+                            <thead>
+                                <tr><th>Operasi</th><th>Yang Terjadi di Server</th><th>Response</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>GET /users</code></td>
+                                    <td>Data sungguhan dibaca</td>
+                                    <td>List 10 user</td>
+                                </tr>
+                                <tr>
+                                    <td><code>POST /users</code></td>
+                                    <td>Data <strong>tidak</strong> disimpan</td>
+                                    <td>Data yang dikirim + <code>id: 11</code> (selalu sama)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>PUT /users/1</code></td>
+                                    <td>Data <strong>tidak</strong> diubah</td>
+                                    <td>Data yang dikirim (seolah berhasil diupdate)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>DELETE /users/1</code></td>
+                                    <td>Data <strong>tidak</strong> dihapus</td>
+                                    <td><code>{}</code> (seolah berhasil dihapus)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Endpoint</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">/posts</span></td>
+                                <td>100 posts (artikel/blog)</td>
+                                <td>id, userId, title, body</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">/posts/1</span></td>
+                                <td>Post dengan ID tertentu</td>
+                                <td>Detail 1 post</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">/posts/1/comments</span></td>
+                                <td>Comments dari post tertentu</td>
+                                <td>id, postId, name, email, body</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">/comments</span></td>
+                                <td>500 comments</td>
+                                <td>id, postId, name, email, body</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">/comments?postId=1</span></td>
+                                <td>Filter comments by postId</td>
+                                <td>Comments milik post 1</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Contoh Response JSON</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">GET /posts/1</span>
+                        <span class="code-badge">JSON</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>{
+    <span class="string">"userId"</span>: <span class="number">1</span>,
+    <span class="string">"id"</span>: <span class="number">1</span>,
+    <span class="string">"title"</span>: <span class="string">"sunt aut facere repellat provident occaecati..."</span>,
+    <span class="string">"body"</span>: <span class="string">"quia et suscipit\nsuscipit recusandae..."</span>
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">GET /posts/1/comments</span>
+                        <span class="code-badge">JSON</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>[
+    {
+        <span class="string">"postId"</span>: <span class="number">1</span>,
+        <span class="string">"id"</span>: <span class="number">1</span>,
+        <span class="string">"name"</span>: <span class="string">"id labore ex et quam laborum"</span>,
+        <span class="string">"email"</span>: <span class="string">"Eliseo@gardner.biz"</span>,
+        <span class="string">"body"</span>: <span class="string">"laudantium enim quasi est..."</span>
+    },
+    {
+        <span class="string">"postId"</span>: <span class="number">1</span>,
+        <span class="string">"id"</span>: <span class="number">2</span>,
+        <span class="string">"name"</span>: <span class="string">"quo vero reiciendis velit similique earum"</span>,
+        <span class="string">"email"</span>: <span class="string">"Jayne_Kuhic@sydney.com"</span>,
+        <span class="string">"body"</span>: <span class="string">"est natus enim nihil est..."</span>
+    }
+]</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5: HTTP Methods -->
+            <section class="section" id="http-methods">
+                <h2>5. HTTP Methods</h2>
+
+                <p>HTTP Method menentukan <strong>jenis aksi</strong> yang ingin dilakukan terhadap resource di server. Setiap method memiliki semantik yang berbeda.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>CRUD</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh</th>
+                                <th>Body?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">GET</span></td>
+                                <td>Read</td>
+                                <td>Mengambil data dari server</td>
+                                <td>GET /posts → semua posts</td>
+                                <td>Tidak</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">POST</span></td>
+                                <td>Create</td>
+                                <td>Mengirim data baru ke server</td>
+                                <td>POST /posts → buat post baru</td>
+                                <td>Ya (JSON)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">PUT</span></td>
+                                <td>Update</td>
+                                <td>Mengupdate seluruh resource</td>
+                                <td>PUT /posts/1 → update post 1</td>
+                                <td>Ya (JSON)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">PATCH</span></td>
+                                <td>Update (partial)</td>
+                                <td>Mengupdate sebagian resource</td>
+                                <td>PATCH /posts/1 → update title saja</td>
+                                <td>Ya (JSON)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">DELETE</span></td>
+                                <td>Delete</td>
+                                <td>Menghapus resource</td>
+                                <td>DELETE /posts/1 → hapus post 1</td>
+                                <td>Tidak</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>HTTP Status Code Penting</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Nama</th>
+                                <th>Arti</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">200</span></td>
+                                <td>OK</td>
+                                <td>Request berhasil</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">201</span></td>
+                                <td>Created</td>
+                                <td>Resource berhasil dibuat</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">400</span></td>
+                                <td>Bad Request</td>
+                                <td>Request tidak valid</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">401</span></td>
+                                <td>Unauthorized</td>
+                                <td>Belum login / token salah</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">404</span></td>
+                                <td>Not Found</td>
+                                <td>Resource tidak ditemukan</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">500</span></td>
+                                <td>Internal Server Error</td>
+                                <td>Error di server</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur HTTP Request - Response</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Client<br><small>Request + Headers + Body</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Server<br><small>Proses Request</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Client<br><small>Status Code + JSON Body</small></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6: Library Requests -->
+            <section class="section" id="requests-library">
+                <h2>6. Library Requests</h2>
+
+                <p>Library <span class="inline-code">requests</span> adalah library Python untuk mengirim HTTP request ke server. Library ini <strong>tidak termasuk bawaan Python</strong>, jadi perlu diinstall dulu.</p>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Instalasi</div>
+                    <p><span class="inline-code">pip install requests</span></p>
+                </div>
+
+                <h3>Response Object</h3>
+
+                <p>Setiap kali kita memanggil <span class="inline-code">requests.get()</span> atau method lainnya, library mengembalikan sebuah <strong>Response object</strong> — bukan dict biasa, melainkan object dengan banyak attribute bawaan:</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property / Method</th>
+                                <th>Kegunaan</th>
+                                <th>Contoh Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">response.status_code</span></td>
+                                <td>Kode status HTTP dari server</td>
+                                <td>200, 201, 404, 500</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">response.json()</span></td>
+                                <td>Parse body response sebagai JSON → dict/list Python</td>
+                                <td><span class="inline-code">{"id": 1, "title": "..."}</span></td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">response.ok</span></td>
+                                <td>True jika status code 200–299</td>
+                                <td>True / False</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">response.raise_for_status()</span></td>
+                                <td>Lempar exception otomatis jika status 4xx/5xx</td>
+                                <td>—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Contoh Dasar: GET dan POST</h3>
+
+                <p>Dua method yang paling sering dipakai. Coba jalankan kode ini langsung di terminal (tanpa UI) untuk memastikan library bekerja sebelum diintegrasikan ke PySide6.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">coba_requests.py</span>
+                        <span class="code-badge">Coba di Terminal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> requests
+
+BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+
+<span class="comment"># ── GET: Ambil 1 post ──────────────────────────────</span>
+response = requests.get(<span class="string">f"</span>{BASE_URL}<span class="string">/posts/1"</span>, timeout=<span class="number">10</span>)
+response.raise_for_status()
+post = response.json()
+<span class="builtin">print</span>(<span class="string">f"Status : </span>{response.status_code}<span class="string">"</span>)   <span class="comment"># 200</span>
+<span class="builtin">print</span>(<span class="string">f"Judul  : </span>{post[<span class="string">'title'</span>]}<span class="string">"</span>)
+
+<span class="comment"># ── POST: Kirim data baru ──────────────────────────</span>
+response = requests.post(
+    <span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>,
+    json={<span class="string">'title'</span>: <span class="string">'Post Baru'</span>, <span class="string">'body'</span>: <span class="string">'Isi konten'</span>, <span class="string">'userId'</span>: <span class="number">1</span>},
+    timeout=<span class="number">10</span>
+)
+response.raise_for_status()
+<span class="builtin">print</span>(<span class="string">f"Status : </span>{response.status_code}<span class="string">"</span>)   <span class="comment"># 201 Created</span>
+<span class="builtin">print</span>(<span class="string">f"ID baru: </span>{response.json()[<span class="string">'id'</span>]}<span class="string">"</span>)  <span class="comment"># 101</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Masalah: Kode di Atas Akan Membekukan UI!</div>
+                    <p>Jika kode <span class="inline-code">requests.get()</span> di atas dipanggil langsung dari tombol PySide6, UI akan <strong>freeze</strong> selama request berjalan. Itulah mengapa kita perlu menjalankannya di thread terpisah — yang akan kita pelajari di section berikutnya.</p>
+                </div>
+
+            </section>
+
+            <section class="section" id="api-thread">
+                <h2>7. API Call di Thread Terpisah</h2>
+
+                <p>Di section 6 kita sudah bisa memanggil <span class="inline-code">requests.get()</span> dari terminal. Sekarang kita integrasikan ke PySide6 — tapi dengan satu aturan wajib: <strong>semua request harus berjalan di thread terpisah</strong>, bukan di main thread.</p>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Aturan Wajib</div>
+                    <p>Jangan pernah memanggil <span class="inline-code">requests.get()</span> langsung di dalam slot/handler PySide6. UI akan freeze sampai response datang. Selalu pindahkan ke <strong>QThread Worker</strong>.</p>
+                </div>
+
+                <h3>Langkah 1 — Buat Worker untuk GET</h3>
+
+                <p>Kita mulai dari yang paling sederhana: ambil daftar posts lalu tampilkan ke <span class="inline-code">QTextEdit</span>. Buat file baru bernama <span class="inline-code">latihan_get.py</span> dan ketik kode berikut:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py</span>
+                        <span class="code-badge">Langkah 1 — Ketik &amp; Jalankan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Library yang dibutuhkan</span>
+<span class="keyword">import</span> sys
+<span class="keyword">import</span> requests                          <span class="comment"># untuk HTTP request ke API</span>
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QTextEdit
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QThread, Signal, QObject
+                                              <span class="comment"># QThread  : membuat thread baru</span>
+                                              <span class="comment"># Signal   : mengirim data antar thread</span>
+                                              <span class="comment"># QObject  : base class untuk worker</span>
+
+BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+
+
+<span class="comment"># ─────────────────────────────────────────────────────</span>
+<span class="comment"># GetWorker: class yang menjalankan requests.get()</span>
+<span class="comment"># di thread terpisah agar UI tidak freeze</span>
+<span class="comment"># ─────────────────────────────────────────────────────</span>
+<span class="keyword">class</span> <span class="class-name">GetWorker</span>(QObject):
+
+    <span class="comment"># Signal dikirim ke MainWindow setelah run() selesai</span>
+    finished = Signal()              <span class="comment"># selalu dipanggil di akhir (sukses/gagal)</span>
+    result   = Signal(<span class="builtin">object</span>)   <span class="comment"># membawa data JSON (list/dict)</span>
+    error    = Signal(<span class="builtin">str</span>)      <span class="comment"># membawa pesan error jika gagal</span>
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">url</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.url = url   <span class="comment"># simpan URL yang akan di-request</span>
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="comment"># method ini dijalankan oleh QThread, bukan main thread</span>
+        <span class="keyword">try</span>:
+            response = requests.get(<span class="self">self</span>.url, timeout=<span class="number">10</span>)
+            response.raise_for_status()          <span class="comment"># error jika status 4xx/5xx</span>
+            <span class="self">self</span>.result.emit(response.json())  <span class="comment"># kirim data ke MainWindow</span>
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))   <span class="comment"># kirim pesan error ke MainWindow</span>
+        <span class="keyword">finally</span>:
+            <span class="self">self</span>.finished.emit()           <span class="comment"># selalu emit agar thread bisa berhenti</span>
+
+
+<span class="comment"># ─────────────────────────────────────────────────────</span>
+<span class="comment"># MainWindow: tampilan UI dan pengatur thread</span>
+<span class="comment"># ─────────────────────────────────────────────────────</span>
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Latihan GET"</span>)
+        layout = QVBoxLayout(<span class="self">self</span>)
+
+        <span class="self">self</span>.status = QLabel(<span class="string">"Klik tombol untuk fetch posts"</span>)
+        layout.addWidget(<span class="self">self</span>.status)
+
+        <span class="self">self</span>.btn = QPushButton(<span class="string">"Fetch Posts"</span>)
+        <span class="self">self</span>.btn.clicked.connect(<span class="self">self</span>.fetch_posts)
+        layout.addWidget(<span class="self">self</span>.btn)
+
+        <span class="self">self</span>.output = QTextEdit()
+        <span class="self">self</span>.output.setReadOnly(<span class="keyword">True</span>)
+        layout.addWidget(<span class="self">self</span>.output)
+
+    <span class="keyword">def</span> <span class="function">fetch_posts</span>(<span class="self">self</span>):
+        <span class="comment"># 1. Update UI ke state loading</span>
+        <span class="self">self</span>.status.setText(<span class="string">"Loading..."</span>)
+        <span class="self">self</span>.btn.setEnabled(<span class="keyword">False</span>)  <span class="comment"># disable agar tidak diklik dua kali</span>
+
+        <span class="comment"># 2. Buat worker dan thread</span>
+        <span class="self">self</span>.thread = QThread()
+        <span class="self">self</span>.worker = GetWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>)
+        <span class="self">self</span>.worker.moveToThread(<span class="self">self</span>.thread)  <span class="comment"># pindahkan worker ke thread</span>
+
+        <span class="comment"># 3. Hubungkan signals ke slots</span>
+        <span class="self">self</span>.thread.started.connect(<span class="self">self</span>.worker.run)      <span class="comment"># thread mulai → jalankan run()</span>
+        <span class="self">self</span>.worker.result.connect(<span class="self">self</span>.on_result)      <span class="comment"># data tiba → on_result()</span>
+        <span class="self">self</span>.worker.error.connect(<span class="self">self</span>.on_error)        <span class="comment"># error → on_error()</span>
+        <span class="self">self</span>.worker.finished.connect(<span class="self">self</span>.thread.quit)   <span class="comment"># selesai → hentikan thread</span>
+        <span class="self">self</span>.worker.finished.connect(<span class="keyword">lambda</span>: <span class="self">self</span>.btn.setEnabled(<span class="keyword">True</span>))  <span class="comment"># aktifkan tombol kembali</span>
+
+        <span class="comment"># 4. Mulai thread</span>
+        <span class="self">self</span>.thread.start()
+
+    <span class="keyword">def</span> <span class="function">on_result</span>(<span class="self">self</span>, <span class="parameter">posts</span>):
+        <span class="comment"># dipanggil oleh signal result — data sudah ada di sini</span>
+        <span class="self">self</span>.status.setText(<span class="string">f"</span>{<span class="builtin">len</span>(posts)}<span class="string"> posts dimuat"</span>)
+        text = <span class="string">""</span>
+        <span class="keyword">for</span> post <span class="keyword">in</span> posts[:<span class="number">10</span>]:  <span class="comment"># tampilkan 10 pertama</span>
+            text += <span class="string">f"[</span>{post[<span class="string">'id'</span>]}<span class="string">] </span>{post[<span class="string">'title'</span>]}<span class="string">\n"</span>
+        <span class="self">self</span>.output.setText(text)
+
+    <span class="keyword">def</span> <span class="function">on_error</span>(<span class="self">self</span>, <span class="parameter">msg</span>):
+        <span class="comment"># dipanggil oleh signal error — tampilkan pesan ke user</span>
+        <span class="self">self</span>.status.setText(<span class="string">f"Error: </span>{msg}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Coba Jalankan — Apa yang Terjadi?</div>
+                    <ul>
+                        <li>Klik tombol <strong>Fetch Posts</strong> — perhatikan tombol langsung <em>disabled</em> dan label berubah "Loading..."</li>
+                        <li>Beberapa detik kemudian data muncul dan tombol aktif kembali</li>
+                        <li>Selama loading, coba klik area lain — UI <strong>tidak freeze</strong></li>
+                    </ul>
+                </div>
+
+                <h3>Langkah 2 — Tambahkan POST</h3>
+
+                <p>Sekarang kita tambahkan kemampuan mengirim data baru. Kita <strong>tidak perlu membuat file baru</strong> — cukup tambahkan <span class="inline-code">PostWorker</span> dan tombol baru ke file yang sama.</p>
+
+                <p>Tambahkan kode berikut ke <span class="inline-code">latihan_get.py</span> (setelah class <span class="inline-code">GetWorker</span>):</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — tambahan PostWorker</span>
+                        <span class="code-badge">Langkah 2 — Tambahkan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Tambahkan class ini setelah GetWorker</span>
+
+<span class="keyword">class</span> <span class="class-name">PostWorker</span>(QObject):
+    finished = Signal()
+    result   = Signal(<span class="builtin">object</span>)
+    error    = Signal(<span class="builtin">str</span>)
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">url</span>, <span class="parameter">data</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.url  = url
+        <span class="self">self</span>.data = data
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="keyword">try</span>:
+            response = requests.post(<span class="self">self</span>.url, json=<span class="self">self</span>.data, timeout=<span class="number">10</span>)
+            response.raise_for_status()
+            <span class="self">self</span>.result.emit(response.json())
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))
+        <span class="keyword">finally</span>:
+            <span class="self">self</span>.finished.emit()</code></pre>
+                    </div>
+                </div>
+
+                <p>Lalu di dalam <span class="inline-code">__init__</span> MainWindow, tambahkan tombol POST:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — tambahan di MainWindow.__init__</span>
+                        <span class="code-badge">Langkah 2 — Tambahkan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Tambahkan setelah self.btn di __init__</span>
+<span class="self">self</span>.btn_post = QPushButton(<span class="string">"Kirim Post Baru"</span>)
+<span class="self">self</span>.btn_post.clicked.connect(<span class="self">self</span>.send_post)
+layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
+                    </div>
+                </div>
+
+                <p>Dan tambahkan method <span class="inline-code">send_post()</span> di dalam class <span class="inline-code">MainWindow</span>:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — method send_post</span>
+                        <span class="code-badge">Langkah 2 — Tambahkan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>    <span class="keyword">def</span> <span class="function">send_post</span>(<span class="self">self</span>):
+        <span class="self">self</span>.status.setText(<span class="string">"Mengirim..."</span>)
+        <span class="self">self</span>.btn_post.setEnabled(<span class="keyword">False</span>)
+
+        payload = {
+            <span class="string">'title'</span>: <span class="string">'Post dari PySide6'</span>,
+            <span class="string">'body'</span>:  <span class="string">'Dikirim via QThread'</span>,
+            <span class="string">'userId'</span>: <span class="number">1</span>
+        }
+
+        <span class="self">self</span>.thread = QThread()
+        <span class="self">self</span>.worker = PostWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>, payload)
+        <span class="self">self</span>.worker.moveToThread(<span class="self">self</span>.thread)
+
+        <span class="self">self</span>.thread.started.connect(<span class="self">self</span>.worker.run)
+        <span class="self">self</span>.worker.result.connect(<span class="self">self</span>.on_post_sent)
+        <span class="self">self</span>.worker.error.connect(<span class="self">self</span>.on_error)
+        <span class="self">self</span>.worker.finished.connect(<span class="self">self</span>.thread.quit)
+        <span class="self">self</span>.worker.finished.connect(<span class="keyword">lambda</span>: <span class="self">self</span>.btn_post.setEnabled(<span class="keyword">True</span>))
+
+        <span class="self">self</span>.thread.start()
+
+    <span class="keyword">def</span> <span class="function">on_post_sent</span>(<span class="self">self</span>, <span class="parameter">data</span>):
+        <span class="self">self</span>.status.setText(<span class="string">f"Post berhasil dikirim! ID baru: </span>{data[<span class="string">'id'</span>]}<span class="string">"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Coba Jalankan Lagi</div>
+                    <p>Sekarang ada dua tombol. Klik <strong>Kirim Post Baru</strong> — perhatikan status berubah dan ID baru muncul. ID yang dikembalikan selalu <code>101</code> karena JSONPlaceholder tidak benar-benar menyimpan data — response-nya hanya simulasi sukses. Ini normal dan memang perilaku JSONPlaceholder.</p>
+                </div>
+
+                <h3>Langkah 3 — Tambahkan PUT dan DELETE</h3>
+
+                <p>Pola PUT dan DELETE sama persis dengan POST — hanya method <span class="inline-code">requests</span> yang berbeda. Tambahkan dua worker berikut ke file yang sama:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — PutWorker &amp; DeleteWorker</span>
+                        <span class="code-badge">Langkah 3 — Tambahkan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">class</span> <span class="class-name">PutWorker</span>(QObject):
+    finished = Signal()
+    result   = Signal(<span class="builtin">object</span>)
+    error    = Signal(<span class="builtin">str</span>)
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">post_id</span>, <span class="parameter">data</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.post_id = post_id
+        <span class="self">self</span>.data    = data
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="keyword">try</span>:
+            <span class="comment"># ID masuk ke URL, data baru masuk ke body</span>
+            response = requests.put(
+                <span class="string">f"</span>{BASE_URL}<span class="string">/posts/</span>{<span class="self">self</span>.post_id}<span class="string">"</span>,
+                json=<span class="self">self</span>.data, timeout=<span class="number">10</span>
+            )
+            response.raise_for_status()
+            <span class="self">self</span>.result.emit(response.json())
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))
+        <span class="keyword">finally</span>:
+            <span class="self">self</span>.finished.emit()
+
+
+<span class="keyword">class</span> <span class="class-name">DeleteWorker</span>(QObject):
+    finished = Signal()
+    result   = Signal(<span class="builtin">object</span>)
+    error    = Signal(<span class="builtin">str</span>)
+
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.post_id = post_id
+
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="keyword">try</span>:
+            <span class="comment"># DELETE: hanya URL, tidak ada body</span>
+            response = requests.delete(
+                <span class="string">f"</span>{BASE_URL}<span class="string">/posts/</span>{<span class="self">self</span>.post_id}<span class="string">"</span>,
+                timeout=<span class="number">10</span>
+            )
+            response.raise_for_status()
+            <span class="self">self</span>.result.emit(response.status_code)
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))
+        <span class="keyword">finally</span>:
+            <span class="self">self</span>.finished.emit()</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Pola yang Sama di Setiap Worker</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Worker</th>
+                                    <th>Parameter __init__</th>
+                                    <th>Baris requests di run()</th>
+                                    <th>Emit result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="table-code">GetWorker</span></td>
+                                    <td><span class="inline-code">url</span></td>
+                                    <td><span class="inline-code">requests.get(url)</span></td>
+                                    <td>list/dict</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="table-code">PostWorker</span></td>
+                                    <td><span class="inline-code">url, data</span></td>
+                                    <td><span class="inline-code">requests.post(url, json=data)</span></td>
+                                    <td>dict + id baru</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="table-code">PutWorker</span></td>
+                                    <td><span class="inline-code">post_id, data</span></td>
+                                    <td><span class="inline-code">requests.put(url/{id}, json=data)</span></td>
+                                    <td>dict data baru</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="table-code">DeleteWorker</span></td>
+                                    <td><span class="inline-code">post_id</span></td>
+                                    <td><span class="inline-code">requests.delete(url/{id})</span></td>
+                                    <td>status_code (200)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="section" id="state-handling">
+                <h2>8. State Handling: Loading, Success, Error, Empty</h2>
+
+                <p>Setiap API call punya 4 kemungkinan kondisi. Aplikasi yang baik harus menangani semuanya. Kita tambahkan state handling langsung ke <span class="inline-code">latihan_get.py</span> dari langkah sebelumnya.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>State</th><th>Kapan</th><th>Yang Ditampilkan</th><th>Tombol</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="table-code">LOADING</span></td><td>Request sedang berjalan</td><td>"Loading..." — warna biru</td><td>Disabled</td></tr>
+                            <tr><td><span class="table-code">SUCCESS</span></td><td>Data berhasil diterima</td><td>"N data dimuat" — warna hijau</td><td>Aktif</td></tr>
+                            <tr><td><span class="table-code">ERROR</span></td><td>Request gagal (timeout, no internet)</td><td>Pesan error — warna merah</td><td>Aktif (retry)</td></tr>
+                            <tr><td><span class="table-code">EMPTY</span></td><td>Request sukses tapi data kosong <span class="inline-code">[]</span></td><td>"Tidak ada data" — warna oranye</td><td>Aktif</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">EMPTY ≠ ERROR</div>
+                    <p><strong>ERROR</strong> = request gagal, tidak ada response dari server. <strong>EMPTY</strong> = request berhasil, tapi server mengembalikan list kosong <span class="inline-code">[]</span>. Pesan ke user harus berbeda.</p>
+                </div>
+
+                <h3>Langkah 4 — Tambahkan set_state() ke latihan_get.py</h3>
+
+                <p>Tambahkan method <span class="inline-code">set_state()</span> ke dalam class <span class="inline-code">MainWindow</span>, lalu update tiga method yang sudah ada agar menggunakannya:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — tambahkan set_state()</span>
+                        <span class="code-badge">Langkah 4 — Tambahkan</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">def</span> <span class="function">set_state</span>(<span class="self">self</span>, <span class="parameter">state</span>, <span class="parameter">msg</span>=<span class="string">""</span>):
+        <span class="string">"""Satu method untuk semua perubahan UI berdasarkan state."""</span>
+        <span class="keyword">if</span> state == <span class="string">"loading"</span>:
+            <span class="self">self</span>.status.setText(<span class="string">"Loading..."</span>)
+            <span class="self">self</span>.status.setStyleSheet(<span class="string">"color: #3498db; font-weight: bold;"</span>)
+            <span class="self">self</span>.btn.setEnabled(<span class="keyword">False</span>)
+
+        <span class="keyword">elif</span> state == <span class="string">"success"</span>:
+            <span class="self">self</span>.status.setText(msg)
+            <span class="self">self</span>.status.setStyleSheet(<span class="string">"color: #27ae60; font-weight: bold;"</span>)
+            <span class="self">self</span>.btn.setEnabled(<span class="keyword">True</span>)
+
+        <span class="keyword">elif</span> state == <span class="string">"error"</span>:
+            <span class="self">self</span>.status.setText(<span class="string">f"Error: </span>{msg}<span class="string">"</span>)
+            <span class="self">self</span>.status.setStyleSheet(<span class="string">"color: #e74c3c; font-weight: bold;"</span>)
+            <span class="self">self</span>.btn.setEnabled(<span class="keyword">True</span>)
+
+        <span class="keyword">elif</span> state == <span class="string">"empty"</span>:
+            <span class="self">self</span>.status.setText(<span class="string">"Tidak ada data ditemukan"</span>)
+            <span class="self">self</span>.status.setStyleSheet(<span class="string">"color: #f39c12; font-weight: bold;"</span>)
+            <span class="self">self</span>.btn.setEnabled(<span class="keyword">True</span>)</code></pre>
+                    </div>
+                </div>
+
+                <p>Lalu <strong>update</strong> tiga method yang sudah ada agar menggunakan <span class="inline-code">set_state()</span>:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">latihan_get.py — update fetch_posts, on_result, on_error</span>
+                        <span class="code-badge">Langkah 4 — Update</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>    <span class="keyword">def</span> <span class="function">fetch_posts</span>(<span class="self">self</span>):
+        <span class="self">self</span>.set_state(<span class="string">"loading"</span>)   <span class="comment"># ← ganti dari setText manual</span>
+        <span class="comment"># ... sisa kode thread sama seperti Langkah 1</span>
+
+    <span class="keyword">def</span> <span class="function">on_result</span>(<span class="self">self</span>, <span class="parameter">posts</span>):
+        <span class="keyword">if</span> <span class="builtin">len</span>(posts) == <span class="number">0</span>:
+            <span class="self">self</span>.set_state(<span class="string">"empty"</span>)
+        <span class="keyword">else</span>:
+            <span class="self">self</span>.set_state(<span class="string">"success"</span>, <span class="string">f"</span>{<span class="builtin">len</span>(posts)}<span class="string"> posts dimuat"</span>)
+            text = <span class="string">""</span>
+            <span class="keyword">for</span> post <span class="keyword">in</span> posts[:<span class="number">10</span>]:
+                text += <span class="string">f"[</span>{post[<span class="string">'id'</span>]}<span class="string">] </span>{post[<span class="string">'title'</span>]}<span class="string">\n"</span>
+            <span class="self">self</span>.output.setText(text)
+
+    <span class="keyword">def</span> <span class="function">on_error</span>(<span class="self">self</span>, <span class="parameter">msg</span>):
+        <span class="self">self</span>.set_state(<span class="string">"error"</span>, msg)   <span class="comment"># ← ganti dari setText manual</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Coba Jalankan — Test Semua State</div>
+                    <ul>
+                        <li><strong>LOADING:</strong> klik Fetch Posts — label biru muncul sebentar</li>
+                        <li><strong>SUCCESS:</strong> data muncul — label hijau</li>
+                        <li><strong>ERROR:</strong> matikan internet lalu klik — label merah muncul</li>
+                        <li><strong>EMPTY:</strong> tidak bisa ditest di JSONPlaceholder (selalu ada data), tapi logikanya sudah siap</li>
+                    </ul>
+                </div>
+
+            </section>
+
+            <section class="section" id="crud-api">
+                <h2>9. Ringkasan CRUD via API</h2>
+
+                <p>Setelah menyelesaikan Langkah 1–4, kamu sudah bisa melakukan semua operasi CRUD ke JSONPlaceholder. Berikut ringkasan mapping operasi ke HTTP method dan endpoint yang dipakai:</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>Operasi</th><th>HTTP</th><th>Endpoint</th><th>Body</th><th>Worker</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Ambil semua posts</td><td><span class="table-code">GET</span></td><td>/posts</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
+                            <tr><td>Ambil komentar post</td><td><span class="table-code">GET</span></td><td>/posts/{id}/comments</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
+                            <tr><td>Buat post baru</td><td><span class="table-code">POST</span></td><td>/posts</td><td>{title, body, userId}</td><td><span class="inline-code">PostWorker(url, data)</span></td></tr>
+                            <tr><td>Update post</td><td><span class="table-code">PUT</span></td><td>/posts/{id}</td><td>{id, title, body, userId}</td><td><span class="inline-code">PutWorker(post_id, data)</span></td></tr>
+                            <tr><td>Hapus post</td><td><span class="table-code">DELETE</span></td><td>/posts/{id}</td><td>—</td><td><span class="inline-code">DeleteWorker(post_id)</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Masalah dengan Pendekatan Saat Ini</div>
+                    <p>File <span class="inline-code">latihan_get.py</span> yang kita buat di Langkah 1–4 sudah berfungsi, tapi semua kode — logika HTTP, threading, dan UI — tercampur dalam satu file. Semakin banyak fitur ditambahkan, file ini akan semakin sulit dibaca dan dirawat.</p>
+                    <p style="margin-top:8px;">Di section berikutnya kita akan memisahkan kode ke dalam <strong>4 file terpisah</strong> menggunakan prinsip <strong>Separation of Concerns (SoC)</strong> — solusi yang dipakai di aplikasi profesional.</p>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Dari 1 File ke 4 File Terpisah</div>
+                    <div class="flow-container">
+                        <div class="flow-box" style="background:rgba(231,76,60,0.15);">latihan_get.py<br><small>(semua tercampur)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">SoC<br><small>pisah tanggung jawab</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box" style="background:rgba(39,174,96,0.15);">4 file<br><small>api_service, api_worker,<br>dialogs, main</small></div>
+                    </div>
+                </div>
+
+            </section>
+
+            <section class="section" id="api-client-app">
+                <h2>10. Aplikasi API Client Lengkap dengan Separation of Concerns</h2>
+
+                <p>Pada bagian ini kita membangun aplikasi API client yang sama, tetapi dengan struktur <strong>multi-file</strong>. Tujuannya agar mahasiswa tidak terbiasa menaruh service, worker, dialog, dan window utama dalam satu file besar.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Apa itu Separation of Concerns (SoC)?</div>
+                    <p>SoC adalah prinsip memisahkan program berdasarkan tanggung jawab. File untuk HTTP request sebaiknya tidak berisi widget. File untuk dialog sebaiknya tidak mengurus network. Main window bertugas mengorkestrasi alur, bukan memuat semua detail implementasi.</p>
+                </div>
+
+                <h3>Struktur File Proyek</h3>
+
+                <p>Untuk materi kelas, struktur berikut sudah cukup rapi dan realistis:</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Struktur Proyek dengan SoC</div>
+                    <div class="flow-container" style="flex-direction:column; align-items:flex-start; gap:8px; padding: 16px;">
+                        <div style="font-family:monospace; font-size:0.9em; line-height:1.8;">
+                            post_viewer/<br>
+                            &nbsp;&nbsp;├── <strong>api_service.py</strong> &nbsp;← semua HTTP request<br>
+                            &nbsp;&nbsp;├── <strong>api_worker.py</strong> &nbsp;&nbsp;&nbsp;← jalankan request di thread<br>
+                            &nbsp;&nbsp;├── <strong>dialogs.py</strong> &nbsp;&nbsp;&nbsp;&nbsp;← dialog tambah/edit post<br>
+                            &nbsp;&nbsp;└── <strong>main.py</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← window utama dan entry point
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Tanggung Jawab</th>
+                                <th>Boleh Import</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">api_service.py</span></td>
+                                <td>Semua logika HTTP request: GET, POST, PUT, DELETE</td>
+                                <td><span class="inline-code">requests</span> saja</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">api_worker.py</span></td>
+                                <td>Menjalankan method service di thread terpisah</td>
+                                <td><span class="inline-code">api_service</span>, PySide6.QtCore</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">dialogs.py</span></td>
+                                <td>Dialog UI untuk input data post</td>
+                                <td>PySide6.QtWidgets saja</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">main.py</span></td>
+                                <td>MainWindow, event handler, state UI, entry point</td>
+                                <td>Semua file di atas</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Perhatikan Arah Dependency</div>
+                    <p>Dependency hanya boleh mengalir <strong>satu arah</strong>: <code>main.py</code> → <code>dialogs.py</code> + <code>api_worker.py</code> → <code>api_service.py</code>. File di layer bawah <strong>tidak boleh</strong> mengimport file di layer atas. Ini mencegah circular dependency dan membuat kode mudah di-test secara terpisah.</p>
+                </div>
+
+                <hr style="margin: 30px 0; border-color: #eee;">
+
+                <h3>Alur Kerja Antar File</h3>
+
+                <div class="diagram">
+                    <div class="diagram-title">Flow Sederhana</div>
+                    <div class="flow-container">
+                        <div class="flow-box">User klik tombol</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">main.py</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">api_worker.py</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">api_service.py</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">hasil balik ke UI</div>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Penjelasan untuk Mahasiswa</div>
+                    <p><strong>main.py</strong> tidak langsung memanggil <code>requests.get()</code>. Main window cukup meminta worker menjalankan tugas. Worker lalu memanggil service. Setelah selesai, hasil dikirim balik ke main window untuk ditampilkan. Ini membuat setiap file punya tugas yang jelas.</p>
+                </div>
+
+                <h3>File 1: api_service.py — Layer Data</h3>
+
+                <p>File ini <strong>hanya</strong> berisi logika HTTP request. Tidak ada Qt, tidak ada widget, tidak ada signal. Murni Python biasa yang bisa dijalankan dan diuji langsung dari terminal tanpa membuka UI sama sekali.</p>
+
+                <p>Setiap method di class ini merepresentasikan satu operasi API:</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>HTTP</th>
+                                <th>Endpoint</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">get_posts()</span></td>
+                                <td><span class="table-code">GET</span></td>
+                                <td>/posts</td>
+                                <td>Ambil semua posts</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">get_comments(post_id)</span></td>
+                                <td><span class="table-code">GET</span></td>
+                                <td>/posts/{id}/comments</td>
+                                <td>Ambil komentar dari 1 post</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">create_post(data)</span></td>
+                                <td><span class="table-code">POST</span></td>
+                                <td>/posts</td>
+                                <td>Buat post baru</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">update_post(post_id, data)</span></td>
+                                <td><span class="table-code">PUT</span></td>
+                                <td>/posts/{id}</td>
+                                <td>Update seluruh data post</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">delete_post(post_id)</span></td>
+                                <td><span class="table-code">DELETE</span></td>
+                                <td>/posts/{id}</td>
+                                <td>Hapus post</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">api_service.py</span>
+                        <span class="code-badge">Layer Data</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># api_service.py
+# Tanggung jawab: semua logika HTTP request ke JSONPlaceholder API
+# Tidak ada Qt di sini — bisa diuji tanpa membuka UI</span>
+
+<span class="keyword">import</span> requests
+
+<span class="keyword">class</span> <span class="class-name">ApiService</span>:
+    <span class="string">"""
+    Service class untuk semua interaksi HTTP dengan JSONPlaceholder.
+    Setiap method melempar exception jika request gagal —
+    exception ini akan ditangkap oleh ApiWorker di layer atas.
+    """</span>
+    
+    BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+    TIMEOUT = <span class="number">10</span>  <span class="comment"># batas waktu tunggu response (detik)</span>
+    
+    <span class="comment"># ===== POSTS =====</span>
+    
+    <span class="keyword">def</span> <span class="function">get_posts</span>(<span class="self">self</span>):
+        <span class="string">"""GET /posts - Ambil semua posts (100 data)"""</span>
+        response = requests.get(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts"</span>,
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()  <span class="comment"># lempar exception jika status 4xx/5xx</span>
+        <span class="keyword">return</span> response.json()         <span class="comment"># kembalikan list of dict</span>
+    
+    <span class="keyword">def</span> <span class="function">get_comments</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
+        <span class="string">"""GET /posts/{id}/comments - Ambil komentar dari 1 post"""</span>
+        response = requests.get(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">/comments"</span>,
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()
+        <span class="keyword">return</span> response.json()
+    
+    <span class="keyword">def</span> <span class="function">create_post</span>(<span class="self">self</span>, <span class="parameter">title</span>, <span class="parameter">body</span>, <span class="parameter">user_id</span>=<span class="number">1</span>):
+        <span class="string">"""POST /posts - Buat post baru
+        
+        Mengirim data JSON ke server. Server akan mengembalikan
+        data yang sama ditambah 'id' baru (selalu 101 di JSONPlaceholder).
+        """</span>
+        payload = {
+            <span class="string">'title'</span>: title,
+            <span class="string">'body'</span>: body,
+            <span class="string">'userId'</span>: user_id
+        }
+        response = requests.post(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts"</span>,
+            json=payload,       <span class="comment"># otomatis set Content-Type: application/json</span>
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()
+        <span class="keyword">return</span> response.json()  <span class="comment"># {'id': 101, 'title': ..., 'body': ..., 'userId': 1}</span>
+    
+    <span class="keyword">def</span> <span class="function">update_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>, <span class="parameter">title</span>, <span class="parameter">body</span>, <span class="parameter">user_id</span>=<span class="number">1</span>):
+        <span class="string">"""PUT /posts/{id} - Update seluruh data post"""</span>
+        payload = {
+            <span class="string">'id'</span>: post_id,
+            <span class="string">'title'</span>: title,
+            <span class="string">'body'</span>: body,
+            <span class="string">'userId'</span>: user_id
+        }
+        response = requests.put(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">"</span>,
+            json=payload,
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()
+        <span class="keyword">return</span> response.json()
+    
+    <span class="keyword">def</span> <span class="function">delete_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
+        <span class="string">"""DELETE /posts/{id} - Hapus post
+        
+        JSONPlaceholder mengembalikan {} saat delete berhasil.
+        Kita kembalikan True sebagai tanda sukses agar lebih eksplisit.
+        """</span>
+        response = requests.delete(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">"</span>,
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()
+        <span class="keyword">return</span> <span class="keyword">True</span>
+    
+    <span class="comment"># ===== COMMENTS =====</span>
+    
+    <span class="keyword">def</span> <span class="function">get_comments_by_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
+        <span class="string">"""GET /posts/{id}/comments - Ambil comments dari post"""</span>
+        response = requests.get(
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">/comments"</span>,
+            timeout=<span class="self">self</span>.TIMEOUT
+        )
+        response.raise_for_status()
+        <span class="keyword">return</span> response.json()
+
+
+<span class="comment"># ============================================
+# Bisa diuji langsung dari terminal:
+#   python api_service.py
+# tanpa perlu membuka UI sama sekali!
+# ============================================
+# svc = ApiService()
+# posts = svc.get_posts()
+# print(f"Total posts: {len(posts)}")
+# print(f"Judul pertama: {posts[0]['title']}")
+#
+# post_baru = svc.create_post('Test', 'Isi konten', user_id=1)
+# print(f"ID baru dari server: {post_baru['id']}")</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Mengapa raise_for_status() di Setiap Method?</div>
+                    <p><span class="inline-code">raise_for_status()</span> otomatis melempar <span class="inline-code">HTTPError</span> jika server mengembalikan status 4xx atau 5xx. Dengan ini, kita tidak perlu menulis <span class="inline-code">if response.status_code != 200</span> di setiap method — cukup satu <span class="inline-code">try/except</span> di <code>ApiWorker</code> untuk menangkap semua kemungkinan error.</p>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Poin Penting SoC di File Ini</div>
+                    <p><code>ApiService</code> <strong>tidak tahu</strong> apakah ia dipanggil dari thread atau dari main thread. Ia tidak tahu ada UI. Tugasnya hanya satu: kirim request, kembalikan data. Keputusan "di thread mana dijalankan" adalah urusan <code>ApiWorker</code> di file berikutnya.</p>
+                </div>
+
+                <h3>File 2: api_worker.py — Layer Threading</h3>
+
+                <p>Worker bertugas menjalankan method dari <span class="inline-code">ApiService</span> di thread terpisah menggunakan <span class="inline-code">QThread</span>. File ini adalah jembatan antara layer data dan layer UI — ia tidak tahu cara menampilkan data, dan tidak tahu cara mengambil data dari internet. Tugasnya hanya: <strong>jalankan di thread lain, kirim hasilnya via Signal</strong>.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Mengapa ApiWorker Perlu File Sendiri?</div>
+                    <p>Jika worker digabung di <code>main.py</code>, setiap kali kita ingin menambah aksi baru (misal: fetch users), kita harus mengubah file UI. Dengan memisahkannya, <code>main.py</code> cukup memanggil <code>ApiWorker("get_users", ...)</code> tanpa tahu detail implementasinya.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">api_worker.py</span>
+                        <span class="code-badge">Layer Threading</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># api_worker.py
+# Tanggung jawab: menjalankan ApiService di thread terpisah
+# Tidak ada logika HTTP di sini, tidak ada widget UI</span>
+
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QObject, Signal
+<span class="keyword">from</span> api_service <span class="keyword">import</span> ApiService
+
+
+<span class="keyword">class</span> <span class="class-name">ApiWorker</span>(QObject):
+    <span class="string">"""
+    Worker yang berjalan di QThread terpisah.
+    Menerima nama aksi (action) dan parameter yang dibutuhkan,
+    lalu memanggil method yang sesuai di ApiService.
+    """</span>
+    
+    <span class="comment"># Signal untuk komunikasi balik ke Main Thread</span>
+    finished = Signal()           <span class="comment"># selalu dipanggil di akhir (sukses maupun gagal)</span>
+    success = Signal(<span class="builtin">object</span>)      <span class="comment"># kirim data hasil (list/dict/bool)</span>
+    error = Signal(<span class="builtin">str</span>)          <span class="comment"># kirim pesan error</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">action</span>, <span class="parameter">post_id</span>=<span class="keyword">None</span>, <span class="parameter">title</span>=<span class="keyword">None</span>, <span class="parameter">body</span>=<span class="keyword">None</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.action = action      <span class="comment"># nama aksi: 'get_posts', 'create_post', dst</span>
+        <span class="self">self</span>.post_id = post_id    <span class="comment"># dipakai untuk get_comments, update, delete</span>
+        <span class="self">self</span>.title = title        <span class="comment"># dipakai untuk create_post dan update_post</span>
+        <span class="self">self</span>.body = body          <span class="comment"># dipakai untuk create_post dan update_post</span>
+        <span class="self">self</span>.service = ApiService()  <span class="comment"># instance service dibuat di sini</span>
+    
+    <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
+        <span class="string">"""Dijalankan oleh QThread. Panggil service sesuai action."""</span>
+        <span class="keyword">try</span>:
+            <span class="keyword">if</span> <span class="self">self</span>.action == <span class="string">"get_posts"</span>:
+                result = <span class="self">self</span>.service.get_posts()
+            
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"get_comments"</span>:
+                result = <span class="self">self</span>.service.get_comments_by_post(<span class="self">self</span>.post_id)
+            
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"create_post"</span>:
+                result = <span class="self">self</span>.service.create_post(<span class="self">self</span>.title, <span class="self">self</span>.body)
+            
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"update_post"</span>:
+                result = <span class="self">self</span>.service.update_post(<span class="self">self</span>.post_id, <span class="self">self</span>.title, <span class="self">self</span>.body)
+            
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"delete_post"</span>:
+                result = <span class="self">self</span>.service.delete_post(<span class="self">self</span>.post_id)
+            
+            <span class="keyword">else</span>:
+                <span class="keyword">raise</span> <span class="class-name">ValueError</span>(<span class="string">f"Action tidak dikenali: </span>{<span class="self">self</span>.action}<span class="string">"</span>)
+            
+            <span class="self">self</span>.success.emit(result)  <span class="comment"># kirim hasil ke main thread</span>
+        
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))   <span class="comment"># kirim pesan error ke main thread</span>
+        
+        <span class="keyword">finally</span>:
+            <span class="self">self</span>.finished.emit()       <span class="comment"># selalu emit finished agar thread bisa berhenti</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Mengapa finally: self.finished.emit()?</div>
+                    <p>Blok <span class="inline-code">finally</span> selalu dieksekusi, baik request berhasil maupun gagal. Ini memastikan <span class="inline-code">finished</span> signal selalu dikirim sehingga thread selalu berhenti dengan bersih — tidak ada <em>dangling thread</em> yang terus berjalan di background.</p>
+                </div>
+
+                <h3>File 3: dialogs.py — Layer Komponen UI</h3>
+
+                <p>Dialog dipisah dari <span class="inline-code">main.py</span> agar window utama tidak dipenuhi kode form input. Jika nanti ada banyak dialog (tambah user, edit komentar, dll), semuanya cukup ditaruh di file ini tanpa menyentuh <span class="inline-code">main.py</span>.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kapan Dialog Muncul?</div>
+                    <p><code>PostDialog</code> dipakai dua kali: saat <strong>Tambah</strong> (tanpa data awal) dan saat <strong>Edit</strong> (dengan data post yang sudah ada). Parameter <code>post=None</code> mengontrol perilaku ini — jika diisi, form akan terisi otomatis dengan data lama.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">dialogs.py</span>
+                        <span class="code-badge">UI Component</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># dialogs.py
+# Tanggung jawab: semua dialog/form input yang dipakai aplikasi
+# Tidak ada API call, tidak ada threading di sini</span>
+
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QDialog, QVBoxLayout, QFormLayout, QDialogButtonBox,
+    QLabel, QLineEdit, QTextEdit
+)
+
+
+<span class="keyword">class</span> <span class="class-name">PostDialog</span>(QDialog):
+    <span class="string">"""
+    Dialog untuk Tambah dan Edit post.
+    Jika parameter post diisi, form akan terisi dengan data lama (mode Edit).
+    Jika post=None, form kosong (mode Tambah).
+    """</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">parent</span>=<span class="keyword">None</span>, <span class="parameter">post</span>=<span class="keyword">None</span>):
+        <span class="builtin">super</span>().__init__(parent)
+        
+        <span class="comment"># Judul dialog berbeda tergantung mode</span>
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Edit Post"</span> <span class="keyword">if</span> post <span class="keyword">else</span> <span class="string">"Tambah Post"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">400</span>)
+        
+        layout = QVBoxLayout(<span class="self">self</span>)
+        form = QFormLayout()
+        
+        <span class="comment"># Input fields</span>
+        <span class="self">self</span>.title_input = QLineEdit()
+        <span class="self">self</span>.title_input.setPlaceholderText(<span class="string">"Masukkan judul post..."</span>)
+        
+        <span class="self">self</span>.body_input = QTextEdit()
+        <span class="self">self</span>.body_input.setPlaceholderText(<span class="string">"Masukkan isi post..."</span>)
+        <span class="self">self</span>.body_input.setMaximumHeight(<span class="number">150</span>)
+        
+        form.addRow(<span class="string">"Title:"</span>, <span class="self">self</span>.title_input)
+        form.addRow(<span class="string">"Body:"</span>, <span class="self">self</span>.body_input)
+        layout.addLayout(form)
+        
+        <span class="comment"># Tombol OK dan Cancel</span>
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        )
+        buttons.accepted.connect(<span class="self">self</span>.accept)
+        buttons.rejected.connect(<span class="self">self</span>.reject)
+        layout.addWidget(buttons)
+        
+        <span class="comment"># Jika mode Edit, isi form dengan data yang sudah ada</span>
+        <span class="keyword">if</span> post:
+            <span class="self">self</span>.title_input.setText(post.get(<span class="string">'title'</span>, <span class="string">''</span>))
+            <span class="self">self</span>.body_input.setPlainText(post.get(<span class="string">'body'</span>, <span class="string">''</span>))
+    
+    <span class="keyword">def</span> <span class="function">get_data</span>(<span class="self">self</span>):
+        <span class="string">"""Ambil data dari form sebagai dict siap kirim ke API."""</span>
+        <span class="keyword">return</span> {
+            <span class="string">'title'</span>: <span class="self">self</span>.title_input.text().strip(),
+            <span class="string">'body'</span>: <span class="self">self</span>.body_input.toPlainText().strip(),
+            <span class="string">'userId'</span>: <span class="number">1</span>
+        }</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Validasi Input</div>
+                    <p>Perhatikan <span class="inline-code">.strip()</span> di <span class="inline-code">get_data()</span> — ini membuang spasi di awal/akhir agar tidak mengirim data kosong ke API. Validasi lebih lanjut (cek apakah title kosong) sebaiknya dilakukan di <span class="inline-code">main.py</span> sebelum memanggil worker.</p>
+                </div>
+
+                <h3>File 4: main.py — Window Utama</h3>
+
+                <p>File ini adalah <strong>orkestrator</strong> — ia menghubungkan semua komponen. Tidak ada logika HTTP, tidak ada form input langsung. <span class="inline-code">main.py</span> hanya tahu cara: meminta data (lewat worker), menampilkan data (ke tabel/label), dan merespons aksi user (klik tombol).</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Pola run_worker()</div>
+                    <p>Daripada menulis boilerplate QThread + moveToThread + connect signals berulang kali, kita buat satu method <code>run_worker()</code> yang menangani semuanya. Setiap kali butuh API call, cukup panggil <code>self.run_worker("nama_aksi", callback)</code>.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">main.py</span>
+                        <span class="code-badge">Main Window</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># main.py
+# Tanggung jawab: UI utama, event handler, orkestrasi semua komponen
+# Import dari file lain — tidak ada requests, tidak ada form detail</span>
+
+<span class="keyword">import</span> sys
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QThread
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QTableWidget, QTableWidgetItem,
+    QTextEdit, QSplitter, QHeaderView, QMessageBox, QDialog
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+<span class="keyword">from</span> dialogs <span class="keyword">import</span> PostDialog      <span class="comment"># ← dari dialogs.py</span>
+<span class="keyword">from</span> api_worker <span class="keyword">import</span> ApiWorker    <span class="comment"># ← dari api_worker.py</span>
+
+
+<span class="keyword">class</span> <span class="class-name">PostViewerApp</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"API Client — SoC Demo"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">900</span>, <span class="number">600</span>)
+        <span class="self">self</span>.posts_data = []
+        <span class="self">self</span>._thread = <span class="keyword">None</span>
+        <span class="self">self</span>._worker = <span class="keyword">None</span>
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.fetch_posts()  <span class="comment"># langsung fetch saat aplikasi dibuka</span>
+    
+    <span class="comment"># ===== SETUP UI =====</span>
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Status bar atas</span>
+        <span class="self">self</span>.status_label = QLabel(<span class="string">"Ready"</span>)
+        <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight: bold; padding: 4px;"</span>)
+        layout.addWidget(<span class="self">self</span>.status_label)
+        
+        <span class="comment"># Tombol aksi</span>
+        btn_layout = QHBoxLayout()
+        <span class="self">self</span>.btn_refresh = QPushButton(<span class="string">"Refresh"</span>)
+        <span class="self">self</span>.btn_tambah  = QPushButton(<span class="string">"Tambah"</span>)
+        <span class="self">self</span>.btn_edit    = QPushButton(<span class="string">"Edit"</span>)
+        <span class="self">self</span>.btn_hapus   = QPushButton(<span class="string">"Hapus"</span>)
+        btn_layout.addWidget(<span class="self">self</span>.btn_refresh)
+        btn_layout.addWidget(<span class="self">self</span>.btn_tambah)
+        btn_layout.addWidget(<span class="self">self</span>.btn_edit)
+        btn_layout.addWidget(<span class="self">self</span>.btn_hapus)
+        layout.addLayout(btn_layout)
+        
+        <span class="comment"># Splitter: tabel kiri | detail kanan</span>
+        splitter = QSplitter(Qt.Horizontal)
+        
+        <span class="self">self</span>.table = QTableWidget()
+        <span class="self">self</span>.table.setColumnCount(<span class="number">2</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">'ID'</span>, <span class="string">'Title'</span>])
+        <span class="self">self</span>.table.setSelectionBehavior(QTableWidget.SelectRows)
+        <span class="self">self</span>.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        <span class="self">self</span>.table.horizontalHeader().setSectionResizeMode(<span class="number">1</span>, QHeaderView.Stretch)
+        <span class="self">self</span>.table.setColumnWidth(<span class="number">0</span>, <span class="number">40</span>)
+        splitter.addWidget(<span class="self">self</span>.table)
+        
+        <span class="self">self</span>.detail = QTextEdit()
+        <span class="self">self</span>.detail.setReadOnly(<span class="keyword">True</span>)
+        splitter.addWidget(<span class="self">self</span>.detail)
+        splitter.setSizes([<span class="number">400</span>, <span class="number">500</span>])
+        layout.addWidget(splitter)
+        
+        <span class="comment"># Hubungkan signals ke slots</span>
+        <span class="self">self</span>.btn_refresh.clicked.connect(<span class="self">self</span>.fetch_posts)
+        <span class="self">self</span>.btn_tambah.clicked.connect(<span class="self">self</span>.add_post)
+        <span class="self">self</span>.btn_edit.clicked.connect(<span class="self">self</span>.edit_post)
+        <span class="self">self</span>.btn_hapus.clicked.connect(<span class="self">self</span>.delete_post)
+        <span class="self">self</span>.table.currentCellChanged.connect(<span class="self">self</span>.on_row_selected)
+    
+    <span class="comment"># ===== HELPER: JALANKAN WORKER =====</span>
+    
+    <span class="keyword">def</span> <span class="function">run_worker</span>(<span class="self">self</span>, <span class="parameter">action</span>, <span class="parameter">on_success</span>, <span class="parameter">post_id</span>=<span class="keyword">None</span>, <span class="parameter">title</span>=<span class="keyword">None</span>, <span class="parameter">body</span>=<span class="keyword">None</span>):
+        <span class="string">"""Helper: buat QThread + ApiWorker, hubungkan signals, lalu start."""</span>
+        <span class="self">self</span>._thread = QThread()
+        <span class="self">self</span>._worker = ApiWorker(action, post_id=post_id, title=title, body=body)
+        <span class="self">self</span>._worker.moveToThread(<span class="self">self</span>._thread)
+        
+        <span class="self">self</span>._thread.started.connect(<span class="self">self</span>._worker.run)
+        <span class="self">self</span>._worker.success.connect(on_success)
+        <span class="self">self</span>._worker.error.connect(<span class="self">self</span>.on_error)
+        <span class="self">self</span>._worker.finished.connect(<span class="self">self</span>._thread.quit)
+        <span class="self">self</span>._worker.finished.connect(<span class="keyword">lambda</span>: <span class="self">self</span>.set_loading(<span class="keyword">False</span>))
+        
+        <span class="self">self</span>.set_loading(<span class="keyword">True</span>)
+        <span class="self">self</span>._thread.start()
+    
+    <span class="keyword">def</span> <span class="function">set_loading</span>(<span class="self">self</span>, <span class="parameter">is_loading</span>):
+        <span class="string">"""Aktifkan/nonaktifkan tombol saat request berjalan."""</span>
+        <span class="keyword">for</span> btn <span class="keyword">in</span> [<span class="self">self</span>.btn_refresh, <span class="self">self</span>.btn_tambah, <span class="self">self</span>.btn_edit, <span class="self">self</span>.btn_hapus]:
+            btn.setEnabled(<span class="keyword">not</span> is_loading)
+        <span class="keyword">if</span> is_loading:
+            <span class="self">self</span>.status_label.setText(<span class="string">"Loading..."</span>)
+            <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight:bold; color:#3498db; padding:4px;"</span>)
+    
+    <span class="comment"># ===== FETCH POSTS =====</span>
+    
+    <span class="keyword">def</span> <span class="function">fetch_posts</span>(<span class="self">self</span>):
+        <span class="self">self</span>.run_worker(<span class="string">"get_posts"</span>, <span class="self">self</span>.on_posts_loaded)
+    
+    <span class="keyword">def</span> <span class="function">on_posts_loaded</span>(<span class="self">self</span>, <span class="parameter">posts</span>):
+        <span class="self">self</span>.posts_data = posts[:<span class="number">20</span>]
+        <span class="self">self</span>.table.setRowCount(<span class="number">0</span>)
+        
+        <span class="keyword">for</span> post <span class="keyword">in</span> <span class="self">self</span>.posts_data:
+            row = <span class="self">self</span>.table.rowCount()
+            <span class="self">self</span>.table.insertRow(row)
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(post[<span class="string">'id'</span>])))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(post[<span class="string">'title'</span>]))
+        
+        <span class="self">self</span>.status_label.setText(<span class="string">f"</span>{<span class="builtin">len</span>(posts)}<span class="string"> posts dimuat (menampilkan 20)"</span>)
+        <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight:bold; color:#27ae60; padding:4px;"</span>)
+    
+    <span class="comment"># ===== ROW SELECTED → TAMPILKAN DETAIL =====</span>
+    
+    <span class="keyword">def</span> <span class="function">on_row_selected</span>(<span class="self">self</span>, <span class="parameter">row</span>, <span class="parameter">col</span>, <span class="parameter">prev_row</span>, <span class="parameter">prev_col</span>):
+        <span class="keyword">if</span> row < <span class="number">0</span> <span class="keyword">or</span> row >= <span class="builtin">len</span>(<span class="self">self</span>.posts_data):
+            <span class="keyword">return</span>
+        post = <span class="self">self</span>.posts_data[row]
+        <span class="self">self</span>.detail.setPlainText(
+            <span class="string">f"ID    : </span>{post[<span class="string">'id'</span>]}<span class="string">\n"</span>
+            <span class="string">f"Title : </span>{post[<span class="string">'title'</span>]}<span class="string">\n\n"</span>
+            <span class="string">f"Body  :\n</span>{post[<span class="string">'body'</span>]}<span class="string">"</span>
+        )
+    
+    <span class="comment"># ===== ADD POST =====</span>
+    
+    <span class="keyword">def</span> <span class="function">add_post</span>(<span class="self">self</span>):
+        dialog = PostDialog(<span class="self">self</span>)  <span class="comment"># buka dialog kosong (mode Tambah)</span>
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            data = dialog.get_data()
+            <span class="keyword">if</span> <span class="keyword">not</span> data[<span class="string">'title'</span>] <span class="keyword">or</span> <span class="keyword">not</span> data[<span class="string">'body'</span>]:
+                QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi"</span>, <span class="string">"Title dan Body wajib diisi!"</span>)
+                <span class="keyword">return</span>
+            <span class="self">self</span>.run_worker(
+                <span class="string">"create_post"</span>, <span class="self">self</span>.on_post_created,
+                title=data[<span class="string">'title'</span>], body=data[<span class="string">'body'</span>]
+            )
+    
+    <span class="keyword">def</span> <span class="function">on_post_created</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Post dibuat! ID: </span>{result[<span class="string">'id'</span>]}<span class="string">"</span>)
+        <span class="self">self</span>.fetch_posts()
+    
+    <span class="comment"># ===== EDIT POST =====</span>
+    
+    <span class="keyword">def</span> <span class="function">edit_post</span>(<span class="self">self</span>):
+        row = <span class="self">self</span>.table.currentRow()
+        <span class="keyword">if</span> row < <span class="number">0</span>:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih post terlebih dahulu!"</span>)
+            <span class="keyword">return</span>
+        post = <span class="self">self</span>.posts_data[row]
+        dialog = PostDialog(<span class="self">self</span>, post)  <span class="comment"># buka dialog dengan data lama (mode Edit)</span>
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            data = dialog.get_data()
+            <span class="self">self</span>.run_worker(
+                <span class="string">"update_post"</span>, <span class="self">self</span>.on_post_updated,
+                post_id=post[<span class="string">'id'</span>], title=data[<span class="string">'title'</span>], body=data[<span class="string">'body'</span>]
+            )
+    
+    <span class="keyword">def</span> <span class="function">on_post_updated</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Post berhasil diupdate!"</span>)
+        <span class="self">self</span>.fetch_posts()
+    
+    <span class="comment"># ===== DELETE POST =====</span>
+    
+    <span class="keyword">def</span> <span class="function">delete_post</span>(<span class="self">self</span>):
+        row = <span class="self">self</span>.table.currentRow()
+        <span class="keyword">if</span> row < <span class="number">0</span>:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih post terlebih dahulu!"</span>)
+            <span class="keyword">return</span>
+        post_id = <span class="self">self</span>.posts_data[row][<span class="string">'id'</span>]
+        reply = QMessageBox.question(
+            <span class="self">self</span>, <span class="string">"Konfirmasi"</span>,
+            <span class="string">f"Yakin ingin menghapus post ID </span>{post_id}<span class="string">?"</span>,
+            QMessageBox.Yes | QMessageBox.No
+        )
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            <span class="self">self</span>.run_worker(<span class="string">"delete_post"</span>, <span class="self">self</span>.on_post_deleted, post_id=post_id)
+    
+    <span class="keyword">def</span> <span class="function">on_post_deleted</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Post berhasil dihapus!"</span>)
+        <span class="self">self</span>.fetch_posts()
+    
+    <span class="comment"># ===== ERROR HANDLER =====</span>
+    
+    <span class="keyword">def</span> <span class="function">on_error</span>(<span class="self">self</span>, <span class="parameter">message</span>):
+        <span class="self">self</span>.status_label.setText(<span class="string">f"Error: </span>{message}<span class="string">"</span>)
+        <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight:bold; color:#e74c3c; padding:4px;"</span>)
+        QMessageBox.critical(<span class="self">self</span>, <span class="string">"API Error"</span>, message)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = PostViewerApp()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Fitur Aplikasi dengan Struktur SoC</div>
+                    <ul>
+                        <li><strong>Fetch Posts:</strong> data diambil oleh <code>ApiService</code>, dijalankan oleh <code>ApiWorker</code>, ditampilkan oleh <code>main.py</code></li>
+                        <li><strong>View Detail:</strong> klik baris tabel → tampilkan detail di panel kanan</li>
+                        <li><strong>Add Post:</strong> input di <code>PostDialog</code>, request dikirim lewat worker</li>
+                        <li><strong>Edit Post:</strong> form terisi data lama, update dikirim lewat worker</li>
+                        <li><strong>Delete Post:</strong> konfirmasi dulu, baru hapus lewat worker</li>
+                        <li><strong>State Loading:</strong> semua tombol disabled saat request berjalan</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kenapa Struktur Ini Lebih Baik?</div>
+                    <ul>
+                        <li><strong>Mudah dibaca:</strong> mahasiswa tahu file mana untuk network, file mana untuk UI</li>
+                        <li><strong>Mudah dikembangkan:</strong> ingin tambah endpoint <span class="inline-code">/users</span>? Cukup tambah method di <code>api_service.py</code></li>
+                        <li><strong>Mudah diuji:</strong> <code>ApiService</code> bisa diuji tanpa membuka GUI sama sekali</li>
+                        <li><strong>Mudah dirawat:</strong> error lebih mudah dilacak karena tanggung jawab tidak bercampur</li>
+                    </ul>
+                </div>
+
+            </section>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum</h2>
+
+                <div class="exercise-box">
+                    <h3>Tugas: Users Manager</h3>
+                    <p>Buatlah aplikasi desktop untuk mengelola data users dari JSONPlaceholder API (<code>https://jsonplaceholder.typicode.com/users</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
+
+                    <div class="info-box warning" style="margin: 12px 0; color:black">
+                        <div class="info-box-title">Catatan: JSONPlaceholder adalah Fake API</div>
+                        <p>JSONPlaceholder menerima semua request dan mengembalikan response yang valid, tetapi <strong>data tidak benar-benar tersimpan di server</strong>. POST selalu mengembalikan <code>id: 11</code>, PUT mengembalikan data yang dikirim, DELETE mengembalikan <code>{}</code> — semuanya simulasi. Ini normal dan memang tujuannya untuk latihan. Jangan bingung jika setelah DELETE, data masih muncul saat di-GET ulang.</p>
+                    </div>
+
+                    <h4 style="margin-top: 16px;">Fitur yang Harus Diimplementasikan:</h4>
+                    <ol>
+                        <li><strong>Tampilkan Daftar Users</strong> — ambil semua users via GET, tampilkan dalam tabel dengan kolom: No, Nama, Username, Email, Kota</li>
+                        <li><strong>Detail User</strong> — klik baris tabel untuk menampilkan detail lengkap user (nama, email, telepon, website, perusahaan) di panel samping</li>
+                        <li><strong>Tambah User</strong> — form input untuk POST user baru (nama, username, email), tampilkan ID yang dikembalikan server</li>
+                        <li><strong>Edit User</strong> — pilih user dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
+                        <li><strong>Hapus User</strong> — pilih user dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu</li>
+                        <li><strong>Threading</strong> — semua API call harus berjalan di thread terpisah, UI tidak boleh freeze</li>
+                        <li><strong>State Handling</strong> — tampilkan status loading saat request berjalan, pesan error jika gagal</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Ketentuan</div>
+                    <ul>
+                        <li>Endpoint yang digunakan: <code>/users</code> dan <code>/users/{id}</code></li>
+                        <li>Implementasikan semua 4 HTTP method: GET, POST, PUT, DELETE</li>
+                        <li>Semua network request HARUS di thread terpisah — tidak boleh ada UI freeze</li>
+                        <li>Implementasikan error handling: timeout dan connection error</li>
+                        <li>Tombol Edit dan Hapus hanya aktif jika ada baris yang dipilih di tabel</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Referensi Endpoint</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Operasi</th>
+                                    <th>Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Tampilkan semua</td>
+                                    <td><span class="table-code">GET</span></td>
+                                    <td><code>/users</code></td>
+                                    <td>Mengembalikan list 10 user</td>
+                                </tr>
+                                <tr>
+                                    <td>Detail satu user</td>
+                                    <td><span class="table-code">GET</span></td>
+                                    <td><code>/users/{id}</code></td>
+                                    <td>Mengembalikan satu objek user</td>
+                                </tr>
+                                <tr>
+                                    <td>Tambah user</td>
+                                    <td><span class="table-code">POST</span></td>
+                                    <td><code>/users</code></td>
+                                    <td>Server kembalikan data + id baru (id: 11)</td>
+                                </tr>
+                                <tr>
+                                    <td>Edit user</td>
+                                    <td><span class="table-code">PUT</span></td>
+                                    <td><code>/users/{id}</code></td>
+                                    <td>Server kembalikan data yang diupdate</td>
+                                </tr>
+                                <tr>
+                                    <td>Hapus user</td>
+                                    <td><span class="table-code">DELETE</span></td>
+                                    <td><code>/users/{id}</code></td>
+                                    <td>Server kembalikan <code>{}</code> jika sukses</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen</th>
+                                    <th>Bobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CRUD lengkap (GET, POST, PUT, DELETE berfungsi)</td>
+                                    <td>40%</td>
+                                </tr>
+                                <tr>
+                                    <td>Threading (semua request di thread terpisah, tidak freeze)</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>Tampilan tabel & detail user</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>State & error handling</td>
+                                    <td>15%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+
+
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            let current = '';
+            sections.forEach(s => { if (pageYOffset >= s.offsetTop - 100) current = s.getAttribute('id'); });
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        });
+
+        console.log('%cHappy coding!', 'color: green; font-size: 14px;');
+    </script>
+</body>
+</html>
