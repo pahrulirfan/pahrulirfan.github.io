@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Final Project – Pemrograman Visual (PySide6)</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #818cf8;
+      --primary-dark: #3730a3;
+      --primary-bg: #eef2ff;
+      --secondary: #0ea5e9;
+      --secondary-bg: #f0f9ff;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-300: #d1d5db;
+      --gray-400: #9ca3af;
+      --gray-500: #6b7280;
+      --gray-600: #4b5563;
+      --gray-700: #374151;
+      --gray-800: #1f2937;
+      --gray-900: #111827;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 10px 30px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: white;
+      padding: 32px 24px 28px;
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .header h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+
+    .header h1 span {
+      color: #a5b4fc;
+    }
+
+    .header-subtitle {
+      font-size: 0.88rem;
+      opacity: 0.8;
+      font-weight: 400;
+    }
+
+    .header-meta { display: none; }
+    .meta-pill { display: none; }
+
+    /* ── LAYOUT ── */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px 60px;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--primary);
+      background: var(--primary-bg);
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-200);
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .card-icon.indigo  { background: var(--primary-bg);   color: var(--primary); }
+    .card-icon.sky     { background: var(--secondary-bg); color: var(--secondary); }
+    .card-icon.green   { background: var(--success-bg);   color: var(--success); }
+    .card-icon.amber   { background: var(--warning-bg);   color: var(--warning); }
+    .card-icon.red     { background: var(--danger-bg);    color: var(--danger); }
+
+    .card-header-text h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.2;
+    }
+
+    .card-header-text p {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    .card-body {
+      padding: 22px 24px;
+    }
+
+    /* ── INFO BOX ── */
+    .info-box {
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .info-box.blue   { background: var(--secondary-bg); border-left: 3px solid var(--secondary); color: #0c4a6e; }
+    .info-box.green  { background: var(--success-bg);   border-left: 3px solid var(--success);   color: #064e3b; }
+    .info-box.amber  { background: var(--warning-bg);   border-left: 3px solid var(--warning);   color: #78350f; }
+    .info-box.red    { background: var(--danger-bg);    border-left: 3px solid var(--danger);    color: #7f1d1d; }
+    .info-box.indigo { background: var(--primary-bg);   border-left: 3px solid var(--primary);   color: #1e1b4b; }
+
+    .info-box .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── FEATURE LIST ── */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px 16px;
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      transition: border-color 0.2s;
+    }
+
+    .feature-item:hover { border-color: var(--primary-light); }
+
+    .feature-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .feature-content h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--gray-900);
+      margin-bottom: 4px;
+    }
+
+    .feature-content p {
+      font-size: 0.82rem;
+      color: var(--gray-600);
+      line-height: 1.55;
+    }
+
+    .feature-content ul {
+      margin-top: 6px;
+      padding-left: 0;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .feature-content ul li {
+      font-size: 0.8rem;
+      color: var(--gray-600);
+      padding-left: 14px;
+      position: relative;
+    }
+
+    .feature-content ul li::before {
+      content: '–';
+      position: absolute;
+      left: 0;
+      color: var(--gray-400);
+    }
+
+    .feature-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+
+    .feature-tag.optional {
+      background: var(--warning-bg);
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .feature-tag.required {
+      background: var(--success-bg);
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    /* ── TABLE ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+
+    .data-table thead th {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--gray-100);
+      transition: background 0.15s;
+    }
+
+    .data-table tbody tr:hover { background: var(--gray-50); }
+    .data-table tbody tr:last-child { border-bottom: none; }
+
+    .data-table td {
+      padding: 12px 16px;
+      color: var(--gray-700);
+      vertical-align: top;
+    }
+
+    .data-table td:last-child { text-align: right; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge.green  { background: var(--success-bg); color: #065f46; }
+    .badge.blue   { background: var(--secondary-bg); color: #0c4a6e; }
+    .badge.amber  { background: var(--warning-bg);   color: #78350f; }
+    .badge.indigo { background: var(--primary-bg);   color: #1e1b4b; }
+
+    .weight-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .weight-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--primary);
+    }
+
+    .weight-text {
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 0.88rem;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    /* ── CODE ── */
+    .code-block {
+      background: var(--gray-900);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      margin: 0;
+    }
+
+    .code-block code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      line-height: 1.7;
+      display: block;
+    }
+
+    .code-block code .dir   { color: #60a5fa; }
+    .code-block code .file  { color: #86efac; }
+    .code-block code .cm    { color: #94a3b8; }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .small-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    .small-card h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gray-500);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+
+    .small-card ul {
+      list-style: none;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .small-card ul li {
+      font-size: 0.83rem;
+      color: var(--gray-700);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .small-card ul li::before {
+      content: '✓';
+      color: var(--success);
+      font-weight: 700;
+      font-size: 0.75rem;
+    }
+
+    /* ── BONUS TABLE ── */
+    .bonus-row td:first-child { font-weight: 600; }
+
+    /* ── STEP LIST ── */
+    .step-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.87rem;
+      color: var(--gray-700);
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      color: var(--gray-400);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--gray-200);
+      background: white;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--gray-200);
+      margin: 8px 0 20px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr; }
+      .card-body { padding: 18px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .card { box-shadow: none; border: 1px solid #e5e7eb; }
+      .header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════ -->
+<header class="header">
+  <h1>Final Project<br><span>Pemrograman Visual</span></h1>
+  <p class="header-subtitle">Semester Genap 2025 / 2026</p>
+</header>
+
+<!-- ══════════════════════════════════════════
+     CONTAINER
+══════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- ── DESKRIPSI UMUM ── -->
+  <h2 class="section-title">Tentang Proyek Akhir</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <p style="font-size:0.92rem; color:var(--gray-700); line-height:1.75; margin-bottom:16px;">
+        Setiap kelompok (<strong>2–3 mahasiswa</strong>) diwajibkan mengembangkan sebuah
+        <strong>aplikasi GUI berbasis PySide6</strong>. Topik bebas dipilih sesuai minat kelompok,
+        namun harus memiliki <strong>manfaat yang jelas dan relevansi nyata</strong> — bukan sekadar
+        demo atau latihan sederhana.
+      </p>
+      <div class="info-box blue">
+        <span>Proyek ini mengevaluasi kemampuan kelompok dan invidu dalam merancang aplikasi visual secara
+        utuh, meliputi struktur antarmuka, pengelolaan data, interaksi pengguna, dan dokumentasi
+        berdasarkan materi yang telah diplajri.</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="grid-2">
+        <div class="small-card">
+          <h4>Contoh Topik yang Sesuai</h4>
+          <ul>
+            <li>Manajemen inventaris</li>
+            <li>Pencatatan keuangan</li>
+            <li>Sistem peminjaman buku/barang</li>
+            <li>Reservasi / penjadwalan</li>
+            <li>Manajemen tugas / proyek</li>
+          </ul>
+        </div>
+        <div class="small-card">
+          <h4>Contoh Topik Terlalu Kecil</h4>
+          <ul>
+            <li>Kalkulator biasa</li>
+            <li>Konversi satuan sederhana</li>
+            <li>Form biodata tanpa pengelolaan data</li>
+            <li>CRUD tanpa alur aplikasi yang jelas</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── KETENTUAN KELOMPOK ── -->
+  <h2 class="section-title" style="margin-top:24px;">Ketentuan Kelompok</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <ol style="padding-left:20px; display:flex; flex-direction:column; gap:10px;">
+        <li style="font-size:0.88rem; color:var(--gray-700); line-height:1.65;">
+          <strong>Pembagian Tugas yang Jelas</strong> — setiap anggota memiliki tanggung jawab yang terdokumentasi dengan jelas di laporan dan README.
+        </li>
+        <li style="font-size:0.88rem; color:var(--gray-700); line-height:1.65;">
+          <strong>Riwayat Commit GitHub</strong> — setiap anggota <strong>wajib memiliki commit</strong> di repository sebagai bukti kontribusi nyata.
+        </li>
+        <li style="font-size:0.88rem; color:var(--gray-700); line-height:1.65;">
+          <strong>Interview Individu</strong> — setiap anggota akan diinterview secara <strong>individu</strong>. Nilai interview bersifat personal — setiap anggota harus memahami keseluruhan aplikasi, bukan hanya bagian yang dikerjakan sendiri.
+        </li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ── FITUR WAJIB ── -->
+  <h2 class="section-title" style="margin-top:24px;">Fitur Wajib</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <ol style="padding-left:20px;display:flex;flex-direction:column;gap:10px;">
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Struktur Antarmuka Multi-Halaman</strong> — minimal <strong>3 halaman/view fungsional</strong> dengan navigasi yang jelas (<code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QStackedWidget</code>, <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QTabWidget</code>, sidebar, dll.). Setiap anggota kelompok bertanggung jawab atas minimal satu halaman/modul.</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Layout, Menu Bar & Status Bar</strong> — layout rapi dan responsif terhadap resize, menu bar berisi minimal File/Help/Exit, status bar menampilkan nama & NIM semua anggota (tidak dapat diedit)</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Pengelolaan Data</strong> — pilih salah satu: <strong>SQLite</strong> (min. <strong>2 tabel dengan relasi</strong>, min. 5 kolom per tabel, CRUD lengkap di semua entitas utama) <em>atau</em> <strong>API</strong> </li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Tampilan Data & Pencarian</strong> — data ditampilkan via <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QTableView</code> / <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QTableWidget</code> atau list custom, wajib ada <strong>search dan filter/sorting</strong> (keduanya, bukan salah satu)</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Validasi Input & Feedback</strong> — semua form wajib divalidasi (field kosong, format angka/tanggal, panjang karakter), konfirmasi hapus via <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QMessageBox</code>, form input menggunakan <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">QDialog</code>, aplikasi tidak boleh crash karena input tidak valid</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Styling</strong> — terapkan <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">setStyleSheet()</code> atau file <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">.qss</code> secara konsisten di seluruh halaman — bukan hanya satu komponen</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Export Data</strong> — minimal <strong>2 format output</strong> (contoh: CSV + PDF), atau 1 format dengan opsi filter/rentang data yang diekspor</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Fitur Tambahan Kelompok</strong> — wajib minimal <strong>2 fitur tambahan</strong> di luar fitur dasar (contoh: visualisasi data/chart, import CSV, login & manajemen sesi, tema gelap/terang, notifikasi/pengingat, dashboard ringkasan, multithreading, dll.)</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ── BONUS ── -->
+  <h2 class="section-title" style="margin-top:24px;">Fitur Opsional (Bonus)</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Qt Designer (+5%)</strong> — UI dibuat menggunakan Qt Designer (.ui) dan terintegrasi dengan baik ke Python</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>AI / ML (+10%)</strong> — fitur AI/ML sederhana yang relevan dengan topik aplikasi (prediksi, klasifikasi, rekomendasi, dll.)</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;"><strong>Fitur Kreatif (+5%)</strong> — fitur tambahan lain yang berguna, kreatif, dan meningkatkan nilai aplikasi</li>
+      </ul>
+      <p style="font-size:0.83rem;color:var(--gray-500);">Total bonus maksimal <strong>+20%</strong>. Fitur bonus tidak menggantikan fitur wajib yang belum terpenuhi.</p>
+    </div>
+  </div>
+
+  <!-- ── TEKNIS ── -->
+  <h2 class="section-title" style="margin-top:24px;">Catatan Teknis</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <ul style="padding-left:20px;display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;">Wajib menggunakan <strong>PySide6</strong> (bukan PyQt5 / PyQt6)</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;">UI boleh dibuat manual di Python atau menggunakan <strong>Qt Designer (.ui)</strong> — jika pakai Qt Designer, file .ui wajib disertakan</li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;">Aplikasi harus dapat dijalankan langsung setelah instalasi dependensi dari <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">requirements.txt</code></li>
+        <li style="font-size:0.88rem;color:var(--gray-700);line-height:1.6;">Kode harus terorganisir rapi, contoh struktur yang disarankan:</li>
+      </ul>
+      <pre class="code-block"><code><span class="dir">project-root/</span>
+├── <span class="file">main.py</span>
+├── <span class="file">requirements.txt</span>
+├── <span class="file">README.md</span>
+├── <span class="dir">ui/</span>            <span class="cm"># tampilan / file .ui</span>
+├── <span class="dir">database/</span>      <span class="cm"># jika pakai SQLite</span>
+├── <span class="dir">api/</span>           <span class="cm"># jika pakai API</span>
+├── <span class="dir">models/</span>        <span class="cm"># model data / tabel</span>
+├── <span class="dir">utils/</span>         <span class="cm"># helper (export, dll.)</span>
+└── <span class="dir">assets/</span>        <span class="cm"># ikon, gambar, .qss</span></code></pre>
+    </div>
+  </div>
+
+  <!-- ── PENGUMPULAN ── -->
+  <h2 class="section-title" style="margin-top:24px;">Instruksi Pengumpulan</h2>
+
+  <div class="card">
+    <div class="card-body">
+
+      <p style="font-size:0.88rem;font-weight:600;color:var(--gray-800);margin-bottom:6px;">1. Repository GitHub</p>
+      <p style="font-size:0.83rem;color:var(--gray-600);margin-bottom:8px;">Nama repository mengikuti format:</p>
+      <pre class="code-block" style="margin-bottom:14px;"><code><span class="file">pv26-finalproject-namatopik</span>
+<span class="cm"># Contoh: pv26-finalproject-inventoryapp</span></code></pre>
+      <ul style="padding-left:20px;display:flex;flex-direction:column;gap:5px;margin-bottom:20px;">
+        <li style="font-size:0.83rem;color:var(--gray-700);">Seluruh source code (terstruktur)</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">File <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">requirements.txt</code></li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">File <code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">.ui</code> jika menggunakan Qt Designer</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);"><code style="background:var(--gray-100);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;">README.md</code> — judul, deskripsi singkat, nama & NIM anggota, cara menjalankan, screenshot, pembagian tugas</li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <p style="font-size:0.88rem;font-weight:600;color:var(--gray-800);margin-bottom:8px;">2. Laporan PDF</p>
+      <ul style="padding-left:20px;display:flex;flex-direction:column;gap:5px;margin-bottom:20px;">
+        <li style="font-size:0.83rem;color:var(--gray-700);">Deskripsi aplikasi dan latar belakang pemilihan topik</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Pembagian tugas setiap anggota kelompok</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Penjelasan fitur-fitur utama yang diimplementasikan</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Penjelasan alur program secara singkat (diagram atau deskripsi)</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Skema database atau alur data (jika relevan)</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Screenshot tampilan antarmuka dan fungsionalitas</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Bukti kkontribusi setiap anggota kelompok dalam mengerjakan coding</li>
+        <li style="font-size:0.83rem;color:var(--gray-700);">Kendala yang dihadapi dan cara mengatasinya</li>
+      </ul>
+
+      <div class="divider"></div>
+
+      <p style="font-size:0.88rem;font-weight:600;color:var(--gray-800);margin-bottom:6px;">3. Submit</p>
+      <p style="font-size:0.83rem;color:var(--gray-700);">Kumpulkan <strong>Laporan PDF</strong> dan <strong>Link Repository GitHub</strong> melalui platform <strong>Berajah</strong> sesuai tenggat waktu yang ditentukan.</p>
+
+    </div>
+  </div>
+
+  <div style="display: none;">
+  <!-- ── PENILAIAN ── -->
+  <div class="section-label" >07 · Penilaian</div>
+  <h2 class="section-title">Kriteria Penilaian</h2>
+
+  <div class="card">
+    <div class="card-body" style="padding-bottom:0;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Komponen</th>
+            <th>Keterangan</th>
+            <th>Bobot</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Fungsionalitas</strong></td>
+            <td style="font-size:0.83rem;color:var(--gray-600);">Kelengkapan fitur wajib, fitur berjalan dengan benar</td>
+            <td>
+              <div class="weight-bar-wrap">
+                <div class="weight-bar" style="width:60px;"></div>
+                <span class="weight-text">30%</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Desain UI & Layout</strong></td>
+            <td style="font-size:0.83rem;color:var(--gray-600);">Tampilan rapi, styling diterapkan, navigasi jelas</td>
+            <td>
+              <div class="weight-bar-wrap">
+                <div class="weight-bar" style="width:30px;"></div>
+                <span class="weight-text">15%</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Pengelolaan Data</strong></td>
+            <td style="font-size:0.83rem;color:var(--gray-600);">Data ditampilkan, CRUD/interaksi berjalan, validasi ada</td>
+            <td>
+              <div class="weight-bar-wrap">
+                <div class="weight-bar" style="width:40px;"></div>
+                <span class="weight-text">20%</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Struktur Kode & Dokumentasi</strong></td>
+            <td style="font-size:0.83rem;color:var(--gray-600);">Kode terorganisir, README lengkap, laporan PDF jelas</td>
+            <td>
+              <div class="weight-bar-wrap">
+                <div class="weight-bar" style="width:30px;"></div>
+                <span class="weight-text">15%</span>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td><strong>Pemahaman (Interview)</strong></td>
+            <td style="font-size:0.83rem;color:var(--gray-600);">Setiap anggota dinilai secara individu atas pemahaman terhadap seluruh aplikasi</td>
+            <td>
+              <div class="weight-bar-wrap">
+                <div class="weight-bar" style="width:40px;"></div>
+                <span class="weight-text">20%</span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="padding:14px 16px;">
+        <div class="info-box indigo" style="margin:0;">
+          <span>Bonus Qt Designer / AI / Fitur Kreatif dapat menambah nilai hingga maksimal <strong>+15%</strong> di atas total nilai.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CATATAN AKHIR ── -->
+  <div class="section-label">08 · Penting</div>
+  <h2 class="section-title">Catatan Akhir</h2>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="feature-list">
+        <div class="feature-item">
+          <div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">🚫</div>
+          <div class="feature-content">
+            <h4>Plagiarisme</h4>
+            <p>Plagiarisme antar kelompok akan mengakibatkan <strong>nilai nol</strong> untuk semua kelompok yang terlibat.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">⚙️</div>
+          <div class="feature-content">
+            <h4>Aplikasi Harus Berjalan</h4>
+            <p>Aplikasi yang tidak dapat dijalankan atau fitur wajib tidak terpenuhi akan mendapat pengurangan nilai yang signifikan.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">📊</div>
+          <div class="feature-content">
+            <h4>Commit History Diperiksa</h4>
+            <p>Riwayat commit GitHub akan diperiksa sebagai bukti kontribusi nyata setiap anggota kelompok.</p>
+          </div>
+        </div>
+        <div class="feature-item">
+          <div style="font-size:1.2rem;flex-shrink:0;margin-top:2px;">🎙️</div>
+          <div class="feature-content">
+            <h4>Interview Bersifat Individu</h4>
+            <p>Anggota yang tidak dapat menjelaskan kode secara keseluruhan dapat menerima nilai interview yang berbeda dari anggota lain dalam satu kelompok.</p>
+          </div>
+        </div>
+      </div>
+      <div class="info-box amber" style="margin-top:16px;">
+        <span class="icon">💬</span>
+        <span>Ada pertanyaan? Hubungi dosen pengampu melalui platform atau saat sesi perkuliahan.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- end container -->
+
+<!-- ══════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════ -->
+<footer class="footer">
+  <p style="font-weight:600;color:var(--gray-600);margin-bottom:4px;">Final Project – Pemrograman Visual &nbsp;·&nbsp; PySide6</p>
+  <p>Semester Genap 2025 / 2026</p>
+</footer>
+
+</body>
+</html>
