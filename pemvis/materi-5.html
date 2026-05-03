@@ -2326,16 +2326,16 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                 <h2>Tugas Praktikum</h2>
 
                 <div class="exercise-box">
-                    <h3>Tugas: Medicines Manager</h3>
-                    <p>Buatlah aplikasi desktop untuk mengelola data medicines menggunakan API nyata (<code>https://api.pahrul.my.id/api/medicines</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
+                    <h3>Tugas: Post Manager</h3>
+                    <p>Buatlah aplikasi desktop untuk mengelola data post menggunakan API nyata (<code>https://api.pahrul.my.id/api/posts</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
 
                     <h4 style="margin-top: 16px;">Fitur yang Harus Diimplementasikan:</h4>
                     <ol>
-                        <li><strong>Tampilkan Daftar Medicines</strong> — ambil semua medicines via GET, tampilkan dalam tabel dengan kolom: No, Name, Brand, Manufacturer</li>
-                        <li><strong>Detail Medicine</strong> — klik baris tabel untuk menampilkan detail lengkap medicine di panel samping</li>
-                        <li><strong>Tambah Medicine</strong> — form input untuk POST medicine baru (name, brand, manufacturer), tampilkan ID yang dikembalikan server</li>
-                        <li><strong>Edit Medicine</strong> — pilih medicine dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
-                        <li><strong>Hapus Medicine</strong> — pilih medicine dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu</li>
+                        <li><strong>Tampilkan Daftar Posts</strong> — ambil semua posts via GET, tampilkan dalam tabel dengan kolom: ID, Title, Author, Status</li>
+                        <li><strong>Detail Post</strong> — klik baris tabel untuk menampilkan detail lengkap post (title, body, author, slug, status, comments) di panel samping</li>
+                        <li><strong>Tambah Post</strong> — form input untuk POST post baru (title, body, author, slug, status), tampilkan ID yang dikembalikan server</li>
+                        <li><strong>Edit Post</strong> — pilih post dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
+                        <li><strong>Hapus Post</strong> — pilih post dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu (cascade delete — semua comments ikut terhapus)</li>
                         <li><strong>Threading</strong> — semua API call harus berjalan di thread terpisah, UI tidak boleh freeze</li>
                         <li><strong>State Handling</strong> — tampilkan status loading saat request berjalan, pesan error jika gagal</li>
                     </ol>
@@ -2344,11 +2344,12 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                 <div class="info-box warning">
                     <div class="info-box-title">Ketentuan</div>
                     <ul>
-                        <li>Endpoint yang digunakan: <code>/api/medicines</code> dan <code>/api/medicines/{id}</code></li>
+                        <li>Endpoint yang digunakan: <code>/api/posts</code> dan <code>/api/posts/{id}</code></li>
                         <li>Implementasikan semua 4 HTTP method: GET, POST, PUT, DELETE</li>
                         <li>Semua network request HARUS di thread terpisah — tidak boleh ada UI freeze</li>
                         <li>Implementasikan error handling: timeout dan connection error</li>
                         <li>Tombol Edit dan Hapus hanya aktif jika ada baris yang dipilih di tabel</li>
+                        <li>Field <code>slug</code> harus unik — validasi 422 dari server harus ditangani dan ditampilkan ke user</li>
                     </ul>
                 </div>
 
@@ -2368,33 +2369,51 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                                 <tr>
                                     <td>Tampilkan semua</td>
                                     <td><span class="table-code">GET</span></td>
-                                    <td><code>/api/medicines</code></td>
-                                    <td>Mengembalikan list semua medicine</td>
+                                    <td><code>/api/posts</code></td>
+                                    <td>Mengembalikan list semua post</td>
                                 </tr>
                                 <tr>
-                                    <td>Detail satu medicine</td>
+                                    <td>Detail satu post</td>
                                     <td><span class="table-code">GET</span></td>
-                                    <td><code>/api/medicines/{id}</code></td>
-                                    <td>Mengembalikan satu objek medicine</td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Mengembalikan post + daftar comments</td>
                                 </tr>
                                 <tr>
-                                    <td>Tambah medicine</td>
+                                    <td>Tambah post</td>
                                     <td><span class="table-code">POST</span></td>
-                                    <td><code>/api/medicines</code></td>
-                                    <td>Body: {name, brand, manufacturer} — data benar-benar tersimpan</td>
+                                    <td><code>/api/posts</code></td>
+                                    <td>Body: {title, body, author, slug, status}</td>
                                 </tr>
                                 <tr>
-                                    <td>Edit medicine</td>
+                                    <td>Edit post</td>
                                     <td><span class="table-code">PUT</span></td>
-                                    <td><code>/api/medicines/{id}</code></td>
-                                    <td>Body: {name, brand, manufacturer} — data benar-benar diupdate</td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Body: {title, body, author, slug, status}</td>
                                 </tr>
                                 <tr>
-                                    <td>Hapus medicine</td>
+                                    <td>Hapus post</td>
                                     <td><span class="table-code">DELETE</span></td>
-                                    <td><code>/api/medicines/{id}</code></td>
-                                    <td>Data benar-benar dihapus dari database</td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Cascade delete — comments ikut terhapus</td>
                                 </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Struktur Data Post</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><span class="table-code">title</span></td><td>string</td><td>Judul post — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">body</span></td><td>string</td><td>Isi konten post — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">author</span></td><td>string</td><td>Nama penulis — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">slug</span></td><td>string</td><td>URL-friendly identifier — wajib unik (contoh: <code>judul-post</code>)</td></tr>
+                                <tr><td><span class="table-code">status</span></td><td>string</td><td>Status post: <code>published</code> atau <code>draft</code></td></tr>
                             </tbody>
                         </table>
                     </div>
