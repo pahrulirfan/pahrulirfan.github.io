@@ -870,7 +870,7 @@ t2.join()
                         <span class="flow-arrow">→</span>
                         <div class="flow-box highlight">HTTP Request<br><small>(GET/POST/PUT/DELETE)</small></div>
                         <span class="flow-arrow">→</span>
-                        <div class="flow-box">REST API Server<br><small>(JSONPlaceholder)</small></div>
+                        <div class="flow-box">REST API Server<br><small>(Medicines API)</small></div>
                     </div>
                     <div style="margin-top: 15px;"></div>
                     <div class="flow-container">
@@ -882,12 +882,12 @@ t2.join()
                     </div>
                 </div>
 
-                <h3>API yang Akan Digunakan: JSONPlaceholder</h3>
+                <h3>API yang Akan Digunakan: Medicines API</h3>
 
                 <div class="info-box concept">
-                    <div class="info-box-title">JSONPlaceholder (jsonplaceholder.typicode.com)</div>
-                    <p>JSONPlaceholder adalah <strong></strong>fake REST API</strong> gratis untuk testing dan prototyping. Menyediakan endpoint untuk posts, comments, users, albums, dll. Data bersifat dummy tetapi response-nya realistis.</p>
-                    <p style="margin-top: 8px;"><strong>Penting dipahami:</strong> JSONPlaceholder <em>menerima</em> semua request POST, PUT, dan DELETE dan mengembalikan response yang valid — tetapi <strong>data tidak benar-benar tersimpan atau berubah di server</strong>. Ini disengaja agar aman dipakai untuk latihan tanpa risiko merusak data sungguhan.</p>
+                    <div class="info-box-title">Medicines API (api.pahrul.my.id)</div>
+                    <p>Medicines API adalah <strong>REST API nyata</strong> yang dibangun dengan Laravel. Data benar-benar tersimpan di server, sehingga operasi POST, PUT, dan DELETE akan mengubah data secara permanen.</p>
+                    <p style="margin-top: 8px;"><strong>Penting dipahami:</strong> Karena ini API nyata, setiap data yang dibuat, diubah, atau dihapus akan benar-benar berpengaruh. Tidak ada autentikasi yang diperlukan — semua endpoint bersifat publik.</p>
                     <div class="table-container" style="margin-top: 12px;">
                         <table>
                             <thead>
@@ -895,24 +895,24 @@ t2.join()
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><code>GET /users</code></td>
-                                    <td>Data sungguhan dibaca</td>
-                                    <td>List 10 user</td>
+                                    <td><code>GET /api/medicines</code></td>
+                                    <td>Data dibaca dari database</td>
+                                    <td>List semua medicine</td>
                                 </tr>
                                 <tr>
-                                    <td><code>POST /users</code></td>
-                                    <td>Data <strong>tidak</strong> disimpan</td>
-                                    <td>Data yang dikirim + <code>id: 11</code> (selalu sama)</td>
+                                    <td><code>POST /api/medicines</code></td>
+                                    <td>Data <strong>benar-benar disimpan</strong></td>
+                                    <td>Data baru + id yang di-generate server</td>
                                 </tr>
                                 <tr>
-                                    <td><code>PUT /users/1</code></td>
-                                    <td>Data <strong>tidak</strong> diubah</td>
-                                    <td>Data yang dikirim (seolah berhasil diupdate)</td>
+                                    <td><code>PUT /api/medicines/{id}</code></td>
+                                    <td>Data <strong>benar-benar diubah</strong></td>
+                                    <td>Data medicine yang sudah diperbarui</td>
                                 </tr>
                                 <tr>
-                                    <td><code>DELETE /users/1</code></td>
-                                    <td>Data <strong>tidak</strong> dihapus</td>
-                                    <td><code>{}</code> (seolah berhasil dihapus)</td>
+                                    <td><code>DELETE /api/medicines/{id}</code></td>
+                                    <td>Data <strong>benar-benar dihapus</strong></td>
+                                    <td><code>{"success": true, "message": "Medicine berhasil dihapus"}</code></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -930,29 +930,14 @@ t2.join()
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="table-code">/posts</span></td>
-                                <td>100 posts (artikel/blog)</td>
-                                <td>id, userId, title, body</td>
+                                <td><span class="table-code">/api/medicines</span></td>
+                                <td>Semua data medicine</td>
+                                <td>id, name, brand, manufacturer</td>
                             </tr>
                             <tr>
-                                <td><span class="table-code">/posts/1</span></td>
-                                <td>Post dengan ID tertentu</td>
-                                <td>Detail 1 post</td>
-                            </tr>
-                            <tr>
-                                <td><span class="table-code">/posts/1/comments</span></td>
-                                <td>Comments dari post tertentu</td>
-                                <td>id, postId, name, email, body</td>
-                            </tr>
-                            <tr>
-                                <td><span class="table-code">/comments</span></td>
-                                <td>500 comments</td>
-                                <td>id, postId, name, email, body</td>
-                            </tr>
-                            <tr>
-                                <td><span class="table-code">/comments?postId=1</span></td>
-                                <td>Filter comments by postId</td>
-                                <td>Comments milik post 1</td>
+                                <td><span class="table-code">/api/medicines/1</span></td>
+                                <td>Medicine dengan ID tertentu</td>
+                                <td>Detail 1 medicine</td>
                             </tr>
                         </tbody>
                     </table>
@@ -962,41 +947,45 @@ t2.join()
 
                 <div class="code-container">
                     <div class="code-header">
-                        <span class="code-title">GET /posts/1</span>
+                        <span class="code-title">GET /api/medicines</span>
                         <span class="code-badge">JSON</span>
                     </div>
                     <div class="code-block">
                         <pre><code>{
-    <span class="string">"userId"</span>: <span class="number">1</span>,
-    <span class="string">"id"</span>: <span class="number">1</span>,
-    <span class="string">"title"</span>: <span class="string">"sunt aut facere repellat provident occaecati..."</span>,
-    <span class="string">"body"</span>: <span class="string">"quia et suscipit\nsuscipit recusandae..."</span>
+    <span class="string">"success"</span>: <span class="keyword">true</span>,
+    <span class="string">"message"</span>: <span class="string">"Data medicine ditemukan"</span>,
+    <span class="string">"data"</span>: [
+        {
+            <span class="string">"id"</span>: <span class="number">1</span>,
+            <span class="string">"name"</span>: <span class="string">"Paracetamol"</span>,
+            <span class="string">"brand"</span>: <span class="string">"Panadol"</span>,
+            <span class="string">"manufacturer"</span>: <span class="string">"GlaxoSmithKline"</span>,
+            <span class="string">"created_at"</span>: <span class="string">"2026-04-30T10:00:00.000000Z"</span>,
+            <span class="string">"updated_at"</span>: <span class="string">"2026-04-30T10:00:00.000000Z"</span>
+        }
+    ]
 }</code></pre>
                     </div>
                 </div>
 
                 <div class="code-container">
                     <div class="code-header">
-                        <span class="code-title">GET /posts/1/comments</span>
+                        <span class="code-title">GET /api/medicines/1</span>
                         <span class="code-badge">JSON</span>
                     </div>
                     <div class="code-block">
-                        <pre><code>[
-    {
-        <span class="string">"postId"</span>: <span class="number">1</span>,
+                        <pre><code>{
+    <span class="string">"success"</span>: <span class="keyword">true</span>,
+    <span class="string">"message"</span>: <span class="string">"Data medicine ditemukan"</span>,
+    <span class="string">"data"</span>: {
         <span class="string">"id"</span>: <span class="number">1</span>,
-        <span class="string">"name"</span>: <span class="string">"id labore ex et quam laborum"</span>,
-        <span class="string">"email"</span>: <span class="string">"Eliseo@gardner.biz"</span>,
-        <span class="string">"body"</span>: <span class="string">"laudantium enim quasi est..."</span>
-    },
-    {
-        <span class="string">"postId"</span>: <span class="number">1</span>,
-        <span class="string">"id"</span>: <span class="number">2</span>,
-        <span class="string">"name"</span>: <span class="string">"quo vero reiciendis velit similique earum"</span>,
-        <span class="string">"email"</span>: <span class="string">"Jayne_Kuhic@sydney.com"</span>,
-        <span class="string">"body"</span>: <span class="string">"est natus enim nihil est..."</span>
+        <span class="string">"name"</span>: <span class="string">"Paracetamol"</span>,
+        <span class="string">"brand"</span>: <span class="string">"Panadol"</span>,
+        <span class="string">"manufacturer"</span>: <span class="string">"GlaxoSmithKline"</span>,
+        <span class="string">"created_at"</span>: <span class="string">"2026-04-30T10:00:00.000000Z"</span>,
+        <span class="string">"updated_at"</span>: <span class="string">"2026-04-30T10:00:00.000000Z"</span>
     }
-]</code></pre>
+}</code></pre>
                     </div>
                 </div>
             </section>
@@ -1177,24 +1166,26 @@ t2.join()
                     <div class="code-block">
                         <pre><code><span class="keyword">import</span> requests
 
-BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
 
-<span class="comment"># ── GET: Ambil 1 post ──────────────────────────────</span>
-response = requests.get(<span class="string">f"</span>{BASE_URL}<span class="string">/posts/1"</span>, timeout=<span class="number">10</span>)
+<span class="comment"># ── GET: Ambil semua medicines ─────────────────────</span>
+response = requests.get(<span class="string">f"</span>{BASE_URL}<span class="string">/medicines"</span>, timeout=<span class="number">10</span>)
 response.raise_for_status()
-post = response.json()
+result = response.json()
+medicines = result[<span class="string">'data'</span>]  <span class="comment"># data ada di dalam key 'data'</span>
 <span class="builtin">print</span>(<span class="string">f"Status : </span>{response.status_code}<span class="string">"</span>)   <span class="comment"># 200</span>
-<span class="builtin">print</span>(<span class="string">f"Judul  : </span>{post[<span class="string">'title'</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Nama   : </span>{medicines[<span class="number">0</span>][<span class="string">'name'</span>]}<span class="string">"</span>)
 
-<span class="comment"># ── POST: Kirim data baru ──────────────────────────</span>
+<span class="comment"># ── POST: Tambah medicine baru ─────────────────────</span>
 response = requests.post(
-    <span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>,
-    json={<span class="string">'title'</span>: <span class="string">'Post Baru'</span>, <span class="string">'body'</span>: <span class="string">'Isi konten'</span>, <span class="string">'userId'</span>: <span class="number">1</span>},
+    <span class="string">f"</span>{BASE_URL}<span class="string">/medicines"</span>,
+    json={<span class="string">'name'</span>: <span class="string">'Paracetamol'</span>, <span class="string">'brand'</span>: <span class="string">'Panadol'</span>, <span class="string">'manufacturer'</span>: <span class="string">'GSK'</span>},
     timeout=<span class="number">10</span>
 )
 response.raise_for_status()
+result = response.json()
 <span class="builtin">print</span>(<span class="string">f"Status : </span>{response.status_code}<span class="string">"</span>)   <span class="comment"># 201 Created</span>
-<span class="builtin">print</span>(<span class="string">f"ID baru: </span>{response.json()[<span class="string">'id'</span>]}<span class="string">"</span>)  <span class="comment"># 101</span></code></pre>
+<span class="builtin">print</span>(<span class="string">f"ID baru: </span>{result[<span class="string">'data'</span>][<span class="string">'id'</span>]}<span class="string">"</span>)  <span class="comment"># ID yang di-generate server</span></code></pre>
                     </div>
                 </div>
 
@@ -1237,7 +1228,7 @@ response.raise_for_status()
                                               <span class="comment"># Signal   : mengirim data antar thread</span>
                                               <span class="comment"># QObject  : base class untuk worker</span>
 
-BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
 
 
 <span class="comment"># ─────────────────────────────────────────────────────</span>
@@ -1260,7 +1251,8 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
         <span class="keyword">try</span>:
             response = requests.get(<span class="self">self</span>.url, timeout=<span class="number">10</span>)
             response.raise_for_status()          <span class="comment"># error jika status 4xx/5xx</span>
-            <span class="self">self</span>.result.emit(response.json())  <span class="comment"># kirim data ke MainWindow</span>
+            data = response.json()[<span class="string">'data'</span>]     <span class="comment"># ambil dari key 'data'</span>
+            <span class="self">self</span>.result.emit(data)             <span class="comment"># kirim data ke MainWindow</span>
         <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
             <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))   <span class="comment"># kirim pesan error ke MainWindow</span>
         <span class="keyword">finally</span>:
@@ -1273,13 +1265,13 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
 <span class="keyword">class</span> <span class="class-name">MainWindow</span>(QWidget):
     <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
         <span class="builtin">super</span>().__init__()
-        <span class="self">self</span>.setWindowTitle(<span class="string">"Latihan GET"</span>)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Latihan GET - Medicines"</span>)
         layout = QVBoxLayout(<span class="self">self</span>)
 
-        <span class="self">self</span>.status = QLabel(<span class="string">"Klik tombol untuk fetch posts"</span>)
+        <span class="self">self</span>.status = QLabel(<span class="string">"Klik tombol untuk fetch medicines"</span>)
         layout.addWidget(<span class="self">self</span>.status)
 
-        <span class="self">self</span>.btn = QPushButton(<span class="string">"Fetch Posts"</span>)
+        <span class="self">self</span>.btn = QPushButton(<span class="string">"Fetch Medicines"</span>)
         <span class="self">self</span>.btn.clicked.connect(<span class="self">self</span>.fetch_posts)
         layout.addWidget(<span class="self">self</span>.btn)
 
@@ -1294,7 +1286,7 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
 
         <span class="comment"># 2. Buat worker dan thread</span>
         <span class="self">self</span>.thread = QThread()
-        <span class="self">self</span>.worker = GetWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>)
+        <span class="self">self</span>.worker = GetWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/medicines"</span>)
         <span class="self">self</span>.worker.moveToThread(<span class="self">self</span>.thread)  <span class="comment"># pindahkan worker ke thread</span>
 
         <span class="comment"># 3. Hubungkan signals ke slots</span>
@@ -1307,12 +1299,12 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
         <span class="comment"># 4. Mulai thread</span>
         <span class="self">self</span>.thread.start()
 
-    <span class="keyword">def</span> <span class="function">on_result</span>(<span class="self">self</span>, <span class="parameter">posts</span>):
+    <span class="keyword">def</span> <span class="function">on_result</span>(<span class="self">self</span>, <span class="parameter">medicines</span>):
         <span class="comment"># dipanggil oleh signal result — data sudah ada di sini</span>
-        <span class="self">self</span>.status.setText(<span class="string">f"</span>{<span class="builtin">len</span>(posts)}<span class="string"> posts dimuat"</span>)
+        <span class="self">self</span>.status.setText(<span class="string">f"</span>{<span class="builtin">len</span>(medicines)}<span class="string"> medicines dimuat"</span>)
         text = <span class="string">""</span>
-        <span class="keyword">for</span> post <span class="keyword">in</span> posts[:<span class="number">10</span>]:  <span class="comment"># tampilkan 10 pertama</span>
-            text += <span class="string">f"[</span>{post[<span class="string">'id'</span>]}<span class="string">] </span>{post[<span class="string">'title'</span>]}<span class="string">\n"</span>
+        <span class="keyword">for</span> m <span class="keyword">in</span> medicines:
+            text += <span class="string">f"[</span>{m[<span class="string">'id'</span>]}<span class="string">] </span>{m[<span class="string">'name'</span>]}<span class="string"> - </span>{m[<span class="string">'brand'</span>]}<span class="string"> (</span>{m[<span class="string">'manufacturer'</span>]}<span class="string">)\n"</span>
         <span class="self">self</span>.output.setText(text)
 
     <span class="keyword">def</span> <span class="function">on_error</span>(<span class="self">self</span>, <span class="parameter">msg</span>):
@@ -1330,7 +1322,7 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
                 <div class="info-box success">
                     <div class="info-box-title">Coba Jalankan — Apa yang Terjadi?</div>
                     <ul>
-                        <li>Klik tombol <strong>Fetch Posts</strong> — perhatikan tombol langsung <em>disabled</em> dan label berubah "Loading..."</li>
+                        <li>Klik tombol <strong>Fetch Medicines</strong> — perhatikan tombol langsung <em>disabled</em> dan label berubah "Loading..."</li>
                         <li>Beberapa detik kemudian data muncul dan tombol aktif kembali</li>
                         <li>Selama loading, coba klik area lain — UI <strong>tidak freeze</strong></li>
                     </ul>
@@ -1381,7 +1373,7 @@ BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
                     </div>
                     <div class="code-block">
                         <pre><code><span class="comment"># Tambahkan setelah self.btn di __init__</span>
-<span class="self">self</span>.btn_post = QPushButton(<span class="string">"Kirim Post Baru"</span>)
+<span class="self">self</span>.btn_post = QPushButton(<span class="string">"Tambah Medicine Baru"</span>)
 <span class="self">self</span>.btn_post.clicked.connect(<span class="self">self</span>.send_post)
 layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                     </div>
@@ -1400,13 +1392,13 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         <span class="self">self</span>.btn_post.setEnabled(<span class="keyword">False</span>)
 
         payload = {
-            <span class="string">'title'</span>: <span class="string">'Post dari PySide6'</span>,
-            <span class="string">'body'</span>:  <span class="string">'Dikirim via QThread'</span>,
-            <span class="string">'userId'</span>: <span class="number">1</span>
+            <span class="string">'name'</span>: <span class="string">'Paracetamol'</span>,
+            <span class="string">'brand'</span>: <span class="string">'Panadol'</span>,
+            <span class="string">'manufacturer'</span>: <span class="string">'GlaxoSmithKline'</span>
         }
 
         <span class="self">self</span>.thread = QThread()
-        <span class="self">self</span>.worker = PostWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/posts"</span>, payload)
+        <span class="self">self</span>.worker = PostWorker(<span class="string">f"</span>{BASE_URL}<span class="string">/medicines"</span>, payload)
         <span class="self">self</span>.worker.moveToThread(<span class="self">self</span>.thread)
 
         <span class="self">self</span>.thread.started.connect(<span class="self">self</span>.worker.run)
@@ -1418,13 +1410,13 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         <span class="self">self</span>.thread.start()
 
     <span class="keyword">def</span> <span class="function">on_post_sent</span>(<span class="self">self</span>, <span class="parameter">data</span>):
-        <span class="self">self</span>.status.setText(<span class="string">f"Post berhasil dikirim! ID baru: </span>{data[<span class="string">'id'</span>]}<span class="string">"</span>)</code></pre>
+        <span class="self">self</span>.status.setText(<span class="string">f"Medicine berhasil ditambahkan! ID baru: </span>{data[<span class="string">'data'</span>][<span class="string">'id'</span>]}<span class="string">"</span>)</code></pre>
                     </div>
                 </div>
 
                 <div class="info-box success">
                     <div class="info-box-title">Coba Jalankan Lagi</div>
-                    <p>Sekarang ada dua tombol. Klik <strong>Kirim Post Baru</strong> — perhatikan status berubah dan ID baru muncul. ID yang dikembalikan selalu <code>101</code> karena JSONPlaceholder tidak benar-benar menyimpan data — response-nya hanya simulasi sukses. Ini normal dan memang perilaku JSONPlaceholder.</p>
+                    <p>Sekarang ada dua tombol. Klik <strong>Tambah Medicine Baru</strong> — perhatikan status berubah dan ID baru muncul. Karena ini API nyata, data benar-benar tersimpan di server dan ID yang dikembalikan adalah ID unik yang di-generate oleh database.</p>
                 </div>
 
                 <h3>Langkah 3 — Tambahkan PUT dan DELETE</h3>
@@ -1442,16 +1434,16 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
     result   = Signal(<span class="builtin">object</span>)
     error    = Signal(<span class="builtin">str</span>)
 
-    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">post_id</span>, <span class="parameter">data</span>):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">medicine_id</span>, <span class="parameter">data</span>):
         <span class="builtin">super</span>().__init__()
-        <span class="self">self</span>.post_id = post_id
+        <span class="self">self</span>.medicine_id = medicine_id
         <span class="self">self</span>.data    = data
 
     <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
         <span class="keyword">try</span>:
             <span class="comment"># ID masuk ke URL, data baru masuk ke body</span>
             response = requests.put(
-                <span class="string">f"</span>{BASE_URL}<span class="string">/posts/</span>{<span class="self">self</span>.post_id}<span class="string">"</span>,
+                <span class="string">f"</span>{BASE_URL}<span class="string">/medicines/</span>{<span class="self">self</span>.medicine_id}<span class="string">"</span>,
                 json=<span class="self">self</span>.data, timeout=<span class="number">10</span>
             )
             response.raise_for_status()
@@ -1467,15 +1459,15 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
     result   = Signal(<span class="builtin">object</span>)
     error    = Signal(<span class="builtin">str</span>)
 
-    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">medicine_id</span>):
         <span class="builtin">super</span>().__init__()
-        <span class="self">self</span>.post_id = post_id
+        <span class="self">self</span>.medicine_id = medicine_id
 
     <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
         <span class="keyword">try</span>:
             <span class="comment"># DELETE: hanya URL, tidak ada body</span>
             response = requests.delete(
-                <span class="string">f"</span>{BASE_URL}<span class="string">/posts/</span>{<span class="self">self</span>.post_id}<span class="string">"</span>,
+                <span class="string">f"</span>{BASE_URL}<span class="string">/medicines/</span>{<span class="self">self</span>.medicine_id}<span class="string">"</span>,
                 timeout=<span class="number">10</span>
             )
             response.raise_for_status()
@@ -1504,23 +1496,23 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                                     <td><span class="table-code">GetWorker</span></td>
                                     <td><span class="inline-code">url</span></td>
                                     <td><span class="inline-code">requests.get(url)</span></td>
-                                    <td>list/dict</td>
+                                    <td>list medicine</td>
                                 </tr>
                                 <tr>
                                     <td><span class="table-code">PostWorker</span></td>
                                     <td><span class="inline-code">url, data</span></td>
                                     <td><span class="inline-code">requests.post(url, json=data)</span></td>
-                                    <td>dict + id baru</td>
+                                    <td>dict medicine baru + id</td>
                                 </tr>
                                 <tr>
                                     <td><span class="table-code">PutWorker</span></td>
-                                    <td><span class="inline-code">post_id, data</span></td>
+                                    <td><span class="inline-code">medicine_id, data</span></td>
                                     <td><span class="inline-code">requests.put(url/{id}, json=data)</span></td>
-                                    <td>dict data baru</td>
+                                    <td>dict medicine terupdate</td>
                                 </tr>
                                 <tr>
                                     <td><span class="table-code">DeleteWorker</span></td>
-                                    <td><span class="inline-code">post_id</span></td>
+                                    <td><span class="inline-code">medicine_id</span></td>
                                     <td><span class="inline-code">requests.delete(url/{id})</span></td>
                                     <td>status_code (200)</td>
                                 </tr>
@@ -1620,7 +1612,7 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                         <li><strong>LOADING:</strong> klik Fetch Posts — label biru muncul sebentar</li>
                         <li><strong>SUCCESS:</strong> data muncul — label hijau</li>
                         <li><strong>ERROR:</strong> matikan internet lalu klik — label merah muncul</li>
-                        <li><strong>EMPTY:</strong> tidak bisa ditest di JSONPlaceholder (selalu ada data), tapi logikanya sudah siap</li>
+                        <li><strong>EMPTY:</strong> tidak bisa ditest jika sudah ada data, tapi logikanya sudah siap</li>
                     </ul>
                 </div>
 
@@ -1629,7 +1621,7 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
             <section class="section" id="crud-api">
                 <h2>9. Ringkasan CRUD via API</h2>
 
-                <p>Setelah menyelesaikan Langkah 1–4, kamu sudah bisa melakukan semua operasi CRUD ke JSONPlaceholder. Berikut ringkasan mapping operasi ke HTTP method dan endpoint yang dipakai:</p>
+                <p>Setelah menyelesaikan Langkah 1–4, kamu sudah bisa melakukan semua operasi CRUD ke Medicines API. Berikut ringkasan mapping operasi ke HTTP method dan endpoint yang dipakai:</p>
 
                 <div class="table-container">
                     <table>
@@ -1637,11 +1629,11 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                             <tr><th>Operasi</th><th>HTTP</th><th>Endpoint</th><th>Body</th><th>Worker</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td>Ambil semua posts</td><td><span class="table-code">GET</span></td><td>/posts</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
-                            <tr><td>Ambil komentar post</td><td><span class="table-code">GET</span></td><td>/posts/{id}/comments</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
-                            <tr><td>Buat post baru</td><td><span class="table-code">POST</span></td><td>/posts</td><td>{title, body, userId}</td><td><span class="inline-code">PostWorker(url, data)</span></td></tr>
-                            <tr><td>Update post</td><td><span class="table-code">PUT</span></td><td>/posts/{id}</td><td>{id, title, body, userId}</td><td><span class="inline-code">PutWorker(post_id, data)</span></td></tr>
-                            <tr><td>Hapus post</td><td><span class="table-code">DELETE</span></td><td>/posts/{id}</td><td>—</td><td><span class="inline-code">DeleteWorker(post_id)</span></td></tr>
+                            <tr><td>Ambil semua medicines</td><td><span class="table-code">GET</span></td><td>/api/medicines</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
+                            <tr><td>Ambil 1 medicine</td><td><span class="table-code">GET</span></td><td>/api/medicines/{id}</td><td>—</td><td><span class="inline-code">GetWorker(url)</span></td></tr>
+                            <tr><td>Tambah medicine baru</td><td><span class="table-code">POST</span></td><td>/api/medicines</td><td>{name, brand, manufacturer}</td><td><span class="inline-code">PostWorker(url, data)</span></td></tr>
+                            <tr><td>Update medicine</td><td><span class="table-code">PUT</span></td><td>/api/medicines/{id}</td><td>{name, brand, manufacturer}</td><td><span class="inline-code">PutWorker(medicine_id, data)</span></td></tr>
+                            <tr><td>Hapus medicine</td><td><span class="table-code">DELETE</span></td><td>/api/medicines/{id}</td><td>—</td><td><span class="inline-code">DeleteWorker(medicine_id)</span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1686,7 +1678,7 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                             post_viewer/<br>
                             &nbsp;&nbsp;├── <strong>api_service.py</strong> &nbsp;← semua HTTP request<br>
                             &nbsp;&nbsp;├── <strong>api_worker.py</strong> &nbsp;&nbsp;&nbsp;← jalankan request di thread<br>
-                            &nbsp;&nbsp;├── <strong>dialogs.py</strong> &nbsp;&nbsp;&nbsp;&nbsp;← dialog tambah/edit post<br>
+                            &nbsp;&nbsp;├── <strong>dialogs.py</strong> &nbsp;&nbsp;&nbsp;&nbsp;← dialog tambah/edit medicine<br>
                             &nbsp;&nbsp;└── <strong>main.py</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← window utama dan entry point
                         </div>
                     </div>
@@ -1773,34 +1765,34 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="table-code">get_posts()</span></td>
+                                <td><span class="table-code">get_medicines()</span></td>
                                 <td><span class="table-code">GET</span></td>
-                                <td>/posts</td>
-                                <td>Ambil semua posts</td>
+                                <td>/api/medicines</td>
+                                <td>Ambil semua medicines</td>
                             </tr>
                             <tr>
-                                <td><span class="table-code">get_comments(post_id)</span></td>
+                                <td><span class="table-code">get_medicine(id)</span></td>
                                 <td><span class="table-code">GET</span></td>
-                                <td>/posts/{id}/comments</td>
-                                <td>Ambil komentar dari 1 post</td>
+                                <td>/api/medicines/{id}</td>
+                                <td>Ambil 1 medicine berdasarkan ID</td>
                             </tr>
                             <tr>
-                                <td><span class="table-code">create_post(data)</span></td>
+                                <td><span class="table-code">create_medicine(data)</span></td>
                                 <td><span class="table-code">POST</span></td>
-                                <td>/posts</td>
-                                <td>Buat post baru</td>
+                                <td>/api/medicines</td>
+                                <td>Tambah medicine baru</td>
                             </tr>
                             <tr>
-                                <td><span class="table-code">update_post(post_id, data)</span></td>
+                                <td><span class="table-code">update_medicine(id, data)</span></td>
                                 <td><span class="table-code">PUT</span></td>
-                                <td>/posts/{id}</td>
-                                <td>Update seluruh data post</td>
+                                <td>/api/medicines/{id}</td>
+                                <td>Update seluruh data medicine</td>
                             </tr>
                             <tr>
-                                <td><span class="table-code">delete_post(post_id)</span></td>
+                                <td><span class="table-code">delete_medicine(id)</span></td>
                                 <td><span class="table-code">DELETE</span></td>
-                                <td>/posts/{id}</td>
-                                <td>Hapus post</td>
+                                <td>/api/medicines/{id}</td>
+                                <td>Hapus medicine</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1813,99 +1805,87 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                     </div>
                     <div class="code-block">
                         <pre><code><span class="comment"># api_service.py
-# Tanggung jawab: semua logika HTTP request ke JSONPlaceholder API
+# Tanggung jawab: semua logika HTTP request ke Medicines API
 # Tidak ada Qt di sini — bisa diuji tanpa membuka UI</span>
 
 <span class="keyword">import</span> requests
 
 <span class="keyword">class</span> <span class="class-name">ApiService</span>:
     <span class="string">"""
-    Service class untuk semua interaksi HTTP dengan JSONPlaceholder.
+    Service class untuk semua interaksi HTTP dengan Medicines API.
     Setiap method melempar exception jika request gagal —
     exception ini akan ditangkap oleh ApiWorker di layer atas.
     """</span>
     
-    BASE_URL = <span class="string">"https://jsonplaceholder.typicode.com"</span>
+    BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
     TIMEOUT = <span class="number">10</span>  <span class="comment"># batas waktu tunggu response (detik)</span>
     
-    <span class="comment"># ===== POSTS =====</span>
+    <span class="comment"># ===== MEDICINES =====</span>
     
-    <span class="keyword">def</span> <span class="function">get_posts</span>(<span class="self">self</span>):
-        <span class="string">"""GET /posts - Ambil semua posts (100 data)"""</span>
+    <span class="keyword">def</span> <span class="function">get_medicines</span>(<span class="self">self</span>):
+        <span class="string">"""GET /api/medicines - Ambil semua medicines"""</span>
         response = requests.get(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts"</span>,
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/medicines"</span>,
             timeout=<span class="self">self</span>.TIMEOUT
         )
         response.raise_for_status()  <span class="comment"># lempar exception jika status 4xx/5xx</span>
-        <span class="keyword">return</span> response.json()         <span class="comment"># kembalikan list of dict</span>
+        <span class="keyword">return</span> response.json()[<span class="string">'data'</span>]  <span class="comment"># ambil dari key 'data'</span>
     
-    <span class="keyword">def</span> <span class="function">get_comments</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
-        <span class="string">"""GET /posts/{id}/comments - Ambil komentar dari 1 post"""</span>
+    <span class="keyword">def</span> <span class="function">get_medicine</span>(<span class="self">self</span>, <span class="parameter">medicine_id</span>):
+        <span class="string">"""GET /api/medicines/{id} - Ambil 1 medicine berdasarkan ID"""</span>
         response = requests.get(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">/comments"</span>,
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/medicines/</span>{medicine_id}<span class="string">"</span>,
             timeout=<span class="self">self</span>.TIMEOUT
         )
         response.raise_for_status()
-        <span class="keyword">return</span> response.json()
+        <span class="keyword">return</span> response.json()[<span class="string">'data'</span>]
     
-    <span class="keyword">def</span> <span class="function">create_post</span>(<span class="self">self</span>, <span class="parameter">title</span>, <span class="parameter">body</span>, <span class="parameter">user_id</span>=<span class="number">1</span>):
-        <span class="string">"""POST /posts - Buat post baru
+    <span class="keyword">def</span> <span class="function">create_medicine</span>(<span class="self">self</span>, <span class="parameter">name</span>, <span class="parameter">brand</span>, <span class="parameter">manufacturer</span>):
+        <span class="string">"""POST /api/medicines - Tambah medicine baru
         
-        Mengirim data JSON ke server. Server akan mengembalikan
-        data yang sama ditambah 'id' baru (selalu 101 di JSONPlaceholder).
+        Mengirim data JSON ke server. Server akan menyimpan data
+        dan mengembalikan medicine baru beserta ID yang di-generate.
         """</span>
         payload = {
-            <span class="string">'title'</span>: title,
-            <span class="string">'body'</span>: body,
-            <span class="string">'userId'</span>: user_id
+            <span class="string">'name'</span>: name,
+            <span class="string">'brand'</span>: brand,
+            <span class="string">'manufacturer'</span>: manufacturer
         }
         response = requests.post(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts"</span>,
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/medicines"</span>,
             json=payload,       <span class="comment"># otomatis set Content-Type: application/json</span>
             timeout=<span class="self">self</span>.TIMEOUT
         )
         response.raise_for_status()
-        <span class="keyword">return</span> response.json()  <span class="comment"># {'id': 101, 'title': ..., 'body': ..., 'userId': 1}</span>
+        <span class="keyword">return</span> response.json()  <span class="comment"># {'success': True, 'data': {'id': ..., 'name': ...}}</span>
     
-    <span class="keyword">def</span> <span class="function">update_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>, <span class="parameter">title</span>, <span class="parameter">body</span>, <span class="parameter">user_id</span>=<span class="number">1</span>):
-        <span class="string">"""PUT /posts/{id} - Update seluruh data post"""</span>
+    <span class="keyword">def</span> <span class="function">update_medicine</span>(<span class="self">self</span>, <span class="parameter">medicine_id</span>, <span class="parameter">name</span>, <span class="parameter">brand</span>, <span class="parameter">manufacturer</span>):
+        <span class="string">"""PUT /api/medicines/{id} - Update seluruh data medicine"""</span>
         payload = {
-            <span class="string">'id'</span>: post_id,
-            <span class="string">'title'</span>: title,
-            <span class="string">'body'</span>: body,
-            <span class="string">'userId'</span>: user_id
+            <span class="string">'name'</span>: name,
+            <span class="string">'brand'</span>: brand,
+            <span class="string">'manufacturer'</span>: manufacturer
         }
         response = requests.put(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">"</span>,
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/medicines/</span>{medicine_id}<span class="string">"</span>,
             json=payload,
             timeout=<span class="self">self</span>.TIMEOUT
         )
         response.raise_for_status()
         <span class="keyword">return</span> response.json()
     
-    <span class="keyword">def</span> <span class="function">delete_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
-        <span class="string">"""DELETE /posts/{id} - Hapus post
+    <span class="keyword">def</span> <span class="function">delete_medicine</span>(<span class="self">self</span>, <span class="parameter">medicine_id</span>):
+        <span class="string">"""DELETE /api/medicines/{id} - Hapus medicine
         
-        JSONPlaceholder mengembalikan {} saat delete berhasil.
+        Server mengembalikan {'success': True, 'message': 'Medicine berhasil dihapus'}.
         Kita kembalikan True sebagai tanda sukses agar lebih eksplisit.
         """</span>
         response = requests.delete(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">"</span>,
+            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/medicines/</span>{medicine_id}<span class="string">"</span>,
             timeout=<span class="self">self</span>.TIMEOUT
         )
         response.raise_for_status()
         <span class="keyword">return</span> <span class="keyword">True</span>
-    
-    <span class="comment"># ===== COMMENTS =====</span>
-    
-    <span class="keyword">def</span> <span class="function">get_comments_by_post</span>(<span class="self">self</span>, <span class="parameter">post_id</span>):
-        <span class="string">"""GET /posts/{id}/comments - Ambil comments dari post"""</span>
-        response = requests.get(
-            <span class="string">f"</span>{<span class="self">self</span>.BASE_URL}<span class="string">/posts/</span>{post_id}<span class="string">/comments"</span>,
-            timeout=<span class="self">self</span>.TIMEOUT
-        )
-        response.raise_for_status()
-        <span class="keyword">return</span> response.json()
 
 
 <span class="comment"># ============================================
@@ -1914,12 +1894,12 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
 # tanpa perlu membuka UI sama sekali!
 # ============================================
 # svc = ApiService()
-# posts = svc.get_posts()
-# print(f"Total posts: {len(posts)}")
-# print(f"Judul pertama: {posts[0]['title']}")
+# medicines = svc.get_medicines()
+# print(f"Total medicines: {len(medicines)}")
+# print(f"Nama pertama: {medicines[0]['name']}")
 #
-# post_baru = svc.create_post('Test', 'Isi konten', user_id=1)
-# print(f"ID baru dari server: {post_baru['id']}")</span></code></pre>
+# baru = svc.create_medicine('Ibuprofen', 'Proris', 'Tempo Scan Pacific')
+# print(f"ID baru dari server: {baru['data']['id']}")</span></code></pre>
                     </div>
                 </div>
 
@@ -1979,20 +1959,17 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
     <span class="keyword">def</span> <span class="function">run</span>(<span class="self">self</span>):
         <span class="string">"""Dijalankan oleh QThread. Panggil service sesuai action."""</span>
         <span class="keyword">try</span>:
-            <span class="keyword">if</span> <span class="self">self</span>.action == <span class="string">"get_posts"</span>:
-                result = <span class="self">self</span>.service.get_posts()
+            <span class="keyword">if</span> <span class="self">self</span>.action == <span class="string">"get_medicines"</span>:
+                result = <span class="self">self</span>.service.get_medicines()
             
-            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"get_comments"</span>:
-                result = <span class="self">self</span>.service.get_comments_by_post(<span class="self">self</span>.post_id)
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"create_medicine"</span>:
+                result = <span class="self">self</span>.service.create_medicine(<span class="self">self</span>.name, <span class="self">self</span>.brand, <span class="self">self</span>.manufacturer)
             
-            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"create_post"</span>:
-                result = <span class="self">self</span>.service.create_post(<span class="self">self</span>.title, <span class="self">self</span>.body)
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"update_medicine"</span>:
+                result = <span class="self">self</span>.service.update_medicine(<span class="self">self</span>.medicine_id, <span class="self">self</span>.name, <span class="self">self</span>.brand, <span class="self">self</span>.manufacturer)
             
-            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"update_post"</span>:
-                result = <span class="self">self</span>.service.update_post(<span class="self">self</span>.post_id, <span class="self">self</span>.title, <span class="self">self</span>.body)
-            
-            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"delete_post"</span>:
-                result = <span class="self">self</span>.service.delete_post(<span class="self">self</span>.post_id)
+            <span class="keyword">elif</span> <span class="self">self</span>.action == <span class="string">"delete_medicine"</span>:
+                result = <span class="self">self</span>.service.delete_medicine(<span class="self">self</span>.medicine_id)
             
             <span class="keyword">else</span>:
                 <span class="keyword">raise</span> <span class="class-name">ValueError</span>(<span class="string">f"Action tidak dikenali: </span>{<span class="self">self</span>.action}<span class="string">"</span>)
@@ -2039,31 +2016,34 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
 
 <span class="keyword">class</span> <span class="class-name">PostDialog</span>(QDialog):
     <span class="string">"""
-    Dialog untuk Tambah dan Edit post.
-    Jika parameter post diisi, form akan terisi dengan data lama (mode Edit).
-    Jika post=None, form kosong (mode Tambah).
+    Dialog untuk Tambah dan Edit medicine.
+    Jika parameter medicine diisi, form akan terisi dengan data lama (mode Edit).
+    Jika medicine=None, form kosong (mode Tambah).
     """</span>
     
     <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">parent</span>=<span class="keyword">None</span>, <span class="parameter">post</span>=<span class="keyword">None</span>):
         <span class="builtin">super</span>().__init__(parent)
         
         <span class="comment"># Judul dialog berbeda tergantung mode</span>
-        <span class="self">self</span>.setWindowTitle(<span class="string">"Edit Post"</span> <span class="keyword">if</span> post <span class="keyword">else</span> <span class="string">"Tambah Post"</span>)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Edit Medicine"</span> <span class="keyword">if</span> post <span class="keyword">else</span> <span class="string">"Tambah Medicine"</span>)
         <span class="self">self</span>.setMinimumWidth(<span class="number">400</span>)
         
         layout = QVBoxLayout(<span class="self">self</span>)
         form = QFormLayout()
         
         <span class="comment"># Input fields</span>
-        <span class="self">self</span>.title_input = QLineEdit()
-        <span class="self">self</span>.title_input.setPlaceholderText(<span class="string">"Masukkan judul post..."</span>)
+        <span class="self">self</span>.name_input = QLineEdit()
+        <span class="self">self</span>.name_input.setPlaceholderText(<span class="string">"Masukkan nama medicine..."</span>)
         
-        <span class="self">self</span>.body_input = QTextEdit()
-        <span class="self">self</span>.body_input.setPlaceholderText(<span class="string">"Masukkan isi post..."</span>)
-        <span class="self">self</span>.body_input.setMaximumHeight(<span class="number">150</span>)
+        <span class="self">self</span>.brand_input = QLineEdit()
+        <span class="self">self</span>.brand_input.setPlaceholderText(<span class="string">"Masukkan nama brand..."</span>)
         
-        form.addRow(<span class="string">"Title:"</span>, <span class="self">self</span>.title_input)
-        form.addRow(<span class="string">"Body:"</span>, <span class="self">self</span>.body_input)
+        <span class="self">self</span>.manufacturer_input = QLineEdit()
+        <span class="self">self</span>.manufacturer_input.setPlaceholderText(<span class="string">"Masukkan nama manufacturer..."</span>)
+        
+        form.addRow(<span class="string">"Name:"</span>, <span class="self">self</span>.name_input)
+        form.addRow(<span class="string">"Brand:"</span>, <span class="self">self</span>.brand_input)
+        form.addRow(<span class="string">"Manufacturer:"</span>, <span class="self">self</span>.manufacturer_input)
         layout.addLayout(form)
         
         <span class="comment"># Tombol OK dan Cancel</span>
@@ -2076,15 +2056,16 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         
         <span class="comment"># Jika mode Edit, isi form dengan data yang sudah ada</span>
         <span class="keyword">if</span> post:
-            <span class="self">self</span>.title_input.setText(post.get(<span class="string">'title'</span>, <span class="string">''</span>))
-            <span class="self">self</span>.body_input.setPlainText(post.get(<span class="string">'body'</span>, <span class="string">''</span>))
+            <span class="self">self</span>.name_input.setText(post.get(<span class="string">'name'</span>, <span class="string">''</span>))
+            <span class="self">self</span>.brand_input.setText(post.get(<span class="string">'brand'</span>, <span class="string">''</span>))
+            <span class="self">self</span>.manufacturer_input.setText(post.get(<span class="string">'manufacturer'</span>, <span class="string">''</span>))
     
     <span class="keyword">def</span> <span class="function">get_data</span>(<span class="self">self</span>):
         <span class="string">"""Ambil data dari form sebagai dict siap kirim ke API."""</span>
         <span class="keyword">return</span> {
-            <span class="string">'title'</span>: <span class="self">self</span>.title_input.text().strip(),
-            <span class="string">'body'</span>: <span class="self">self</span>.body_input.toPlainText().strip(),
-            <span class="string">'userId'</span>: <span class="number">1</span>
+            <span class="string">'name'</span>: <span class="self">self</span>.name_input.text().strip(),
+            <span class="string">'brand'</span>: <span class="self">self</span>.brand_input.text().strip(),
+            <span class="string">'manufacturer'</span>: <span class="self">self</span>.manufacturer_input.text().strip()
         }</code></pre>
                     </div>
                 </div>
@@ -2128,13 +2109,13 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
 <span class="keyword">class</span> <span class="class-name">PostViewerApp</span>(QMainWindow):
     <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
         <span class="builtin">super</span>().__init__()
-        <span class="self">self</span>.setWindowTitle(<span class="string">"API Client — SoC Demo"</span>)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Medicines Manager — SoC Demo"</span>)
         <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">900</span>, <span class="number">600</span>)
-        <span class="self">self</span>.posts_data = []
+        <span class="self">self</span>.medicines_data = []
         <span class="self">self</span>._thread = <span class="keyword">None</span>
         <span class="self">self</span>._worker = <span class="keyword">None</span>
         <span class="self">self</span>.setup_ui()
-        <span class="self">self</span>.fetch_posts()  <span class="comment"># langsung fetch saat aplikasi dibuka</span>
+        <span class="self">self</span>.fetch_medicines()  <span class="comment"># langsung fetch saat aplikasi dibuka</span>
     
     <span class="comment"># ===== SETUP UI =====</span>
     
@@ -2164,8 +2145,8 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         splitter = QSplitter(Qt.Horizontal)
         
         <span class="self">self</span>.table = QTableWidget()
-        <span class="self">self</span>.table.setColumnCount(<span class="number">2</span>)
-        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">'ID'</span>, <span class="string">'Title'</span>])
+        <span class="self">self</span>.table.setColumnCount(<span class="number">3</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">'ID'</span>, <span class="string">'Name'</span>, <span class="string">'Brand'</span>])
         <span class="self">self</span>.table.setSelectionBehavior(QTableWidget.SelectRows)
         <span class="self">self</span>.table.setEditTriggers(QTableWidget.NoEditTriggers)
         <span class="self">self</span>.table.horizontalHeader().setSectionResizeMode(<span class="number">1</span>, QHeaderView.Stretch)
@@ -2179,18 +2160,18 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         layout.addWidget(splitter)
         
         <span class="comment"># Hubungkan signals ke slots</span>
-        <span class="self">self</span>.btn_refresh.clicked.connect(<span class="self">self</span>.fetch_posts)
-        <span class="self">self</span>.btn_tambah.clicked.connect(<span class="self">self</span>.add_post)
-        <span class="self">self</span>.btn_edit.clicked.connect(<span class="self">self</span>.edit_post)
-        <span class="self">self</span>.btn_hapus.clicked.connect(<span class="self">self</span>.delete_post)
+        <span class="self">self</span>.btn_refresh.clicked.connect(<span class="self">self</span>.fetch_medicines)
+        <span class="self">self</span>.btn_tambah.clicked.connect(<span class="self">self</span>.add_medicine)
+        <span class="self">self</span>.btn_edit.clicked.connect(<span class="self">self</span>.edit_medicine)
+        <span class="self">self</span>.btn_hapus.clicked.connect(<span class="self">self</span>.delete_medicine)
         <span class="self">self</span>.table.currentCellChanged.connect(<span class="self">self</span>.on_row_selected)
     
     <span class="comment"># ===== HELPER: JALANKAN WORKER =====</span>
     
-    <span class="keyword">def</span> <span class="function">run_worker</span>(<span class="self">self</span>, <span class="parameter">action</span>, <span class="parameter">on_success</span>, <span class="parameter">post_id</span>=<span class="keyword">None</span>, <span class="parameter">title</span>=<span class="keyword">None</span>, <span class="parameter">body</span>=<span class="keyword">None</span>):
+    <span class="keyword">def</span> <span class="function">run_worker</span>(<span class="self">self</span>, <span class="parameter">action</span>, <span class="parameter">on_success</span>, <span class="parameter">medicine_id</span>=<span class="keyword">None</span>, <span class="parameter">name</span>=<span class="keyword">None</span>, <span class="parameter">brand</span>=<span class="keyword">None</span>, <span class="parameter">manufacturer</span>=<span class="keyword">None</span>):
         <span class="string">"""Helper: buat QThread + ApiWorker, hubungkan signals, lalu start."""</span>
         <span class="self">self</span>._thread = QThread()
-        <span class="self">self</span>._worker = ApiWorker(action, post_id=post_id, title=title, body=body)
+        <span class="self">self</span>._worker = ApiWorker(action, medicine_id=medicine_id, name=name, brand=brand, manufacturer=manufacturer)
         <span class="self">self</span>._worker.moveToThread(<span class="self">self</span>._thread)
         
         <span class="self">self</span>._thread.started.connect(<span class="self">self</span>._worker.run)
@@ -2210,93 +2191,95 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
             <span class="self">self</span>.status_label.setText(<span class="string">"Loading..."</span>)
             <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight:bold; color:#3498db; padding:4px;"</span>)
     
-    <span class="comment"># ===== FETCH POSTS =====</span>
+    <span class="comment"># ===== FETCH MEDICINES =====</span>
     
-    <span class="keyword">def</span> <span class="function">fetch_posts</span>(<span class="self">self</span>):
-        <span class="self">self</span>.run_worker(<span class="string">"get_posts"</span>, <span class="self">self</span>.on_posts_loaded)
+    <span class="keyword">def</span> <span class="function">fetch_medicines</span>(<span class="self">self</span>):
+        <span class="self">self</span>.run_worker(<span class="string">"get_medicines"</span>, <span class="self">self</span>.on_medicines_loaded)
     
-    <span class="keyword">def</span> <span class="function">on_posts_loaded</span>(<span class="self">self</span>, <span class="parameter">posts</span>):
-        <span class="self">self</span>.posts_data = posts[:<span class="number">20</span>]
+    <span class="keyword">def</span> <span class="function">on_medicines_loaded</span>(<span class="self">self</span>, <span class="parameter">medicines</span>):
+        <span class="self">self</span>.medicines_data = medicines
         <span class="self">self</span>.table.setRowCount(<span class="number">0</span>)
         
-        <span class="keyword">for</span> post <span class="keyword">in</span> <span class="self">self</span>.posts_data:
+        <span class="keyword">for</span> m <span class="keyword">in</span> <span class="self">self</span>.medicines_data:
             row = <span class="self">self</span>.table.rowCount()
             <span class="self">self</span>.table.insertRow(row)
-            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(post[<span class="string">'id'</span>])))
-            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(post[<span class="string">'title'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(m[<span class="string">'id'</span>])))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(m[<span class="string">'name'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">2</span>, QTableWidgetItem(m[<span class="string">'brand'</span>]))
         
-        <span class="self">self</span>.status_label.setText(<span class="string">f"</span>{<span class="builtin">len</span>(posts)}<span class="string"> posts dimuat (menampilkan 20)"</span>)
+        <span class="self">self</span>.status_label.setText(<span class="string">f"</span>{<span class="builtin">len</span>(medicines)}<span class="string"> medicines dimuat"</span>)
         <span class="self">self</span>.status_label.setStyleSheet(<span class="string">"font-weight:bold; color:#27ae60; padding:4px;"</span>)
     
     <span class="comment"># ===== ROW SELECTED → TAMPILKAN DETAIL =====</span>
     
     <span class="keyword">def</span> <span class="function">on_row_selected</span>(<span class="self">self</span>, <span class="parameter">row</span>, <span class="parameter">col</span>, <span class="parameter">prev_row</span>, <span class="parameter">prev_col</span>):
-        <span class="keyword">if</span> row < <span class="number">0</span> <span class="keyword">or</span> row >= <span class="builtin">len</span>(<span class="self">self</span>.posts_data):
+        <span class="keyword">if</span> row < <span class="number">0</span> <span class="keyword">or</span> row >= <span class="builtin">len</span>(<span class="self">self</span>.medicines_data):
             <span class="keyword">return</span>
-        post = <span class="self">self</span>.posts_data[row]
+        m = <span class="self">self</span>.medicines_data[row]
         <span class="self">self</span>.detail.setPlainText(
-            <span class="string">f"ID    : </span>{post[<span class="string">'id'</span>]}<span class="string">\n"</span>
-            <span class="string">f"Title : </span>{post[<span class="string">'title'</span>]}<span class="string">\n\n"</span>
-            <span class="string">f"Body  :\n</span>{post[<span class="string">'body'</span>]}<span class="string">"</span>
+            <span class="string">f"ID           : </span>{m[<span class="string">'id'</span>]}<span class="string">\n"</span>
+            <span class="string">f"Name         : </span>{m[<span class="string">'name'</span>]}<span class="string">\n"</span>
+            <span class="string">f"Brand        : </span>{m[<span class="string">'brand'</span>]}<span class="string">\n"</span>
+            <span class="string">f"Manufacturer : </span>{m[<span class="string">'manufacturer'</span>]}<span class="string">"</span>
         )
     
-    <span class="comment"># ===== ADD POST =====</span>
+    <span class="comment"># ===== ADD MEDICINE =====</span>
     
-    <span class="keyword">def</span> <span class="function">add_post</span>(<span class="self">self</span>):
+    <span class="keyword">def</span> <span class="function">add_medicine</span>(<span class="self">self</span>):
         dialog = PostDialog(<span class="self">self</span>)  <span class="comment"># buka dialog kosong (mode Tambah)</span>
         <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
-            <span class="keyword">if</span> <span class="keyword">not</span> data[<span class="string">'title'</span>] <span class="keyword">or</span> <span class="keyword">not</span> data[<span class="string">'body'</span>]:
-                QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi"</span>, <span class="string">"Title dan Body wajib diisi!"</span>)
+            <span class="keyword">if</span> <span class="keyword">not</span> data[<span class="string">'name'</span>] <span class="keyword">or</span> <span class="keyword">not</span> data[<span class="string">'brand'</span>]:
+                QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi"</span>, <span class="string">"Name dan Brand wajib diisi!"</span>)
                 <span class="keyword">return</span>
             <span class="self">self</span>.run_worker(
-                <span class="string">"create_post"</span>, <span class="self">self</span>.on_post_created,
-                title=data[<span class="string">'title'</span>], body=data[<span class="string">'body'</span>]
+                <span class="string">"create_medicine"</span>, <span class="self">self</span>.on_medicine_created,
+                name=data[<span class="string">'name'</span>], brand=data[<span class="string">'brand'</span>], manufacturer=data[<span class="string">'manufacturer'</span>]
             )
     
-    <span class="keyword">def</span> <span class="function">on_post_created</span>(<span class="self">self</span>, <span class="parameter">result</span>):
-        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Post dibuat! ID: </span>{result[<span class="string">'id'</span>]}<span class="string">"</span>)
-        <span class="self">self</span>.fetch_posts()
+    <span class="keyword">def</span> <span class="function">on_medicine_created</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Medicine ditambahkan! ID: </span>{result[<span class="string">'data'</span>][<span class="string">'id'</span>]}<span class="string">"</span>)
+        <span class="self">self</span>.fetch_medicines()
     
-    <span class="comment"># ===== EDIT POST =====</span>
+    <span class="comment"># ===== EDIT MEDICINE =====</span>
     
-    <span class="keyword">def</span> <span class="function">edit_post</span>(<span class="self">self</span>):
+    <span class="keyword">def</span> <span class="function">edit_medicine</span>(<span class="self">self</span>):
         row = <span class="self">self</span>.table.currentRow()
         <span class="keyword">if</span> row < <span class="number">0</span>:
-            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih post terlebih dahulu!"</span>)
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih medicine terlebih dahulu!"</span>)
             <span class="keyword">return</span>
-        post = <span class="self">self</span>.posts_data[row]
-        dialog = PostDialog(<span class="self">self</span>, post)  <span class="comment"># buka dialog dengan data lama (mode Edit)</span>
+        medicine = <span class="self">self</span>.medicines_data[row]
+        dialog = PostDialog(<span class="self">self</span>, medicine)  <span class="comment"># buka dialog dengan data lama (mode Edit)</span>
         <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
             data = dialog.get_data()
             <span class="self">self</span>.run_worker(
-                <span class="string">"update_post"</span>, <span class="self">self</span>.on_post_updated,
-                post_id=post[<span class="string">'id'</span>], title=data[<span class="string">'title'</span>], body=data[<span class="string">'body'</span>]
+                <span class="string">"update_medicine"</span>, <span class="self">self</span>.on_medicine_updated,
+                medicine_id=medicine[<span class="string">'id'</span>], name=data[<span class="string">'name'</span>], brand=data[<span class="string">'brand'</span>], manufacturer=data[<span class="string">'manufacturer'</span>]
             )
     
-    <span class="keyword">def</span> <span class="function">on_post_updated</span>(<span class="self">self</span>, <span class="parameter">result</span>):
-        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Post berhasil diupdate!"</span>)
-        <span class="self">self</span>.fetch_posts()
+    <span class="keyword">def</span> <span class="function">on_medicine_updated</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Medicine berhasil diupdate!"</span>)
+        <span class="self">self</span>.fetch_medicines()
     
-    <span class="comment"># ===== DELETE POST =====</span>
+    <span class="comment"># ===== DELETE MEDICINE =====</span>
     
-    <span class="keyword">def</span> <span class="function">delete_post</span>(<span class="self">self</span>):
+    <span class="keyword">def</span> <span class="function">delete_medicine</span>(<span class="self">self</span>):
         row = <span class="self">self</span>.table.currentRow()
         <span class="keyword">if</span> row < <span class="number">0</span>:
-            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih post terlebih dahulu!"</span>)
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih medicine terlebih dahulu!"</span>)
             <span class="keyword">return</span>
-        post_id = <span class="self">self</span>.posts_data[row][<span class="string">'id'</span>]
+        medicine_id = <span class="self">self</span>.medicines_data[row][<span class="string">'id'</span>]
         reply = QMessageBox.question(
             <span class="self">self</span>, <span class="string">"Konfirmasi"</span>,
-            <span class="string">f"Yakin ingin menghapus post ID </span>{post_id}<span class="string">?"</span>,
+            <span class="string">f"Yakin ingin menghapus medicine ID </span>{medicine_id}<span class="string">?"</span>,
             QMessageBox.Yes | QMessageBox.No
         )
         <span class="keyword">if</span> reply == QMessageBox.Yes:
-            <span class="self">self</span>.run_worker(<span class="string">"delete_post"</span>, <span class="self">self</span>.on_post_deleted, post_id=post_id)
+            <span class="self">self</span>.run_worker(<span class="string">"delete_medicine"</span>, <span class="self">self</span>.on_medicine_deleted, medicine_id=medicine_id)
     
-    <span class="keyword">def</span> <span class="function">on_post_deleted</span>(<span class="self">self</span>, <span class="parameter">result</span>):
-        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Post berhasil dihapus!"</span>)
-        <span class="self">self</span>.fetch_posts()
+    <span class="keyword">def</span> <span class="function">on_medicine_deleted</span>(<span class="self">self</span>, <span class="parameter">result</span>):
+        QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Medicine berhasil dihapus!"</span>)
+        <span class="self">self</span>.fetch_medicines()
     
     <span class="comment"># ===== ERROR HANDLER =====</span>
     
@@ -2317,11 +2300,11 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                 <div class="info-box success">
                     <div class="info-box-title">Fitur Aplikasi dengan Struktur SoC</div>
                     <ul>
-                        <li><strong>Fetch Posts:</strong> data diambil oleh <code>ApiService</code>, dijalankan oleh <code>ApiWorker</code>, ditampilkan oleh <code>main.py</code></li>
-                        <li><strong>View Detail:</strong> klik baris tabel → tampilkan detail di panel kanan</li>
-                        <li><strong>Add Post:</strong> input di <code>PostDialog</code>, request dikirim lewat worker</li>
-                        <li><strong>Edit Post:</strong> form terisi data lama, update dikirim lewat worker</li>
-                        <li><strong>Delete Post:</strong> konfirmasi dulu, baru hapus lewat worker</li>
+                        <li><strong>Fetch Medicines:</strong> data diambil oleh <code>ApiService</code>, dijalankan oleh <code>ApiWorker</code>, ditampilkan oleh <code>main.py</code></li>
+                        <li><strong>View Detail:</strong> klik baris tabel → tampilkan detail (name, brand, manufacturer) di panel kanan</li>
+                        <li><strong>Add Medicine:</strong> input di <code>PostDialog</code>, request dikirim lewat worker</li>
+                        <li><strong>Edit Medicine:</strong> form terisi data lama, update dikirim lewat worker</li>
+                        <li><strong>Delete Medicine:</strong> konfirmasi dulu, baru hapus lewat worker</li>
                         <li><strong>State Loading:</strong> semua tombol disabled saat request berjalan</li>
                     </ul>
                 </div>
@@ -2330,7 +2313,7 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                     <div class="info-box-title">Kenapa Struktur Ini Lebih Baik?</div>
                     <ul>
                         <li><strong>Mudah dibaca:</strong> mahasiswa tahu file mana untuk network, file mana untuk UI</li>
-                        <li><strong>Mudah dikembangkan:</strong> ingin tambah endpoint <span class="inline-code">/users</span>? Cukup tambah method di <code>api_service.py</code></li>
+                        <li><strong>Mudah dikembangkan:</strong> ingin tambah endpoint lain? Cukup tambah method di <code>api_service.py</code></li>
                         <li><strong>Mudah diuji:</strong> <code>ApiService</code> bisa diuji tanpa membuka GUI sama sekali</li>
                         <li><strong>Mudah dirawat:</strong> error lebih mudah dilacak karena tanggung jawab tidak bercampur</li>
                     </ul>
@@ -2343,21 +2326,16 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                 <h2>Tugas Praktikum</h2>
 
                 <div class="exercise-box">
-                    <h3>Tugas: Users Manager</h3>
-                    <p>Buatlah aplikasi desktop untuk mengelola data users dari JSONPlaceholder API (<code>https://jsonplaceholder.typicode.com/users</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
-
-                    <div class="info-box warning" style="margin: 12px 0; color:black">
-                        <div class="info-box-title">Catatan: JSONPlaceholder adalah Fake API</div>
-                        <p>JSONPlaceholder menerima semua request dan mengembalikan response yang valid, tetapi <strong>data tidak benar-benar tersimpan di server</strong>. POST selalu mengembalikan <code>id: 11</code>, PUT mengembalikan data yang dikirim, DELETE mengembalikan <code>{}</code> — semuanya simulasi. Ini normal dan memang tujuannya untuk latihan. Jangan bingung jika setelah DELETE, data masih muncul saat di-GET ulang.</p>
-                    </div>
+                    <h3>Tugas: Medicines Manager</h3>
+                    <p>Buatlah aplikasi desktop untuk mengelola data medicines menggunakan API nyata (<code>https://api.pahrul.my.id/api/medicines</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
 
                     <h4 style="margin-top: 16px;">Fitur yang Harus Diimplementasikan:</h4>
                     <ol>
-                        <li><strong>Tampilkan Daftar Users</strong> — ambil semua users via GET, tampilkan dalam tabel dengan kolom: No, Nama, Username, Email, Kota</li>
-                        <li><strong>Detail User</strong> — klik baris tabel untuk menampilkan detail lengkap user (nama, email, telepon, website, perusahaan) di panel samping</li>
-                        <li><strong>Tambah User</strong> — form input untuk POST user baru (nama, username, email), tampilkan ID yang dikembalikan server</li>
-                        <li><strong>Edit User</strong> — pilih user dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
-                        <li><strong>Hapus User</strong> — pilih user dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu</li>
+                        <li><strong>Tampilkan Daftar Medicines</strong> — ambil semua medicines via GET, tampilkan dalam tabel dengan kolom: No, Name, Brand, Manufacturer</li>
+                        <li><strong>Detail Medicine</strong> — klik baris tabel untuk menampilkan detail lengkap medicine di panel samping</li>
+                        <li><strong>Tambah Medicine</strong> — form input untuk POST medicine baru (name, brand, manufacturer), tampilkan ID yang dikembalikan server</li>
+                        <li><strong>Edit Medicine</strong> — pilih medicine dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
+                        <li><strong>Hapus Medicine</strong> — pilih medicine dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu</li>
                         <li><strong>Threading</strong> — semua API call harus berjalan di thread terpisah, UI tidak boleh freeze</li>
                         <li><strong>State Handling</strong> — tampilkan status loading saat request berjalan, pesan error jika gagal</li>
                     </ol>
@@ -2366,7 +2344,7 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                 <div class="info-box warning">
                     <div class="info-box-title">Ketentuan</div>
                     <ul>
-                        <li>Endpoint yang digunakan: <code>/users</code> dan <code>/users/{id}</code></li>
+                        <li>Endpoint yang digunakan: <code>/api/medicines</code> dan <code>/api/medicines/{id}</code></li>
                         <li>Implementasikan semua 4 HTTP method: GET, POST, PUT, DELETE</li>
                         <li>Semua network request HARUS di thread terpisah — tidak boleh ada UI freeze</li>
                         <li>Implementasikan error handling: timeout dan connection error</li>
@@ -2390,32 +2368,32 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
                                 <tr>
                                     <td>Tampilkan semua</td>
                                     <td><span class="table-code">GET</span></td>
-                                    <td><code>/users</code></td>
-                                    <td>Mengembalikan list 10 user</td>
+                                    <td><code>/api/medicines</code></td>
+                                    <td>Mengembalikan list semua medicine</td>
                                 </tr>
                                 <tr>
-                                    <td>Detail satu user</td>
+                                    <td>Detail satu medicine</td>
                                     <td><span class="table-code">GET</span></td>
-                                    <td><code>/users/{id}</code></td>
-                                    <td>Mengembalikan satu objek user</td>
+                                    <td><code>/api/medicines/{id}</code></td>
+                                    <td>Mengembalikan satu objek medicine</td>
                                 </tr>
                                 <tr>
-                                    <td>Tambah user</td>
+                                    <td>Tambah medicine</td>
                                     <td><span class="table-code">POST</span></td>
-                                    <td><code>/users</code></td>
-                                    <td>Server kembalikan data + id baru (id: 11)</td>
+                                    <td><code>/api/medicines</code></td>
+                                    <td>Body: {name, brand, manufacturer} — data benar-benar tersimpan</td>
                                 </tr>
                                 <tr>
-                                    <td>Edit user</td>
+                                    <td>Edit medicine</td>
                                     <td><span class="table-code">PUT</span></td>
-                                    <td><code>/users/{id}</code></td>
-                                    <td>Server kembalikan data yang diupdate</td>
+                                    <td><code>/api/medicines/{id}</code></td>
+                                    <td>Body: {name, brand, manufacturer} — data benar-benar diupdate</td>
                                 </tr>
                                 <tr>
-                                    <td>Hapus user</td>
+                                    <td>Hapus medicine</td>
                                     <td><span class="table-code">DELETE</span></td>
-                                    <td><code>/users/{id}</code></td>
-                                    <td>Server kembalikan <code>{}</code> jika sukses</td>
+                                    <td><code>/api/medicines/{id}</code></td>
+                                    <td>Data benar-benar dihapus dari database</td>
                                 </tr>
                             </tbody>
                         </table>
