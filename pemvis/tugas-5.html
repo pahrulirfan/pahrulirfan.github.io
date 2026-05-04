@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 5 - Threading & REST API</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Tugas 5 — Threading & REST API</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Info</div>
+                    <a href="#ketentuan" class="nav-link active">
+                        <span class="nav-number">★</span>Rubrik Penilaian
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Tugas Praktikum</div>
+                    <a href="#tugas-1" class="nav-link">
+                        <span class="nav-number">1</span>Post Manager
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Tugas 5 — Threading & REST API</h1>
+                <p class="subtitle">Implementasikan aplikasi desktop responsif yang terhubung dengan layanan REST API menggunakan multi-threading</p>
+            </header>
+
+            <!-- Indikator Penilaian -->
+            <section class="section">
+                <h2>Indikator Penilaian</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan tugas ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Menjelaskan UI freeze dan menggunakan QThread Worker Pattern</li>
+                        <li>Melakukan HTTP request di thread terpisah</li>
+                        <li>Parsing JSON dan menampilkan ke UI</li>
+                        <li>Consume minimal 2 endpoint REST API</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Ketentuan Pengumpulan -->
+            <section class="section" id="ketentuan">
+                <h2>Ketentuan Pengumpulan</h2>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Pengumpulan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li><strong>Simpan file Python</strong> dengan nama yang sesuai</li>
+                        <li><strong>Test program</strong> dan pastikan berjalan tanpa error</li>
+                        <li><strong>Ambil screenshot</strong> pada setiap aplikasi yang dijalankan</li>
+                        <li>Buat file <strong>Readme.md</strong> untuk menjelaskan secara singkat tugas yang dibuat dan menampilkan hasil screenshot</li>
+                        <li><strong>Upload ke GitHub</strong>, buat repository dengan nama <strong>T6-week11</strong> (upload file .py, file Readme.md dan screenshot aplikasi berjalan)</li>
+                        <li><strong>Submit link GitHub</strong> ke platform Berajah</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning" style="margin: 20px 0; background: #fffacd; border-left: 4px solid #f39c12;">
+                    <div class="info-box-title" style="color: #333;">Tambahan</div>
+                    <ol style="padding-left: 20px; color: #333;">
+                        <li>Tambahkan komentar <strong>Nama, NIM, dan Kelas</strong> di awal file</li>
+                        <li>Pastikan kode <strong>rapi dan mudah dibaca</strong></li>
+                    </ol>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen</th>
+                                    <th>Bobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>CRUD lengkap (GET, POST, PUT, DELETE berfungsi)</td>
+                                    <td>40%</td>
+                                </tr>
+                                <tr>
+                                    <td>Threading (semua request di thread terpisah, tidak freeze)</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>Tampilan tabel &amp; detail user</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>State &amp; error handling</td>
+                                    <td>15%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tugas 1: Post Manager -->
+            <section class="section" id="tugas-1">
+                <h2>Soal: Post Manager</h2>
+
+                <p>Buatlah aplikasi desktop untuk mengelola data post menggunakan API nyata (<code>https://api.pahrul.my.id/api/posts</code>). Aplikasi harus mampu melakukan operasi CRUD lengkap dengan UI yang responsif.</p>
+
+                <div class="exercise-box">
+                    <h3>Fitur yang Harus Diimplementasikan</h3>
+                    <ol>
+                        <li><strong>Tampilkan Daftar Posts</strong> — ambil semua posts via GET, tampilkan dalam tabel dengan kolom: ID, Title, Author, Status</li>
+                        <li><strong>Detail Post</strong> — klik baris tabel untuk menampilkan detail lengkap post (title, body, author, slug, status, comments) di panel samping</li>
+                        <li><strong>Tambah Post</strong> — form input untuk POST post baru (title, body, author, slug, status), tampilkan ID yang dikembalikan server</li>
+                        <li><strong>Edit Post</strong> — pilih post dari tabel, ubah data via PUT, tampilkan konfirmasi sukses</li>
+                        <li><strong>Hapus Post</strong> — pilih post dari tabel, hapus via DELETE dengan konfirmasi dialog terlebih dahulu (cascade delete — semua comments ikut terhapus)</li>
+                        <li><strong>Threading</strong> — semua API call harus berjalan di thread terpisah, UI tidak boleh freeze</li>
+                        <li><strong>State Handling</strong> — tampilkan status loading saat request berjalan, pesan error jika gagal</li>
+                    </ol>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Ketentuan</div>
+                    <ul>
+                        <li>Endpoint yang digunakan: <code>/api/posts</code> dan <code>/api/posts/{id}</code></li>
+                        <li>Implementasikan semua 4 HTTP method: GET, POST, PUT, DELETE</li>
+                        <li>Semua network request HARUS di thread terpisah — tidak boleh ada UI freeze</li>
+                        <li>Implementasikan error handling: timeout dan connection error</li>
+                        <li>Tombol Edit dan Hapus hanya aktif jika ada baris yang dipilih di tabel</li>
+                        <li>Field <code>slug</code> harus unik — validasi 422 dari server harus ditangani dan ditampilkan ke user</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Referensi Endpoint</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Operasi</th>
+                                    <th>Method</th>
+                                    <th>Endpoint</th>
+                                    <th>Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Tampilkan semua</td>
+                                    <td><span class="table-code">GET</span></td>
+                                    <td><code>/api/posts</code></td>
+                                    <td>Mengembalikan list semua post</td>
+                                </tr>
+                                <tr>
+                                    <td>Detail satu post</td>
+                                    <td><span class="table-code">GET</span></td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Mengembalikan post + daftar comments</td>
+                                </tr>
+                                <tr>
+                                    <td>Tambah post</td>
+                                    <td><span class="table-code">POST</span></td>
+                                    <td><code>/api/posts</code></td>
+                                    <td>Body: {title, body, author, slug, status}</td>
+                                </tr>
+                                <tr>
+                                    <td>Edit post</td>
+                                    <td><span class="table-code">PUT</span></td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Body: {title, body, author, slug, status}</td>
+                                </tr>
+                                <tr>
+                                    <td>Hapus post</td>
+                                    <td><span class="table-code">DELETE</span></td>
+                                    <td><code>/api/posts/{id}</code></td>
+                                    <td>Cascade delete — comments ikut terhapus</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Struktur Data Post</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr><th>Field</th><th>Tipe</th><th>Keterangan</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td><span class="table-code">title</span></td><td>string</td><td>Judul post — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">body</span></td><td>string</td><td>Isi konten post — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">author</span></td><td>string</td><td>Nama penulis — wajib diisi</td></tr>
+                                <tr><td><span class="table-code">slug</span></td><td>string</td><td>URL-friendly identifier — wajib unik (contoh: <code>judul-post</code>)</td></tr>
+                                <tr><td><span class="table-code">status</span></td><td>string</td><td>Status post: <code>published</code> atau <code>draft</code></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const header = document.querySelector('.page-header');
+            if (header) header.style.display = 'block';
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                showSection(href.substring(1));
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            showSection('ketentuan');
+            document.querySelector('.nav-link').classList.add('active');
+        });
+    </script>
+</body>
+</html>
