@@ -1148,13 +1148,13 @@ t2.join()
                     </table>
                 </div>
 
-                <h3>Contoh Dasar: GET dan POST</h3>
+                <h3>Contoh Dasar: GET</h3>
 
-                <p>Dua method yang paling sering dipakai. Coba jalankan kode ini langsung di terminal (tanpa UI) untuk memastikan library bekerja sebelum diintegrasikan ke PySide6.</p>
+                <p>Coba jalankan kode ini langsung di terminal (tanpa UI) untuk memastikan library bekerja sebelum diintegrasikan ke PySide6.</p>
 
                 <div class="code-container">
                     <div class="code-header">
-                        <span class="code-title">coba_requests.py</span>
+                        <span class="code-title">coba_get.py</span>
                         <span class="code-badge">Coba di Terminal</span>
                     </div>
                     <div class="code-block">
@@ -1168,7 +1168,23 @@ response.raise_for_status()
 result = response.json()
 medicines = result[<span class="string">'data'</span>]  <span class="comment"># data ada di dalam key 'data'</span>
 <span class="builtin">print</span>(<span class="string">f"Status : </span>{response.status_code}<span class="string">"</span>)   <span class="comment"># 200</span>
-<span class="builtin">print</span>(<span class="string">f"Nama   : </span>{medicines[<span class="number">0</span>][<span class="string">'name'</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Nama   : </span>{medicines[<span class="number">0</span>][<span class="string">'name'</span>]}<span class="string">"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <h3>Contoh Dasar: POST</h3>
+
+                <p>Setelah GET berhasil, coba kirim data baru ke server menggunakan POST.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">coba_post.py</span>
+                        <span class="code-badge">Coba di Terminal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> requests
+
+BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
 
 <span class="comment"># ── POST: Tambah medicine baru ─────────────────────</span>
 response = requests.post(
@@ -1322,19 +1338,26 @@ BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
                     </ul>
                 </div>
 
-                <h3>Langkah 2 — Tambahkan POST</h3>
+                <h3>Langkah 2 — POST di Thread Terpisah</h3>
 
-                <p>Sekarang kita tambahkan kemampuan mengirim data baru. Kita <strong>tidak perlu membuat file baru</strong> — cukup tambahkan <span class="inline-code">PostWorker</span> dan tombol baru ke file yang sama.</p>
-
-                <p>Tambahkan kode berikut ke <span class="inline-code">latihan_get.py</span> (setelah class <span class="inline-code">GetWorker</span>):</p>
+                <p>Sekarang kita buat file baru <span class="inline-code">latihan_post.py</span> untuk mengirim data ke server. Polanya sama dengan GET — hanya method <span class="inline-code">requests</span> yang berbeda.</p>
 
                 <div class="code-container">
                     <div class="code-header">
-                        <span class="code-title">latihan_get.py — tambahan PostWorker</span>
-                        <span class="code-badge">Langkah 2 — Tambahkan</span>
+                        <span class="code-title">latihan_post.py</span>
+                        <span class="code-badge">Langkah 2 — File Baru</span>
                     </div>
                     <div class="code-block">
-                        <pre><code><span class="comment"># Tambahkan class ini setelah GetWorker</span>
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> requests
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> QThread, Signal, QObject
+
+BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
+
 
 <span class="keyword">class</span> <span class="class-name">PostWorker</span>(QObject):
     finished = Signal()
@@ -1354,34 +1377,23 @@ BASE_URL = <span class="string">"https://api.pahrul.my.id/api"</span>
         <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
             <span class="self">self</span>.error.emit(<span class="builtin">str</span>(e))
         <span class="keyword">finally</span>:
-            <span class="self">self</span>.finished.emit()</code></pre>
-                    </div>
-                </div>
+            <span class="self">self</span>.finished.emit()
 
-                <p>Lalu di dalam <span class="inline-code">__init__</span> MainWindow, tambahkan tombol POST:</p>
 
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-title">latihan_get.py — tambahan di MainWindow.__init__</span>
-                        <span class="code-badge">Langkah 2 — Tambahkan</span>
-                    </div>
-                    <div class="code-block">
-                        <pre><code><span class="comment"># Tambahkan setelah self.btn di __init__</span>
-<span class="self">self</span>.btn_post = QPushButton(<span class="string">"Tambah Medicine Baru"</span>)
-<span class="self">self</span>.btn_post.clicked.connect(<span class="self">self</span>.send_post)
-layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
-                    </div>
-                </div>
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Latihan POST - Medicines"</span>)
+        layout = QVBoxLayout(<span class="self">self</span>)
 
-                <p>Dan tambahkan method <span class="inline-code">send_post()</span> di dalam class <span class="inline-code">MainWindow</span>:</p>
+        <span class="self">self</span>.status = QLabel(<span class="string">"Klik tombol untuk tambah medicine baru"</span>)
+        layout.addWidget(<span class="self">self</span>.status)
 
-                <div class="code-container">
-                    <div class="code-header">
-                        <span class="code-title">latihan_get.py — method send_post</span>
-                        <span class="code-badge">Langkah 2 — Tambahkan</span>
-                    </div>
-                    <div class="code-block">
-                        <pre><code>    <span class="keyword">def</span> <span class="function">send_post</span>(<span class="self">self</span>):
+        <span class="self">self</span>.btn_post = QPushButton(<span class="string">"Tambah Medicine Baru"</span>)
+        <span class="self">self</span>.btn_post.clicked.connect(<span class="self">self</span>.send_post)
+        layout.addWidget(<span class="self">self</span>.btn_post)
+
+    <span class="keyword">def</span> <span class="function">send_post</span>(<span class="self">self</span>):
         <span class="self">self</span>.status.setText(<span class="string">"Mengirim..."</span>)
         <span class="self">self</span>.btn_post.setEnabled(<span class="keyword">False</span>)
 
@@ -1404,13 +1416,22 @@ layout.addWidget(<span class="self">self</span>.btn_post)</code></pre>
         <span class="self">self</span>.thread.start()
 
     <span class="keyword">def</span> <span class="function">on_post_sent</span>(<span class="self">self</span>, <span class="parameter">data</span>):
-        <span class="self">self</span>.status.setText(<span class="string">f"Medicine berhasil ditambahkan! ID baru: </span>{data[<span class="string">'data'</span>][<span class="string">'id'</span>]}<span class="string">"</span>)</code></pre>
+        <span class="self">self</span>.status.setText(<span class="string">f"Medicine berhasil ditambahkan! ID baru: </span>{data[<span class="string">'data'</span>][<span class="string">'id'</span>]}<span class="string">"</span>)
+
+    <span class="keyword">def</span> <span class="function">on_error</span>(<span class="self">self</span>, <span class="parameter">msg</span>):
+        <span class="self">self</span>.status.setText(<span class="string">f"Error: </span>{msg}<span class="string">"</span>)
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    sys.exit(app.exec())</code></pre>
                     </div>
                 </div>
 
                 <div class="info-box success">
-                    <div class="info-box-title">Coba Jalankan Lagi</div>
-                    <p>Sekarang ada dua tombol. Klik <strong>Tambah Medicine Baru</strong> — perhatikan status berubah dan ID baru muncul. Karena ini API nyata, data benar-benar tersimpan di server dan ID yang dikembalikan adalah ID unik yang di-generate oleh database.</p>
+                    <div class="info-box-title">Coba Jalankan latihan_post.py</div>
+                    <p>Klik <strong>Tambah Medicine Baru</strong> — perhatikan status berubah dan ID baru muncul. Karena ini API nyata, data benar-benar tersimpan di server dan ID yang dikembalikan adalah ID unik yang di-generate oleh database.</p>
                 </div>
 
                 <h3>Langkah 3 — Tambahkan PUT dan DELETE</h3>
