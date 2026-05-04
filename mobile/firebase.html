@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Android Kotlin - Firebase</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+    <link rel="shortcut icon" href="../assets/img/logo-unram.png" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>Firebase Integration</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#firebase-overview" class="nav-link">Firebase Overview</a>
+                <ul class="sub-menu">
+                    <li><a href="#fb-apa">Apa itu Firebase?</a></li>
+                    <li><a href="#fb-layanan">Layanan Firebase</a></li>
+                    <li><a href="#fb-arsitektur">Arsitektur</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#firebase-setup" class="nav-link">Setup Firebase Project</a>
+                <ul class="sub-menu">
+                    <li><a href="#setup-console">Buat Project di Console</a></li>
+                    <li><a href="#setup-android">Hubungkan ke Android</a></li>
+                    <li><a href="#setup-dependency">Dependency</a></li>
+                    <li><a href="#setup-verifikasi">Verifikasi Koneksi</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#auth" class="nav-link">Firebase Authentication</a>
+                <ul class="sub-menu">
+                    <li><a href="#auth-pengenalan">Pengenalan Auth</a></li>
+                    <li><a href="#auth-email">Register & Login Email</a></li>
+                    <li><a href="#auth-google">Login dengan Google</a></li>
+                    <li><a href="#auth-state">Auth State Listener</a></li>
+                    <li><a href="#auth-profile">User Profile</a></li>
+                    <li><a href="#auth-logout">Logout</a></li>
+                    <li><a href="#auth-lupa-password">Lupa Password</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#firestore" class="nav-link">Cloud Firestore</a>
+                <ul class="sub-menu">
+                    <li><a href="#fs-pengenalan">Pengenalan Firestore</a></li>
+                    <li><a href="#fs-struktur">Struktur Data</a></li>
+                    <li><a href="#fs-setup">Setup Firestore</a></li>
+                    <li><a href="#fs-create">Create (Add)</a></li>
+                    <li><a href="#fs-read">Read (Get)</a></li>
+                    <li><a href="#fs-update">Update</a></li>
+                    <li><a href="#fs-delete">Delete</a></li>
+                    <li><a href="#fs-realtime">Realtime Listener</a></li>
+                    <li><a href="#fs-query">Query & Filter</a></li>
+                    <li><a href="#fs-rules">Security Rules</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#storage" class="nav-link">Firebase Storage</a>
+                <ul class="sub-menu">
+                    <li><a href="#st-pengenalan">Pengenalan Storage</a></li>
+                    <li><a href="#st-upload">Upload File</a></li>
+                    <li><a href="#st-download">Download & Display</a></li>
+                    <li><a href="#st-delete">Delete File</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#handson" class="nav-link">Hands-On Praktikum</a>
+                <ul class="sub-menu">
+                    <li><a href="#handson-1">Hands-On 1: Auth</a></li>
+                    <li><a href="#handson-2">Hands-On 2: Firestore CRUD</a></li>
+                    <li><a href="#handson-3">Hands-On 3: Storage</a></li>
+                    <li><a href="#handson-final">Tugas Akhir</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- ============================================ -->
+        <!-- PENDAHULUAN -->
+        <!-- ============================================ -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Firebase Integration</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami ekosistem Firebase dan layanan-layanannya</li>
+                    <li>Mampu mengonfigurasi Firebase project dan menghubungkannya ke aplikasi Android</li>
+                    <li>Mampu mengimplementasikan Firebase Authentication (Email & Google Sign-In)</li>
+                    <li>Mampu melakukan operasi CRUD pada Cloud Firestore</li>
+                    <li>Mampu menggunakan Firebase Storage untuk upload dan download file</li>
+                    <li>Memahami Firestore Security Rules dasar</li>
+                </ul>
+            </div>
+
+            <h2>Prasyarat</h2>
+            <ul>
+                <li>Akun Google (untuk mengakses Firebase Console)</li>
+                <li>Android Studio versi terbaru</li>
+                <li>Materi praktikum sebelumnya (Activity, Fragment, RecyclerView, Navigation, Room)</li>
+                <li>Koneksi internet yang stabil</li>
+            </ul>
+
+            <h2>Mengapa Cloud Backend?</h2>
+            <p>Pada praktikum sebelumnya, semua data tersimpan secara lokal di device (SharedPreferences, Internal
+                Storage, Room). Ini artinya data <strong>hanya ada di satu device</strong>. Dengan cloud backend seperti
+                Firebase, data bisa:</p>
+
+            <div class="diagram-box">
+                <pre class="diagram">
+                    LOCAL STORAGE (Praktikum sebelumnya):
+
+                    ┌────────────┐ ┌────────────┐
+                    │ Device A │ │ Device B │
+                    │ ┌────────┐ │ │ ┌────────┐ │
+                    │ │ Data X │ │ Data TIDAK │ │ │ │
+                    │ │ Data Y │ │ bisa diakses │ │ (kosong)│ │
+                    │ └────────┘ │ dari device lain │ └────────┘ │
+                    └────────────┘ └────────────┘
+
+                    CLOUD BACKEND (Firebase):
+
+                    ┌────────────┐ ┌──────────────┐ ┌────────────┐
+                    │ Device A │ │ FIREBASE │ │ Device B │
+                    │ │←──→│ CLOUD │←──→│ │
+                    │ Baca/Tulis│ │ ┌──────────┐ │ │ Baca/Tulis│
+                    │ data │ │ │ Data X │ │ │ data │
+                    │ │ │ │ Data Y │ │ │ │
+                    │ │ │ └──────────┘ │ │ │
+                    └────────────┘ └──────────────┘ └────────────┘
+                    Data SINKRON di semua device
+                </pre>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FIREBASE OVERVIEW -->
+        <!-- ============================================ -->
+        <section id="firebase-overview" class="section">
+            <h1>Firebase Overview</h1>
+
+            <article id="fb-apa">
+                <h2>Apa itu Firebase?</h2>
+                <p>Firebase adalah platform pengembangan aplikasi dari Google yang menyediakan berbagai layanan
+                    backend-as-a-service (BaaS). Dengan Firebase, developer tidak perlu membuat dan mengelola server
+                    sendiri. Firebase menyediakan infrastruktur siap pakai untuk autentikasi, database, storage,
+                    analytics, dan banyak lagi.</p>
+
+                <h3>Keuntungan Menggunakan Firebase</h3>
+                <ul>
+                    <li><strong>Serverless</strong> — Tidak perlu membuat, deploy, atau maintain server</li>
+                    <li><strong>Realtime</strong> — Data otomatis sinkron ke semua client secara real-time</li>
+                    <li><strong>Scalable</strong> — Infrastruktur Google yang scale secara otomatis</li>
+                    <li><strong>Gratis untuk memulai</strong> — Free tier yang cukup untuk development dan aplikasi
+                        kecil</li>
+                    <li><strong>SDK resmi</strong> — Library untuk Android, iOS, Web, Flutter, dll</li>
+                    <li><strong>Terintegrasi</strong> — Semua layanan Firebase saling terhubung</li>
+                </ul>
+            </article>
+
+            <article id="fb-layanan">
+                <h2>Layanan Firebase yang Akan Dipelajari</h2>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Layanan</th>
+                            <th>Fungsi</th>
+                            <th>Analogi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Authentication</strong></td>
+                            <td>Autentikasi user (login/register)</td>
+                            <td>Seperti satpam yang menjaga siapa yang boleh masuk</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cloud Firestore</strong></td>
+                            <td>Database NoSQL cloud untuk menyimpan data terstruktur</td>
+                            <td>Seperti lemari arsip digital di cloud</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cloud Storage</strong></td>
+                            <td>Menyimpan file (gambar, video, dokumen)</td>
+                            <td>Seperti Google Drive khusus untuk aplikasi</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Layanan Firebase Lainnya (Tidak Dibahas)</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Layanan</th>
+                            <th>Fungsi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Realtime Database</td>
+                            <td>Database realtime sederhana (pendahulu Firestore)</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Messaging (FCM)</td>
+                            <td>Push notification</td>
+                        </tr>
+                        <tr>
+                            <td>Crashlytics</td>
+                            <td>Crash reporting</td>
+                        </tr>
+                        <tr>
+                            <td>Analytics</td>
+                            <td>Analisis perilaku user</td>
+                        </tr>
+                        <tr>
+                            <td>Remote Config</td>
+                            <td>Konfigurasi app tanpa update</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Functions</td>
+                            <td>Server-side logic</td>
+                        </tr>
+                        <tr>
+                            <td>App Distribution</td>
+                            <td>Distribusi app untuk testing</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="fb-arsitektur">
+                <h2>Arsitektur Aplikasi dengan Firebase</h2>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        ┌──────────────────────────────────────────────────────────────┐
+                        │ APLIKASI ANDROID │
+                        │ │
+                        │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ │
+                        │ │ UI │ │ Fragment │ │ ViewModel│ │Repository│ │
+                        │ │ (Layout) │→ │ │→ │ │→ │ │ │
+                        │ └──────────┘ └──────────┘ └──────────┘ └────┬─────┘ │
+                        │ │ │
+                        └───────────────────────────────────────────────────┼─────────┘
+                        │
+                        Firebase SDK │
+                        ▼
+                        ┌──────────────────────────────────────────────────────────────┐
+                        │ FIREBASE CLOUD │
+                        │ │
+                        │ ┌────────────────┐ ┌──────────────┐ ┌──────────────┐ │
+                        │ │ Authentication │ │ Firestore │ │ Storage │ │
+                        │ │ │ │ (Database) │ │ (Files) │ │
+                        │ │ • Email/Pass │ │ │ │ │ │
+                        │ │ • Google │ │ • Collections│ │ • Images │ │
+                        │ │ • Facebook │ │ • Documents │ │ • Videos │ │
+                        │ │ • Phone │ │ • Queries │ │ • Documents │ │
+                        │ └────────────────┘ └──────────────┘ └──────────────┘ │
+                        │ │
+                        └──────────────────────────────────────────────────────────────┘
+                    </pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- SETUP FIREBASE -->
+        <!-- ============================================ -->
+        <section id="firebase-setup" class="section">
+            <h1>Setup Firebase Project</h1>
+
+            <article id="setup-console">
+                <h2>Langkah 1: Buat Project di Firebase Console</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buka Firebase Console</h4>
+                            <p>Buka browser dan kunjungi <code>console.firebase.google.com</code>. Login dengan akun
+                                Google Anda.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Buat Project Baru</h4>
+                            <p>Klik tombol <strong>"Create a project"</strong> atau <strong>"Add project"</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Masukkan Nama Project</h4>
+                            <p>Beri nama project, misalnya <strong>"StudentDirectoryApp"</strong>. Firebase akan
+                                otomatis membuat project ID yang unik. Klik <strong>Continue</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Google Analytics (Opsional)</h4>
+                            <p>Anda bisa mengaktifkan atau menonaktifkan Google Analytics. Untuk praktikum ini, bisa
+                                dinonaktifkan. Klik <strong>"Create project"</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Project Siap</h4>
+                            <p>Tunggu beberapa saat hingga project selesai dibuat, lalu klik <strong>"Continue"</strong>
+                                untuk masuk ke Firebase Dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="setup-android">
+                <h2>Langkah 2: Hubungkan Firebase ke Android</h2>
+
+                <h3>Cara 1: Melalui Firebase Console (Manual)</h3>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Klik ikon Android</h4>
+                            <p>Di dashboard Firebase, klik ikon <strong>Android</strong> untuk menambahkan aplikasi
+                                Android.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Masukkan Package Name</h4>
+                            <p>Masukkan <strong>Android package name</strong> aplikasi Anda. Ini harus sama persis
+                                dengan <code>applicationId</code> di file <code>build.gradle.kts</code> (contoh:
+                                <code>com.example.studentcontactapp</code>). Anda bisa menemukan package name di file
+                                <code>build.gradle.kts (Module: app)</code> pada bagian <code>namespace</code> atau
+                                <code>applicationId</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Masukkan SHA-1 (Untuk Google Sign-In)</h4>
+                            <p>SHA-1 fingerprint <strong>wajib</strong> untuk fitur Google Sign-In. Cara mendapatkannya:
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan SHA-1 melalui Terminal Android Studio</span>
+                    </div>
+                    <pre class="no-copy">
+                        # Cara 1: Melalui Gradle Task di Android Studio
+                        # Buka panel Gradle (kanan atas) →
+                        # app → Tasks → android → signingReport
+                        # SHA-1 akan muncul di panel Run
+
+                        # Cara 2: Melalui Terminal
+                        # Windows:
+                        keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey
+                        -storepass android -keypass android
+
+                        # macOS/Linux:
+                        keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android
+                        -keypass android
+
+                        # Contoh output:
+                        # SHA1: DA:39:A3:EE:5E:6B:4B:0D:32:55:BF:EF:95:60:18:90:AF:D8:07:09</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <h4>Download google-services.json</h4>
+                            <p>Klik <strong>"Register app"</strong>, lalu download file
+                                <code>google-services.json</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">5</span>
+                        <div class="step-content">
+                            <h4>Letakkan file di project</h4>
+                            <p>Pindahkan file <code>google-services.json</code> ke folder <strong>app/</strong> di
+                                project Android Studio Anda (sejajar dengan folder <code>src</code>).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Lokasi google-services.json</span>
+                    </div>
+                    <pre class="no-copy">
+                        MyProject/
+                        ├── app/
+                        │ ├── google-services.json ← LETAKKAN DI SINI
+                        │ ├── src/
+                        │ │ └── main/
+                        │ │ ├── java/
+                        │ │ └── res/
+                        │ └── build.gradle.kts
+                        ├── build.gradle.kts
+                        └── settings.gradle.kts</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Penting: Keamanan google-services.json</h4>
+                    <ul>
+                        <li>File ini berisi konfigurasi Firebase project Anda</li>
+                        <li>Jangan upload ke repository publik (tambahkan ke <code>.gitignore</code>)</li>
+                        <li>Jika berubah konfigurasi di console, download ulang file ini</li>
+                    </ul>
+                </div>
+
+                <h3>Cara 2: Melalui Android Studio (Firebase Assistant)</h3>
+                <div class="info-box">
+                    <h4>Alternatif yang Lebih Mudah</h4>
+                    <p>Di Android Studio, buka menu <strong>Tools → Firebase</strong>. Firebase Assistant akan memandu
+                        Anda menghubungkan project secara otomatis. Pilih layanan yang diinginkan dan ikuti
+                        langkah-langkahnya.</p>
+                </div>
+            </article>
+
+            <article id="setup-dependency">
+                <h2>Langkah 3: Tambahkan Dependency Firebase</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Project level) atau settings.gradle.kts</span>
+                    </div>
+                    <pre class="no-copy">
+                        // Di settings.gradle.kts, pastikan ada:
+                        pluginManagement {
+                        repositories {
+                        google()
+                        mavenCentral()
+                        gradlePluginPortal()
+                        }
+                        }
+
+                        // Di build.gradle.kts (Project level):
+                        plugins {
+                        id("com.android.application") version "8.2.2" apply false
+                        id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+                        id("com.google.gms.google-services") version "4.4.1" apply false // Tambahkan ini
+                        }</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app)</span>
+                    </div>
+                    <pre class="no-copy">
+                        plugins {
+                        id("com.android.application")
+                        id("org.jetbrains.kotlin.android")
+                        id("com.google.gms.google-services") // Tambahkan ini
+                        }
+
+                        dependencies {
+                        // =============================================
+                        // Firebase BoM (Bill of Materials)
+                        // Mengelola versi semua library Firebase secara otomatis
+                        // =============================================
+                        implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
+
+                        // Firebase Authentication
+                        implementation("com.google.firebase:firebase-auth-ktx")
+
+                        // Google Sign-In
+                        implementation("com.google.android.gms:play-services-auth:21.0.0")
+
+                        // Credential Manager (untuk Google Sign-In modern)
+                        implementation("androidx.credentials:credentials:1.3.0")
+                        implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
+                        implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
+
+                        // Cloud Firestore
+                        implementation("com.google.firebase:firebase-firestore-ktx")
+
+                        // Firebase Storage
+                        implementation("com.google.firebase:firebase-storage-ktx")
+
+                        // Glide (untuk load gambar dari URL)
+                        implementation("com.github.bumptech.glide:glide:4.16.0")
+
+                        // Coroutines
+                        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+                        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+
+                        // Lifecycle
+                        implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
+                        // dependency lainnya dari praktikum sebelumnya...
+                        implementation("androidx.core:core-ktx:1.12.0")
+                        implementation("androidx.appcompat:appcompat:1.6.1")
+                        implementation("com.google.android.material:material:1.11.0")
+                        implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+                        implementation("androidx.recyclerview:recyclerview:1.3.2")
+                        implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+                        implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+                        }</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Apa itu Firebase BoM?</h4>
+                    <p>Firebase Bill of Materials (BoM) memastikan semua library Firebase yang Anda gunakan kompatibel
+                        satu sama lain. Dengan BoM, Anda tidak perlu menentukan versi untuk setiap library Firebase —
+                        cukup tentukan versi BoM, dan semua library akan mengikuti versi yang kompatibel.</p>
+                </div>
+            </article>
+
+            <article id="setup-verifikasi">
+                <h2>Langkah 4: Verifikasi Koneksi Firebase</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Sync Gradle</h4>
+                            <p>Klik <strong>"Sync Now"</strong> dan pastikan tidak ada error.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Tambahkan Internet Permission</h4>
+                            <p>Buka <code>AndroidManifest.xml</code> dan pastikan permission internet ada:</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml</span>
+                    </div>
+                    <pre class="no-copy">
+                        &lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+
+                        &lt;!-- Permission Internet (WAJIB untuk Firebase) --&gt;
+                        &lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+
+                        &lt;application
+                        ... &gt;
+                        &lt;!-- Activities --&gt;
+                        &lt;/application&gt;
+
+                        &lt;/manifest&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Build dan jalankan aplikasi</h4>
+                            <p>Jika berhasil build tanpa error, koneksi Firebase sudah benar. Anda bisa memverifikasi di
+                                Firebase Console — di halaman project, akan ada notifikasi bahwa app berhasil terhubung.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FIREBASE AUTHENTICATION -->
+        <!-- ============================================ -->
+        <section id="auth" class="section">
+            <h1>Firebase Authentication</h1>
+
+            <article id="auth-pengenalan">
+                <h2>Pengenalan Firebase Authentication</h2>
+                <p>Firebase Authentication menyediakan layanan backend, SDK, dan UI library siap pakai untuk
+                    mengautentikasi user ke aplikasi Anda. Firebase Auth mendukung berbagai metode autentikasi:</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Metode</th>
+                            <th>Keterangan</th>
+                            <th>Status di Praktikum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Email/Password</td>
+                            <td>Register dan login dengan email & password</td>
+                            <td>Dibahas</td>
+                        </tr>
+                        <tr>
+                            <td>Google Sign-In</td>
+                            <td>Login menggunakan akun Google</td>
+                            <td>Dibahas</td>
+                        </tr>
+                        <tr>
+                            <td>Facebook Login</td>
+                            <td>Login menggunakan akun Facebook</td>
+                            <td>Tidak dibahas</td>
+                        </tr>
+                        <tr>
+                            <td>Phone Number</td>
+                            <td>Login dengan OTP via SMS</td>
+                            <td>Tidak dibahas</td>
+                        </tr>
+                        <tr>
+                            <td>Anonymous</td>
+                            <td>Login tanpa credentials (guest)</td>
+                            <td>Tidak dibahas</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Mengaktifkan Authentication di Firebase Console</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Di Firebase Console, pilih project Anda</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Di panel kiri, klik <strong>Build → Authentication</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Klik <strong>"Get started"</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Di tab <strong>"Sign-in method"</strong>, aktifkan:
+                            <ul>
+                                <li><strong>Email/Password</strong> → Enable → Save</li>
+                                <li><strong>Google</strong> → Enable → pilih support email → Save</li>
+                            </ul>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="auth-email">
+                <h2>Register dan Login dengan Email/Password</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat layout untuk halaman auth</h4>
+                            <p>Buat file <code>res/layout/activity_auth.xml</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_auth.xml</span>
+                    </div>
+                    <pre class="no-copy">
+                        &lt;?xml version="1.0" encoding="utf-8"?&gt;
+                        &lt;ScrollView
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fillViewport="true"&gt;
+
+                        &lt;LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="24dp"
+                        android:gravity="center_horizontal"&gt;
+
+                        &lt;TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Student Directory"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="48dp"
+                        android:layout_marginBottom="8dp" /&gt;
+
+                        &lt;TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Masuk atau daftar untuk melanjutkan"
+                        android:textColor="#757575"
+                        android:layout_marginBottom="32dp" /&gt;
+
+                        &lt;!-- Input Email --&gt;
+                        &lt;com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Email"
+                        android:layout_marginBottom="12dp"&gt;
+
+                        &lt;com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etEmail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress" /&gt;
+
+                        &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+                        &lt;!-- Input Password --&gt;
+                        &lt;com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Password"
+                        app:passwordToggleEnabled="true"
+                        android:layout_marginBottom="8dp"&gt;
+
+                        &lt;com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword" /&gt;
+
+                        &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+                        &lt;!-- Link Lupa Password --&gt;
+                        &lt;TextView
+                        android:id="@+id/tvForgotPassword"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lupa Password?"
+                        android:textColor="#1976D2"
+                        android:layout_gravity="end"
+                        android:layout_marginBottom="24dp" /&gt;
+
+                        &lt;!-- Tombol Login --&gt;
+                        &lt;Button
+                        android:id="@+id/btnLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Login" /&gt;
+
+                        &lt;!-- Tombol Register --&gt;
+                        &lt;com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRegister"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Daftar Akun Baru"
+                        android:layout_marginTop="8dp" /&gt;
+
+                        &lt;!-- Divider --&gt;
+                        &lt;LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginVertical="24dp"&gt;
+
+                        &lt;View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="#E0E0E0" /&gt;
+
+                        &lt;TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" atau "
+                        android:textColor="#9E9E9E" /&gt;
+
+                        &lt;View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="#E0E0E0" /&gt;
+
+                        &lt;/LinearLayout&gt;
+
+                        &lt;!-- Tombol Login Google --&gt;
+                        &lt;com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnGoogleSignIn"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Masuk dengan Google"
+                        android:textColor="#444444" /&gt;
+
+                        &lt;!-- Progress Bar --&gt;
+                        &lt;ProgressBar
+                        android:id="@+id/progressBar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone" /&gt;
+
+                        &lt;/LinearLayout&gt;
+
+                        &lt;/ScrollView&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Implementasi AuthActivity untuk Email/Password</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AuthActivity.kt</span>
+                    </div>
+                    <pre class="no-copy">
+                        package com.example.myapp
+
+                        import android.content.Intent
+                        import android.os.Bundle
+                        import android.view.View
+                        import android.widget.Button
+                        import android.widget.ProgressBar
+                        import android.widget.TextView
+                        import android.widget.Toast
+                        import androidx.appcompat.app.AppCompatActivity
+                        import com.google.android.material.textfield.TextInputEditText
+                        import com.google.firebase.auth.FirebaseAuth
+                        import com.google.firebase.auth.FirebaseUser
+
+                        class AuthActivity : AppCompatActivity() {
+
+                        // Instance Firebase Auth
+                        private lateinit var auth: FirebaseAuth
+
+                        private lateinit var etEmail: TextInputEditText
+                        private lateinit var etPassword: TextInputEditText
+                        private lateinit var progressBar: ProgressBar
+
+                        override fun onCreate(savedInstanceState: Bundle?) {
+                        super.onCreate(savedInstanceState)
+                        setContentView(R.layout.activity_auth)
+
+                        // Inisialisasi Firebase Auth
+                        auth = FirebaseAuth.getInstance()
+
+                        // Bind views
+                        etEmail = findViewById(R.id.etEmail)
+                        etPassword = findViewById(R.id.etPassword)
+                        progressBar = findViewById(R.id.progressBar)
+
+                        // Tombol Login
+                        findViewById&lt;Button&gt;(R.id.btnLogin).setOnClickListener {
+                        loginWithEmail()
+                        }
+
+                        // Tombol Register
+                        findViewById&lt;Button&gt;(R.id.btnRegister).setOnClickListener {
+                        registerWithEmail()
+                        }
+
+                        // Lupa Password
+                        findViewById&lt;TextView&gt;(R.id.tvForgotPassword).setOnClickListener {
+                        resetPassword()
+                        }
+                        }
+
+                        // =============================================
+                        // Cek apakah user sudah login saat app dibuka
+                        // =============================================
+                        override fun onStart() {
+                        super.onStart()
+                        val currentUser = auth.currentUser
+                        if (currentUser != null) {
+                        // User sudah login, langsung ke MainActivity
+                        navigateToMain(currentUser)
+                        }
+                        }
+
+                        // =============================================
+                        // REGISTER dengan Email dan Password
+                        // =============================================
+                        private fun registerWithEmail() {
+                        val email = etEmail.text.toString().trim()
+                        val password = etPassword.text.toString().trim()
+
+                        if (!validateInput(email, password)) return
+
+                        showLoading(true)
+
+                        auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                        showLoading(false)
+
+                        if (task.isSuccessful) {
+                        // Register berhasil
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Registrasi berhasil!", Toast.LENGTH_SHORT).show()
+                        navigateToMain(user)
+                        } else {
+                        // Register gagal
+                        Toast.makeText(this,
+                        "Registrasi gagal: ${task.exception?.message}",
+                        Toast.LENGTH_LONG
+                        ).show()
+                        }
+                        }
+                        }
+
+                        // =============================================
+                        // LOGIN dengan Email dan Password
+                        // =============================================
+                        private fun loginWithEmail() {
+                        val email = etEmail.text.toString().trim()
+                        val password = etPassword.text.toString().trim()
+
+                        if (!validateInput(email, password)) return
+
+                        showLoading(true)
+
+                        auth.signInWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this) { task ->
+                        showLoading(false)
+
+                        if (task.isSuccessful) {
+                        // Login berhasil
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Login berhasil!", Toast.LENGTH_SHORT).show()
+                        navigateToMain(user)
+                        } else {
+                        // Login gagal
+                        Toast.makeText(this,
+                        "Login gagal: ${task.exception?.message}",
+                        Toast.LENGTH_LONG
+                        ).show()
+                        }
+                        }
+                        }
+
+                        // =============================================
+                        // RESET PASSWORD
+                        // =============================================
+                        private fun resetPassword() {
+                        val email = etEmail.text.toString().trim()
+                        if (email.isEmpty()) {
+                        etEmail.error = "Masukkan email untuk reset password"
+                        return
+                        }
+
+                        auth.sendPasswordResetEmail(email)
+                        .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                        Toast.makeText(this,
+                        "Email reset password telah dikirim ke $email",
+                        Toast.LENGTH_LONG
+                        ).show()
+                        } else {
+                        Toast.makeText(this,
+                        "Gagal: ${task.exception?.message}",
+                        Toast.LENGTH_LONG
+                        ).show()
+                        }
+                        }
+                        }
+
+                        // =============================================
+                        // VALIDASI INPUT
+                        // =============================================
+                        private fun validateInput(email: String, password: String): Boolean {
+                        if (email.isEmpty()) {
+                        etEmail.error = "Email harus diisi"
+                        etEmail.requestFocus()
+                        return false
+                        }
+
+                        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                        etEmail.error = "Format email tidak valid"
+                        etEmail.requestFocus()
+                        return false
+                        }
+
+                        if (password.isEmpty()) {
+                        etPassword.error = "Password harus diisi"
+                        etPassword.requestFocus()
+                        return false
+                        }
+
+                        if (password.length < 6) { etPassword.error="Password minimal 6 karakter"
+                            etPassword.requestFocus() return false } return true }
+                            //=============================================// NAVIGASI KE MAIN
+                            //=============================================private fun navigateToMain(user:
+                            FirebaseUser?) { val intent=Intent(this, MainActivity::class.java) startActivity(intent)
+                            finish() } private fun showLoading(show: Boolean) { progressBar.visibility=if (show)
+                            View.VISIBLE else View.GONE } }</pre>
+                </div>
+            </article>
+
+            <article id="auth-google">
+                <h2>Login dengan Google Sign-In</h2>
+                <p>Google Sign-In memungkinkan user login dengan akun Google mereka. Ini adalah metode login paling
+                    populer karena hampir semua pengguna Android memiliki akun Google.</p>
+
+                <div class="info-box">
+                    <h4>Prasyarat Google Sign-In</h4>
+                    <ul>
+                        <li>SHA-1 fingerprint sudah didaftarkan di Firebase Console</li>
+                        <li>Google Sign-In sudah diaktifkan di Authentication → Sign-in method</li>
+                        <li>File <code>google-services.json</code> sudah diperbarui setelah menambahkan SHA-1</li>
+                    </ul>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Dapatkan Web Client ID</h4>
+                            <p>Di Firebase Console → Authentication → Sign-in method → Google → Web SDK configuration →
+                                <strong>Web client ID</strong>. Copy ID ini. Atau Anda bisa menemukannya di file
+                                <code>google-services.json</code> pada bagian <code>client_type: 3</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <h4>Simpan Web Client ID di strings.xml</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/values/strings.xml</span>
+                    </div>
+                    <pre class="no-copy">
+                        &lt;resources&gt;
+                        &lt;string name="app_name"&gt;Student Directory&lt;/string&gt;
+                        &lt;string
+                        name="default_web_client_id"&gt;YOUR_WEB_CLIENT_ID.apps.googleusercontent.com&lt;/string&gt;
+                        &lt;/resources&gt;</pre>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <h4>Implementasi Google Sign-In di AuthActivity</h4>
+                            <p>Tambahkan kode berikut di <code>AuthActivity.kt</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AuthActivity.kt - Tambahan Google Sign-In</span>
+                    </div>
+                    <pre class="no-copy">
+                        // Tambahkan import berikut di bagian atas file:
+                        import androidx.activity.result.contract.ActivityResultContracts
+                        import com.google.android.gms.auth.api.signin.GoogleSignIn
+                        import com.google.android.gms.auth.api.signin.GoogleSignInClient
+                        import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+                        import com.google.android.gms.common.api.ApiException
+                        import com.google.firebase.auth.GoogleAuthProvider
+
+                        class AuthActivity : AppCompatActivity() {
+
+                        private lateinit var auth: FirebaseAuth
+                        private lateinit var googleSignInClient: GoogleSignInClient
+
+                        // ... variabel lainnya ...
+
+                        // ActivityResultLauncher untuk Google Sign-In
+                        private val googleSignInLauncher = registerForActivityResult(
+                        ActivityResultContracts.StartActivityForResult()
+                        ) { result ->
+                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        try {
+                        val account = task.getResult(ApiException::class.java)
+                        // Berhasil mendapatkan akun Google, autentikasi ke Firebase
+                        firebaseAuthWithGoogle(account.idToken!!)
+                        } catch (e: ApiException) {
+                        showLoading(false)
+                        Toast.makeText(this, "Google Sign-In gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+
+                        override fun onCreate(savedInstanceState: Bundle?) {
+                        super.onCreate(savedInstanceState)
+                        setContentView(R.layout.activity_auth)
+
+                        auth = FirebaseAuth.getInstance()
+
+                        // Konfigurasi Google Sign-In
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+
+                        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+                        // ... bind views dan setup listener lainnya ...
+
+                        // Tombol Google Sign-In
+                        findViewById&lt;Button&gt;(R.id.btnGoogleSignIn).setOnClickListener {
+                        signInWithGoogle()
+                        }
+                        }
+
+                        // =============================================
+                        // GOOGLE SIGN-IN
+                        // =============================================
+                        private fun signInWithGoogle() {
+                        showLoading(true)
+                        val signInIntent = googleSignInClient.signInIntent
+                        googleSignInLauncher.launch(signInIntent)
+                        }
+
+                        // Autentikasi token Google ke Firebase
+                        private fun firebaseAuthWithGoogle(idToken: String) {
+                        val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+                        auth.signInWithCredential(credential)
+                        .addOnCompleteListener(this) { task ->
+                        showLoading(false)
+
+                        if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Login Google berhasil!", Toast.LENGTH_SHORT).show()
+                        navigateToMain(user)
+                        } else {
+                        Toast.makeText(this,
+                        "Autentikasi gagal: ${task.exception?.message}",
+                        Toast.LENGTH_LONG
+                        ).show()
+                        }
+                        }
+                        }
+
+                        // ... method lainnya (loginWithEmail, registerWithEmail, dll) ...
+                        }</pre>
+                </div>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        Alur Google Sign-In:
+
+                        1. User klik "Masuk dengan Google"
+                        │
+                        2. Tampilkan Google Account Picker
+                        │
+                        3. User pilih akun Google
+                        │
+                        4. Google memberikan ID Token
+                        │
+                        5. Kirim token ke Firebase Auth
+                        (firebaseAuthWithGoogle)
+                        │
+                        6. Firebase memverifikasi token
+                        │
+                        7. Jika valid → Login berhasil
+                        → Navigasi ke MainActivity
+                    </pre>
+                </div>
+            </article>
+
+            <article id="auth-state">
+                <h2>Auth State Listener</h2>
+                <p>Auth State Listener memungkinkan Anda mendengarkan perubahan status autentikasi secara realtime
+                    (login/logout).</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Monitoring Auth State</span>
+                    </div>
+                    <pre class="no-copy">
+                        class MainActivity : AppCompatActivity() {
+
+                        private lateinit var auth: FirebaseAuth
+                        private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+
+                        override fun onCreate(savedInstanceState: Bundle?) {
+                        super.onCreate(savedInstanceState)
+                        setContentView(R.layout.activity_main)
+
+                        auth = FirebaseAuth.getInstance()
+
+                        // Buat listener
+                        authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+                        val user = firebaseAuth.currentUser
+                        if (user != null) {
+                        // User sedang login
+                        updateUI(user)
+                        } else {
+                        // User tidak login, redirect ke AuthActivity
+                        startActivity(Intent(this, AuthActivity::class.java))
+                        finish()
+                        }
+                        }
+                        }
+
+                        override fun onStart() {
+                        super.onStart()
+                        auth.addAuthStateListener(authStateListener) // Mulai listen
+                        }
+
+                        override fun onStop() {
+                        super.onStop()
+                        auth.removeAuthStateListener(authStateListener) // Stop listen
+                        }
+
+                        private fun updateUI(user: FirebaseUser) {
+                        // Tampilkan info user
+                        val tvName = findViewById&lt;TextView&gt;(R.id.tvUserName)
+                        val tvEmail = findViewById&lt;TextView&gt;(R.id.tvUserEmail)
+
+                        tvName.text = user.displayName ?: "User"
+                        tvEmail.text = user.email ?: ""
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="auth-profile">
+                <h2>Mengakses User Profile</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mengakses informasi user yang sedang login</span>
+                    </div>
+                    <pre class="no-copy">
+                        val user = FirebaseAuth.getInstance().currentUser
+
+                        user?.let {
+                        val uid = it.uid // User ID unik
+                        val name = it.displayName // Nama (dari Google)
+                        val email = it.email // Email
+                        val photoUrl = it.photoUrl // URL foto profil (dari Google)
+                        val isEmailVerified = it.isEmailVerified // Apakah email sudah diverifikasi
+                        val providerData = it.providerData // Daftar provider (google, email, dll)
+
+                        // Menampilkan foto profil menggunakan Glide
+                        photoUrl?.let { url ->
+                        Glide.with(this)
+                        .load(url)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .into(ivProfilePhoto)
+                        }
+                        }
+
+                        // Mengecek apakah user login
+                        if (FirebaseAuth.getInstance().currentUser != null) {
+                        // User sedang login
+                        } else {
+                        // User belum login
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="auth-logout">
+                <h2>Logout</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Implementasi Logout</span>
+                    </div>
+                    <pre class="no-copy">
+                        private fun logout() {
+                        // 1. Sign out dari Firebase
+                        FirebaseAuth.getInstance().signOut()
+
+                        // 2. Sign out dari Google (jika login via Google)
+                        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+                        val googleSignInClient = GoogleSignIn.getClient(this, gso)
+                        googleSignInClient.signOut()
+
+                        // 3. Redirect ke AuthActivity
+                        val intent = Intent(this, AuthActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="auth-lupa-password">
+                <h2>Lupa Password & Email Verification</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Fitur tambahan Authentication</span>
+                    </div>
+                    <pre class="no-copy">
+                        // ===== Kirim Email Reset Password =====
+                        fun sendPasswordReset(email: String) {
+                        FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                        .addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                        Toast.makeText(this, "Email reset dikirim ke $email", Toast.LENGTH_LONG).show()
+                        }
+                        }
+                        }
+
+                        // ===== Kirim Email Verifikasi =====
+                        fun sendEmailVerification() {
+                        val user = FirebaseAuth.getInstance().currentUser
+                        user?.sendEmailVerification()
+                        ?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                        Toast.makeText(this, "Email verifikasi dikirim", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        }
+
+                        // ===== Update Profil User =====
+                        fun updateUserProfile(name: String) {
+                        val user = FirebaseAuth.getInstance().currentUser
+                        val profileUpdates = UserProfileChangeRequest.Builder()
+                        .setDisplayName(name)
+                        .build()
+
+                        user?.updateProfile(profileUpdates)
+                        ?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                        Toast.makeText(this, "Profil diperbarui", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        }
+
+                        // ===== Update Password =====
+                        fun updatePassword(newPassword: String) {
+                        val user = FirebaseAuth.getInstance().currentUser
+                        user?.updatePassword(newPassword)
+                        ?.addOnCompleteListener { task ->
+                        if (task.isSuccessful) {
+                        Toast.makeText(this, "Password diperbarui", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        }</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- CLOUD FIRESTORE -->
+        <!-- ============================================ -->
+        <section id="firestore" class="section">
+            <h1>Cloud Firestore</h1>
+
+            <article id="fs-pengenalan">
+                <h2>Pengenalan Cloud Firestore</h2>
+                <p>Cloud Firestore adalah database NoSQL yang fleksibel, scalable, dan realtime dari Google. Berbeda
+                    dengan database relasional (SQL), Firestore menyimpan data dalam bentuk <strong>dokumen</strong>
+                    yang diorganisir dalam <strong>koleksi</strong>.</p>
+
+                <h3>Firestore vs Realtime Database vs Room</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Room (Lokal)</th>
+                            <th>Realtime DB</th>
+                            <th>Firestore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Lokasi</td>
+                            <td>Device lokal</td>
+                            <td>Cloud</td>
+                            <td>Cloud</td>
+                        </tr>
+                        <tr>
+                            <td>Tipe</td>
+                            <td>SQL (Relasional)</td>
+                            <td>NoSQL (JSON tree)</td>
+                            <td>NoSQL (Dokumen)</td>
+                        </tr>
+                        <tr>
+                            <td>Query</td>
+                            <td>SQL lengkap</td>
+                            <td>Terbatas</td>
+                            <td>Query kompleks</td>
+                        </tr>
+                        <tr>
+                            <td>Offline</td>
+                            <td>Selalu offline</td>
+                            <td>Ya</td>
+                            <td>Ya</td>
+                        </tr>
+                        <tr>
+                            <td>Realtime</td>
+                            <td>Tidak</td>
+                            <td>Ya</td>
+                            <td>Ya</td>
+                        </tr>
+                        <tr>
+                            <td>Multi-device</td>
+                            <td>Tidak</td>
+                            <td>Ya</td>
+                            <td>Ya</td>
+                        </tr>
+                        <tr>
+                            <td>Rekomendasi</td>
+                            <td>Data lokal</td>
+                            <td>Simple realtime</td>
+                            <td>Production apps</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </article>
+
+            <article id="fs-struktur">
+                <h2>Struktur Data Firestore</h2>
+                <p>Firestore menggunakan model data <strong>Collection → Document → Field</strong>.</p>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        Firestore Data Model:
+
+                        ┌───────────────────────────────────────────────────────────────┐
+                        │ Database (Firestore) │
+                        │ │
+                        │ Collection: "students" │
+                        │ ├── Document: "auto_id_001" │
+                        │ │ ├── name: "Ahmad Fauzi" │
+                        │ │ ├── nim: "2024001" │
+                        │ │ ├── prodi: "T. Informatika" │
+                        │ │ ├── email: "ahmad@student.ac.id" │
+                        │ │ ├── semester: 3 │
+                        │ │ └── createdAt: Timestamp │
+                        │ │ │
+                        │ ├── Document: "auto_id_002" │
+                        │ │ ├── name: "Budi Santoso" │
+                        │ │ ├── nim: "2024002" │
+                        │ │ ├── prodi: "S. Informasi" │
+                        │ │ ├── email: "budi@student.ac.id" │
+                        │ │ ├── semester: 3 │
+                        │ │ └── createdAt: Timestamp │
+                        │ │ │
+                        │ └── Document: "auto_id_003" │
+                        │ └── ... │
+                        │ │
+                        │ Collection: "users" │
+                        │ ├── Document: "uid_firebase_001" │
+                        │ │ ├── displayName: "Ahmad" │
+                        │ │ ├── email: "ahmad@gmail.com" │
+                        │ │ └── photoUrl: "https://..." │
+                        │ └── ... │
+                        │ │
+                        └───────────────────────────────────────────────────────────────┘
+
+                        Istilah Penting:
+                        • Collection = Kumpulan dokumen (seperti tabel di SQL)
+                        • Document = Satu unit data (seperti baris di SQL)
+                        • Field = Property dalam dokumen (seperti kolom di SQL)
+                        • Document ID = Identifier unik (bisa auto-generate atau custom)
+                    </pre>
+                </div>
+            </article>
+
+            <article id="fs-setup">
+                <h2>Setup Firestore di Firebase Console</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Di Firebase Console, klik <strong>Build → Firestore Database</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Klik <strong>"Create database"</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">3</span>
+                        <div class="step-content">
+                            <p>Pilih lokasi server (pilih yang terdekat, misalnya <strong>asia-southeast2
+                                    (Jakarta)</strong>)</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">4</span>
+                        <div class="step-content">
+                            <p>Pilih <strong>"Start in test mode"</strong> untuk development (nanti akan diubah ke
+                                production rules). Klik <strong>Create</strong>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Test Mode vs Production Mode</h4>
+                    <p><strong>Test mode</strong> mengizinkan siapa saja membaca dan menulis database selama 30 hari.
+                        Ini hanya untuk development. Untuk production, Anda HARUS mengatur Security Rules yang proper.
+                    </p>
+                </div>
+            </article>
+
+            <article id="fs-create">
+                <h2>CREATE - Menambahkan Data</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <h4>Buat Data Class untuk Firestore</h4>
+                            <p>Buat file <code>model/Student.kt</code></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>model/Student.kt</span>
+                    </div>
+                    <pre class="no-copy">
+                        package com.example.myapp.model
+
+                        import com.google.firebase.Timestamp
+
+                        data class Student(
+                        var id: String = "", // Document ID dari Firestore
+                        val name: String = "",
+                        val nim: String = "",
+                        val prodi: String = "",
+                        val email: String = "",
+                        val semester: Int = 1,
+                        val userId: String = "", // UID user yang membuat data
+                        val createdAt: Timestamp = Timestamp.now()
+                        ) {
+                        // Constructor kosong diperlukan oleh Firestore
+                        // untuk deserialization (mengubah dokumen ke object)
+                        }</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menambahkan data ke Firestore</span>
+                    </div>
+                    <pre class="no-copy">
+                        import com.google.firebase.auth.FirebaseAuth
+                        import com.google.firebase.firestore.FirebaseFirestore
+
+                        class HomeFragment : Fragment() {
+
+                        private val db = FirebaseFirestore.getInstance()
+                        private val auth = FirebaseAuth.getInstance()
+
+                        // =============================================
+                        // Cara 1: add() - ID otomatis di-generate oleh Firestore
+                        // =============================================
+                        private fun addStudent(name: String, nim: String, prodi: String, email: String) {
+                        val student = hashMapOf(
+                        "name" to name,
+                        "nim" to nim,
+                        "prodi" to prodi,
+                        "email" to email,
+                        "semester" to 1,
+                        "userId" to (auth.currentUser?.uid ?: ""),
+                        "createdAt" to Timestamp.now()
+                        )
+
+                        db.collection("students")
+                        .add(student)
+                        .addOnSuccessListener { documentRef ->
+                        Toast.makeText(requireContext(),
+                        "Berhasil ditambahkan dengan ID: ${documentRef.id}",
+                        Toast.LENGTH_SHORT
+                        ).show()
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(),
+                        "Gagal menambahkan: ${e.message}",
+                        Toast.LENGTH_SHORT
+                        ).show()
+                        }
+                        }
+
+                        // =============================================
+                        // Cara 2: set() - Menggunakan ID custom (misalnya NIM)
+                        // =============================================
+                        private fun addStudentWithCustomId(student: Student) {
+                        db.collection("students")
+                        .document(student.nim) // NIM sebagai document ID
+                        .set(student)
+                        .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Berhasil!", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="fs-read">
+                <h2>READ - Membaca Data</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Membaca data dari Firestore</span>
+                    </div>
+                    <pre class="no-copy">
+                        // =============================================
+                        // Mengambil SEMUA dokumen dari collection
+                        // =============================================
+                        private fun loadAllStudents() {
+                        db.collection("students")
+                        .orderBy("name") // Urutkan berdasarkan nama
+                        .get()
+                        .addOnSuccessListener { documents ->
+                        val students = mutableListOf&lt;Student&gt;()
+
+                        for (document in documents) {
+                        val student = document.toObject(Student::class.java)
+                        student.id = document.id // Simpan document ID
+                        students.add(student)
+                        }
+
+                        // Update RecyclerView
+                        studentList.clear()
+                        studentList.addAll(students)
+                        adapter.notifyDataSetChanged()
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Gagal memuat: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+
+                        // =============================================
+                        // Mengambil SATU dokumen berdasarkan ID
+                        // =============================================
+                        private fun getStudentById(documentId: String) {
+                        db.collection("students")
+                        .document(documentId)
+                        .get()
+                        .addOnSuccessListener { document ->
+                        if (document.exists()) {
+                        val student = document.toObject(Student::class.java)
+                        student?.id = document.id
+                        // Gunakan data student
+                        } else {
+                        Toast.makeText(requireContext(), "Data tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        }
+
+                        // =============================================
+                        // Mengambil data berdasarkan kondisi (WHERE)
+                        // =============================================
+                        private fun getStudentsByProdi(prodi: String) {
+                        db.collection("students")
+                        .whereEqualTo("prodi", prodi)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                        val students = documents.map { doc ->
+                        doc.toObject(Student::class.java).also { it.id = doc.id }
+                        }
+                        // Gunakan data students
+                        }
+                        }
+
+                        // =============================================
+                        // Mengambil data milik user yang sedang login
+                        // =============================================
+                        private fun getMyStudents() {
+                        val currentUserId = auth.currentUser?.uid ?: return
+
+                        db.collection("students")
+                        .whereEqualTo("userId", currentUserId)
+                        .orderBy("createdAt", Query.Direction.DESCENDING)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                        // ... proses data
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="fs-update">
+                <h2>UPDATE - Memperbarui Data</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Memperbarui data di Firestore</span>
+                    </div>
+                    <pre class="no-copy">
+                        // =============================================
+                        // Update beberapa field tertentu
+                        // =============================================
+                        private fun updateStudent(documentId: String, newName: String, newSemester: Int) {
+                        db.collection("students")
+                        .document(documentId)
+                        .update(
+                        mapOf(
+                        "name" to newName,
+                        "semester" to newSemester
+                        )
+                        )
+                        .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
+                        loadAllStudents() // Refresh list
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Gagal update: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+
+                        // =============================================
+                        // Update seluruh dokumen (replace)
+                        // =============================================
+                        private fun replaceStudent(documentId: String, student: Student) {
+                        db.collection("students")
+                        .document(documentId)
+                        .set(student) // set() akan menimpa seluruh dokumen
+                        .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Data berhasil diganti", Toast.LENGTH_SHORT).show()
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="fs-delete">
+                <h2>DELETE - Menghapus Data</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menghapus data dari Firestore</span>
+                    </div>
+                    <pre class="no-copy">
+                        // =============================================
+                        // Menghapus satu dokumen
+                        // =============================================
+                        private fun deleteStudent(documentId: String) {
+                        db.collection("students")
+                        .document(documentId)
+                        .delete()
+                        .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Data berhasil dihapus", Toast.LENGTH_SHORT).show()
+                        loadAllStudents() // Refresh list
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Gagal hapus: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+
+                        // =============================================
+                        // Hapus dengan konfirmasi dialog
+                        // =============================================
+                        private fun confirmDelete(student: Student) {
+                        AlertDialog.Builder(requireContext())
+                        .setTitle("Hapus Mahasiswa")
+                        .setMessage("Apakah Anda yakin ingin menghapus ${student.name}?")
+                        .setPositiveButton("Hapus") { _, _ ->
+                        deleteStudent(student.id)
+                        }
+                        .setNegativeButton("Batal", null)
+                        .show()
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="fs-realtime">
+                <h2>Realtime Listener (Snapshot Listener)</h2>
+                <p>Salah satu fitur terkuat Firestore adalah kemampuan mendengarkan perubahan data secara realtime.
+                    Artinya, jika ada user lain yang mengubah data, tampilan Anda akan otomatis ter-update tanpa perlu
+                    refresh manual.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Realtime Listener</span>
+                    </div>
+                    <pre class="no-copy">
+                        import com.google.firebase.firestore.ListenerRegistration
+
+                        class HomeFragment : Fragment() {
+
+                        private var snapshotListener: ListenerRegistration? = null
+
+                        // =============================================
+                        // Setup realtime listener
+                        // =============================================
+                        private fun setupRealtimeListener() {
+                        snapshotListener = db.collection("students")
+                        .orderBy("name")
+                        .addSnapshotListener { snapshots, error ->
+                        if (error != null) {
+                        Toast.makeText(requireContext(), "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                        return@addSnapshotListener
+                        }
+
+                        if (snapshots != null) {
+                        val students = mutableListOf&lt;Student&gt;()
+                        for (doc in snapshots) {
+                        val student = doc.toObject(Student::class.java)
+                        student.id = doc.id
+                        students.add(student)
+                        }
+
+                        // Update UI otomatis saat ada perubahan
+                        studentList.clear()
+                        studentList.addAll(students)
+                        adapter.notifyDataSetChanged()
+                        }
+                        }
+                        }
+
+                        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+                        super.onViewCreated(view, savedInstanceState)
+                        setupRealtimeListener() // Mulai mendengarkan
+                        }
+
+                        override fun onDestroyView() {
+                        super.onDestroyView()
+                        snapshotListener?.remove() // PENTING: Hentikan listener saat view dihancurkan
+                        }
+                        }</pre>
+                </div>
+
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        Perbandingan get() vs addSnapshotListener():
+
+                        get() - Sekali baca:
+                        App ──── request ────→ Firestore
+                        App ←── response ──── Firestore
+                        (selesai, tidak ada update lagi)
+
+                        addSnapshotListener() - Realtime:
+                        App ──── subscribe ──→ Firestore
+                        App ←── data awal ──── Firestore
+                        App ←── update 1 ──── Firestore (ada perubahan)
+                        App ←── update 2 ──── Firestore (ada perubahan lagi)
+                        App ←── update 3 ──── Firestore (terus menerus)
+                        App ──── remove() ───→ Firestore (berhenti)
+                    </pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Penting: Selalu Remove Listener</h4>
+                    <p>Selalu hentikan snapshot listener di <code>onDestroyView()</code> atau <code>onDestroy()</code>.
+                        Jika tidak, listener akan terus berjalan dan menyebabkan memory leak serta penggunaan bandwidth
+                        yang tidak perlu.</p>
+                </div>
+            </article>
+
+            <article id="fs-query">
+                <h2>Query dan Filter</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Berbagai jenis query Firestore</span>
+                    </div>
+                    <pre class="no-copy">
+                        val studentsRef = db.collection("students")
+
+                        // ===== WHERE - Filter berdasarkan kondisi =====
+                        // Equal
+                        studentsRef.whereEqualTo("prodi", "T. Informatika")
+
+                        // Not Equal
+                        studentsRef.whereNotEqualTo("prodi", "T. Informatika")
+
+                        // Greater Than
+                        studentsRef.whereGreaterThan("semester", 4)
+
+                        // Less Than or Equal
+                        studentsRef.whereLessThanOrEqualTo("semester", 4)
+
+                        // Array Contains
+                        studentsRef.whereArrayContains("hobbies", "Coding")
+
+                        // IN (salah satu dari list)
+                        studentsRef.whereIn("prodi", listOf("T. Informatika", "S. Informasi"))
+
+                        // ===== ORDER BY - Pengurutan =====
+                        studentsRef.orderBy("name") // A-Z
+                        studentsRef.orderBy("name", Query.Direction.DESCENDING) // Z-A
+                        studentsRef.orderBy("semester").orderBy("name") // Multi sort
+
+                        // ===== LIMIT - Batasi jumlah hasil =====
+                        studentsRef.orderBy("name").limit(10) // 10 pertama
+                        studentsRef.orderBy("name").limitToLast(5) // 5 terakhir
+
+                        // ===== Kombinasi Query =====
+                        studentsRef
+                        .whereEqualTo("prodi", "T. Informatika")
+                        .whereGreaterThan("semester", 2)
+                        .orderBy("semester")
+                        .limit(20)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                        // Process results
+                        }
+
+                        // ===== Search by keyword (prefix matching) =====
+                        fun searchByName(keyword: String) {
+                        studentsRef
+                        .orderBy("name")
+                        .startAt(keyword)
+                        .endAt(keyword + "\uf8ff") // Karakter Unicode tertinggi
+                        .get()
+                        .addOnSuccessListener { documents ->
+                        // Process results
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="fs-rules">
+                <h2>Firestore Security Rules</h2>
+                <p>Security Rules mengontrol siapa yang bisa membaca dan menulis data di Firestore. Rules wajib
+                    dikonfigurasi sebelum aplikasi di-publish.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Firestore Security Rules (di Firebase Console → Firestore → Rules)</span>
+                    </div>
+                    <pre class="no-copy">
+                        rules_version = '2';
+                        service cloud.firestore {
+                        match /databases/{database}/documents {
+
+                        // ===== Rules untuk collection "students" =====
+                        match /students/{studentId} {
+
+                        // Hanya user yang login bisa membaca
+                        allow read: if request.auth != null;
+
+                        // Hanya user yang login bisa membuat data
+                        // dan field userId harus sama dengan uid user
+                        allow create: if request.auth != null
+                        && request.resource.data.userId == request.auth.uid;
+
+                        // Hanya pemilik data yang bisa update dan delete
+                        allow update, delete: if request.auth != null
+                        && resource.data.userId == request.auth.uid;
+                        }
+
+                        // ===== Rules untuk collection "users" =====
+                        match /users/{userId} {
+                        // User hanya bisa baca/tulis data miliknya sendiri
+                        allow read, write: if request.auth != null
+                        && request.auth.uid == userId;
+                        }
+                        }
+                        }</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan Rules</h4>
+                    <ul>
+                        <li><code>request.auth != null</code> → User harus sudah login</li>
+                        <li><code>request.auth.uid</code> → UID user yang sedang request</li>
+                        <li><code>request.resource.data</code> → Data yang akan ditulis</li>
+                        <li><code>resource.data</code> → Data yang sudah ada di database</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FIREBASE STORAGE -->
+        <!-- ============================================ -->
+        <section id="storage" class="section">
+            <h1>Firebase Cloud Storage</h1>
+
+            <article id="st-pengenalan">
+                <h2>Pengenalan Firebase Storage</h2>
+                <p>Firebase Cloud Storage digunakan untuk menyimpan file seperti gambar, video, audio, dan dokumen. File
+                    disimpan di Google Cloud Storage bucket.</p>
+
+                <h3>Setup Storage di Console</h3>
+                <div class="steps">
+                    <div class="step">
+                        <span class="step-number">1</span>
+                        <div class="step-content">
+                            <p>Di Firebase Console, klik <strong>Build → Storage</strong></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-number">2</span>
+                        <div class="step-content">
+                            <p>Klik <strong>"Get started"</strong>, pilih <strong>Test mode</strong>, klik <strong>Next
+                                    → Done</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <article id="st-upload">
+                <h2>Upload File ke Storage</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Upload gambar dari galeri</span>
+                    </div>
+                    <pre class="no-copy">
+                        import com.google.firebase.storage.FirebaseStorage
+
+                        class ProfileFragment : Fragment() {
+
+                        private val storage = FirebaseStorage.getInstance()
+                        private val auth = FirebaseAuth.getInstance()
+
+                        // ActivityResultLauncher untuk memilih gambar
+                        private val pickImageLauncher = registerForActivityResult(
+                        ActivityResultContracts.GetContent()
+                        ) { uri ->
+                        uri?.let { uploadImage(it) }
+                        }
+
+                        // Tombol pilih gambar
+                        private fun selectImage() {
+                        pickImageLauncher.launch("image/*")
+                        }
+
+                        // =============================================
+                        // UPLOAD gambar ke Firebase Storage
+                        // =============================================
+                        private fun uploadImage(imageUri: Uri) {
+                        val userId = auth.currentUser?.uid ?: return
+
+                        // Buat referensi path di storage
+                        // Path: profile_images/{userId}/profile.jpg
+                        val storageRef = storage.reference
+                        .child("profile_images")
+                        .child(userId)
+                        .child("profile.jpg")
+
+                        // Upload file
+                        storageRef.putFile(imageUri)
+                        .addOnProgressListener { taskSnapshot ->
+                        // Hitung progress upload
+                        val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
+                        progressBar.progress = progress
+                        }
+                        .addOnSuccessListener {
+                        // Upload berhasil, dapatkan download URL
+                        storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                        // Simpan URL ke Firestore profil user
+                        saveProfileImageUrl(downloadUri.toString())
+
+                        Toast.makeText(requireContext(), "Upload berhasil!", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Upload gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }
+
+                        // Simpan URL foto ke Firestore
+                        private fun saveProfileImageUrl(imageUrl: String) {
+                        val userId = auth.currentUser?.uid ?: return
+
+                        db.collection("users")
+                        .document(userId)
+                        .update("photoUrl", imageUrl)
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="st-download">
+                <h2>Download dan Menampilkan Gambar</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menampilkan gambar dari Firebase Storage menggunakan Glide</span>
+                    </div>
+                    <pre class="no-copy">
+                        // =============================================
+                        // Cara 1: Menggunakan download URL (Recommended)
+                        // =============================================
+                        private fun loadProfileImage(imageUrl: String) {
+                        Glide.with(this)
+                        .load(imageUrl)
+                        .circleCrop()
+                        .placeholder(R.drawable.ic_default_avatar)
+                        .error(R.drawable.ic_default_avatar)
+                        .into(ivProfilePhoto)
+                        }
+
+                        // =============================================
+                        // Cara 2: Langsung dari Storage Reference
+                        // =============================================
+                        private fun loadImageFromStorage() {
+                        val userId = auth.currentUser?.uid ?: return
+                        val storageRef = storage.reference
+                        .child("profile_images/$userId/profile.jpg")
+
+                        // Dapatkan URL dan load dengan Glide
+                        storageRef.downloadUrl
+                        .addOnSuccessListener { uri ->
+                        Glide.with(this)
+                        .load(uri)
+                        .circleCrop()
+                        .into(ivProfilePhoto)
+                        }
+                        .addOnFailureListener {
+                        // File tidak ditemukan, gunakan default
+                        ivProfilePhoto.setImageResource(R.drawable.ic_default_avatar)
+                        }
+                        }</pre>
+                </div>
+            </article>
+
+            <article id="st-delete">
+                <h2>Menghapus File dari Storage</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menghapus file</span>
+                    </div>
+                    <pre class="no-copy">
+                        private fun deleteProfileImage() {
+                        val userId = auth.currentUser?.uid ?: return
+                        val storageRef = storage.reference
+                        .child("profile_images/$userId/profile.jpg")
+
+                        storageRef.delete()
+                        .addOnSuccessListener {
+                        Toast.makeText(requireContext(), "Foto dihapus", Toast.LENGTH_SHORT).show()
+                        ivProfilePhoto.setImageResource(R.drawable.ic_default_avatar)
+
+                        // Hapus URL dari Firestore juga
+                        db.collection("users").document(userId)
+                        .update("photoUrl", "")
+                        }
+                        .addOnFailureListener { e ->
+                        Toast.makeText(requireContext(), "Gagal hapus: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        }</pre>
+                </div>
+
+                <h3>Storage Security Rules</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Storage Rules (Firebase Console → Storage → Rules)</span>
+                    </div>
+                    <pre class="no-copy">
+                        rules_version = '2';
+                        service firebase.storage {
+                        match /b/{bucket}/o {
+
+                        // Profile images: hanya pemilik yang bisa upload/delete
+                        match /profile_images/{userId}/{allPaths=**} {
+                        allow read: if request.auth != null;
+                        allow write: if request.auth != null
+                        && request.auth.uid == userId
+                        && request.resource.size < 5 * 1024 * 1024 // Max 5MB &&
+                            request.resource.contentType.matches('image/.*'); // Hanya gambar } } }</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- HANDS-ON PRAKTIKUM -->
+        <!-- ============================================ -->
+        <section id="handson" class="section">
+            <h1>Hands-On Praktikum</h1>
+            <p>Pada bagian ini Anda akan mengintegrasikan Firebase ke project <strong>StudentContactApp</strong> dari
+                praktikum sebelumnya.</p>
+
+            <div class="info-box">
+                <h4>Persiapan Penting</h4>
+                <ul>
+                    <li>Pastikan Anda sudah membuat project di Firebase Console</li>
+                    <li>File <code>google-services.json</code> sudah diletakkan di folder <code>app/</code></li>
+                    <li>SHA-1 fingerprint sudah didaftarkan di Firebase Console</li>
+                    <li>Dependency Firebase sudah ditambahkan dan Gradle sudah di-sync</li>
+                    <li>Koneksi internet aktif</li>
+                </ul>
+            </div>
+
+            <article id="handson-1">
+                <h2>Hands-On 1: Firebase Authentication</h2>
+                <p>Ganti sistem login SharedPreferences (praktikum 3) dengan Firebase Authentication.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        ┌──────────────────────────┐
+                        │ AUTH SCREEN │
+                        │ │
+                        │ Student Directory │
+                        │ Masuk untuk melanjutkan│
+                        │ │
+                        │ Email: [____________] │
+                        │ Pass: [____________] │
+                        │ Lupa Password│
+                        │ │
+                        │ [ LOGIN ] │
+                        │ [ DAFTAR BARU ] │
+                        │ │
+                        │ ────── atau ────── │
+                        │ │
+                        │ [ Masuk dgn Google ] │
+                        │ │
+                        └──────────────────────────┘
+                        │
+                        ┌─────────┴──────────┐
+                        │ │
+                        Email/Pass Google
+                        Register/Login Sign-In
+                        │ │
+                        └─────────┬──────────┘
+                        │
+                        ┌───────────▼───────────┐
+                        │ MAIN SCREEN │
+                        │ Welcome, Ahmad! │
+                        │ ahmad@gmail.com │
+                        │ [foto Google] │
+                        │ │
+                        │ [Home][Search][Prof] │
+                        │ │
+                        │ Profile: │
+                        │ [ LOGOUT ] │
+                        └────────────────────────┘
+                    </pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Aktifkan Authentication di Console</h4>
+                    <p>Di Firebase Console → Authentication → Sign-in method, aktifkan:</p>
+                    <ul>
+                        <li><strong>Email/Password</strong> → Enable</li>
+                        <li><strong>Google</strong> → Enable → pilih support email → Save</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat AuthActivity</h4>
+                    <p>Buat Activity baru <code>AuthActivity</code> dengan layout yang berisi:</p>
+                    <ul>
+                        <li>TextInputLayout untuk Email dan Password</li>
+                        <li>Tombol Login, Register, dan Google Sign-In</li>
+                        <li>Link "Lupa Password"</li>
+                        <li>ProgressBar untuk loading state</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Implementasi Email/Password Auth</h4>
+                    <ul>
+                        <li>Method <code>registerWithEmail()</code> menggunakan
+                            <code>createUserWithEmailAndPassword()</code></li>
+                        <li>Method <code>loginWithEmail()</code> menggunakan <code>signInWithEmailAndPassword()</code>
+                        </li>
+                        <li>Validasi input (email format, password minimal 6 karakter)</li>
+                        <li>Tampilkan error message dari Firebase jika gagal</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Implementasi Google Sign-In</h4>
+                    <ul>
+                        <li>Konfigurasi GoogleSignInOptions dengan Web Client ID</li>
+                        <li>Implementasi <code>ActivityResultLauncher</code></li>
+                        <li>Method <code>firebaseAuthWithGoogle()</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Auto-Login Check</h4>
+                    <p>Di <code>onStart()</code> AuthActivity, cek <code>auth.currentUser</code>. Jika sudah login,
+                        langsung ke MainActivity.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Update ProfileFragment</h4>
+                    <ul>
+                        <li>Tampilkan nama, email, dan foto user dari <code>FirebaseAuth.currentUser</code></li>
+                        <li>Load foto profil dengan Glide</li>
+                        <li>Tombol Logout yang sign out dari Firebase dan Google</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 7: Set AuthActivity sebagai Launcher</h4>
+                    <p>Update AndroidManifest.xml agar AuthActivity adalah Activity pertama.</p>
+                </div>
+            </article>
+
+            <article id="handson-2">
+                <h2>Hands-On 2: CRUD dengan Cloud Firestore</h2>
+                <p>Ganti Room Database (praktikum 3) dengan Cloud Firestore, sehingga data mahasiswa tersimpan di cloud
+                    dan bisa diakses dari device manapun.</p>
+
+                <h3>Target Hasil</h3>
+                <div class="diagram-box">
+                    <pre class="diagram">
+                        Data tersimpan di CLOUD, bukan lokal:
+
+                        ┌─────────┐ ┌──────────────────┐ ┌─────────┐
+                        │Device A │ ←──→│ FIRESTORE │←──→ │Device B │
+                        │ │ │ │ │ │
+                        │ Ahmad │ │ students/ │ │ Ahmad │
+                        │ Budi │ │ ├── doc1: Ahmad │ │ Budi │
+                        │ Clara │ │ ├── doc2: Budi │ │ Clara │
+                        │ │ │ └── doc3: Clara │ │ │
+                        └─────────┘ └──────────────────┘ └─────────┘
+
+                        Perubahan di Device A otomatis muncul di Device B (realtime!)
+                    </pre>
+                </div>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Setup Firestore di Console</h4>
+                    <p>Buat database Firestore di Firebase Console → Build → Firestore Database → Create database → Test
+                        mode.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Buat/Update Model Student</h4>
+                    <p>Update data class Student agar kompatibel dengan Firestore:</p>
+                    <ul>
+                        <li>Tambahkan field <code>id</code> (Document ID)</li>
+                        <li>Tambahkan field <code>userId</code> (UID user yang membuat)</li>
+                        <li>Tambahkan field <code>createdAt</code> (Timestamp)</li>
+                        <li>Pastikan ada constructor kosong (required oleh Firestore)</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Update HomeFragment - READ</h4>
+                    <ul>
+                        <li>Ganti <code>studentDao.getAllStudents()</code> dengan Firestore <code>.get()</code></li>
+                        <li>Implementasikan <code>addSnapshotListener</code> untuk realtime update</li>
+                        <li>Filter data: tampilkan hanya data milik user yang login (<code>whereEqualTo("userId",
+                                uid)</code>)</li>
+                        <li>Jangan lupa remove listener di <code>onDestroyView()</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Buat Form - CREATE</h4>
+                    <ul>
+                        <li>Buat Fragment/Activity form untuk menambah mahasiswa</li>
+                        <li>Gunakan <code>db.collection("students").add(data)</code></li>
+                        <li>Sertakan <code>userId</code> dan <code>createdAt</code> secara otomatis</li>
+                        <li>Setelah berhasil, navigasi kembali ke Home</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Edit Data - UPDATE</h4>
+                    <ul>
+                        <li>Klik item → buka form yang sudah terisi data existing</li>
+                        <li>Kirim document ID melalui Navigation args</li>
+                        <li>Gunakan <code>.document(id).update(data)</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 6: Hapus Data - DELETE</h4>
+                    <ul>
+                        <li>Tambahkan tombol delete atau long-press pada item</li>
+                        <li>Tampilkan AlertDialog konfirmasi</li>
+                        <li>Gunakan <code>.document(id).delete()</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 7: Update SearchFragment</h4>
+                    <ul>
+                        <li>Implementasi pencarian menggunakan Firestore query</li>
+                        <li>Gunakan <code>orderBy("name").startAt(keyword).endAt(keyword + "\uf8ff")</code></li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 8: Setup Security Rules</h4>
+                    <p>Di Firebase Console → Firestore → Rules, atur rules agar:</p>
+                    <ul>
+                        <li>Hanya user yang login bisa membaca data</li>
+                        <li>User hanya bisa membuat data dengan userId miliknya</li>
+                        <li>User hanya bisa update/delete data miliknya sendiri</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article id="handson-3">
+                <h2>Hands-On 3: Firebase Storage - Foto Profil</h2>
+                <p>Tambahkan fitur upload dan tampilkan foto profil menggunakan Firebase Storage.</p>
+
+                <h3>Langkah-langkah</h3>
+
+                <div class="task-box">
+                    <h4>Langkah 1: Setup Storage di Console</h4>
+                    <p>Firebase Console → Build → Storage → Get started → Test mode.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 2: Tambahkan Dependency Glide</h4>
+                    <p>Pastikan Glide sudah ada di dependencies untuk loading gambar dari URL.</p>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 3: Update ProfileFragment</h4>
+                    <ul>
+                        <li>Tambahkan ImageView untuk foto profil</li>
+                        <li>Tombol "Ubah Foto" yang membuka galeri</li>
+                        <li>Upload foto ke Storage path: <code>profile_images/{userId}/profile.jpg</code></li>
+                        <li>Simpan download URL ke Firestore collection <code>users</code></li>
+                        <li>Tampilkan foto menggunakan Glide</li>
+                        <li>Tampilkan progress upload</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 4: Bonus - Foto untuk Data Mahasiswa</h4>
+                    <p>Tambahkan fitur upload foto di form tambah/edit mahasiswa:</p>
+                    <ul>
+                        <li>Upload ke path: <code>student_images/{documentId}/photo.jpg</code></li>
+                        <li>Simpan URL ke field <code>photoUrl</code> di dokumen mahasiswa</li>
+                        <li>Tampilkan foto di RecyclerView dan halaman detail</li>
+                    </ul>
+                </div>
+
+                <div class="task-box">
+                    <h4>Langkah 5: Setup Storage Rules</h4>
+                    <p>Atur rules agar hanya user yang login bisa upload, dengan batasan ukuran file dan tipe file
+                        (hanya gambar).</p>
+                </div>
+            </article>
+
+            <article id="handson-final">
+                <h2>Tugas Akhir: Student Directory Cloud Edition</h2>
+                <p>Gabungkan seluruh materi dari Praktikum 1, 2, 3, dan 4 menjadi aplikasi final.</p>
+
+                <div class="task-box">
+                    <h2>Spesifikasi Tugas</h2>
+
+                    <h4>1. Authentication (Firebase Auth)</h4>
+                    <ul>
+                        <li>Register dan Login dengan Email/Password</li>
+                        <li>Login dengan Google Sign-In</li>
+                        <li>Auto-login jika session masih aktif</li>
+                        <li>Fitur lupa password (reset via email)</li>
+                        <li>Logout dari semua provider</li>
+                    </ul>
+
+                    <h4>2. Data Mahasiswa - CRUD (Cloud Firestore)</h4>
+                    <ul>
+                        <li>Create: Form tambah mahasiswa dengan validasi</li>
+                        <li>Read: Daftar mahasiswa realtime (addSnapshotListener)</li>
+                        <li>Update: Edit data mahasiswa</li>
+                        <li>Delete: Hapus dengan konfirmasi</li>
+                        <li>Search: Pencarian berdasarkan nama</li>
+                        <li>Data terikat dengan user (userId)</li>
+                    </ul>
+
+                    <h4>3. Foto (Firebase Storage)</h4>
+                    <ul>
+                        <li>Upload foto profil user</li>
+                        <li>Tampilkan foto profil dari Storage</li>
+                        <li>Progress indicator saat upload</li>
+                    </ul>
+
+                    <h4>4. Security</h4>
+                    <ul>
+                        <li>Firestore Security Rules yang proper</li>
+                        <li>Storage Security Rules (batasan ukuran dan tipe file)</li>
+                        <li>User hanya bisa CRUD data miliknya sendiri</li>
+                    </ul>
+
+                    <h4>5. Arsitektur dan UI</h4>
+                    <ul>
+                        <li>Single Activity + Navigation Component</li>
+                        <li>BottomNavigationView (Home, Search, Profile)</li>
+                        <li>Material Design components</li>
+                        <li>Loading indicators untuk semua operasi async</li>
+                        <li>Error handling yang baik</li>
+                        <li>String Resources dan Localization</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3>Kriteria Penilaian</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Aspek</th>
+                                <th>Bobot</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Firebase Auth (Email + Google)</td>
+                                <td>20%</td>
+                            </tr>
+                            <tr>
+                                <td>Firestore CRUD lengkap + Realtime</td>
+                                <td>25%</td>
+                            </tr>
+                            <tr>
+                                <td>Firebase Storage (upload, display, delete)</td>
+                                <td>15%</td>
+                            </tr>
+                            <tr>
+                                <td>Security Rules (Firestore + Storage)</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Navigation + Fragment + RecyclerView</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>UI/UX dan Material Design</td>
+                                <td>10%</td>
+                            </tr>
+                            <tr>
+                                <td>Kualitas kode dan error handling</td>
+                                <td>5%</td>
+                            </tr>
+                            <tr>
+                                <td>Bonus (fitur tambahan, offline support)</td>
+                                <td>5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h3>Ketentuan Pengumpulan</h3>
+                    <ul>
+                        <li>Kumpulkan dalam format <strong>ZIP</strong></li>
+                        <li><strong>JANGAN</strong> sertakan file <code>google-services.json</code> — kirimkan terpisah
+                            atau melalui DM</li>
+                        <li>Sertakan file <strong>README.md</strong> berisi:
+                            <ul>
+                                <li>Nama dan NIM</li>
+                                <li>Deskripsi aplikasi</li>
+                                <li>Screenshot minimal 8 halaman</li>
+                                <li>Daftar fitur dan metode Firebase yang digunakan</li>
+                                <li>Screenshot Firestore Security Rules</li>
+                                <li>Kendala dan solusinya</li>
+                            </ul>
+                        </li>
+                        <li>Deadline: <strong>satu minggu setelah pertemuan</strong></li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h3>Catatan Penting</h3>
+                    <ul>
+                        <li>Plagiasi akan mendapat nilai <strong>0</strong></li>
+                        <li>Ketik ulang kode, jangan copy-paste</li>
+                        <li>Jangan share <code>google-services.json</code> ke publik</li>
+                        <li>Pastikan Security Rules sudah dikonfigurasi (jangan biarkan test mode untuk tugas yang
+                            dikumpulkan)</li>
+                        <li>Test semua fitur: register, login email, login Google, CRUD, upload foto, logout</li>
+                        <li>Pastikan aplikasi berfungsi dengan koneksi internet yang berbeda (WiFi, mobile data)</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Mobile</strong></p>
+            <p>Firebase: Authentication, Cloud Firestore & Storage</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        // Anti-copy
+        document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'u' || e.key === 'U' || e.key === 's' || e.key === 'S' || e.key === 'a' || e.key === 'A')) { e.preventDefault(); return false; }
+            if (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I' || e.key === 'j' || e.key === 'J')) { e.preventDefault(); return false; }
+            if (e.key === 'F12') { e.preventDefault(); return false; }
+        });
+        document.querySelectorAll('.no-copy').forEach(function (el) {
+            el.addEventListener('selectstart', function (e) { e.preventDefault(); });
+            el.addEventListener('copy', function (e) { e.preventDefault(); });
+        });
+        document.addEventListener('dragstart', function (e) { e.preventDefault(); });
+
+        // Tampilkan section berdasarkan id, sembunyikan yang lain
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + id) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Klik nav-link (top-level sidebar)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                const target = document.getElementById(id);
+                if (!target) return;
+
+                if (target.classList.contains('section')) {
+                    showSection(id);
+                } else {
+                    const parentSection = target.closest('.section');
+                    if (parentSection) {
+                        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                        parentSection.style.display = 'block';
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Klik sub-menu link — tampilkan section induknya, lalu scroll ke artikel
+        document.querySelectorAll('.sub-menu a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                // Jika target sendiri adalah .section
+                if (target.classList.contains('section')) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    target.style.display = 'block';
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentLink = document.querySelector('.nav-link[href="#' + targetId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                    return;
+                }
+
+                // Jika target adalah artikel di dalam section
+                const parentSection = target.closest('.section');
+                if (parentSection) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    parentSection.style.display = 'block';
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentId = parentSection.getAttribute('id');
+                    const parentLink = document.querySelector('.nav-link[href="#' + parentId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                }
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Tampilkan section pertama saat halaman dimuat
+        const firstSection = document.querySelector('.section');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+            const firstLink = document.querySelector('.nav-link[href="#' + firstSection.id + '"]');
+            if (firstLink) firstLink.classList.add('active');
+        }
+
+        console.log('%cPerhatian!', 'color: red; font-size: 30px; font-weight: bold;');
+        console.log('%cSilakan ketik ulang kode untuk belajar dengan lebih baik.', 'font-size: 16px;');
+    </script>
+</body>
+
+</html>

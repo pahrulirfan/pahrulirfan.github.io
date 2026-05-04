@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Android Kotlin - Firebase</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+    <link rel="shortcut icon" href="../assets/img/logo-unram.png" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>Firebase untuk Mobile</p>
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+            <li class="nav-item">
+                <a href="#setup" class="nav-link">Setup Firebase</a>
+                <ul class="sub-menu">
+                    <li><a href="#setup-android-project">Buat Project Android</a></li>
+                    <li><a href="#setup-project">Buat Project Firebase</a></li>
+                    <li><a href="#setup-android">Hubungkan ke Android</a></li>
+                    <li><a href="#setup-deps">Tambah Dependencies</a></li>
+                    <li><a href="#setup-verifikasi">Uji Coba Koneksi</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#auth" class="nav-link">Firebase Authentication</a>
+                <ul class="sub-menu">
+                    <li><a href="#auth-pengenalan">Pengenalan</a></li>
+                    <li><a href="#auth-register">Register Email</a></li>
+                    <li><a href="#auth-login">Login Email</a></li>
+                    <li><a href="#auth-logout">Logout & Cek Status</a></li>
+                    <li><a href="#handson-1">Hands-On 1</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#firestore" class="nav-link">Cloud Firestore</a>
+                <ul class="sub-menu">
+                    <li><a href="#fs-pengenalan">Pengenalan</a></li>
+                    <li><a href="#fs-struktur">Struktur Data</a></li>
+                    <li><a href="#fs-create">Create (Tambah Data)</a></li>
+                    <li><a href="#fs-read">Read (Baca Data)</a></li>
+                    <li><a href="#fs-update">Update (Ubah Data)</a></li>
+                    <li><a href="#fs-delete">Delete (Hapus Data)</a></li>
+                    <li><a href="#handson-2">Hands-On 2</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#realtimedb" class="nav-link">Realtime Database</a>
+                <ul class="sub-menu">
+                    <li><a href="#rtdb-pengenalan">Pengenalan</a></li>
+                    <li><a href="#rtdb-tulis">Menulis Data</a></li>
+                    <li><a href="#rtdb-baca">Membaca & Listener</a></li>
+                    <li><a href="#handson-3">Hands-On 3</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#storage" class="nav-link">Firebase Storage</a>
+                <ul class="sub-menu">
+                    <li><a href="#st-pengenalan">Pengenalan</a></li>
+                    <li><a href="#st-upload">Upload File</a></li>
+                    <li><a href="#st-download">Download URL</a></li>
+                    <li><a href="#st-cloudinary">Alternatif: Cloudinary</a></li>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a href="#tugas-akhir" class="nav-link">Tugas Akhir</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+    
+        <!-- ============================================ -->
+        <!-- PENDAHULUAN -->
+        <!-- ============================================ -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Firebase untuk Android Kotlin</h1>
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami ekosistem Firebase dan layanan-layanannya</li>
+                    <li>Mampu menghubungkan project Android ke Firebase Console</li>
+                    <li>Mampu mengimplementasikan Firebase Authentication (register &amp; login)</li>
+                    <li>Mampu melakukan operasi CRUD data menggunakan Cloud Firestore</li>
+                    <li>Memahami perbedaan Firestore dan Realtime Database</li>
+                    <li>Mampu mengupload dan mengambil file menggunakan Firebase Storage</li>
+                </ul>
+            </div>
+
+            <h2>Prasyarat</h2>
+            <p>Pastikan Anda sudah memahami materi dari praktikum sebelumnya:</p>
+            <ul>
+                <li>Activity, Intent, dan dasar-dasar UI Android</li>
+                <li>RecyclerView dan Adapter</li>
+                <li>Kotlin dasar (data class, lambda, coroutines)</li>
+                <li>Memiliki akun Google untuk mengakses Firebase Console</li>
+            </ul>
+
+            <h2>Apa itu Firebase?</h2>
+            <p>Firebase adalah platform Backend-as-a-Service (BaaS) milik Google yang menyediakan berbagai layanan backend siap pakai untuk aplikasi mobile dan web. Dengan Firebase, developer tidak perlu membangun server sendiri untuk fitur-fitur umum seperti autentikasi, database, dan penyimpanan file.</p>
+
+            <div class="storage-grid">
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Authentication</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-orange">Login / Register</span>
+                        </div>
+                        <div class="storage-card-desc">Email, Google, Facebook, Phone</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Cloud Firestore</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-blue">NoSQL Database</span>
+                        </div>
+                        <div class="storage-card-desc">Database dokumen yang scalable &amp; realtime</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Realtime Database</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-green">JSON Tree</span>
+                        </div>
+                        <div class="storage-card-desc">Sinkronisasi data real-time antar device</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Firebase Storage</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-purple">File Storage</span>
+                        </div>
+                        <div class="storage-card-desc">Upload &amp; download gambar, video, file</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <h4>Yang akan dibahas di praktikum ini</h4>
+                <p>Praktikum ini fokus pada 4 layanan Firebase yang paling sering digunakan dalam pengembangan aplikasi mobile: <strong>Authentication</strong>, <strong>Cloud Firestore</strong>, <strong>Realtime Database</strong>, dan <strong>Firebase Storage</strong>. Setiap bagian dilengkapi contoh kode sederhana dan hands-on activity.</p>
+            </div>
+
+            <h2>Perbedaan Firestore, Realtime Database, dan Storage</h2>
+            <p>Tiga layanan ini sering membingungkan karena sama-sama menyimpan data di cloud. Perbedaan utamanya ada pada <strong>jenis data</strong> yang disimpan dan <strong>cara mengaksesnya</strong>.</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>Cloud Firestore</th>
+                        <th>Realtime Database</th>
+                        <th>Firebase Storage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Jenis data</strong></td>
+                        <td>Data terstruktur (teks, angka, boolean, array, map)</td>
+                        <td>Data terstruktur (teks, angka, boolean)</td>
+                        <td>File biner (gambar, video, PDF, audio)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Format penyimpanan</strong></td>
+                        <td>Koleksi → Dokumen → Field (seperti JSON bertingkat)</td>
+                        <td>Pohon JSON flat</td>
+                        <td>Folder &amp; file (seperti Google Drive)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contoh isi</strong></td>
+                        <td><code>{ name: "Budi", age: 21 }</code></td>
+                        <td><code>{ text: "Halo!", time: 1700000 }</code></td>
+                        <td><code>foto_profil.jpg</code>, <code>laporan.pdf</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Query / filter</strong></td>
+                        <td>Powerful (filter, sort, compound query)</td>
+                        <td>Terbatas (satu field saja)</td>
+                        <td>Tidak ada query — akses via path/URL</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Sinkronisasi realtime</strong></td>
+                        <td>Ya (dengan snapshot listener)</td>
+                        <td>Ya (latensi sangat rendah ~50ms)</td>
+                        <td>Tidak — upload/download saja</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Offline support</strong></td>
+                        <td>Otomatis (cache lokal)</td>
+                        <td>Otomatis (cache lokal)</td>
+                        <td>Upload dilanjutkan otomatis jika koneksi putus</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kapasitas</strong></td>
+                        <td>Sangat besar (skala enterprise)</td>
+                        <td>Besar, tapi kurang efisien untuk data kompleks</td>
+                        <td>Hingga 5 TB per file</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Harga (free tier)</strong></td>
+                        <td>50K baca / 20K tulis per hari</td>
+                        <td>10 GB storage, 1 GB/bulan download</td>
+                        <td>5 GB storage, 1 GB/hari download <br><small style="color:#c62828;">Butuh upgrade ke Blaze plan</small></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Kapan Menggunakan Masing-masing?</h3>
+
+            <div class="storage-grid">
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Gunakan Firestore</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-blue">Data terstruktur</span>
+                        </div>
+                        <div class="storage-card-desc">
+                            <ul style="margin:8px 0 0;padding-left:16px;font-size:0.85rem;">
+                                <li>Profil user</li>
+                                <li>Daftar produk / catatan</li>
+                                <li>Data yang perlu di-filter atau di-sort</li>
+                                <li>Aplikasi dengan banyak koleksi data</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Gunakan Realtime Database</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-green">Sinkronisasi cepat</span>
+                        </div>
+                        <div class="storage-card-desc">
+                            <ul style="margin:8px 0 0;padding-left:16px;font-size:0.85rem;">
+                                <li>Aplikasi chat / pesan</li>
+                                <li>Live score / leaderboard</li>
+                                <li>Status online/offline user</li>
+                                <li>Data yang berubah sangat sering</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Gunakan Storage</div>
+                        <div class="storage-card-meta">
+                            <span class="storage-tag tag-purple">File &amp; media</span>
+                        </div>
+                        <div class="storage-card-desc">
+                            <ul style="margin:8px 0 0;padding-left:16px;font-size:0.85rem;">
+                                <li>Foto profil user</li>
+                                <li>Gambar postingan / produk</li>
+                                <li>Upload dokumen PDF</li>
+                                <li>File audio / video</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Kombinasi yang Umum Dipakai</h4>
+                <p>Dalam satu aplikasi, ketiga layanan ini biasanya dipakai <strong>bersama-sama</strong>, bukan pilih salah satu:</p>
+                <ul>
+                    <li><strong>Firestore</strong> — menyimpan data profil user, termasuk URL foto profil</li>
+                    <li><strong>Storage</strong> — menyimpan file foto profil yang sebenarnya</li>
+                    <li><strong>Realtime Database</strong> — menyimpan status online/offline user secara real-time</li>
+                </ul>
+                <p style="margin-bottom:0;">Contoh: saat user upload foto profil → file dikirim ke <strong>Storage</strong> → URL-nya disimpan ke <strong>Firestore</strong> → status "sedang upload" ditampilkan via <strong>Realtime Database</strong>.</p>
+            </div>
+        </section>
+        <!-- ============================================ -->
+        <!-- SETUP FIREBASE -->
+        <!-- ============================================ -->
+        <section id="setup" class="section">
+            <h1>Setup Firebase</h1>
+            <p>Ada lima langkah yang harus dilakukan secara berurutan: membuat project Android baru, membuat project di Firebase Console, menghubungkan keduanya, menambahkan dependencies, lalu menguji koneksi.</p>
+
+            <!-- ======== BUAT PROJECT ANDROID ======== -->
+            <article id="setup-android-project">
+                <h2>1. Buat Project Android Baru</h2>
+                <p>Langkah pertama adalah membuat project Android baru di Android Studio. Package name yang digunakan di sini harus sama persis dengan yang akan didaftarkan ke Firebase Console.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Buka Android Studio → New Project</h4>
+                            <p>Dari welcome screen klik <strong>New Project</strong>, atau dari menu <strong>File → New → New Project</strong>. Pilih template <strong>Empty Views Activity</strong>, lalu klik <strong>Next</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Isi Konfigurasi Project</h4>
+                            <p>Isi kolom berikut, lalu klik <strong>Finish</strong>:</p>
+                            <div class="project-setup-grid">
+                                <div class="ps-row">
+                                    <span class="ps-label">Name</span>
+                                    <span class="ps-value"><code>PraktikumFirebase</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">Package name</span>
+                                    <span class="ps-value"><code>com.example.praktikumfirebase</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">Language</span>
+                                    <span class="ps-value"><code>Kotlin</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">Min SDK</span>
+                                    <span class="ps-value"><code>API 24 (Android 7.0)</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">Build config</span>
+                                    <span class="ps-value"><code>Groovy DSL (.gradle)</code></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Tunggu Gradle Sync Selesai</h4>
+                            <p>Android Studio akan men-download dependencies awal. Tunggu hingga status bar di bawah menunjukkan <em>"Gradle sync finished"</em> sebelum melanjutkan ke langkah berikutnya.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Catat Package Name</h4>
+                            <p>Buka file <code>app/build.gradle</code> dan catat nilai <code>applicationId</code>. Nilai ini harus digunakan saat mendaftarkan app ke Firebase Console.</p>
+                            <div class="code-block" style="margin-top:8px;">
+                                <div class="code-header">
+                                    <span>app/build.gradle — cek applicationId</span>
+                                    <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                                </div>
+                                <pre>android {
+    defaultConfig {
+        applicationId "com.example.praktikumfirebase"  // ← catat ini
+        minSdk 24
+        targetSdk 34
+        ...
+    }
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- ======== BUAT PROJECT FIREBASE ======== -->
+            <article id="setup-project">
+                <h2>2. Buat Project di Firebase Console</h2>
+                <p>Firebase Console adalah dashboard berbasis web untuk mengelola semua layanan Firebase. Buka <code>console.firebase.google.com</code> dan login dengan akun Google.</p>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Buka Firebase Console</h4>
+                            <p>Kunjungi <code>console.firebase.google.com</code>, lalu klik tombol <strong>"Add project"</strong> atau <strong>"Create a project"</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Beri Nama Project</h4>
+                            <p>Masukkan nama project, misalnya <code>PraktikumFirebase</code>. Firebase akan otomatis membuat Project ID unik. Klik <strong>Continue</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Google Analytics (Opsional)</h4>
+                            <p>Untuk praktikum, pilih <strong>Disable Google Analytics</strong> agar lebih sederhana. Klik <strong>Create project</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Project Siap</h4>
+                            <p>Tunggu beberapa detik hingga project selesai dibuat, lalu klik <strong>Continue</strong>. Anda akan diarahkan ke dashboard project.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Aktifkan Layanan yang Dibutuhkan</h4>
+                    <p>Firebase Console kini menggunakan navigasi berbasis <strong>kategori produk</strong> di sidebar kiri. Aktifkan layanan berikut satu per satu:</p>
+                    <table class="data-table" style="margin-top:10px;">
+                        <thead>
+                            <tr>
+                                <th>Layanan</th>
+                                <th>Kategori di Sidebar</th>
+                                <th>Langkah Aktivasi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Authentication</strong></td>
+                                <td><code>Security</code></td>
+                                <td>Security → Authentication → Get started → Sign-in method → Email/Password → Enable → Save</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Cloud Firestore</strong></td>
+                                <td><code>Databases &amp; Storage</code> → NoSQL</td>
+                                <td>Databases &amp; Storage → Firestore → Create database → Start in test mode → Next → Done</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Realtime Database</strong></td>
+                                <td><code>Databases &amp; Storage</code> → NoSQL</td>
+                                <td>Databases &amp; Storage → Realtime Database → Create database → Start in test mode → Done</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Storage</strong></td>
+                                <td><code>Databases &amp; Storage</code> → Object storage</td>
+                                <td>Memerlukan upgrade ke plan <strong>Blaze (Pay as you go)</strong> — tidak tersedia di Spark (free) plan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:12px;margin-bottom:0;"><strong>Test mode</strong> berarti semua orang bisa baca/tulis tanpa autentikasi — cocok untuk praktikum, tapi jangan dipakai di production.</p>
+                </div>
+            </article>
+
+            <!-- ======== HUBUNGKAN KE ANDROID ======== -->
+            <article id="setup-android">
+                <h2>3. Hubungkan Project Android ke Firebase</h2>
+                <p>Ada dua cara menghubungkan Android ke Firebase: menggunakan <strong>Firebase Assistant</strong> di Android Studio (cara termudah), atau secara manual lewat Firebase Console.</p>
+
+                <h3>Cara A — Firebase Assistant (Direkomendasikan)</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Buka Firebase Assistant</h4>
+                            <p>Di Android Studio, klik menu <strong>Tools → Firebase</strong>. Panel Firebase Assistant akan muncul di sebelah kanan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Pilih Layanan</h4>
+                            <p>Pilih layanan yang ingin ditambahkan, misalnya <strong>Authentication → Authenticate using a custom authentication system</strong>, lalu klik <strong>Connect to Firebase</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Login & Pilih Project</h4>
+                            <p>Browser akan terbuka untuk login Google. Setelah login, pilih project Firebase yang sudah dibuat tadi, lalu klik <strong>Connect</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>File google-services.json Otomatis Ditambahkan</h4>
+                            <p>Firebase Assistant akan otomatis mendownload dan menempatkan file <code>google-services.json</code> ke folder <code>app/</code> project Anda.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Cara B — Manual via Firebase Console</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Tambah Android App</h4>
+                            <p>Di Firebase Console, klik ikon Android (<strong>&lt;/&gt;</strong>) di halaman Project Overview untuk mendaftarkan aplikasi Android baru.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Isi Package Name</h4>
+                            <p>Masukkan <strong>Android package name</strong> yang sama persis dengan yang ada di <code>app/build.gradle</code>, misalnya <code>com.example.praktikumfirebase</code>. Klik <strong>Register app</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Download google-services.json</h4>
+                            <p>Download file <code>google-services.json</code> yang disediakan, lalu pindahkan ke folder <code>app/</code> di project Android Studio Anda.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Verifikasi Lokasi File</h4>
+                            <p>Pastikan file berada di <code>app/google-services.json</code> (bukan di root project). Di Android Studio, switch view ke <strong>Project</strong> (bukan Android) untuk melihat lokasi sebenarnya.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Package Name Harus Sama Persis</h4>
+                    <p style="margin-bottom:0;">Package name di Firebase Console harus identik dengan <code>applicationId</code> di <code>app/build.gradle</code>. Jika berbeda, aplikasi tidak akan bisa terhubung ke Firebase dan akan crash saat dijalankan.</p>
+                </div>
+            </article>
+
+            <!-- ======== TAMBAH DEPENDENCIES ======== -->
+            <article id="setup-deps">
+                <h2>4. Tambah Dependencies Firebase</h2>
+                <p>Firebase menggunakan sistem plugin <strong>Google Services</strong> untuk membaca file <code>google-services.json</code>. Konfigurasi dilakukan di dua file Gradle.</p>
+
+                <h3>Project-level build.gradle (atau settings.gradle)</h3>
+                <p>Tambahkan Google Services plugin. Lokasi konfigurasi bergantung pada versi Android Studio yang digunakan.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle (Project level) — cara lama</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// build.gradle (Project: NamaProject)
+buildscript {
+    dependencies {
+        classpath 'com.google.gms:google-services:4.4.2'
+    }
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Project level) — cara baru dengan Version Catalog</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// build.gradle.kts (Project: NamaProject)
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    id("com.google.gms.google-services") version "4.4.2" apply false
+}</pre>
+                </div>
+
+                <h3>App-level build.gradle</h3>
+                <p>Tambahkan plugin Google Services dan dependencies Firebase yang dibutuhkan di file <code>app/build.gradle</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>app/build.gradle — tambahkan plugin dan dependencies</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'  // ← tambahkan ini
+}
+
+dependencies {
+    // Firebase BoM — mengelola versi semua library Firebase secara otomatis
+    implementation platform('com.google.firebase:firebase-bom:33.7.0')
+
+    // Tambahkan layanan Firebase yang dibutuhkan (tanpa versi, sudah diatur BoM)
+    implementation 'com.google.firebase:firebase-auth-ktx'       // Authentication
+    implementation 'com.google.firebase:firebase-firestore-ktx'  // Cloud Firestore
+    implementation 'com.google.firebase:firebase-database-ktx'   // Realtime Database
+    implementation 'com.google.firebase:firebase-storage-ktx'    // Storage
+
+    // Coroutines untuk operasi async
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Apa itu Firebase BoM?</h4>
+                    <p><strong>BoM (Bill of Materials)</strong> adalah cara Firebase merekomendasikan pengelolaan versi library. Dengan mendeklarasikan satu versi BoM, semua library Firebase yang Anda tambahkan akan otomatis menggunakan versi yang kompatibel satu sama lain — tidak perlu menulis versi di tiap dependency.</p>
+                    <p style="margin-bottom:0;">Cek versi BoM terbaru di: <code>firebase.google.com/docs/android/setup</code></p>
+                </div>
+
+                <h3>Verifikasi Setup</h3>
+                <p>Setelah menambahkan semua konfigurasi, lakukan <strong>Sync Project with Gradle Files</strong> (klik ikon gajah di toolbar atau <kbd>Ctrl+Shift+O</kbd>). Jika tidak ada error, setup berhasil.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Cek koneksi Firebase di MainActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Cek apakah Firebase Auth sudah terhubung
+        val auth = Firebase.auth
+        val currentUser = auth.currentUser
+
+        if (currentUser != null) {
+            Log.d("Firebase", "User sudah login: ${currentUser.email}")
+        } else {
+            Log.d("Firebase", "Firebase terhubung! Belum ada user yang login.")
+        }
+    }
+}</pre>
+                </div>
+
+                <p>Jalankan aplikasi dan buka <strong>Logcat</strong> di Android Studio. Jika muncul pesan <em>"Firebase terhubung!"</em> tanpa error, berarti setup sudah berhasil.</p>
+
+                <div class="data-table" style="overflow:hidden;border-radius:8px;margin-top:24px;">
+                    <table class="data-table" style="margin:0;">
+                        <thead>
+                            <tr>
+                                <th>File</th>
+                                <th>Yang Ditambahkan</th>
+                                <th>Fungsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>google-services.json</code></td>
+                                <td>Di folder <code>app/</code></td>
+                                <td>Konfigurasi koneksi ke project Firebase</td>
+                            </tr>
+                            <tr>
+                                <td><code>build.gradle (project)</code></td>
+                                <td>Plugin <code>google-services</code></td>
+                                <td>Membaca dan memproses google-services.json</td>
+                            </tr>
+                            <tr>
+                                <td><code>build.gradle (app)</code></td>
+                                <td>Plugin + dependencies Firebase</td>
+                                <td>Mengaktifkan library Firebase di aplikasi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- ======== VERIFIKASI KONEKSI ======== -->
+            <article id="setup-verifikasi">
+                <h2>5. Uji Coba Koneksi Firebase</h2>
+                <p>Setelah semua konfigurasi selesai, saatnya membuktikan bahwa aplikasi sudah berhasil terhubung ke Firebase dengan membuat layout dan kode uji coba sederhana.</p>
+
+                <!-- TAHAP 4 -->
+                <h3>Langkah 1 — Buat Layout Uji Coba</h3>
+                <p>Buat tampilan sederhana dengan satu tombol dan satu TextView untuk menampilkan hasil koneksi.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_main.xml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="32dp"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Belum dicek..."
+        android:textSize="18sp"
+        android:textAlignment="center"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnCekKoneksi"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cek Koneksi Firebase" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <!-- TAHAP 5 -->
+                <h3>Langkah 2 — Tulis Kode Uji Coba di MainActivity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt — uji coba koneksi Firebase</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.graphics.Color
+import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class MainActivity : AppCompatActivity() {
+
+    // Tag untuk Logcat
+    private val TAG = "FirebaseTest"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        val tvStatus      = findViewById&lt;TextView&gt;(R.id.tvStatus)
+        val btnCekKoneksi = findViewById&lt;Button&gt;(R.id.btnCekKoneksi)
+
+        btnCekKoneksi.setOnClickListener {
+            cekKoneksiFirebase(tvStatus)
+        }
+
+        // Cek otomatis saat app pertama dibuka
+        cekKoneksiFirebase(tvStatus)
+    }
+
+    private fun cekKoneksiFirebase(tvStatus: TextView) {
+        try {
+            // Coba inisialisasi Firebase Auth
+            val auth = Firebase.auth
+
+            // Jika berhasil, auth tidak akan null
+            val statusUser = if (auth.currentUser != null) {
+                "Login sebagai: ${auth.currentUser?.email}"
+            } else {
+                "Tidak ada user yang login"
+            }
+
+            // Tampilkan hasil di layar
+            tvStatus.text = "Firebase terhubung!\n$statusUser"
+            tvStatus.setTextColor(Color.parseColor("#2e7d32"))
+
+            // Catat di Logcat
+            Log.d(TAG, "Firebase Auth berhasil diinisialisasi")
+            Log.d(TAG, "Status: $statusUser")
+
+        } catch (e: Exception) {
+            // Jika gagal, tampilkan pesan error
+            tvStatus.text = "Koneksi gagal!\n${e.message}"
+            tvStatus.setTextColor(Color.parseColor("#c62828"))
+
+            Log.e(TAG, "Firebase gagal diinisialisasi", e)
+        }
+    }
+}</pre>
+                </div>
+
+                <!-- TAHAP 6 -->
+                <h3>Langkah 3 — Jalankan &amp; Verifikasi</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Jalankan Aplikasi</h4>
+                            <p>Klik tombol <strong>Run ▶</strong> atau tekan <kbd>Shift+F10</kbd>. Pilih emulator atau device fisik yang sudah terhubung.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Cek Tampilan di Layar</h4>
+                            <p>Jika koneksi berhasil, layar akan menampilkan teks hijau <strong>"Firebase terhubung!"</strong>. Jika merah, ada masalah pada konfigurasi.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Cek Logcat</h4>
+                            <p>Buka <strong>Logcat</strong> di Android Studio (panel bawah). Filter dengan tag <code>FirebaseTest</code>. Pastikan muncul log:</p>
+                            <div class="code-block" style="margin-top:8px;">
+                                <div class="code-header"><span>Output Logcat yang diharapkan</span></div>
+                                <pre>D/FirebaseTest: Firebase Auth berhasil diinisialisasi
+D/FirebaseTest: Status: Tidak ada user yang login</pre>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Verifikasi di Firebase Console</h4>
+                            <p>Buka Firebase Console → Project Overview. Jika aplikasi sudah pernah dijalankan, akan muncul indikator <strong>"1 app connected"</strong> atau grafik aktivitas di dashboard.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TROUBLESHOOTING -->
+                <h3>Troubleshooting — Jika Koneksi Gagal</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Gejala / Error</th>
+                            <th>Kemungkinan Penyebab</th>
+                            <th>Solusi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>App crash saat dibuka</td>
+                            <td><code>google-services.json</code> tidak ditemukan atau salah lokasi</td>
+                            <td>Pastikan file ada di <code>app/google-services.json</code>, bukan di root project</td>
+                        </tr>
+                        <tr>
+                            <td><code>Default FirebaseApp is not initialized</code></td>
+                            <td>Plugin Google Services belum ditambahkan atau Gradle belum di-sync</td>
+                            <td>Tambahkan <code>id 'com.google.gms.google-services'</code> di <code>app/build.gradle</code> lalu sync ulang</td>
+                        </tr>
+                        <tr>
+                            <td><code>Package name does not match</code></td>
+                            <td>Package name di Firebase Console berbeda dengan di Android Studio</td>
+                            <td>Samakan <code>applicationId</code> di <code>app/build.gradle</code> dengan yang didaftarkan di Firebase</td>
+                        </tr>
+                        <tr>
+                            <td>Gradle sync error: <code>Could not resolve</code></td>
+                            <td>Tidak ada koneksi internet atau versi BoM salah</td>
+                            <td>Cek koneksi internet, lalu cek versi BoM terbaru di <code>firebase.google.com/docs/android/setup</code></td>
+                        </tr>
+                        <tr>
+                            <td>Layar merah tapi tidak ada crash</td>
+                            <td>Exception saat inisialisasi Firebase</td>
+                            <td>Baca pesan error di Logcat dengan filter <code>FirebaseTest</code> untuk detail lebih lanjut</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <h4>Checklist Sebelum Lanjut ke Materi Berikutnya</h4>
+                    <ul>
+                        <li>Project Android baru berhasil dibuat dan Gradle sync tanpa error</li>
+                        <li>Project Firebase sudah dibuat di <code>console.firebase.google.com</code></li>
+                        <li>File <code>google-services.json</code> sudah ada di folder <code>app/</code></li>
+                        <li>Plugin <code>google-services</code> sudah ditambahkan di kedua file Gradle</li>
+                        <li>Aplikasi berjalan dan menampilkan <strong>"Firebase terhubung!"</strong></li>
+                        <li>Logcat menampilkan log <code>Firebase Auth berhasil diinisialisasi</code></li>
+                    </ul>
+                    <p style="margin-bottom:0;">Jika semua checklist terpenuhi, Anda siap melanjutkan ke materi <strong>Firebase Authentication</strong>.</p>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FIREBASE AUTHENTICATION -->
+        <!-- ============================================ -->
+        <section id="auth" class="section">
+            <h1>Firebase Authentication</h1>
+
+            <!-- PENGENALAN -->
+            <article id="auth-pengenalan">
+                <h2>Pengenalan Firebase Authentication</h2>
+                <p>Firebase Authentication menyediakan layanan backend siap pakai untuk mengautentikasi pengguna. Mendukung berbagai metode login: email/password, Google, Facebook, GitHub, nomor telepon, dan lainnya.</p>
+
+                <div class="storage-grid">
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#1565c0;font-size:1.2rem;">📧</div>
+                            <div class="storage-card-title">Email &amp; Password</div>
+                            <div class="storage-card-meta"><span class="storage-tag tag-blue">Dibahas</span></div>
+                            <div class="storage-card-desc">Login klasik dengan email dan password</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#c62828;font-size:1.2rem;">🔴</div>
+                            <div class="storage-card-title">Google Sign-In</div>
+                            <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
+                            <div class="storage-card-desc">Login dengan akun Google</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#37474f;font-size:1.2rem;">📱</div>
+                            <div class="storage-card-title">Phone Number</div>
+                            <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
+                            <div class="storage-card-desc">Login dengan OTP via SMS</div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <div class="storage-card-body">
+                            <div class="storage-card-num" style="background:#4a148c;font-size:1.2rem;">👤</div>
+                            <div class="storage-card-title">Anonymous</div>
+                            <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
+                            <div class="storage-card-desc">Login tanpa akun (guest mode)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Cara Kerja Firebase Auth</h3>
+                <p>Saat user berhasil login, Firebase mengembalikan objek <code>FirebaseUser</code> yang berisi informasi user (uid, email, displayName, dll). UID ini unik per user dan digunakan sebagai identifier di database.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan instance FirebaseAuth</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
+class AuthActivity : AppCompatActivity() {
+
+    // Deklarasi di level class
+    private lateinit var auth: FirebaseAuth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_auth)
+
+        // Inisialisasi Firebase Auth
+        auth = Firebase.auth
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Cek apakah user sudah login saat app dibuka
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            // User sudah login, arahkan ke halaman utama
+            navigateToHome()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Aktifkan Email/Password di Firebase Console</h4>
+                    <p>Sebelum bisa menggunakan login email/password, aktifkan dulu di Firebase Console:</p>
+                    <p style="margin-bottom:0;"><strong>Authentication → Sign-in method → Email/Password → Enable → Save</strong></p>
+                </div>
+            </article>
+
+            <!-- REGISTER -->
+            <article id="auth-register">
+                <h2>Register dengan Email &amp; Password</h2>
+                <p>Untuk mendaftarkan user baru, gunakan method <code>createUserWithEmailAndPassword()</code>. Method ini bersifat asynchronous dan mengembalikan <code>Task</code>.</p>
+
+                <h3>Layout XML — activity_register.xml</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_register.xml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daftar Akun"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password (min. 6 karakter)"
+        android:inputType="textPassword"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Daftar" /&gt;
+
+    &lt;ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="16dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>RegisterActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>RegisterActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class RegisterActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_register)
+
+        val etEmail    = findViewById&lt;EditText&gt;(R.id.etEmail)
+        val etPassword = findViewById&lt;EditText&gt;(R.id.etPassword)
+        val btnRegister = findViewById&lt;Button&gt;(R.id.btnRegister)
+        val progressBar = findViewById&lt;ProgressBar&gt;(R.id.progressBar)
+
+        btnRegister.setOnClickListener {
+            val email    = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+
+            // Validasi input
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Email dan password tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (password.length &lt; 6) {
+                Toast.makeText(this, "Password minimal 6 karakter", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Tampilkan loading
+            progressBar.visibility = View.VISIBLE
+            btnRegister.isEnabled = false
+
+            // Daftarkan user ke Firebase
+            auth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    progressBar.visibility = View.GONE
+                    btnRegister.isEnabled = true
+
+                    if (task.isSuccessful) {
+                        // Registrasi berhasil
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Registrasi berhasil! UID: ${user?.uid}", Toast.LENGTH_LONG).show()
+                        // Arahkan ke halaman login atau home
+                        startActivity(Intent(this, LoginActivity::class.java))
+                        finish()
+                    } else {
+                        // Registrasi gagal — tampilkan pesan error
+                        Toast.makeText(this, "Gagal: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Error Umum saat Register</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Error</th><th>Penyebab</th><th>Solusi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>ERROR_EMAIL_ALREADY_IN_USE</code></td>
+                                <td>Email sudah terdaftar</td>
+                                <td>Gunakan email lain atau arahkan ke login</td>
+                            </tr>
+                            <tr>
+                                <td><code>ERROR_WEAK_PASSWORD</code></td>
+                                <td>Password kurang dari 6 karakter</td>
+                                <td>Validasi panjang password sebelum submit</td>
+                            </tr>
+                            <tr>
+                                <td><code>ERROR_INVALID_EMAIL</code></td>
+                                <td>Format email tidak valid</td>
+                                <td>Gunakan <code>inputType="textEmailAddress"</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- LOGIN -->
+            <article id="auth-login">
+                <h2>Login dengan Email &amp; Password</h2>
+                <p>Untuk login user yang sudah terdaftar, gunakan method <code>signInWithEmailAndPassword()</code>.</p>
+
+                <h3>LoginActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>LoginActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class LoginActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_login)
+
+        val etEmail    = findViewById&lt;EditText&gt;(R.id.etEmail)
+        val etPassword = findViewById&lt;EditText&gt;(R.id.etPassword)
+        val btnLogin   = findViewById&lt;Button&gt;(R.id.btnLogin)
+        val progressBar = findViewById&lt;ProgressBar&gt;(R.id.progressBar)
+
+        btnLogin.setOnClickListener {
+            val email    = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Isi email dan password terlebih dahulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            progressBar.visibility = View.VISIBLE
+            btnLogin.isEnabled = false
+
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    progressBar.visibility = View.GONE
+                    btnLogin.isEnabled = true
+
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser
+                        Toast.makeText(this, "Selamat datang, ${user?.email}", Toast.LENGTH_SHORT).show()
+                        startActivity(Intent(this, MainActivity::class.java))
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Login gagal: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Objek FirebaseUser</h4>
+                    <p>Setelah login berhasil, <code>auth.currentUser</code> mengembalikan objek <code>FirebaseUser</code> dengan properti berikut:</p>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header">
+                            <span>Properti FirebaseUser</span>
+                            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                        </div>
+                        <pre>val user = auth.currentUser
+
+user?.uid          // ID unik user (digunakan sebagai key di database)
+user?.email        // Email user
+user?.displayName  // Nama tampilan (null jika belum diset)
+user?.photoUrl     // URL foto profil (null jika belum diset)
+user?.isEmailVerified  // Apakah email sudah diverifikasi</pre>
+                    </div>
+                </div>
+            </article>
+
+            <!-- LOGOUT & CEK STATUS -->
+            <article id="auth-logout">
+                <h2>Logout &amp; Cek Status Login</h2>
+
+                <h3>Logout</h3>
+                <p>Logout sangat sederhana — cukup panggil <code>auth.signOut()</code>. Setelah logout, <code>auth.currentUser</code> akan bernilai <code>null</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Logout user</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>btnLogout.setOnClickListener {
+    auth.signOut()
+    Toast.makeText(this, "Berhasil logout", Toast.LENGTH_SHORT).show()
+    // Kembali ke halaman login
+    startActivity(Intent(this, LoginActivity::class.java))
+    finish()
+}</pre>
+                </div>
+
+                <h3>Cek Status Login (Auto-login)</h3>
+                <p>Gunakan pola ini di <code>MainActivity</code> atau <code>SplashActivity</code> untuk mengecek apakah user sudah login sebelumnya, sehingga tidak perlu login ulang setiap buka app.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Pola auto-login di onStart()</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>class SplashActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+
+    override fun onStart() {
+        super.onStart()
+
+        val currentUser = auth.currentUser
+
+        if (currentUser != null) {
+            // User sudah login sebelumnya → langsung ke MainActivity
+            startActivity(Intent(this, MainActivity::class.java))
+        } else {
+            // Belum login → arahkan ke LoginActivity
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
+        finish()
+    }
+}</pre>
+                </div>
+
+                <h3>AuthStateListener — Pantau Perubahan Status Login</h3>
+                <p>Untuk memantau perubahan status login secara real-time (misalnya token expired), gunakan <code>AuthStateListener</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AuthStateListener</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>class MainActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val user = firebaseAuth.currentUser
+            if (user == null) {
+                // User logout atau token expired
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        auth.addAuthStateListener(authStateListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        auth.removeAuthStateListener(authStateListener)  // Jangan lupa remove!
+    }
+}</pre>
+                </div>
+            </article>
+
+            <!-- HANDS-ON 1 -->
+            <article id="handson-1">
+                <h2>🛠️ Hands-On 1 — Aplikasi Login Sederhana</h2>
+
+                <div class="task-box">
+                    <h2>Tugas: Buat Aplikasi Login dengan Firebase Auth</h2>
+                    <p>Buat aplikasi Android sederhana dengan 3 screen: Register, Login, dan Home. Gunakan Firebase Authentication untuk mengelola akun pengguna.</p>
+                </div>
+
+                <h3>Struktur Project</h3>
+                <div class="file-tree-box">
+                    <div class="ftb-title">📁 Project Structure</div>
+                    <div class="ftb-tree">
+                        <div class="ftb-row"><span class="ftb-folder">📁 app/src/main/</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-folder">📁 java/com/example/firebaseauth/</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">SplashActivity.kt</span> <span class="ftb-badge">cek status login</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">RegisterActivity.kt</span> <span class="ftb-badge">daftar akun</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">LoginActivity.kt</span> <span class="ftb-badge">masuk akun</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">HomeActivity.kt</span> <span class="ftb-badge">halaman utama</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-folder">📁 res/layout/</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_splash.xml</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_register.xml</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_login.xml</span></div>
+                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_home.xml</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">google-services.json</span> <span class="ftb-badge">sudah ada dari setup</span></div>
+                    </div>
+                </div>
+
+                <h3>Langkah Pengerjaan</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Setup Project</h4>
+                            <p>Buat project Android baru, hubungkan ke Firebase, dan tambahkan dependency <code>firebase-auth-ktx</code> seperti yang sudah dipelajari di bagian Setup.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Buat Layout</h4>
+                            <p>Buat 4 file layout XML. Untuk <code>activity_login.xml</code> dan <code>activity_register.xml</code>, gunakan contoh layout yang sudah ada di materi di atas.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Implementasi SplashActivity</h4>
+                            <p>Di <code>onStart()</code>, cek <code>auth.currentUser</code>. Jika tidak null → ke HomeActivity, jika null → ke LoginActivity. Jadikan SplashActivity sebagai launcher di <code>AndroidManifest.xml</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Implementasi Register &amp; Login</h4>
+                            <p>Gunakan kode dari materi di atas. Pastikan ada validasi input sebelum memanggil Firebase.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Buat HomeActivity</h4>
+                            <p>Tampilkan email user yang sedang login (<code>auth.currentUser?.email</code>) dan tombol Logout yang memanggil <code>auth.signOut()</code> lalu kembali ke LoginActivity.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">6</div>
+                        <div class="step-content">
+                            <h4>Uji Coba</h4>
+                            <p>Jalankan aplikasi, daftar akun baru, logout, lalu login kembali. Cek di Firebase Console → Authentication → Users apakah akun berhasil terdaftar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Kode HomeActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>HomeActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Intent
+import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class HomeActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_home)
+
+        val tvWelcome = findViewById&lt;TextView&gt;(R.id.tvWelcome)
+        val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
+
+        // Tampilkan info user yang sedang login
+        val user = auth.currentUser
+        tvWelcome.text = "Selamat datang!\n${user?.email}"
+
+        btnLogout.setOnClickListener {
+            auth.signOut()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Jika user tidak login, paksa kembali ke login
+        if (auth.currentUser == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Checklist Penilaian</h4>
+                    <ul>
+                        <li>Aplikasi bisa register akun baru</li>
+                        <li>Aplikasi bisa login dengan akun yang sudah terdaftar</li>
+                        <li>Halaman Home menampilkan email user yang login</li>
+                        <li>Tombol logout berfungsi dan kembali ke halaman login</li>
+                        <li>Jika app ditutup lalu dibuka lagi, user tidak perlu login ulang</li>
+                        <li>Akun terdaftar terlihat di Firebase Console → Authentication → Users</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- CLOUD FIRESTORE -->
+        <!-- ============================================ -->
+        <section id="firestore" class="section">
+            <h1>Cloud Firestore</h1>
+
+            <!-- PENGENALAN -->
+            <article id="fs-pengenalan">
+                <h2>Pengenalan Cloud Firestore</h2>
+                <p>Cloud Firestore adalah database NoSQL berbasis dokumen dari Firebase. Data disimpan dalam bentuk <strong>koleksi (collection)</strong> yang berisi <strong>dokumen (document)</strong>, mirip seperti folder berisi file JSON.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fitur</th>
+                            <th>Cloud Firestore</th>
+                            <th>Realtime Database</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Struktur data</td>
+                            <td>Koleksi → Dokumen → Field</td>
+                            <td>Pohon JSON</td>
+                        </tr>
+                        <tr>
+                            <td>Query</td>
+                            <td>Lebih powerful (filter, sort, compound)</td>
+                            <td>Terbatas</td>
+                        </tr>
+                        <tr>
+                            <td>Offline support</td>
+                            <td>Otomatis</td>
+                            <td>Otomatis</td>
+                        </tr>
+                        <tr>
+                            <td>Skalabilitas</td>
+                            <td>Sangat baik</td>
+                            <td>Terbatas</td>
+                        </tr>
+                        <tr>
+                            <td>Rekomendasi</td>
+                            <td>Untuk project baru</td>
+                            <td>Untuk sinkronisasi sederhana</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <h4>Inisialisasi Firestore</h4>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header">
+                            <span>Mendapatkan instance Firestore</span>
+                            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                        </div>
+                        <pre>import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+
+// Cukup satu baris — bisa dipanggil dari mana saja
+val db = Firebase.firestore</pre>
+                    </div>
+                </div>
+            </article>
+
+            <!-- STRUKTUR DATA -->
+            <article id="fs-struktur">
+                <h2>Struktur Data Firestore</h2>
+                <p>Firestore menggunakan hierarki <strong>Collection → Document → Field</strong>. Bayangkan Collection seperti tabel, Document seperti baris, dan Field seperti kolom — tapi jauh lebih fleksibel karena setiap dokumen bisa punya field yang berbeda.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh struktur data Firestore — aplikasi catatan</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// Firestore Structure
+// ─────────────────────────────────────────────
+// Collection: "notes"
+//   └── Document: "abc123"  (auto-generated ID)
+//         ├── title    : "Belajar Firebase"
+//         ├── content  : "Firestore itu mudah!"
+//         ├── userId   : "uid_user_123"
+//         └── createdAt: Timestamp
+//
+//   └── Document: "def456"
+//         ├── title    : "Catatan Kedua"
+//         ├── content  : "Ini catatan saya"
+//         ├── userId   : "uid_user_123"
+//         └── createdAt: Timestamp
+// ─────────────────────────────────────────────
+
+// Path ke collection: db.collection("notes")
+// Path ke dokumen:    db.collection("notes").document("abc123")</pre>
+                </div>
+
+                <h3>Data Class untuk Firestore</h3>
+                <p>Buat data class Kotlin yang merepresentasikan dokumen Firestore. Firestore bisa otomatis mengkonversi antara data class dan dokumen.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Note.kt — data class</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Timestamp
+
+data class Note(
+    val id: String = "",           // ID dokumen Firestore
+    val title: String = "",
+    val content: String = "",
+    val userId: String = "",
+    val createdAt: Timestamp? = null
+)
+// Catatan: semua field HARUS punya default value
+// agar Firestore bisa membuat objek saat membaca data</pre>
+                </div>
+            </article>
+
+            <!-- CREATE -->
+            <article id="fs-create">
+                <h2>Create — Menambah Data</h2>
+                <p>Ada dua cara menambah dokumen: dengan ID otomatis (<code>add()</code>) atau dengan ID yang ditentukan sendiri (<code>set()</code>).</p>
+
+                <h3>Cara 1 — ID Otomatis dengan add()</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Tambah dokumen dengan ID otomatis</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+
+// Data yang akan disimpan
+val note = hashMapOf(
+    "title"     to "Belajar Firebase",
+    "content"   to "Firestore sangat mudah digunakan!",
+    "userId"    to Firebase.auth.currentUser?.uid,
+    "createdAt" to com.google.firebase.Timestamp.now()
+)
+
+// Tambah ke collection "notes" — ID dokumen dibuat otomatis
+db.collection("notes")
+    .add(note)
+    .addOnSuccessListener { documentReference ->
+        Log.d("Firestore", "Dokumen ditambahkan dengan ID: ${documentReference.id}")
+        Toast.makeText(this, "Catatan berhasil disimpan!", Toast.LENGTH_SHORT).show()
+    }
+    .addOnFailureListener { e ->
+        Log.e("Firestore", "Error menambah dokumen", e)
+        Toast.makeText(this, "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+
+                <h3>Cara 2 — ID Manual dengan set()</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Tambah dokumen dengan ID yang ditentukan</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+val userId = Firebase.auth.currentUser?.uid ?: return
+
+// Simpan profil user dengan UID sebagai ID dokumen
+val userProfile = hashMapOf(
+    "name"      to "Budi Santoso",
+    "email"     to "budi@example.com",
+    "createdAt" to com.google.firebase.Timestamp.now()
+)
+
+// Gunakan UID sebagai ID dokumen agar mudah dicari
+db.collection("users")
+    .document(userId)   // ← ID ditentukan manual
+    .set(userProfile)
+    .addOnSuccessListener {
+        Log.d("Firestore", "Profil user berhasil disimpan")
+    }
+    .addOnFailureListener { e ->
+        Log.e("Firestore", "Gagal menyimpan profil", e)
+    }</pre>
+                </div>
+
+                <h3>Menggunakan Data Class</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Simpan data class langsung ke Firestore</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+
+val note = Note(
+    title     = "Catatan Baru",
+    content   = "Isi catatan di sini",
+    userId    = Firebase.auth.currentUser?.uid ?: "",
+    createdAt = com.google.firebase.Timestamp.now()
+)
+
+// Firestore otomatis mengkonversi data class ke Map
+db.collection("notes")
+    .add(note)
+    .addOnSuccessListener { ref ->
+        Toast.makeText(this, "Tersimpan! ID: ${ref.id}", Toast.LENGTH_SHORT).show()
+    }
+    .addOnFailureListener { e ->
+        Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+            </article>
+
+            <!-- READ -->
+            <article id="fs-read">
+                <h2>Read — Membaca Data</h2>
+                <p>Ada dua cara membaca data dari Firestore: <strong>sekali baca</strong> (<code>get()</code>) dan <strong>realtime listener</strong> (<code>addSnapshotListener()</code>) yang otomatis update saat data berubah.</p>
+
+                <h3>Baca Semua Dokumen dalam Collection</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Baca semua dokumen — sekali baca</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+
+db.collection("notes")
+    .get()
+    .addOnSuccessListener { result ->
+        val noteList = mutableListOf&lt;Note&gt;()
+
+        for (document in result) {
+            // Konversi dokumen ke data class
+            val note = document.toObject(Note::class.java).copy(id = document.id)
+            noteList.add(note)
+            Log.d("Firestore", "${document.id} => ${document.data}")
+        }
+
+        // Update RecyclerView atau UI
+        adapter.submitList(noteList)
+    }
+    .addOnFailureListener { e ->
+        Log.e("Firestore", "Error membaca data", e)
+    }</pre>
+                </div>
+
+                <h3>Baca dengan Filter (Query)</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Query — filter berdasarkan field</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+val currentUserId = Firebase.auth.currentUser?.uid ?: return
+
+// Ambil hanya catatan milik user yang sedang login
+db.collection("notes")
+    .whereEqualTo("userId", currentUserId)   // filter
+    .orderBy("createdAt", Query.Direction.DESCENDING)  // urutkan terbaru
+    .get()
+    .addOnSuccessListener { result ->
+        val noteList = result.documents.mapNotNull { doc ->
+            doc.toObject(Note::class.java)?.copy(id = doc.id)
+        }
+        adapter.submitList(noteList)
+    }</pre>
+                </div>
+
+                <h3>Realtime Listener — Data Auto Update</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>addSnapshotListener — update otomatis saat data berubah</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+val currentUserId = Firebase.auth.currentUser?.uid ?: return
+
+// Simpan listener agar bisa di-remove nanti
+private var listenerRegistration: ListenerRegistration? = null
+
+override fun onStart() {
+    super.onStart()
+
+    listenerRegistration = db.collection("notes")
+        .whereEqualTo("userId", currentUserId)
+        .orderBy("createdAt", Query.Direction.DESCENDING)
+        .addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                Log.e("Firestore", "Listen failed", error)
+                return@addSnapshotListener
+            }
+
+            val noteList = snapshot?.documents?.mapNotNull { doc ->
+                doc.toObject(Note::class.java)?.copy(id = doc.id)
+            } ?: emptyList()
+
+            adapter.submitList(noteList)
+        }
+}
+
+override fun onStop() {
+    super.onStop()
+    listenerRegistration?.remove()  // Selalu remove listener saat tidak dipakai!
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Jangan Lupa Remove Listener</h4>
+                    <p style="margin-bottom:0;">Listener yang tidak di-remove akan terus aktif di background dan menghabiskan kuota Firestore. Selalu panggil <code>listenerRegistration?.remove()</code> di <code>onStop()</code> atau <code>onDestroy()</code>.</p>
+                </div>
+            </article>
+
+            <!-- UPDATE -->
+            <article id="fs-update">
+                <h2>Update — Mengubah Data</h2>
+                <p>Ada dua cara update: <code>update()</code> untuk mengubah field tertentu saja, dan <code>set()</code> untuk mengganti seluruh dokumen.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Update field tertentu dengan update()</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+val noteId = "abc123"  // ID dokumen yang akan diupdate
+
+// Hanya mengubah field "title" dan "content"
+// Field lain (userId, createdAt) tidak tersentuh
+db.collection("notes")
+    .document(noteId)
+    .update(
+        "title",   "Judul yang Diperbarui",
+        "content", "Konten yang sudah diedit"
+    )
+    .addOnSuccessListener {
+        Toast.makeText(this, "Catatan berhasil diperbarui", Toast.LENGTH_SHORT).show()
+    }
+    .addOnFailureListener { e ->
+        Toast.makeText(this, "Gagal update: ${e.message}", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Update dengan Map</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val updates = hashMapOf&lt;String, Any&gt;(
+    "title"     to etTitle.text.toString(),
+    "content"   to etContent.text.toString(),
+    "updatedAt" to com.google.firebase.Timestamp.now()
+)
+
+db.collection("notes").document(noteId)
+    .update(updates)
+    .addOnSuccessListener {
+        Log.d("Firestore", "Dokumen berhasil diupdate")
+    }</pre>
+                </div>
+            </article>
+
+            <!-- DELETE -->
+            <article id="fs-delete">
+                <h2>Delete — Menghapus Data</h2>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Hapus dokumen</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val db = Firebase.firestore
+val noteId = "abc123"
+
+db.collection("notes")
+    .document(noteId)
+    .delete()
+    .addOnSuccessListener {
+        Toast.makeText(this, "Catatan berhasil dihapus", Toast.LENGTH_SHORT).show()
+    }
+    .addOnFailureListener { e ->
+        Toast.makeText(this, "Gagal hapus: ${e.message}", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Hapus field tertentu (bukan seluruh dokumen)</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.firestore.FieldValue
+
+// Hapus hanya field "content", dokumen tetap ada
+db.collection("notes").document(noteId)
+    .update("content", FieldValue.delete())
+    .addOnSuccessListener {
+        Log.d("Firestore", "Field berhasil dihapus")
+    }</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Ringkasan Operasi CRUD Firestore</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Operasi</th><th>Method</th><th>Keterangan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Create</td><td><code>collection.add(data)</code></td><td>ID otomatis</td></tr>
+                            <tr><td>Create</td><td><code>document.set(data)</code></td><td>ID manual</td></tr>
+                            <tr><td>Read</td><td><code>collection.get()</code></td><td>Sekali baca</td></tr>
+                            <tr><td>Read</td><td><code>collection.addSnapshotListener()</code></td><td>Realtime</td></tr>
+                            <tr><td>Update</td><td><code>document.update(field, value)</code></td><td>Field tertentu</td></tr>
+                            <tr><td>Delete</td><td><code>document.delete()</code></td><td>Hapus dokumen</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- HANDS-ON 2 -->
+            <article id="handson-2">
+                <h2>🛠️ Hands-On 2 — Aplikasi Catatan dengan Firestore</h2>
+
+                <div class="task-box">
+                    <h2>Tugas: Buat Aplikasi CRUD Catatan</h2>
+                    <p>Kembangkan aplikasi dari Hands-On 1. Setelah login, user bisa membuat, melihat, mengedit, dan menghapus catatan pribadi yang tersimpan di Cloud Firestore.</p>
+                </div>
+
+                <h3>Struktur Project</h3>
+                <div class="file-tree-box">
+                    <div class="ftb-title">📁 Project Structure (tambahan dari Hands-On 1)</div>
+                    <div class="ftb-tree">
+                        <div class="ftb-row"><span class="ftb-folder">📁 java/com/example/firebaseapp/</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari HO-1</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">NoteListActivity.kt</span> <span class="ftb-badge">daftar catatan + realtime</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">AddEditNoteActivity.kt</span> <span class="ftb-badge">tambah / edit catatan</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">Note.kt</span> <span class="ftb-badge">data class</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">NoteAdapter.kt</span> <span class="ftb-badge">RecyclerView adapter</span></div>
+                        <div class="ftb-row"><span class="ftb-folder">📁 res/layout/</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">activity_note_list.xml</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">activity_add_edit_note.xml</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">item_note.xml</span></div>
+                    </div>
+                </div>
+
+                <h3>NoteListActivity.kt — Daftar Catatan dengan Realtime Listener</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>NoteListActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Intent
+import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.firestore
+
+class NoteListActivity : AppCompatActivity() {
+
+    private val db   = Firebase.firestore
+    private val auth = Firebase.auth
+    private var listenerReg: ListenerRegistration? = null
+    private lateinit var adapter: NoteAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_note_list)
+
+        val recyclerView = findViewById&lt;RecyclerView&gt;(R.id.recyclerView)
+        val fab = findViewById&lt;FloatingActionButton&gt;(R.id.fab)
+
+        // Setup adapter dengan callback edit dan delete
+        adapter = NoteAdapter(
+            onEdit = { note ->
+                val intent = Intent(this, AddEditNoteActivity::class.java)
+                intent.putExtra("noteId", note.id)
+                intent.putExtra("noteTitle", note.title)
+                intent.putExtra("noteContent", note.content)
+                startActivity(intent)
+            },
+            onDelete = { note -> deleteNote(note.id) }
+        )
+
+        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView.adapter = adapter
+
+        fab.setOnClickListener {
+            startActivity(Intent(this, AddEditNoteActivity::class.java))
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val userId = auth.currentUser?.uid ?: return
+
+        // Realtime listener — list otomatis update
+        listenerReg = db.collection("notes")
+            .whereEqualTo("userId", userId)
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Toast.makeText(this, "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                    return@addSnapshotListener
+                }
+                val notes = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Note::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+                adapter.submitList(notes)
+            }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        listenerReg?.remove()
+    }
+
+    private fun deleteNote(noteId: String) {
+        db.collection("notes").document(noteId)
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(this, "Catatan dihapus", Toast.LENGTH_SHORT).show()
+            }
+    }
+}</pre>
+                </div>
+
+                <h3>AddEditNoteActivity.kt — Tambah &amp; Edit Catatan</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AddEditNoteActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+
+class AddEditNoteActivity : AppCompatActivity() {
+
+    private val db   = Firebase.firestore
+    private val auth = Firebase.auth
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_add_edit_note)
+
+        val etTitle   = findViewById&lt;EditText&gt;(R.id.etTitle)
+        val etContent = findViewById&lt;EditText&gt;(R.id.etContent)
+        val btnSave   = findViewById&lt;Button&gt;(R.id.btnSave)
+
+        // Cek apakah mode edit (ada noteId dari Intent)
+        val noteId      = intent.getStringExtra("noteId")
+        val isEditMode  = noteId != null
+
+        if (isEditMode) {
+            etTitle.setText(intent.getStringExtra("noteTitle"))
+            etContent.setText(intent.getStringExtra("noteContent"))
+            btnSave.text = "Simpan Perubahan"
+        }
+
+        btnSave.setOnClickListener {
+            val title   = etTitle.text.toString().trim()
+            val content = etContent.text.toString().trim()
+
+            if (title.isEmpty()) {
+                etTitle.error = "Judul tidak boleh kosong"
+                return@setOnClickListener
+            }
+
+            if (isEditMode) {
+                // Mode edit — update dokumen yang ada
+                db.collection("notes").document(noteId!!)
+                    .update("title", title, "content", content)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Catatan diperbarui", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+            } else {
+                // Mode tambah — buat dokumen baru
+                val note = Note(
+                    title     = title,
+                    content   = content,
+                    userId    = auth.currentUser?.uid ?: "",
+                    createdAt = Timestamp.now()
+                )
+                db.collection("notes").add(note)
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Catatan disimpan", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                    .addOnFailureListener { e ->
+                        Toast.makeText(this, "Gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        }
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Checklist Penilaian</h4>
+                    <ul>
+                        <li>Daftar catatan tampil di RecyclerView setelah login</li>
+                        <li>Tombol FAB membuka form tambah catatan baru</li>
+                        <li>Catatan baru langsung muncul di list tanpa refresh manual</li>
+                        <li>Tombol edit membuka form dengan data yang sudah terisi</li>
+                        <li>Perubahan tersimpan dan list otomatis terupdate</li>
+                        <li>Tombol delete menghapus catatan dari Firestore dan list</li>
+                        <li>Setiap user hanya melihat catatan miliknya sendiri</li>
+                        <li>Data catatan terlihat di Firebase Console → Firestore Database</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- REALTIME DATABASE -->
+        <!-- ============================================ -->
+        <section id="realtimedb" class="section">
+            <h1>Firebase Realtime Database</h1>
+
+            <!-- PENGENALAN -->
+            <article id="rtdb-pengenalan">
+                <h2>Pengenalan Realtime Database</h2>
+                <p>Firebase Realtime Database adalah database NoSQL berbasis cloud yang menyimpan data dalam format <strong>pohon JSON</strong>. Keunggulan utamanya adalah sinkronisasi data secara real-time ke semua client yang terhubung dalam hitungan milidetik.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Realtime Database</th>
+                            <th>Cloud Firestore</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Struktur data</td>
+                            <td>Pohon JSON flat</td>
+                            <td>Collection → Document</td>
+                        </tr>
+                        <tr>
+                            <td>Cocok untuk</td>
+                            <td>Chat, live score, status online</td>
+                            <td>Data terstruktur kompleks</td>
+                        </tr>
+                        <tr>
+                            <td>Query</td>
+                            <td>Terbatas (satu field)</td>
+                            <td>Lebih powerful</td>
+                        </tr>
+                        <tr>
+                            <td>Harga</td>
+                            <td>Berdasarkan bandwidth &amp; storage</td>
+                            <td>Berdasarkan jumlah operasi</td>
+                        </tr>
+                        <tr>
+                            <td>Latensi</td>
+                            <td>Sangat rendah (~50ms)</td>
+                            <td>Rendah (~100ms)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Struktur Data JSON</h3>
+                <p>Semua data di Realtime Database adalah pohon JSON. Hindari nesting yang terlalu dalam karena saat Anda mengambil data dari sebuah node, semua child-nya ikut terambil.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh struktur JSON di Realtime Database</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>{
+  "messages": {
+    "-NxAbc123": {
+      "text"     : "Halo semua!",
+      "sender"   : "Budi",
+      "timestamp": 1700000001000
+    },
+    "-NxDef456": {
+      "text"     : "Selamat datang di Firebase!",
+      "sender"   : "Ani",
+      "timestamp": 1700000002000
+    }
+  },
+  "users": {
+    "uid_budi": {
+      "name"  : "Budi Santoso",
+      "online": true
+    },
+    "uid_ani": {
+      "name"  : "Ani Rahayu",
+      "online": false
+    }
+  }
+}</pre>
+                </div>
+
+                <h3>Inisialisasi Realtime Database</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan instance DatabaseReference</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Firebase
+import com.google.firebase.database.database
+
+// Mendapatkan referensi ke root database
+val database = Firebase.database
+
+// Referensi ke node tertentu
+val messagesRef = database.getReference("messages")
+val usersRef    = database.getReference("users")
+
+// Referensi ke node bersarang
+val userRef = database.getReference("users/uid_budi")</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Aktifkan Realtime Database di Firebase Console</h4>
+                    <p style="margin-bottom:0;"><strong>Build → Realtime Database → Create database → Pilih lokasi server → Start in test mode → Done</strong>. Setelah aktif, salin URL database (format: <code>https://nama-project-default-rtdb.firebaseio.com</code>) — URL ini dibutuhkan jika ada lebih dari satu database.</p>
+                </div>
+            </article>
+
+            <!-- MENULIS DATA -->
+            <article id="rtdb-tulis">
+                <h2>Menulis Data ke Realtime Database</h2>
+                <p>Ada tiga cara menulis data: <code>setValue()</code> untuk menulis/menimpa node, <code>push()</code> untuk menambah data dengan key unik otomatis, dan <code>updateChildren()</code> untuk update beberapa field sekaligus.</p>
+
+                <h3>setValue() — Tulis atau Timpa Node</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>setValue() — menulis data ke node</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val database = Firebase.database
+val userId   = Firebase.auth.currentUser?.uid ?: return
+
+// Tulis data profil user — jika node sudah ada, akan ditimpa
+val userRef = database.getReference("users/$userId")
+userRef.setValue(mapOf(
+    "name"   to "Budi Santoso",
+    "email"  to "budi@example.com",
+    "online" to true
+)).addOnSuccessListener {
+    Log.d("RTDB", "Data berhasil ditulis")
+}.addOnFailureListener { e ->
+    Log.e("RTDB", "Gagal menulis data: ${e.message}")
+}</pre>
+                </div>
+
+                <h3>push() — Tambah Data dengan Key Unik</h3>
+                <p><code>push()</code> membuat key unik otomatis (mirip <code>add()</code> di Firestore) dan cocok untuk data list seperti pesan chat.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>push() — tambah pesan baru ke list</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val database    = Firebase.database
+val messagesRef = database.getReference("messages")
+
+// Data class untuk pesan
+data class Message(
+    val text      : String = "",
+    val sender    : String = "",
+    val timestamp : Long   = 0L
+)
+
+val newMessage = Message(
+    text      = "Halo dari Android!",
+    sender    = Firebase.auth.currentUser?.displayName ?: "Anonymous",
+    timestamp = System.currentTimeMillis()
+)
+
+// push() membuat key unik seperti "-NxAbc123"
+val newRef = messagesRef.push()
+newRef.setValue(newMessage)
+    .addOnSuccessListener {
+        Log.d("RTDB", "Pesan terkirim, key: ${newRef.key}")
+    }
+    .addOnFailureListener { e ->
+        Log.e("RTDB", "Gagal kirim pesan: ${e.message}")
+    }</pre>
+                </div>
+
+                <h3>updateChildren() — Update Beberapa Field</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>updateChildren() — update tanpa menimpa field lain</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val database = Firebase.database
+val userId   = Firebase.auth.currentUser?.uid ?: return
+
+// Hanya update field "online" dan "lastSeen"
+// Field lain seperti "name" dan "email" tidak tersentuh
+database.getReference("users/$userId")
+    .updateChildren(mapOf(
+        "online"   to false,
+        "lastSeen" to System.currentTimeMillis()
+    ))
+    .addOnSuccessListener {
+        Log.d("RTDB", "Status diperbarui")
+    }</pre>
+                </div>
+
+                <h3>removeValue() — Hapus Node</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>removeValue() — hapus node beserta semua child-nya</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val messageKey = "-NxAbc123"
+database.getReference("messages/$messageKey")
+    .removeValue()
+    .addOnSuccessListener {
+        Toast.makeText(this, "Pesan dihapus", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+            </article>
+
+            <!-- MEMBACA & LISTENER -->
+            <article id="rtdb-baca">
+                <h2>Membaca Data &amp; Listener</h2>
+                <p>Sama seperti Firestore, Realtime Database mendukung dua cara baca: sekali baca (<code>get()</code>) dan listener real-time (<code>addValueEventListener()</code>).</p>
+
+                <h3>get() — Baca Sekali</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>get() — baca data satu kali</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val database = Firebase.database
+val userId   = Firebase.auth.currentUser?.uid ?: return
+
+database.getReference("users/$userId")
+    .get()
+    .addOnSuccessListener { snapshot ->
+        if (snapshot.exists()) {
+            val name   = snapshot.child("name").getValue(String::class.java)
+            val online = snapshot.child("online").getValue(Boolean::class.java)
+            Log.d("RTDB", "Nama: $name, Online: $online")
+        } else {
+            Log.d("RTDB", "Data tidak ditemukan")
+        }
+    }
+    .addOnFailureListener { e ->
+        Log.e("RTDB", "Gagal membaca: ${e.message}")
+    }</pre>
+                </div>
+
+                <h3>addValueEventListener() — Listener Real-time</h3>
+                <p>Listener ini dipanggil pertama kali saat data dibaca, lalu dipanggil lagi setiap kali data berubah. Cocok untuk fitur chat atau status online.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>addValueEventListener() — update otomatis saat data berubah</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+
+val database    = Firebase.database
+val messagesRef = database.getReference("messages")
+
+// Simpan referensi listener untuk di-remove nanti
+private lateinit var messageListener: ValueEventListener
+
+override fun onStart() {
+    super.onStart()
+
+    messageListener = object : ValueEventListener {
+        override fun onDataChange(snapshot: DataSnapshot) {
+            // Dipanggil setiap kali data berubah
+            val messageList = mutableListOf&lt;Message&gt;()
+
+            for (child in snapshot.children) {
+                val message = child.getValue(Message::class.java)
+                message?.let { messageList.add(it) }
+            }
+
+            // Update RecyclerView
+            adapter.submitList(messageList)
+            Log.d("RTDB", "Total pesan: ${messageList.size}")
+        }
+
+        override fun onCancelled(error: DatabaseError) {
+            Log.e("RTDB", "Listener dibatalkan: ${error.message}")
+        }
+    }
+
+    messagesRef.addValueEventListener(messageListener)
+}
+
+override fun onStop() {
+    super.onStop()
+    // Selalu remove listener saat Activity tidak aktif
+    messagesRef.removeEventListener(messageListener)
+}</pre>
+                </div>
+
+                <h3>addChildEventListener() — Dengarkan Perubahan Per Item</h3>
+                <p>Lebih efisien dari <code>ValueEventListener</code> untuk list besar karena hanya dipanggil saat ada item yang ditambah, diubah, atau dihapus — bukan seluruh list.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>addChildEventListener() — efisien untuk list</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.database.ChildEventListener
+
+messagesRef.addChildEventListener(object : ChildEventListener {
+    override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+        // Dipanggil saat ada pesan baru ditambahkan
+        val message = snapshot.getValue(Message::class.java)
+        message?.let { adapter.addItem(it) }
+    }
+
+    override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+        // Dipanggil saat pesan diubah
+        val message = snapshot.getValue(Message::class.java)
+        message?.let { adapter.updateItem(it) }
+    }
+
+    override fun onChildRemoved(snapshot: DataSnapshot) {
+        // Dipanggil saat pesan dihapus
+        val key = snapshot.key
+        key?.let { adapter.removeItem(it) }
+    }
+
+    override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) { }
+    override fun onCancelled(error: DatabaseError) {
+        Log.e("RTDB", "Error: ${error.message}")
+    }
+})</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Ringkasan Method Realtime Database</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Operasi</th><th>Method</th><th>Keterangan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Tulis / Timpa</td><td><code>setValue(data)</code></td><td>Menimpa seluruh node</td></tr>
+                            <tr><td>Tambah ke list</td><td><code>push().setValue(data)</code></td><td>Key unik otomatis</td></tr>
+                            <tr><td>Update sebagian</td><td><code>updateChildren(map)</code></td><td>Tidak menimpa field lain</td></tr>
+                            <tr><td>Hapus</td><td><code>removeValue()</code></td><td>Hapus node &amp; child-nya</td></tr>
+                            <tr><td>Baca sekali</td><td><code>get()</code></td><td>Satu kali fetch</td></tr>
+                            <tr><td>Listener seluruh node</td><td><code>addValueEventListener()</code></td><td>Update saat ada perubahan</td></tr>
+                            <tr><td>Listener per item</td><td><code>addChildEventListener()</code></td><td>Efisien untuk list besar</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- HANDS-ON 3 -->
+            <article id="handson-3">
+                <h2>🛠️ Hands-On 3 — Aplikasi Chat Sederhana</h2>
+
+                <div class="task-box">
+                    <h2>Tugas: Buat Aplikasi Chat Real-time</h2>
+                    <p>Buat aplikasi chat sederhana menggunakan Firebase Realtime Database. Semua user yang login bisa mengirim dan melihat pesan secara real-time.</p>
+                </div>
+
+                <h3>Struktur Project</h3>
+                <div class="file-tree-box">
+                    <div class="ftb-title">📁 Project Structure</div>
+                    <div class="ftb-tree">
+                        <div class="ftb-row"><span class="ftb-folder">📁 java/com/example/chatapp/</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari HO-1</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">ChatActivity.kt</span> <span class="ftb-badge">layar chat utama</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">Message.kt</span> <span class="ftb-badge">data class pesan</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">ChatAdapter.kt</span> <span class="ftb-badge">RecyclerView adapter</span></div>
+                        <div class="ftb-row"><span class="ftb-folder">📁 res/layout/</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">activity_chat.xml</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file new">item_message.xml</span></div>
+                    </div>
+                </div>
+
+                <h3>Message.kt — Data Class</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Message.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>data class Message(
+    val key       : String = "",   // key dari push(), diisi manual
+    val text      : String = "",
+    val senderName: String = "",
+    val senderId  : String = "",
+    val timestamp : Long   = 0L
+)</pre>
+                </div>
+
+                <h3>ChatActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ChatActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.os.Bundle
+import android.widget.Button
+import android.widget.EditText
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
+
+class ChatActivity : AppCompatActivity() {
+
+    private val auth        = Firebase.auth
+    private val database    = Firebase.database
+    private val messagesRef = database.getReference("messages")
+
+    private lateinit var adapter      : ChatAdapter
+    private lateinit var msgListener  : ValueEventListener
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_chat)
+
+        val recyclerView = findViewById&lt;RecyclerView&gt;(R.id.recyclerView)
+        val etMessage    = findViewById&lt;EditText&gt;(R.id.etMessage)
+        val btnSend      = findViewById&lt;Button&gt;(R.id.btnSend)
+
+        val currentUserId = auth.currentUser?.uid ?: ""
+
+        adapter = ChatAdapter(currentUserId)
+        recyclerView.layoutManager = LinearLayoutManager(this).apply {
+            stackFromEnd = true   // scroll ke bawah otomatis
+        }
+        recyclerView.adapter = adapter
+
+        btnSend.setOnClickListener {
+            val text = etMessage.text.toString().trim()
+            if (text.isEmpty()) return@setOnClickListener
+
+            val newRef = messagesRef.push()
+            val message = Message(
+                key        = newRef.key ?: "",
+                text       = text,
+                senderName = auth.currentUser?.email ?: "Anonymous",
+                senderId   = currentUserId,
+                timestamp  = System.currentTimeMillis()
+            )
+            newRef.setValue(message)
+            etMessage.text.clear()
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        msgListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = mutableListOf&lt;Message&gt;()
+                for (child in snapshot.children) {
+                    val msg = child.getValue(Message::class.java)
+                        ?.copy(key = child.key ?: "")
+                    msg?.let { messages.add(it) }
+                }
+                adapter.submitList(messages)
+                // Scroll ke pesan terbaru
+                if (messages.isNotEmpty()) {
+                    findViewById&lt;RecyclerView&gt;(R.id.recyclerView)
+                        .scrollToPosition(messages.size - 1)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) { }
+        }
+
+        // Ambil 50 pesan terakhir saja
+        messagesRef.limitToLast(50)
+            .addValueEventListener(msgListener)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        messagesRef.removeEventListener(msgListener)
+    }
+}</pre>
+                </div>
+
+                <h3>Langkah Pengerjaan</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Aktifkan Realtime Database</h4>
+                            <p>Di Firebase Console, aktifkan Realtime Database dalam test mode. Pastikan dependency <code>firebase-database-ktx</code> sudah ada di <code>build.gradle</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Buat Layout Chat</h4>
+                            <p>Buat <code>activity_chat.xml</code> dengan RecyclerView untuk daftar pesan, EditText untuk input, dan Button kirim. Buat juga <code>item_message.xml</code> untuk tampilan satu pesan.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Buat ChatAdapter</h4>
+                            <p>Buat RecyclerView adapter yang membedakan tampilan pesan milik sendiri (rata kanan) dan pesan orang lain (rata kiri) berdasarkan <code>senderId</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Implementasi ChatActivity</h4>
+                            <p>Gunakan kode di atas. Pastikan listener di-remove di <code>onStop()</code> dan RecyclerView scroll otomatis ke pesan terbaru.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Uji Coba Multi-device</h4>
+                            <p>Jalankan di dua emulator atau satu emulator dan satu device fisik. Login dengan akun berbeda dan kirim pesan — pesan harus muncul di kedua device secara real-time.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Checklist Penilaian</h4>
+                    <ul>
+                        <li>Pesan terkirim dan tersimpan di Realtime Database</li>
+                        <li>Pesan muncul secara real-time tanpa refresh manual</li>
+                        <li>Pesan milik sendiri dan orang lain tampil berbeda</li>
+                        <li>RecyclerView otomatis scroll ke pesan terbaru</li>
+                        <li>Input teks kosong setelah pesan terkirim</li>
+                        <li>Data pesan terlihat di Firebase Console → Realtime Database</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- FIREBASE STORAGE -->
+        <!-- ============================================ -->
+        <section id="storage" class="section">
+            <h1>Firebase Storage</h1>
+
+            <!-- PENGENALAN -->
+            <article id="st-pengenalan">
+                <h2>Pengenalan Firebase Storage</h2>
+                <p>Firebase Storage adalah layanan penyimpanan file berbasis cloud yang dioptimalkan untuk menyimpan konten yang dibuat pengguna seperti foto profil, gambar postingan, video, dan dokumen. Storage terintegrasi dengan Firebase Authentication sehingga akses file bisa dikontrol per user.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Fitur</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tipe file</td>
+                            <td>Gambar, video, audio, PDF, dan file lainnya</td>
+                        </tr>
+                        <tr>
+                            <td>Ukuran maksimal</td>
+                            <td>5 TB per file (free tier: 5 GB total)</td>
+                        </tr>
+                        <tr>
+                            <td>Keamanan</td>
+                            <td>Dikontrol via Firebase Storage Rules</td>
+                        </tr>
+                        <tr>
+                            <td>Integrasi</td>
+                            <td>Bekerja bersama Firebase Auth untuk akses per user</td>
+                        </tr>
+                        <tr>
+                            <td>Offline</td>
+                            <td>Upload/download dilanjutkan otomatis jika koneksi terputus</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Struktur Path di Storage</h3>
+                <p>File di Storage diorganisasi menggunakan path seperti folder, mirip sistem file biasa.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh struktur path di Firebase Storage</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// Struktur path yang direkomendasikan
+// images/
+//   └── profile_photos/
+//         └── {userId}/
+//               └── profile.jpg
+//   └── posts/
+//         └── {userId}/
+//               └── {postId}.jpg
+//
+// Contoh path lengkap:
+// "images/profile_photos/uid_budi/profile.jpg"</pre>
+                </div>
+
+                <h3>Inisialisasi Firebase Storage</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan instance StorageReference</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Firebase
+import com.google.firebase.storage.storage
+
+// Mendapatkan instance Storage
+val storage = Firebase.storage
+
+// Referensi ke root storage
+val storageRef = storage.reference
+
+// Referensi ke path tertentu
+val profileRef = storageRef.child("images/profile_photos/${Firebase.auth.currentUser?.uid}/profile.jpg")</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Firebase Storage Memerlukan Upgrade Plan</h4>
+                    <p>Per 2024, Firebase Storage <strong>tidak lagi tersedia di Spark (free) plan</strong>. Untuk mengaktifkannya, project harus di-upgrade ke plan <strong>Blaze (Pay as you go)</strong>.</p>
+
+                    <h4 style="margin-top:14px;">Apa itu Blaze Plan?</h4>
+                    <p>Blaze adalah plan berbayar Firebase, tapi dengan model <strong>bayar sesuai pemakaian</strong>. Yang perlu dipahami:</p>
+                    <ul>
+                        <li>Wajib mendaftarkan <strong>kartu kredit atau debit</strong> ke akun Google — ini hanya sebagai metode pembayaran, <strong>tidak langsung dicharge</strong></li>
+                        <li>Blaze tetap menyertakan <strong>free tier yang sama</strong> seperti Spark plan — selama pemakaian di bawah batas, <strong>tagihan = Rp 0</strong></li>
+                        <li>Biaya baru muncul jika penggunaan <em>melebihi</em> batas free tier</li>
+                        <li>Untuk skala praktikum (beberapa mahasiswa, file kecil), hampir pasti tidak akan kena biaya</li>
+                    </ul>
+
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Resource</th><th>Batas Gratis (Blaze)</th><th>Harga jika Melebihi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Storage</td><td>5 GB</td><td>$0.026 / GB</td></tr>
+                            <tr><td>Download</td><td>1 GB / hari</td><td>$0.12 / GB</td></tr>
+                            <tr><td>Upload operasi</td><td>20.000 / hari</td><td>$0.05 / 10K operasi</td></tr>
+                        </tbody>
+                    </table>
+
+                    <p style="margin-top:12px;margin-bottom:0;"><strong>Alternatif jika tidak ingin mendaftarkan kartu:</strong> Gunakan <strong>Cloudinary</strong> (free tier 25 GB, tanpa kartu kredit) atau <strong>ImgBB</strong> untuk upload gambar, lalu simpan URL-nya ke Firestore.</p>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Tambahkan Permission di AndroidManifest.xml</h4>
+                    <p>Untuk memilih gambar dari galeri, tambahkan permission berikut:</p>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header">
+                            <span>AndroidManifest.xml</span>
+                            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                        </div>
+                        <pre>&lt;uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /&gt;
+&lt;!-- Untuk Android 12 ke bawah --&gt;
+&lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" /&gt;</pre>
+                    </div>
+                </div>
+            </article>
+
+            <!-- UPLOAD FILE -->
+            <article id="st-upload">
+                <h2>Upload File ke Firebase Storage</h2>
+                <p>Ada dua cara upload: dari <code>Uri</code> (path file di device) menggunakan <code>putFile()</code>, atau dari <code>ByteArray</code> menggunakan <code>putBytes()</code>. Cara paling umum adalah upload dari galeri menggunakan Uri.</p>
+
+                <h3>Langkah 1 — Pilih Gambar dari Galeri</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Membuka galeri dan mendapatkan Uri gambar</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
+
+class ProfileActivity : AppCompatActivity() {
+
+    private var selectedImageUri: Uri? = null
+
+    // Launcher untuk membuka galeri
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            // Tampilkan preview gambar yang dipilih
+            findViewById&lt;ImageView&gt;(R.id.ivProfile).setImageURI(uri)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_profile)
+
+        // Tombol untuk membuka galeri
+        findViewById&lt;Button&gt;(R.id.btnPickImage).setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        // Tombol upload
+        findViewById&lt;Button&gt;(R.id.btnUpload).setOnClickListener {
+            selectedImageUri?.let { uri -> uploadImage(uri) }
+                ?: Toast.makeText(this, "Pilih gambar terlebih dahulu", Toast.LENGTH_SHORT).show()
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Langkah 2 — Upload ke Firebase Storage</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>uploadImage() — upload dengan progress tracking</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.storage.storage
+
+private fun uploadImage(imageUri: Uri) {
+    val userId     = Firebase.auth.currentUser?.uid ?: return
+    val storage    = Firebase.storage
+    val storageRef = storage.reference
+
+    // Buat path unik untuk file — gunakan timestamp agar tidak bentrok
+    val fileName  = "profile_${System.currentTimeMillis()}.jpg"
+    val imageRef  = storageRef.child("images/profile_photos/$userId/$fileName")
+
+    val progressBar = findViewById&lt;ProgressBar&gt;(R.id.progressBar)
+    val btnUpload   = findViewById&lt;Button&gt;(R.id.btnUpload)
+
+    progressBar.visibility = View.VISIBLE
+    btnUpload.isEnabled    = false
+
+    // Mulai upload
+    val uploadTask = imageRef.putFile(imageUri)
+
+    // Pantau progress upload
+    uploadTask.addOnProgressListener { taskSnapshot ->
+        val progress = (100.0 * taskSnapshot.bytesTransferred / taskSnapshot.totalByteCount).toInt()
+        progressBar.progress = progress
+        Log.d("Storage", "Upload progress: $progress%")
+    }
+
+    // Selesai upload
+    uploadTask.addOnSuccessListener {
+        progressBar.visibility = View.GONE
+        btnUpload.isEnabled    = true
+        Toast.makeText(this, "Gambar berhasil diupload!", Toast.LENGTH_SHORT).show()
+
+        // Ambil download URL setelah upload selesai
+        imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+            Log.d("Storage", "Download URL: $downloadUri")
+            // Simpan URL ke Firestore/RTDB untuk ditampilkan nanti
+            saveImageUrlToFirestore(downloadUri.toString())
+        }
+    }
+
+    uploadTask.addOnFailureListener { e ->
+        progressBar.visibility = View.GONE
+        btnUpload.isEnabled    = true
+        Toast.makeText(this, "Upload gagal: ${e.message}", Toast.LENGTH_LONG).show()
+        Log.e("Storage", "Upload error", e)
+    }
+}</pre>
+                </div>
+
+                <h3>Upload dari ByteArray (Bitmap)</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Upload Bitmap yang sudah dikompresi</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.graphics.Bitmap
+import java.io.ByteArrayOutputStream
+
+private fun uploadBitmap(bitmap: Bitmap) {
+    val userId    = Firebase.auth.currentUser?.uid ?: return
+    val imageRef  = Firebase.storage.reference
+        .child("images/profile_photos/$userId/profile.jpg")
+
+    // Kompres bitmap ke ByteArray (kualitas 80%)
+    val baos = ByteArrayOutputStream()
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos)
+    val data = baos.toByteArray()
+
+    // Upload ByteArray
+    imageRef.putBytes(data)
+        .addOnSuccessListener {
+            Toast.makeText(this, "Upload berhasil!", Toast.LENGTH_SHORT).show()
+        }
+        .addOnFailureListener { e ->
+            Toast.makeText(this, "Gagal: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+}</pre>
+                </div>
+            </article>
+
+            <!-- DOWNLOAD URL -->
+            <article id="st-download">
+                <h2>Mendapatkan Download URL &amp; Menampilkan Gambar</h2>
+                <p>Setelah file diupload, Anda perlu mendapatkan <strong>Download URL</strong> — sebuah URL publik yang bisa digunakan untuk menampilkan atau mengunduh file. URL ini biasanya disimpan ke Firestore agar bisa diakses kapan saja.</p>
+
+                <h3>Ambil Download URL</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Mendapatkan download URL dari referensi file</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val userId   = Firebase.auth.currentUser?.uid ?: return
+val imageRef = Firebase.storage.reference
+    .child("images/profile_photos/$userId/profile.jpg")
+
+// Ambil URL download
+imageRef.downloadUrl
+    .addOnSuccessListener { uri ->
+        val downloadUrl = uri.toString()
+        Log.d("Storage", "URL: $downloadUrl")
+
+        // Simpan URL ke Firestore
+        Firebase.firestore.collection("users").document(userId)
+            .update("photoUrl", downloadUrl)
+    }
+    .addOnFailureListener { e ->
+        Log.e("Storage", "File tidak ditemukan: ${e.message}")
+    }</pre>
+                </div>
+
+                <h3>Tampilkan Gambar dengan Glide</h3>
+                <p>Gunakan library <strong>Glide</strong> untuk menampilkan gambar dari URL secara efisien. Glide menangani caching, loading, dan error secara otomatis.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Tambah Glide di build.gradle</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// app/build.gradle
+dependencies {
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+}</pre>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Tampilkan gambar dari URL dengan Glide</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import com.bumptech.glide.Glide
+
+val imageUrl = "https://firebasestorage.googleapis.com/..."
+val ivProfile = findViewById&lt;ImageView&gt;(R.id.ivProfile)
+
+Glide.with(this)
+    .load(imageUrl)
+    .placeholder(R.drawable.ic_person)   // gambar sementara saat loading
+    .error(R.drawable.ic_error)          // gambar jika gagal load
+    .circleCrop()                        // potong jadi lingkaran (untuk foto profil)
+    .into(ivProfile)</pre>
+                </div>
+
+                <h3>Hapus File dari Storage</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Menghapus file dari Storage</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>val userId   = Firebase.auth.currentUser?.uid ?: return
+val imageRef = Firebase.storage.reference
+    .child("images/profile_photos/$userId/profile.jpg")
+
+imageRef.delete()
+    .addOnSuccessListener {
+        Toast.makeText(this, "File berhasil dihapus", Toast.LENGTH_SHORT).show()
+    }
+    .addOnFailureListener { e ->
+        Toast.makeText(this, "Gagal hapus: ${e.message}", Toast.LENGTH_SHORT).show()
+    }</pre>
+                </div>
+
+                <h3>Alur Lengkap Upload &amp; Tampil Gambar</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>User pilih gambar dari galeri</h4>
+                            <p>Gunakan <code>ActivityResultContracts.GetContent()</code> untuk mendapatkan <code>Uri</code> gambar yang dipilih.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Upload ke Firebase Storage</h4>
+                            <p>Panggil <code>storageRef.child(path).putFile(uri)</code>. Pantau progress dengan <code>addOnProgressListener</code>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Ambil Download URL</h4>
+                            <p>Setelah upload sukses, panggil <code>imageRef.downloadUrl</code> untuk mendapatkan URL publik file.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Simpan URL ke Firestore</h4>
+                            <p>Simpan download URL ke dokumen user di Firestore agar bisa diambil kapan saja tanpa harus query Storage lagi.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">5</div>
+                        <div class="step-content">
+                            <h4>Tampilkan dengan Glide</h4>
+                            <p>Baca URL dari Firestore, lalu tampilkan ke <code>ImageView</code> menggunakan <code>Glide.with(context).load(url).into(imageView)</code>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>Ringkasan Firebase Storage</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Operasi</th><th>Method</th><th>Keterangan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Upload dari Uri</td><td><code>ref.putFile(uri)</code></td><td>Dari galeri / kamera</td></tr>
+                            <tr><td>Upload dari bytes</td><td><code>ref.putBytes(byteArray)</code></td><td>Dari Bitmap yang dikompres</td></tr>
+                            <tr><td>Ambil URL</td><td><code>ref.downloadUrl</code></td><td>URL publik untuk ditampilkan</td></tr>
+                            <tr><td>Hapus file</td><td><code>ref.delete()</code></td><td>Hapus file dari Storage</td></tr>
+                            <tr><td>Tampilkan gambar</td><td><code>Glide.with().load().into()</code></td><td>Library pihak ketiga</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+
+            <!-- CLOUDINARY ALTERNATIF -->
+            <article id="st-cloudinary">
+                <h2>Alternatif: Upload Gambar dengan Cloudinary</h2>
+                <p>Cloudinary adalah layanan penyimpanan dan manajemen media berbasis cloud. Tidak memerlukan kartu kredit, free tier 25 GB, dan bisa digunakan langsung dari Android menggunakan HTTP request biasa — cocok sebagai pengganti Firebase Storage untuk praktikum.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Firebase Storage</th>
+                            <th>Cloudinary (Free)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Kartu kredit</td>
+                            <td>Wajib (Blaze plan)</td>
+                            <td>Tidak perlu</td>
+                        </tr>
+                        <tr>
+                            <td>Free storage</td>
+                            <td>5 GB</td>
+                            <td>25 GB</td>
+                        </tr>
+                        <tr>
+                            <td>Integrasi Firebase Auth</td>
+                            <td>Native</td>
+                            <td>Manual (simpan URL ke Firestore)</td>
+                        </tr>
+                        <tr>
+                            <td>Transformasi gambar</td>
+                            <td>Tidak ada</td>
+                            <td>Resize, crop, filter via URL</td>
+                        </tr>
+                        <tr>
+                            <td>Kemudahan setup</td>
+                            <td>Perlu konfigurasi Firebase</td>
+                            <td>Cukup API key + HTTP POST</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Langkah 1 — Daftar Akun Cloudinary</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Buat Akun</h4>
+                            <p>Kunjungi <code>cloudinary.com</code>, klik <strong>Sign Up for Free</strong>, daftar dengan email atau akun Google. Tidak perlu kartu kredit.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Catat Kredensial</h4>
+                            <p>Setelah login, buka <strong>Dashboard</strong>. Catat tiga nilai berikut — akan digunakan di kode Android:</p>
+                            <div class="project-setup-grid" style="margin-top:8px;">
+                                <div class="ps-row">
+                                    <span class="ps-label">Cloud Name</span>
+                                    <span class="ps-value"><code>contoh: dxyz123abc</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">API Key</span>
+                                    <span class="ps-value"><code>contoh: 123456789012345</code></span>
+                                </div>
+                                <div class="ps-row">
+                                    <span class="ps-label">API Secret</span>
+                                    <span class="ps-value"><code>contoh: aBcDeFgHiJkLmNoPqRsTuV</code></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Aktifkan Unsigned Upload</h4>
+                            <p>Untuk upload dari Android tanpa server, aktifkan <strong>Unsigned Upload Preset</strong>: Settings → Upload → Upload presets → Add upload preset → Signing mode: <strong>Unsigned</strong> → Save. Catat nama preset-nya.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Langkah 2 — Tambah Dependency</h3>
+                <p>Upload ke Cloudinary dilakukan via HTTP multipart POST. Gunakan library <strong>OkHttp</strong> yang sudah umum dipakai di Android.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>app/build.gradle — tambah OkHttp</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>dependencies {
+    // OkHttp untuk HTTP request
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // Glide untuk menampilkan gambar dari URL
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Tambahkan Internet Permission</h4>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header">
+                            <span>AndroidManifest.xml</span>
+                            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                        </div>
+                        <pre>&lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+&lt;uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /&gt;
+&lt;!-- Android 12 ke bawah --&gt;
+&lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" /&gt;</pre>
+                    </div>
+                </div>
+
+                <h3>Langkah 3 — Buat CloudinaryHelper.kt</h3>
+                <p>Buat helper class untuk menangani upload ke Cloudinary. Simpan kredensial di sini — untuk production sebaiknya disimpan di server, tapi untuk praktikum ini cukup di client.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>CloudinaryHelper.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Context
+import android.net.Uri
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.IOException
+
+object CloudinaryHelper {
+
+    // Ganti dengan kredensial Cloudinary Anda
+    private const val CLOUD_NAME   = "your_cloud_name"
+    private const val UPLOAD_PRESET = "your_upload_preset"  // unsigned preset
+
+    // URL endpoint upload Cloudinary
+    private val UPLOAD_URL = "https://api.cloudinary.com/v1_1/$CLOUD_NAME/image/upload"
+
+    /**
+     * Upload gambar ke Cloudinary
+     * @param context  Context Android
+     * @param imageUri Uri gambar yang dipilih dari galeri
+     * @param onSuccess Callback dengan URL gambar jika berhasil
+     * @param onError   Callback dengan pesan error jika gagal
+     */
+    fun uploadImage(
+        context: Context,
+        imageUri: Uri,
+        onSuccess: (imageUrl: String) -> Unit,
+        onError: (message: String) -> Unit
+    ) {
+        // Baca bytes dari Uri
+        val inputStream = context.contentResolver.openInputStream(imageUri)
+            ?: return onError("Tidak bisa membaca file gambar")
+        val imageBytes = inputStream.readBytes()
+        inputStream.close()
+
+        // Buat multipart request body
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart(
+                "file",
+                "upload_${System.currentTimeMillis()}.jpg",
+                imageBytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
+            )
+            .addFormDataPart("upload_preset", UPLOAD_PRESET)
+            .build()
+
+        val request = Request.Builder()
+            .url(UPLOAD_URL)
+            .post(requestBody)
+            .build()
+
+        // Jalankan di background thread
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                onError("Upload gagal: ${e.message}")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+                if (response.isSuccessful && body != null) {
+                    // Parse URL dari response JSON
+                    val json = JSONObject(body)
+                    val secureUrl = json.getString("secure_url")
+                    onSuccess(secureUrl)
+                } else {
+                    onError("Server error: ${response.code}")
+                }
+            }
+        })
+    }
+}</pre>
+                </div>
+
+                <h3>Langkah 4 — Implementasi di Activity</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>ProfileActivity.kt — upload foto profil via Cloudinary</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.net.Uri
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+import com.google.firebase.firestore.firestore
+
+class ProfileActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+    private val db   = Firebase.firestore
+    private var selectedImageUri: Uri? = null
+
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            // Tampilkan preview sebelum upload
+            findViewById&lt;ImageView&gt;(R.id.ivProfile).setImageURI(uri)
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_profile)
+
+        val ivProfile   = findViewById&lt;ImageView&gt;(R.id.ivProfile)
+        val btnPick     = findViewById&lt;Button&gt;(R.id.btnPickImage)
+        val btnUpload   = findViewById&lt;Button&gt;(R.id.btnUpload)
+        val progressBar = findViewById&lt;ProgressBar&gt;(R.id.progressBar)
+
+        // Tampilkan foto profil yang sudah ada (jika ada)
+        val userId = auth.currentUser?.uid ?: return
+        db.collection("users").document(userId).get()
+            .addOnSuccessListener { doc ->
+                val photoUrl = doc.getString("photoUrl")
+                if (!photoUrl.isNullOrEmpty()) {
+                    Glide.with(this).load(photoUrl).circleCrop().into(ivProfile)
+                }
+            }
+
+        btnPick.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+        btnUpload.setOnClickListener {
+            val uri = selectedImageUri
+            if (uri == null) {
+                Toast.makeText(this, "Pilih gambar terlebih dahulu", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Tampilkan loading
+            progressBar.visibility = View.VISIBLE
+            btnUpload.isEnabled    = false
+
+            // Upload ke Cloudinary
+            CloudinaryHelper.uploadImage(
+                context   = this,
+                imageUri  = uri,
+                onSuccess = { imageUrl ->
+                    // Kembali ke main thread untuk update UI
+                    runOnUiThread {
+                        progressBar.visibility = View.GONE
+                        btnUpload.isEnabled    = true
+
+                        // Simpan URL ke Firestore
+                        db.collection("users").document(userId)
+                            .update("photoUrl", imageUrl)
+                            .addOnSuccessListener {
+                                Toast.makeText(this, "Foto profil berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                                // Tampilkan gambar baru
+                                Glide.with(this).load(imageUrl).circleCrop().into(ivProfile)
+                            }
+                    }
+                },
+                onError = { message ->
+                    runOnUiThread {
+                        progressBar.visibility = View.GONE
+                        btnUpload.isEnabled    = true
+                        Toast.makeText(this, "Gagal upload: $message", Toast.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
+    }
+}</pre>
+                </div>
+
+                <h3>Langkah 5 — Verifikasi di Cloudinary Dashboard</h3>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Jalankan aplikasi dan upload gambar</h4>
+                            <p>Pilih gambar dari galeri, lalu klik tombol upload. Tunggu hingga muncul Toast "Foto profil berhasil diperbarui!"</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Cek di Cloudinary Dashboard</h4>
+                            <p>Buka <code>cloudinary.com</code> → <strong>Media Library</strong>. Gambar yang diupload akan muncul di sana dengan URL <code>https://res.cloudinary.com/...</code></p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Cek URL tersimpan di Firestore</h4>
+                            <p>Buka Firebase Console → Firestore Database → collection <code>users</code> → dokumen user. Field <code>photoUrl</code> harus berisi URL Cloudinary.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Bonus — Transformasi Gambar via URL</h3>
+                <p>Salah satu keunggulan Cloudinary adalah bisa melakukan transformasi gambar hanya dengan mengubah URL — tanpa kode tambahan.</p>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Transformasi gambar Cloudinary via URL parameter</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>// URL asli dari Cloudinary
+val originalUrl = "https://res.cloudinary.com/cloud_name/image/upload/v123/photo.jpg"
+
+// Resize ke 200x200 piksel
+val resizedUrl = originalUrl.replace("/upload/", "/upload/w_200,h_200,c_fill/")
+
+// Crop jadi lingkaran (untuk foto profil)
+val circleUrl = originalUrl.replace("/upload/", "/upload/w_200,h_200,c_fill,r_max/")
+
+// Kualitas otomatis (hemat bandwidth)
+val autoQualityUrl = originalUrl.replace("/upload/", "/upload/q_auto,f_auto/")
+
+// Tampilkan dengan Glide seperti biasa
+Glide.with(this)
+    .load(circleUrl)
+    .circleCrop()
+    .into(ivProfile)</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Checklist Penilaian — Cloudinary</h4>
+                    <ul>
+                        <li>Akun Cloudinary berhasil dibuat dan upload preset sudah dikonfigurasi</li>
+                        <li>Gambar berhasil dipilih dari galeri dan ditampilkan sebagai preview</li>
+                        <li>Upload ke Cloudinary berhasil (tidak ada error di Logcat)</li>
+                        <li>URL gambar tersimpan di Firestore pada field <code>photoUrl</code></li>
+                        <li>Foto profil tampil di ImageView menggunakan Glide</li>
+                        <li>Gambar terlihat di Cloudinary Media Library</li>
+                    </ul>
+                </div>
+            </article>
+        </section>
+        <!-- ============================================ -->
+        <section id="tugas-akhir" class="section">
+            <h1>🎯 Tugas Akhir — Aplikasi Firebase Lengkap</h1>
+
+            <div class="task-box">
+                <h2>Tugas: Buat Aplikasi Berbagi Catatan</h2>
+                <p>Gabungkan semua materi yang sudah dipelajari untuk membuat aplikasi <strong>"NoteShare"</strong> — aplikasi catatan yang bisa diakses dari mana saja dengan foto profil user.</p>
+            </div>
+
+            <h2>Spesifikasi Aplikasi</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Firebase Authentication</h4>
+                        <p>Register dan login dengan email/password. Auto-login jika sudah pernah masuk. Logout dari halaman profil.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Cloud Firestore — CRUD Catatan</h4>
+                        <p>Setiap user bisa membuat, membaca, mengedit, dan menghapus catatan pribadi. Daftar catatan tampil real-time menggunakan <code>addSnapshotListener</code>.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Firebase Storage — Foto Profil</h4>
+                        <p>User bisa mengupload foto profil dari galeri. Foto disimpan di Storage dan URL-nya disimpan di Firestore. Foto ditampilkan menggunakan Glide.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Realtime Database — Status Online (Bonus)</h4>
+                        <p>Simpan status online/offline user di Realtime Database. Update ke <code>false</code> saat user logout atau app ditutup.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Struktur Project</h2>
+            <div class="file-tree-box">
+                <div class="ftb-title">📁 NoteShare — Project Structure</div>
+                <div class="ftb-tree">
+                    <div class="ftb-row"><span class="ftb-folder">📁 java/com/example/noteshare/</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">SplashActivity.kt</span> <span class="ftb-badge">cek status login</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">LoginActivity.kt</span> <span class="ftb-badge">auth</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">RegisterActivity.kt</span> <span class="ftb-badge">auth</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">NoteListActivity.kt</span> <span class="ftb-badge">firestore + realtime list</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">AddEditNoteActivity.kt</span> <span class="ftb-badge">firestore CRUD</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">ProfileActivity.kt</span> <span class="ftb-badge">storage + auth</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">Note.kt</span></div>
+                    <div class="ftb-row ftb-indent1"><span class="ftb-file new">NoteAdapter.kt</span></div>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <h4>Checklist Penilaian Tugas Akhir</h4>
+                <ul>
+                    <li>Register dan login berfungsi dengan Firebase Auth</li>
+                    <li>Auto-login saat app dibuka kembali</li>
+                    <li>Daftar catatan tampil real-time dari Firestore</li>
+                    <li>Tambah catatan baru tersimpan ke Firestore</li>
+                    <li>Edit catatan memperbarui data di Firestore</li>
+                    <li>Hapus catatan menghapus data dari Firestore</li>
+                    <li>Upload foto profil ke Firebase Storage berhasil</li>
+                    <li>Foto profil tampil di halaman profil menggunakan Glide</li>
+                    <li>Setiap user hanya bisa melihat catatan miliknya sendiri</li>
+                    <li><em>(Bonus)</em> Status online tersimpan di Realtime Database</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Mobile</strong></p>
+            <p>Materi 8 — Firebase untuk Android Kotlin</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+    </main>
+
+    <script>
+        function showSection(id) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+            // Tampilkan section yang dituju
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Update active state pada nav-link (hanya untuk top-level)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + id) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Klik nav-link (top-level sidebar)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                const target = document.getElementById(id);
+                if (!target) return;
+
+                // Jika target adalah section, tampilkan langsung
+                if (target.classList.contains('section')) {
+                    showSection(id);
+                } else {
+                    // Jika target adalah article (misal handson-final), tampilkan section induknya
+                    const parentSection = target.closest('.section');
+                    if (parentSection) {
+                        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                        parentSection.style.display = 'block';
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Klik sub-menu link — tampilkan section induknya, lalu scroll ke artikel
+        document.querySelectorAll('.sub-menu a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                // Kasus 1: target sendiri adalah .section (misal handson-1/2/3)
+                if (target.classList.contains('section')) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    target.style.display = 'block';
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentLink = document.querySelector('.nav-link[href="#' + targetId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                    return;
+                }
+
+                // Kasus 2: target adalah artikel di dalam section
+                const parentSection = target.closest('.section');
+                if (parentSection) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    parentSection.style.display = 'block';
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentId = parentSection.getAttribute('id');
+                    const parentLink = document.querySelector('.nav-link[href="#' + parentId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                }
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Tampilkan section pertama saat halaman dimuat
+        const firstSection = document.querySelector('.section');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+            const firstLink = document.querySelector('.nav-link[href="#' + firstSection.id + '"]');
+            if (firstLink) firstLink.classList.add('active');
+        }
+
+        // Copy kode ke clipboard
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(function () {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function () {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(function () {
+                // Fallback untuk browser lama
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function () {
+                    btn.innerHTML = '&#128203;';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

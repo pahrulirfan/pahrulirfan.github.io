@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum Android Kotlin - Konsumsi REST API</title>
+    <link rel="stylesheet" href="style/style-materi-3.css">
+    <link rel="shortcut icon" href="../assets/img/logo-unram.png" type="image/x-icon">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <h2>Praktikum Android</h2>
+            <p>Konsumsi REST API</p>
+        </div>
+        <ul class="nav-menu">
+
+            <li class="nav-item">
+                <a href="#pendahuluan" class="nav-link">Pendahuluan</a>
+            </li>
+
+            <li class="nav-item">
+                <a href="#konsep-api" class="nav-link">Konsep REST API</a>
+                <ul class="sub-menu">
+                    <li><a href="#api-apa-itu">Apa itu REST API?</a></li>
+                    <li><a href="#api-http">HTTP Method & JSON</a></li>
+                    <li><a href="#api-tools">Uji Coba dengan Postman</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a href="#crud-api" class="nav-link">Retrofit & CRUD API</a>
+                <ul class="sub-menu">
+                    <li><a href="#crud-retrofit">Apa itu Retrofit?</a></li>
+                    <li><a href="#crud-setup">Buat Project & Setup</a></li>
+                    <li><a href="#crud-model">Data Model</a></li>
+                    <li><a href="#crud-get">GET & RecyclerView</a></li>
+                    <li><a href="#crud-post">POST — Tambah Data</a></li>
+                    <li><a href="#crud-put-delete">PUT & DELETE</a></li>
+                    <li><a href="#handson-1">Hands-On 1</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a href="#login-api" class="nav-link">Login dengan API</a>
+                <ul class="sub-menu">
+                    <li><a href="#login-token">Token Authentication</a></li>
+                    <li><a href="#login-impl">Implementasi Login</a></li>
+                    <li><a href="#handson-3">Hands-On 3</a></li>
+                </ul>
+            </li>
+
+            <li class="nav-item">
+                <a href="#tugas-akhir" class="nav-link">Tugas Akhir</a>
+            </li>
+
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- ============================================ -->
+        <!-- PENDAHULUAN -->
+        <!-- ============================================ -->
+        <section id="pendahuluan" class="section">
+            <h1>Praktikum: Konsumsi REST API di Android</h1>
+
+            <div class="info-box">
+                <h3>Tujuan Pembelajaran</h3>
+                <ul>
+                    <li>Memahami konsep REST API dan cara kerja komunikasi client-server</li>
+                    <li>Mampu mengintegrasikan Retrofit untuk melakukan HTTP request di Android</li>
+                    <li>Mampu melakukan operasi CRUD (GET, POST, PUT, DELETE) via API</li>
+                    <li>Mampu menampilkan data dari API ke RecyclerView</li>
+                    <li>Mampu mengimplementasikan login berbasis token (JWT/Bearer)</li>
+                </ul>
+            </div>
+
+            <h2>Prasyarat</h2>
+            <p>Pastikan Anda sudah memahami materi dari praktikum sebelumnya:</p>
+            <ul>
+                <li>RecyclerView dan Adapter (Materi 5)</li>
+                <li>Room Database dan operasi CRUD lokal (Materi 6)</li>
+                <li>Kotlin dasar: data class, lambda, coroutines</li>
+                <li>Layout XML: LinearLayout, RecyclerView, ProgressBar</li>
+            </ul>
+
+            <h2>Dari CRUD Lokal ke CRUD Online</h2>
+            <p>Di materi sebelumnya, data disimpan di database lokal (Room) yang hanya bisa diakses dari satu device. Dengan REST API, data disimpan di <strong>server</strong> — bisa diakses dari device mana saja, oleh siapa saja yang punya izin.</p>
+
+            <div class="persist-compare">
+                <div class="persist-row">
+                    <div class="persist-card persist-bad">
+                        <div class="persist-card-header">
+                            <span>CRUD Lokal (Room)</span>
+                        </div>
+                        <div class="persist-flow">
+                            <div class="persist-step">App Android</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Room DB</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step persist-step-bad">Hanya di device ini</div>
+                        </div>
+                    </div>
+                    <div class="persist-card persist-good">
+                        <div class="persist-card-header">
+                            <span>CRUD via API</span>
+                        </div>
+                        <div class="persist-flow">
+                            <div class="persist-step">App Android</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">REST API</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step">Server / DB</div>
+                            <div class="persist-arrow">→</div>
+                            <div class="persist-step persist-step-good">Semua device!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>Apa itu Retrofit?</h2>
+            <p>Retrofit adalah library buatan Square yang menjadi standar de-facto untuk melakukan HTTP request di Android. Retrofit mengubah API endpoint menjadi interface Kotlin yang mudah dipanggil, menangani serialisasi JSON secara otomatis, dan mendukung Coroutines untuk operasi async.</p>
+
+            <div class="storage-grid">
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Retrofit</div>
+                        <div class="storage-card-meta"><span class="storage-tag tag-blue">HTTP Client</span></div>
+                        <div class="storage-card-desc">Mengubah API endpoint menjadi fungsi Kotlin yang bisa langsung dipanggil</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Gson</div>
+                        <div class="storage-card-meta"><span class="storage-tag tag-green">JSON Parser</span></div>
+                        <div class="storage-card-desc">Mengkonversi JSON dari server menjadi data class Kotlin secara otomatis</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">Coroutines</div>
+                        <div class="storage-card-meta"><span class="storage-tag tag-purple">Async</span></div>
+                        <div class="storage-card-desc">Menjalankan request di background thread tanpa memblokir UI</div>
+                    </div>
+                </div>
+                <div class="storage-card">
+                    <div class="storage-card-body">
+                        <div class="storage-card-title">OkHttp</div>
+                        <div class="storage-card-meta"><span class="storage-tag tag-orange">HTTP Engine</span></div>
+                        <div class="storage-card-desc">Engine HTTP di balik Retrofit, menangani koneksi, timeout, dan interceptor</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2>API yang Digunakan di Praktikum</h2>
+            <p>Praktikum ini menggunakan API <strong>Vehicle</strong> yang tersedia di <code>api.pahrul.my.id</code>. API ini menyediakan data kendaraan (model, tipe, produsen) dan mendukung operasi CRUD lengkap. Semua endpoint bersifat <strong>publik</strong> — tidak memerlukan autentikasi.</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Method</th>
+                        <th>Fungsi</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>api.pahrul.my.id/vehicles</code></td>
+                        <td><span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.85rem;">GET</span></td>
+                        <td>Ambil semua data vehicle</td>
+                        <td><code>200</code> — array data</td>
+                    </tr>
+                    <tr>
+                        <td><code>api.pahrul.my.id/vehicles/{id}</code></td>
+                        <td><span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.85rem;">GET</span></td>
+                        <td>Ambil satu vehicle berdasarkan ID</td>
+                        <td><code>200</code> / <code>404</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>api.pahrul.my.id/vehicles</code></td>
+                        <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.85rem;">POST</span></td>
+                        <td>Tambah vehicle baru</td>
+                        <td><code>201</code> / <code>422</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>api.pahrul.my.id/vehicles/{id}</code></td>
+                        <td><span style="background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.85rem;">PUT</span></td>
+                        <td>Update data vehicle</td>
+                        <td><code>200</code> / <code>404</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>api.pahrul.my.id/vehicles/{id}</code></td>
+                        <td><span style="background:#ffebee;color:#c62828;padding:2px 8px;border-radius:4px;font-weight:700;font-size:0.85rem;">DELETE</span></td>
+                        <td>Hapus vehicle</td>
+                        <td><code>200</code> / <code>404</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Struktur Data Vehicle</h3>
+            <p>Setiap response dari API membungkus data dalam format standar dengan field <code>success</code>, <code>message</code>, dan <code>data</code>.</p>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Contoh response GET /vehicles</span>
+                    <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                </div>
+                <pre>{
+  "success": true,
+  "message": "Data vehicle ditemukan",
+  "data": [
+    {
+      "id": 1,
+      "model": "Civic",
+      "type": "Sedan",
+      "manufacturer": "Honda",
+      "created_at": "2026-04-30T10:00:00.000000Z",
+      "updated_at": "2026-04-30T10:00:00.000000Z"
+    }
+  ]
+}</pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header">
+                    <span>Contoh request body POST /vehicles</span>
+                    <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                </div>
+                <pre>{
+  "model": "Civic",
+  "type": "Sedan",
+  "manufacturer": "Honda"
+}</pre>
+            </div>
+
+            <div class="info-box">
+                <h4>Field yang Diperlukan saat POST / PUT</h4>
+                <ul>
+                    <li><code>model</code> — nama model kendaraan, wajib diisi</li>
+                    <li><code>type</code> — tipe kendaraan (Sedan, SUV, MPV, dll), wajib diisi</li>
+                    <li><code>manufacturer</code> — nama produsen (Honda, Toyota, dll), wajib diisi</li>
+                </ul>
+                <p style="margin-bottom:0;">Jika salah satu field kosong, API akan mengembalikan response <code>422 Unprocessable Entity</code> beserta pesan validasi.</p>
+            </div>
+        </section>
+
+        <!-- ============================================ -->
+        <!-- KONSEP REST API -->
+        <!-- ============================================ -->
+        <section id="konsep-api" class="section">
+            <h1>Konsep REST API</h1>
+
+            <!-- APA ITU REST API -->
+            <article id="api-apa-itu">
+                <h2>Apa itu REST API?</h2>
+                <p><strong>REST (Representational State Transfer)</strong> adalah gaya arsitektur untuk membangun layanan web. <strong>API (Application Programming Interface)</strong> adalah antarmuka yang memungkinkan dua aplikasi berkomunikasi. Jadi REST API adalah cara aplikasi berkomunikasi melalui HTTP dengan aturan-aturan tertentu.</p>
+
+                <p>Dalam konteks Android, aplikasi kita berperan sebagai <strong>client</strong> yang mengirim request ke <strong>server</strong>, lalu server membalas dengan data dalam format JSON.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Alur komunikasi Client → Server</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>Android App (Client)
+        │
+        │  HTTP Request
+        │  GET https://api.pahrul.my.id/vehicles
+        │  Headers: Content-Type: application/json
+        ▼
+    Server (API)
+        │
+        │  HTTP Response
+        │  Status: 200 OK
+        │  Body: { "success": true, "data": [...] }
+        ▼
+Android App (Client)
+        │
+        └─ Parse JSON → tampilkan ke RecyclerView</pre>
+                </div>
+            </article>
+
+            <!-- HTTP METHOD & JSON -->
+            <article id="api-http">
+                <h2>HTTP Method, Status Code &amp; JSON</h2>
+
+                <h3>HTTP Method</h3>
+                <p>Setiap request ke API menggunakan salah satu HTTP method berikut. Method menentukan <em>apa yang ingin dilakukan</em> terhadap data di server.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Fungsi</th>
+                            <th>Contoh</th>
+                            <th>Ada Request Body?</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:4px;font-weight:700;">GET</span></td>
+                            <td>Ambil data</td>
+                            <td>Tampilkan daftar vehicle</td>
+                            <td>Tidak</td>
+                        </tr>
+                        <tr>
+                            <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:4px;font-weight:700;">POST</span></td>
+                            <td>Kirim / buat data baru</td>
+                            <td>Tambah vehicle baru</td>
+                            <td>Ya</td>
+                        </tr>
+                        <tr>
+                            <td><span style="background:#fff3e0;color:#e65100;padding:2px 8px;border-radius:4px;font-weight:700;">PUT</span></td>
+                            <td>Update seluruh data</td>
+                            <td>Edit data vehicle</td>
+                            <td>Ya</td>
+                        </tr>
+                        <tr>
+                            <td><span style="background:#ffebee;color:#c62828;padding:2px 8px;border-radius:4px;font-weight:700;">DELETE</span></td>
+                            <td>Hapus data</td>
+                            <td>Hapus vehicle</td>
+                            <td>Tidak</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>HTTP Status Code</h3>
+                <p>Setiap response dari server menyertakan <strong>status code</strong> — angka 3 digit yang menunjukkan hasil dari request.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Arti</th>
+                            <th>Kapan Muncul</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code style="color:#2e7d32;font-weight:700;">200 OK</code></td>
+                            <td>Berhasil</td>
+                            <td>GET, PUT, DELETE sukses</td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:#2e7d32;font-weight:700;">201 Created</code></td>
+                            <td>Data berhasil dibuat</td>
+                            <td>POST sukses</td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:#c62828;font-weight:700;">404 Not Found</code></td>
+                            <td>Data tidak ditemukan</td>
+                            <td>ID tidak ada di database</td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:#c62828;font-weight:700;">422 Unprocessable</code></td>
+                            <td>Validasi gagal</td>
+                            <td>Field wajib tidak diisi</td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:#c62828;font-weight:700;">401 Unauthorized</code></td>
+                            <td>Tidak punya akses</td>
+                            <td>Token tidak valid / tidak ada</td>
+                        </tr>
+                        <tr>
+                            <td><code style="color:#c62828;font-weight:700;">500 Server Error</code></td>
+                            <td>Error di server</td>
+                            <td>Bug di sisi server</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Format JSON</h3>
+                <p>JSON (JavaScript Object Notation) adalah format pertukaran data yang ringan dan mudah dibaca. Semua response dari API Vehicle menggunakan format JSON.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Anatomi JSON response dari API Vehicle</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>{
+  "success": true,          // Boolean — apakah request berhasil
+  "message": "Data vehicle ditemukan",  // String — pesan dari server
+  "data": {                 // Object atau Array — isi data utama
+    "id": 1,                // Number
+    "model": "Civic",       // String
+    "type": "Sedan",        // String
+    "manufacturer": "Honda",// String
+    "created_at": "2026-04-30T10:00:00.000000Z"
+  }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Wrapper Response</h4>
+                    <p style="margin-bottom:0;">API Vehicle menggunakan pola <strong>wrapper response</strong> — data selalu dibungkus dalam objek dengan field <code>success</code>, <code>message</code>, dan <code>data</code>. Pola ini umum dipakai agar client bisa dengan mudah mengecek apakah request berhasil sebelum memproses datanya.</p>
+                </div>
+            </article>
+
+            <!-- UJI COBA POSTMAN -->
+            <article id="api-tools">
+                <h2>Uji Coba API dengan Postman</h2>
+                <p>Sebelum menulis kode Android, selalu uji endpoint API terlebih dahulu menggunakan <strong>Postman</strong>. Ini memastikan API berjalan dengan benar dan kita tahu persis format request dan response-nya.</p>
+
+                <h3>Instalasi Postman</h3>
+                <p>Download Postman di <code>postman.com/downloads</code> (tersedia untuk Windows, Mac, Linux) atau gunakan versi web di <code>web.postman.co</code>.</p>
+
+                <h3>Uji Coba GET — Ambil Semua Vehicle</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Yang Dilakukan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1. Buat request baru</td><td>Klik <strong>New → HTTP Request</strong>, set method ke <strong>GET</strong></td></tr>
+                        <tr><td>2. Masukkan URL</td><td><code>https://api.pahrul.my.id/vehicles</code> → klik <strong>Send</strong></td></tr>
+                        <tr><td>3. Cek response</td><td>Status <code>200 OK</code> + array data vehicle dalam format JSON</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Uji Coba POST — Tambah Vehicle Baru</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Yang Dilakukan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1. Set method POST</td><td>Ganti method ke <strong>POST</strong>, URL tetap <code>https://api.pahrul.my.id/vehicles</code></td></tr>
+                        <tr><td>2. Set request body</td><td>Tab <strong>Body → raw → JSON</strong>, isi dengan data vehicle</td></tr>
+                        <tr><td>3. Cek response</td><td>Status <code>201 Created</code> + data vehicle baru beserta ID dari server</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>Contoh request body POST</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>{
+  "model": "Avanza",
+  "type": "MPV",
+  "manufacturer": "Toyota"
+}</pre>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Biasakan Uji API Sebelum Coding</h4>
+                    <p style="margin-bottom:0;">Jika API tidak berjalan di Postman, jangan lanjut ke kode Android. Pastikan dulu response sesuai ekspektasi — cek URL, method, format body, dan status code. Ini menghemat waktu debugging yang jauh lebih lama jika langsung dicoba di Android.</p>
+                </div>
+            </article>
+        </section>
+
+        
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p><strong>Praktikum Pemrograman Mobile</strong></p>
+            <p>Materi 7 — Konsumsi REST API</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #888;">
+                Silakan ketik ulang kode untuk pemahaman yang lebih baik
+            </p>
+        </footer>
+
+    </main>
+    <script>
+        function showSection(id) {
+            // Sembunyikan semua section
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+
+            // Tampilkan section yang dituju
+            const target = document.getElementById(id);
+            if (target) {
+                target.style.display = 'block';
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            // Update active state pada nav-link (hanya untuk top-level)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + id) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        // Klik nav-link (top-level sidebar)
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').substring(1);
+                const target = document.getElementById(id);
+                if (!target) return;
+
+                // Jika target adalah section, tampilkan langsung
+                if (target.classList.contains('section')) {
+                    showSection(id);
+                } else {
+                    // Jika target adalah article (misal handson-final), tampilkan section induknya
+                    const parentSection = target.closest('.section');
+                    if (parentSection) {
+                        document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                        parentSection.style.display = 'block';
+                        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Klik sub-menu link — tampilkan section induknya, lalu scroll ke artikel
+        document.querySelectorAll('.sub-menu a').forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+
+                const target = document.getElementById(targetId);
+                if (!target) return;
+
+                // Kasus 1: target sendiri adalah .section (misal handson-1/2/3)
+                if (target.classList.contains('section')) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    target.style.display = 'block';
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentLink = document.querySelector('.nav-link[href="#' + targetId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                    return;
+                }
+
+                // Kasus 2: target adalah artikel di dalam section
+                const parentSection = target.closest('.section');
+                if (parentSection) {
+                    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+                    parentSection.style.display = 'block';
+
+                    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                    const parentId = parentSection.getAttribute('id');
+                    const parentLink = document.querySelector('.nav-link[href="#' + parentId + '"]');
+                    if (parentLink) parentLink.classList.add('active');
+                }
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Tampilkan section pertama saat halaman dimuat
+        const firstSection = document.querySelector('.section');
+        if (firstSection) {
+            firstSection.style.display = 'block';
+            const firstLink = document.querySelector('.nav-link[href="#' + firstSection.id + '"]');
+            if (firstLink) firstLink.classList.add('active');
+        }
+
+        // Copy kode ke clipboard
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre');
+            const text = pre.innerText;
+            navigator.clipboard.writeText(text).then(function () {
+                const orig = btn.innerHTML;
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function () {
+                    btn.innerHTML = orig;
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(function () {
+                // Fallback untuk browser lama
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                btn.innerHTML = '&#10003; Copied!';
+                btn.classList.add('copied');
+                setTimeout(function () {
+                    btn.innerHTML = '&#128203;';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>
