@@ -902,7 +902,7 @@ data class ApiResponse&lt;T&gt;(
                 </div>
 
                 <div class="info-box">
-                    <h4>❓ Apa Maksud <code>&lt;T&gt;</code> di ApiResponse?</h4>
+                    <h4>Penjelasan <code>&lt;T&gt;</code> di ApiResponse?</h4>
                     <p><code>&lt;T&gt;</code> adalah <strong>Generic Type</strong> — placeholder untuk tipe data yang bisa diganti saat digunakan. Huruf <code>T</code> singkatan dari "Type", tapi bisa diganti huruf apa saja (A, B, Data, dll).</p>
                     
                     <p><strong>Analogi sederhana:</strong> Bayangkan <code>&lt;T&gt;</code> seperti kotak kosong yang bisa diisi berbagai jenis barang.</p>
@@ -942,10 +942,10 @@ suspend fun deleteVehicle(@Path("id") id: Int): Response&lt;ApiResponse&lt;Vehic
 
                     <p style="margin-top:12px;"><strong>Kenapa Pakai Generic?</strong></p>
                     <ul style="margin-bottom:0;">
-                        <li>✅ <strong>Reusable</strong> — Satu class bisa dipakai untuk berbagai tipe response</li>
-                        <li>✅ <strong>Type-safe</strong> — Compiler tahu tipe data yang diharapkan, mengurangi error</li>
-                        <li>✅ <strong>Konsisten</strong> — Semua response punya struktur yang sama (success, message, data)</li>
-                        <li>❌ Tanpa generic, harus buat <code>VehicleResponse</code>, <code>VehicleListResponse</code>, <code>UserResponse</code>, dll (repetitif!)</li>
+                        <li><strong>Reusable</strong> — Satu class bisa dipakai untuk berbagai tipe response</li>
+                        <li><strong>Type-safe</strong> — Compiler tahu tipe data yang diharapkan, mengurangi error</li>
+                        <li><strong>Konsisten</strong> — Semua response punya struktur yang sama (success, message, data)</li>
+                        <li>Tanpa generic, harus buat <code>VehicleResponse</code>, <code>VehicleListResponse</code>, <code>UserResponse</code>, dll (repetitif!)</li>
                     </ul>
                 </div>
 
@@ -964,182 +964,727 @@ suspend fun deleteVehicle(@Path("id") id: Int): Response&lt;ApiResponse&lt;Vehic
                 </div>
             </article>
 
-            <!-- GET & RECYCLERVIEW -->
-            <article id="crud-get">
-                <h2>GET Data dan Tampilkan ke RecyclerView</h2>
-                <p>Pada tahap ini, aplikasi akan mengambil semua data vehicle dari API, lalu menampilkannya dalam RecyclerView.</p>
+            <div class="warning-box">
+                <h4>Penting: Ikuti Tahap Secara Berurutan</h4>
+                <p style="margin-bottom:0;">Jangan skip tahap! Setiap tahap membangun fondasi untuk tahap berikutnya. Pastikan aplikasi berjalan dengan baik di satu tahap sebelum lanjut ke tahap berikutnya.</p>
+            </div>
 
-                <h3>1. Buat ApiService.kt — Interface</h3>
-                <p><code>ApiService</code> adalah <strong>interface</strong> yang berisi daftar endpoint API. Setiap fungsi diberi anotasi sesuai HTTP method. Retrofit akan mengimplementasikan interface ini secara otomatis.</p>
+<!-- TAHAP 2: TAMPILKAN DATA (GET ONLY) -->
+<article id="crud-get">
+    <h1>Tahap 2: Tampilkan Data dari API</h1>
+    
+    <div class="info-box">
+        <h3>Target Tahap Ini</h3>
+        <p>Membuat aplikasi yang bisa menampilkan list kendaraan dari API. Halaman utama hanya menampilkan data dan tombol untuk tambah data (belum berfungsi).</p>
+        <ul style="margin-bottom:0;">
+            <li>Tampilkan list vehicle dari API</li>
+            <li>Tambahkan tombol FAB (Floating Action Button) untuk tambah data</li>
+            <li>Fitur tambah, edit, delete belum dibuat (tahap selanjutnya)</li>
+        </ul>
+    </div>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>network/ApiService.kt — Interface</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>package com.example.vehicleapiapp.network
+    <h2>1. Buat Layout Item RecyclerView</h2>
+    <p>Layout ini untuk menampilkan satu baris data vehicle. Untuk tahap ini, <strong>belum ada tombol edit/delete</strong>.</p>
 
-import com.example.vehicleapiapp.model.ApiResponse
-import com.example.vehicleapiapp.model.Vehicle
-import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.PUT
-import retrofit2.http.Path
-
-interface ApiService {
-    @GET("vehicles")
-    suspend fun getVehicles(): Response&lt;ApiResponse&lt;List&lt;Vehicle&gt;&gt;&gt;
-
-    @POST("vehicles")
-    suspend fun createVehicle(
-        @Body vehicle: Vehicle
-    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
-
-    @PUT("vehicles/{id}")
-    suspend fun updateVehicle(
-        @Path("id") id: Int,
-        @Body vehicle: Vehicle
-    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
-
-    @DELETE("vehicles/{id}")
-    suspend fun deleteVehicle(
-        @Path("id") id: Int
-    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
-}</pre>
-                </div>
-
-                <div class="info-box">
-                    <h4>Penjelasan Anotasi Retrofit</h4>
-                    <ul style="margin-bottom:0;">
-                        <li><code>@GET</code>, <code>@POST</code>, <code>@PUT</code>, <code>@DELETE</code> — HTTP method yang digunakan</li>
-                        <li><code>@Body</code> — Data yang dikirim dalam request body (untuk POST/PUT)</li>
-                        <li><code>@Path</code> — Parameter yang dimasukkan ke URL (contoh: <code>/vehicles/{id}</code>)</li>
-                        <li><code>suspend</code> — Fungsi yang bisa dipanggil di coroutine (async)</li>
-                    </ul>
-                </div>
-
-                <h3>2. Buat RetrofitClient.kt — Singleton Object</h3>
-                <p><code>RetrofitClient</code> adalah <strong>singleton object</strong> yang menyimpan konfigurasi Retrofit. Object ini hanya dibuat sekali dan bisa diakses dari mana saja.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>network/RetrofitClient.kt — Singleton Object</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>package com.example.vehicleapiapp.network
-
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-
-object RetrofitClient {
-    private const val BASE_URL = "https://api.pahrul.my.id/api/"
-
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
-
-    val apiService: ApiService by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(ApiService::class.java)
-    }
-}</pre>
-                </div>
-
-                <div class="info-box">
-                    <h4>Penjelasan Komponen RetrofitClient</h4>
-                    <ul style="margin-bottom:0;">
-                        <li><code>object</code> — Singleton pattern, hanya ada satu instance di seluruh aplikasi</li>
-                        <li><code>HttpLoggingInterceptor</code> — Menampilkan log request/response di Logcat untuk debugging</li>
-                        <li><code>GsonConverterFactory</code> — Mengkonversi JSON ↔ Kotlin object secara otomatis</li>
-                        <li><code>by lazy</code> — Inisialisasi hanya dilakukan saat pertama kali diakses</li>
-                    </ul>
-                </div>
-
-                <div class="warning-box">
-                    <h4>Base URL Harus Diakhiri Slash</h4>
-                    <p style="margin-bottom:0;">Retrofit mewajibkan <code>baseUrl</code> diakhiri dengan tanda <code>/</code>. Jika ditulis <code>https://api.pahrul.my.id/api</code> tanpa slash akhir, aplikasi akan error saat dijalankan.</p>
-                </div>
-
-                <h3>3. Buat Layout Item RecyclerView — XML Layout</h3>
-                <p>Buat file <code>item_vehicle.xml</code> di folder <code>res/layout</code>. Layout ini dipakai untuk satu baris data vehicle.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>res/layout/item_vehicle.xml — XML Layout</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/item_vehicle.xml</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#FFFFFF"&gt;
-
-    &lt;TextView
-        android:id="@+id/tvModel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Model"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="#212121" /&gt;
-
-    &lt;TextView
-        android:id="@+id/tvDetail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="Type - Manufacturer"
-        android:textSize="14sp"
-        android:textColor="#616161" /&gt;
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"&gt;
 
     &lt;LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"&gt;
+        android:orientation="vertical"
+        android:padding="16dp"&gt;
 
-        &lt;Button
-            android:id="@+id/btnEdit"
-            android:layout_width="0dp"
+        &lt;TextView
+            android:id="@+id/tvModel"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Edit" /&gt;
+            android:text="Model"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#212121" /&gt;
 
-        &lt;Button
-            android:id="@+id/btnDelete"
-            android:layout_width="0dp"
+        &lt;TextView
+            android:id="@+id/tvDetail"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:text="Hapus" /&gt;
+            android:layout_marginTop="4dp"
+            android:text="Type - Manufacturer"
+            android:textSize="14sp"
+            android:textColor="#616161" /&gt;
+
     &lt;/LinearLayout&gt;
 
+&lt;/androidx.cardview.widget.CardView&gt;</pre>
+    </div>
+
+    <h2>2. Buat VehicleAdapter</h2>
+    <p>Adapter sederhana yang hanya menampilkan data. Belum ada event klik untuk edit/delete.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>adapter/VehicleAdapter.kt</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.vehicleapiapp.R
+import com.example.vehicleapiapp.model.Vehicle
+
+class VehicleAdapter : RecyclerView.Adapter&lt;VehicleAdapter.VehicleViewHolder&gt;() {
+
+    private val vehicles = mutableListOf&lt;Vehicle&gt;()
+
+    fun setData(newVehicles: List&lt;Vehicle&gt;) {
+        vehicles.clear()
+        vehicles.addAll(newVehicles)
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VehicleViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_vehicle, parent, false)
+        return VehicleViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: VehicleViewHolder, position: Int) {
+        holder.bind(vehicles[position])
+    }
+
+    override fun getItemCount(): Int = vehicles.size
+
+    class VehicleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvModel: TextView = itemView.findViewById(R.id.tvModel)
+        private val tvDetail: TextView = itemView.findViewById(R.id.tvDetail)
+
+        fun bind(vehicle: Vehicle) {
+            tvModel.text = vehicle.model
+            tvDetail.text = "${vehicle.type} - ${vehicle.manufacturer}"
+        }
+    }
+}</pre>
+    </div>
+
+    <h2>3. Buat Layout MainActivity</h2>
+    <p>Layout utama berisi RecyclerView untuk menampilkan list dan FAB (Floating Action Button) untuk tombol tambah data.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/activity_main.xml</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;androidx.coordinatorlayout.widget.CoordinatorLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"&gt;
+
+        &lt;ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="16dp"
+            android:visibility="gone" /&gt;
+
+        &lt;androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvVehicles"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" /&gt;
+
+    &lt;/LinearLayout&gt;
+
+    &lt;com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAdd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@android:drawable/ic_input_add"
+        android:contentDescription="Tambah Vehicle" /&gt;
+
+&lt;/androidx.coordinatorlayout.widget.CoordinatorLayout&gt;</pre>
+    </div>
+
+    <h2>4. Buat MainActivity</h2>
+    <p>MainActivity hanya fokus menampilkan data dari API. Tombol FAB belum berfungsi (akan dibuat di tahap selanjutnya).</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>MainActivity.kt</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp
+
+import android.os.Bundle
+import android.view.View
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.vehicleapiapp.adapter.VehicleAdapter
+import com.example.vehicleapiapp.network.RetrofitClient
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+    
+    private lateinit var rvVehicles: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var fabAdd: FloatingActionButton
+    private lateinit var adapter: VehicleAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Inisialisasi view
+        rvVehicles = findViewById(R.id.rvVehicles)
+        progressBar = findViewById(R.id.progressBar)
+        fabAdd = findViewById(R.id.fabAdd)
+
+        // Setup RecyclerView
+        adapter = VehicleAdapter()
+        rvVehicles.layoutManager = LinearLayoutManager(this)
+        rvVehicles.adapter = adapter
+
+        // Setup FAB (belum berfungsi, akan dibuat di tahap selanjutnya)
+        fabAdd.setOnClickListener {
+            Toast.makeText(this, "Fitur tambah data akan dibuat di tahap selanjutnya", Toast.LENGTH_SHORT).show()
+        }
+
+        // Load data dari API
+        loadVehicles()
+    }
+
+    private fun loadVehicles() {
+        lifecycleScope.launch {
+            showLoading(true)
+            
+            try {
+                val response = RetrofitClient.apiService.getVehicles()
+                
+                if (response.isSuccessful) {
+                    val vehicles = response.body()?.data ?: emptyList()
+                    adapter.setData(vehicles)
+                    
+                    if (vehicles.isEmpty()) {
+                        showMessage("Belum ada data vehicle")
+                    }
+                } else {
+                    showMessage("Gagal mengambil data: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                showMessage("Error: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    }
+
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}</pre>
+    </div>
+
+    <h2>5. Jalankan Aplikasi</h2>
+    <p>Setelah semua kode dibuat, jalankan aplikasi. Anda akan melihat list kendaraan dari API.</p>
+
+    <div class="info-box">
+        <h4>Checkpoint Tahap 2</h4>
+        <p>Pastikan hal berikut sudah berjalan sebelum lanjut ke tahap selanjutnya:</p>
+        <ul style="margin-bottom:0;">
+            <li>✓ Aplikasi bisa dijalankan tanpa error</li>
+            <li>✓ List vehicle muncul di RecyclerView</li>
+            <li>✓ ProgressBar muncul saat loading</li>
+            <li>✓ Tombol FAB muncul di kanan bawah</li>
+            <li>✓ Klik FAB menampilkan toast "Fitur tambah data akan dibuat..."</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>🐛 Troubleshooting</h4>
+        <ul style="margin-bottom:0;">
+            <li><strong>List kosong:</strong> Cek Logcat, pastikan API response berhasil (status 200)</li>
+            <li><strong>Error "Unable to resolve host":</strong> Cek izin INTERNET di AndroidManifest.xml</li>
+            <li><strong>App crash:</strong> Cek apakah semua dependency sudah di-sync</li>
+        </ul>
+    </div>
+</article>
+<!-- TAHAP 3: TAMBAH DATA (POST) -->
+<article id="crud-post">
+    <h1>Tahap 3: Tambah Data Vehicle</h1>
+    
+    <div class="info-box">
+        <h3>Target Tahap Ini</h3>
+        <p>Membuat fitur tambah data vehicle. Ketika tombol FAB diklik, aplikasi membuka Activity baru dengan form input.</p>
+        <ul style="margin-bottom:0;">
+            <li>Buat AddVehicleActivity dengan form input</li>
+            <li>Validasi input sebelum kirim ke API</li>
+            <li>Kirim data ke API menggunakan POST</li>
+            <li>Kembali ke MainActivity dan refresh data</li>
+        </ul>
+    </div>
+
+    <h2>1. Buat Layout Form Tambah Data</h2>
+    <p>Buat file layout baru untuk form input vehicle.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/activity_add_vehicle.xml</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tambah Vehicle Baru"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Model Kendaraan"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Tipe Kendaraan"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Produsen"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etManufacturer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Simpan"
+        android:textSize="16sp" /&gt;
+
+    &lt;ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" /&gt;
+
 &lt;/LinearLayout&gt;</pre>
-                </div>
+    </div>
 
-                <h3>4. Buat VehicleAdapter.kt — RecyclerView Adapter Class</h3>
-                <p>Adapter adalah <strong>class</strong> yang bertugas menghubungkan list data dari API ke komponen RecyclerView. Adapter juga menyediakan event klik untuk tombol Edit dan Hapus.</p>
+    <h2>2. Buat AddVehicleActivity</h2>
+    <p>Activity ini menangani input data dan mengirim ke API menggunakan method POST.</p>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>adapter/VehicleAdapter.kt — RecyclerView Adapter Class</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>package com.example.vehicleapiapp.adapter
+    <div class="code-block">
+        <div class="code-header">
+            <span>AddVehicleActivity.kt</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp
+
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.vehicleapiapp.model.Vehicle
+import com.example.vehicleapiapp.network.RetrofitClient
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
+
+class AddVehicleActivity : AppCompatActivity() {
+
+    private lateinit var etModel: TextInputEditText
+    private lateinit var etType: TextInputEditText
+    private lateinit var etManufacturer: TextInputEditText
+    private lateinit var btnSave: Button
+    private lateinit var progressBar: ProgressBar
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_add_vehicle)
+
+        // Inisialisasi view
+        etModel = findViewById(R.id.etModel)
+        etType = findViewById(R.id.etType)
+        etManufacturer = findViewById(R.id.etManufacturer)
+        btnSave = findViewById(R.id.btnSave)
+        progressBar = findViewById(R.id.progressBar)
+
+        // Setup tombol simpan
+        btnSave.setOnClickListener {
+            saveVehicle()
+        }
+    }
+
+    private fun saveVehicle() {
+        // Ambil data dari input
+        val model = etModel.text.toString().trim()
+        val type = etType.text.toString().trim()
+        val manufacturer = etManufacturer.text.toString().trim()
+
+        // Validasi input
+        if (model.isEmpty()) {
+            etModel.error = "Model tidak boleh kosong"
+            etModel.requestFocus()
+            return
+        }
+
+        if (type.isEmpty()) {
+            etType.error = "Tipe tidak boleh kosong"
+            etType.requestFocus()
+            return
+        }
+
+        if (manufacturer.isEmpty()) {
+            etManufacturer.error = "Produsen tidak boleh kosong"
+            etManufacturer.requestFocus()
+            return
+        }
+
+        // Buat object Vehicle
+        val vehicle = Vehicle(
+            model = model,
+            type = type,
+            manufacturer = manufacturer
+        )
+
+        // Kirim ke API
+        createVehicle(vehicle)
+    }
+
+    private fun createVehicle(vehicle: Vehicle) {
+        lifecycleScope.launch {
+            showLoading(true)
+
+            try {
+                val response = RetrofitClient.apiService.createVehicle(vehicle)
+
+                if (response.isSuccessful) {
+                    showMessage("Data berhasil ditambahkan")
+                    // Kembali ke MainActivity
+                    finish()
+                } else {
+                    showMessage("Gagal menambah data: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                showMessage("Error: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        btnSave.isEnabled = !isLoading
+    }
+
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}</pre>
+    </div>
+
+    <h2>3. Update MainActivity</h2>
+    <p>Sekarang kita perlu mengubah MainActivity agar:</p>
+    <ul>
+        <li>Tombol FAB membuka AddVehicleActivity</li>
+        <li>Data di-refresh saat kembali dari AddVehicleActivity</li>
+    </ul>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>MainActivity.kt — Update bagian onCreate dan tambah onResume</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp
+
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.vehicleapiapp.adapter.VehicleAdapter
+import com.example.vehicleapiapp.network.RetrofitClient
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
+
+class MainActivity : AppCompatActivity() {
+    
+    private lateinit var rvVehicles: RecyclerView
+    private lateinit var progressBar: ProgressBar
+    private lateinit var fabAdd: FloatingActionButton
+    private lateinit var adapter: VehicleAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Inisialisasi view
+        rvVehicles = findViewById(R.id.rvVehicles)
+        progressBar = findViewById(R.id.progressBar)
+        fabAdd = findViewById(R.id.fabAdd)
+
+        // Setup RecyclerView
+        adapter = VehicleAdapter()
+        rvVehicles.layoutManager = LinearLayoutManager(this)
+        rvVehicles.adapter = adapter
+
+        // Setup FAB - Buka AddVehicleActivity
+        fabAdd.setOnClickListener {
+            val intent = Intent(this, AddVehicleActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Load data dari API
+        loadVehicles()
+    }
+
+    // Dipanggil saat Activity kembali ke foreground
+    override fun onResume() {
+        super.onResume()
+        // Refresh data setiap kali kembali ke MainActivity
+        loadVehicles()
+    }
+
+    private fun loadVehicles() {
+        lifecycleScope.launch {
+            showLoading(true)
+            
+            try {
+                val response = RetrofitClient.apiService.getVehicles()
+                
+                if (response.isSuccessful) {
+                    val vehicles = response.body()?.data ?: emptyList()
+                    adapter.setData(vehicles)
+                    
+                    if (vehicles.isEmpty()) {
+                        showMessage("Belum ada data vehicle")
+                    }
+                } else {
+                    showMessage("Gagal mengambil data: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                showMessage("Error: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+    }
+
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}</pre>
+    </div>
+
+    <h2>4. Daftarkan AddVehicleActivity di AndroidManifest.xml</h2>
+    <p>Jangan lupa mendaftarkan Activity baru di AndroidManifest.xml</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>AndroidManifest.xml — Tambahkan di dalam tag &lt;application&gt;</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;activity
+    android:name=".AddVehicleActivity"
+    android:exported="false"
+    android:label="Tambah Vehicle" /&gt;</pre>
+    </div>
+
+    <h2>5. Jalankan dan Test</h2>
+    <ol>
+        <li>Jalankan aplikasi</li>
+        <li>Klik tombol FAB (tombol + di kanan bawah)</li>
+        <li>Isi form dengan data vehicle</li>
+        <li>Klik tombol Simpan</li>
+        <li>Aplikasi kembali ke MainActivity dan data baru muncul di list</li>
+    </ol>
+
+    <div class="info-box">
+        <h4>Checkpoint Tahap 3</h4>
+        <ul style="margin-bottom:0;">
+            <li>✓ Klik FAB membuka AddVehicleActivity</li>
+            <li>✓ Form input muncul dengan 3 field (model, type, manufacturer)</li>
+            <li>✓ Validasi berjalan (error muncul jika field kosong)</li>
+            <li>✓ Data berhasil disimpan ke server</li>
+            <li>✓ Setelah simpan, kembali ke MainActivity</li>
+            <li>✓ Data baru muncul di list (refresh otomatis)</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <ul style="margin-bottom:0;">
+            <li><strong>Intent:</strong> Cara berpindah antar Activity</li>
+            <li><strong>Validasi Input:</strong> Cek data sebelum kirim ke server</li>
+            <li><strong>POST Request:</strong> Mengirim data baru ke API</li>
+            <li><strong>Activity Lifecycle:</strong> <code>onResume()</code> dipanggil saat Activity kembali ke foreground</li>
+            <li><strong>finish():</strong> Menutup Activity dan kembali ke Activity sebelumnya</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <ol style="margin-bottom:0;">
+            <li>Kenapa kita pakai <code>onResume()</code> untuk refresh data, bukan <code>onCreate()</code>?</li>
+            <li>Apa yang terjadi jika kita tidak memanggil <code>finish()</code> di AddVehicleActivity?</li>
+            <li>Kenapa validasi dilakukan di client (aplikasi) padahal server juga punya validasi?</li>
+        </ol>
+    </div>
+</article>
+<!-- TAHAP 4: EDIT DATA (PUT) -->
+<article id="crud-put">
+    <h1>Tahap 4: Edit Data Vehicle</h1>
+    
+    <div class="info-box">
+        <h3>Target Tahap Ini</h3>
+        <p>Membuat fitur edit data vehicle. Ketika item di list diklik, aplikasi membuka Activity baru dengan form yang sudah terisi data existing.</p>
+        <ul style="margin-bottom:0;">
+            <li>Tambahkan tombol Edit di item RecyclerView</li>
+            <li>Buat EditVehicleActivity dengan form pre-filled</li>
+            <li>Kirim data yang sudah diedit ke API menggunakan PUT</li>
+            <li>Kembali ke MainActivity dan refresh data</li>
+        </ul>
+    </div>
+
+    <h2>1. Update Layout Item RecyclerView</h2>
+    <p>Tambahkan tombol Edit di layout item. Sekarang setiap item punya tombol untuk edit.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/item_vehicle.xml — Update dengan tombol Edit</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"&gt;
+
+        &lt;TextView
+            android:id="@+id/tvModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Model"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#212121" /&gt;
+
+        &lt;TextView
+            android:id="@+id/tvDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Type - Manufacturer"
+            android:textSize="14sp"
+            android:textColor="#616161" /&gt;
+
+        &lt;!-- Tombol Edit --&gt;
+        &lt;Button
+            android:id="@+id/btnEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Edit"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" /&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/androidx.cardview.widget.CardView&gt;</pre>
+    </div>
+
+    <h2>2. Update VehicleAdapter</h2>
+    <p>Tambahkan listener untuk tombol Edit. Adapter akan memberitahu MainActivity saat tombol Edit diklik.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>adapter/VehicleAdapter.kt — Update dengan click listener</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -1151,8 +1696,495 @@ import com.example.vehicleapiapp.R
 import com.example.vehicleapiapp.model.Vehicle
 
 class VehicleAdapter(
-    private val onEditClick: (Vehicle) -&gt; Unit,
-    private val onDeleteClick: (Vehicle) -&gt; Unit
+    private val onEditClick: (Vehicle) -&gt; Unit  // Lambda untuk handle klik Edit
+) : RecyclerView.Adapter&lt;VehicleAdapter.VehicleViewHolder&gt;() {
+
+    private val vehicles = mutableListOf&lt;Vehicle&gt;()
+
+    fun setData(newVehicles: List&lt;Vehicle&gt;) {
+        vehicles.clear()
+        vehicles.addAll(newVehicles)
+        notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VehicleViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_vehicle, parent, false)
+        return VehicleViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: VehicleViewHolder, position: Int) {
+        holder.bind(vehicles[position])
+    }
+
+    override fun getItemCount(): Int = vehicles.size
+
+    inner class VehicleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvModel: TextView = itemView.findViewById(R.id.tvModel)
+        private val tvDetail: TextView = itemView.findViewById(R.id.tvDetail)
+        private val btnEdit: Button = itemView.findViewById(R.id.btnEdit)
+
+        fun bind(vehicle: Vehicle) {
+            tvModel.text = vehicle.model
+            tvDetail.text = "${vehicle.type} - ${vehicle.manufacturer}"
+
+            // Handle klik tombol Edit
+            btnEdit.setOnClickListener {
+                onEditClick(vehicle)
+            }
+        }
+    }
+}</pre>
+    </div>
+
+    <h2>3. Buat Vehicle Parcelable</h2>
+    <p>Agar bisa mengirim object Vehicle via Intent, kita perlu membuat Vehicle menjadi Parcelable.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>model/Vehicle.kt — Update dengan Parcelable</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp.model
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
+data class Vehicle(
+    val id: Int? = null,
+    val model: String,
+    val type: String,
+    val manufacturer: String,
+    val created_at: String? = null,
+    val updated_at: String? = null
+) : Parcelable</pre>
+    </div>
+
+    <div class="warning-box">
+        <h4>Tambahkan Plugin Parcelize</h4>
+        <p>Agar <code>@Parcelize</code> bisa digunakan, tambahkan plugin di <code>build.gradle.kts (Module: app)</code>:</p>
+        <pre style="background:#f5f5f5;padding:12px;border-radius:4px;margin-top:8px;">plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("kotlin-parcelize")  // Tambahkan baris ini
+}</pre>
+        <p style="margin-top:8px;margin-bottom:0;">Setelah ditambahkan, klik <strong>Sync Now</strong>.</p>
+    </div>
+
+    <h2>4. Buat Layout EditVehicleActivity</h2>
+    <p>Layout untuk edit hampir sama dengan add, tapi judulnya berbeda.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/activity_edit_vehicle.xml</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"&gt;
+
+    &lt;TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Edit Vehicle"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Model Kendaraan"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Tipe Kendaraan"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:hint="Produsen"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"&gt;
+
+        &lt;com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etManufacturer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" /&gt;
+
+    &lt;/com.google.android.material.textfield.TextInputLayout&gt;
+
+    &lt;Button
+        android:id="@+id/btnUpdate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Update"
+        android:textSize="16sp" /&gt;
+
+    &lt;ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+    </div>
+
+    <h2>5. Buat EditVehicleActivity</h2>
+    <p>Activity ini menerima data Vehicle dari Intent, menampilkannya di form, lalu mengirim update ke API.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>EditVehicleActivity.kt</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp
+
+import android.os.Bundle
+import android.view.View
+import android.widget.Button
+import android.widget.ProgressBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.vehicleapiapp.model.Vehicle
+import com.example.vehicleapiapp.network.RetrofitClient
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
+
+class EditVehicleActivity : AppCompatActivity() {
+
+    private lateinit var etModel: TextInputEditText
+    private lateinit var etType: TextInputEditText
+    private lateinit var etManufacturer: TextInputEditText
+    private lateinit var btnUpdate: Button
+    private lateinit var progressBar: ProgressBar
+
+    private var vehicleId: Int = 0
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_edit_vehicle)
+
+        // Inisialisasi view
+        etModel = findViewById(R.id.etModel)
+        etType = findViewById(R.id.etType)
+        etManufacturer = findViewById(R.id.etManufacturer)
+        btnUpdate = findViewById(R.id.btnUpdate)
+        progressBar = findViewById(R.id.progressBar)
+
+        // Ambil data Vehicle dari Intent
+        val vehicle = intent.getParcelableExtra&lt;Vehicle&gt;("VEHICLE_DATA")
+        
+        if (vehicle != null) {
+            // Simpan ID untuk update nanti
+            vehicleId = vehicle.id ?: 0
+
+            // Isi form dengan data existing
+            etModel.setText(vehicle.model)
+            etType.setText(vehicle.type)
+            etManufacturer.setText(vehicle.manufacturer)
+        } else {
+            showMessage("Data vehicle tidak ditemukan")
+            finish()
+            return
+        }
+
+        // Setup tombol update
+        btnUpdate.setOnClickListener {
+            updateVehicle()
+        }
+    }
+
+    private fun updateVehicle() {
+        // Ambil data dari input
+        val model = etModel.text.toString().trim()
+        val type = etType.text.toString().trim()
+        val manufacturer = etManufacturer.text.toString().trim()
+
+        // Validasi input
+        if (model.isEmpty()) {
+            etModel.error = "Model tidak boleh kosong"
+            etModel.requestFocus()
+            return
+        }
+
+        if (type.isEmpty()) {
+            etType.error = "Tipe tidak boleh kosong"
+            etType.requestFocus()
+            return
+        }
+
+        if (manufacturer.isEmpty()) {
+            etManufacturer.error = "Produsen tidak boleh kosong"
+            etManufacturer.requestFocus()
+            return
+        }
+
+        // Buat object Vehicle dengan data baru
+        val vehicle = Vehicle(
+            model = model,
+            type = type,
+            manufacturer = manufacturer
+        )
+
+        // Kirim update ke API
+        sendUpdateToApi(vehicleId, vehicle)
+    }
+
+    private fun sendUpdateToApi(id: Int, vehicle: Vehicle) {
+        lifecycleScope.launch {
+            showLoading(true)
+
+            try {
+                val response = RetrofitClient.apiService.updateVehicle(id, vehicle)
+
+                if (response.isSuccessful) {
+                    showMessage("Data berhasil diupdate")
+                    // Kembali ke MainActivity
+                    finish()
+                } else {
+                    showMessage("Gagal update data: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                showMessage("Error: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
+        }
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        btnUpdate.isEnabled = !isLoading
+    }
+
+    private fun showMessage(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+}</pre>
+    </div>
+
+    <h2>6. Update MainActivity</h2>
+    <p>Tambahkan handler untuk tombol Edit yang akan membuka EditVehicleActivity.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>MainActivity.kt — Update bagian adapter</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>// Setup RecyclerView dengan lambda untuk handle klik Edit
+adapter = VehicleAdapter(
+    onEditClick = { vehicle -&gt;
+        // Buka EditVehicleActivity dan kirim data vehicle
+        val intent = Intent(this, EditVehicleActivity::class.java)
+        intent.putExtra("VEHICLE_DATA", vehicle)
+        startActivity(intent)
+    }
+)
+rvVehicles.layoutManager = LinearLayoutManager(this)
+rvVehicles.adapter = adapter</pre>
+    </div>
+
+    <h2>7. Daftarkan EditVehicleActivity di AndroidManifest.xml</h2>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>AndroidManifest.xml — Tambahkan di dalam tag &lt;application&gt;</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;activity
+    android:name=".EditVehicleActivity"
+    android:exported="false"
+    android:label="Edit Vehicle" /&gt;</pre>
+    </div>
+
+    <h2>8. Jalankan dan Test</h2>
+    <ol>
+        <li>Jalankan aplikasi</li>
+        <li>Klik tombol <strong>Edit</strong> pada salah satu item</li>
+        <li>Form akan terbuka dengan data yang sudah terisi</li>
+        <li>Ubah data (misalnya ganti model)</li>
+        <li>Klik tombol <strong>Update</strong></li>
+        <li>Aplikasi kembali ke MainActivity dan data ter-update</li>
+    </ol>
+
+    <div class="info-box">
+        <h4>Checkpoint Tahap 4</h4>
+        <ul style="margin-bottom:0;">
+            <li>✓ Tombol Edit muncul di setiap item</li>
+            <li>✓ Klik Edit membuka EditVehicleActivity</li>
+            <li>✓ Form sudah terisi dengan data existing</li>
+            <li>✓ Validasi berjalan dengan baik</li>
+            <li>✓ Data berhasil diupdate di server</li>
+            <li>✓ Setelah update, kembali ke MainActivity</li>
+            <li>✓ Data yang diupdate muncul di list (refresh otomatis)</li>
+        </ul>
+    </div>
+
+    <div class="info-box">
+        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <ul style="margin-bottom:0;">
+            <li><strong>Parcelable:</strong> Cara mengirim object kompleks via Intent</li>
+            <li><strong>Lambda Function:</strong> Passing function sebagai parameter (<code>onEditClick</code>)</li>
+            <li><strong>PUT Request:</strong> Update data existing di server</li>
+            <li><strong>Pre-fill Form:</strong> Menampilkan data existing di form input</li>
+            <li><strong>Intent Extra:</strong> Mengirim dan menerima data antar Activity</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <ol style="margin-bottom:0;">
+            <li>Apa perbedaan antara POST dan PUT?</li>
+            <li>Kenapa kita perlu mengirim ID saat update, tapi tidak saat create?</li>
+            <li>Apa yang terjadi jika kita lupa menambahkan plugin <code>kotlin-parcelize</code>?</li>
+            <li>Kenapa kita pakai <code>inner class</code> di ViewHolder?</li>
+        </ol>
+    </div>
+
+    <div class="warning-box">
+        <h4>🐛 Troubleshooting</h4>
+        <ul style="margin-bottom:0;">
+            <li><strong>Error "@Parcelize not found":</strong> Pastikan plugin <code>kotlin-parcelize</code> sudah ditambahkan di build.gradle.kts</li>
+            <li><strong>Form tidak terisi:</strong> Cek apakah data Vehicle berhasil dikirim via Intent (gunakan Log.d untuk debug)</li>
+            <li><strong>Update gagal (404):</strong> Pastikan ID vehicle valid dan ada di server</li>
+        </ul>
+    </div>
+</article>
+<!-- TAHAP 5: HAPUS DATA (DELETE) -->
+<article id="crud-delete">
+    <h1>Tahap 5: Hapus Data Vehicle</h1>
+    
+    <div class="info-box">
+        <h3>Target Tahap Ini</h3>
+        <p>Membuat fitur hapus data vehicle. Ketika tombol Delete diklik, muncul konfirmasi, lalu data dihapus dari server.</p>
+        <ul style="margin-bottom:0;">
+            <li>Tambahkan tombol Delete di item RecyclerView</li>
+            <li>Tampilkan dialog konfirmasi sebelum hapus</li>
+            <li>Kirim request DELETE ke API</li>
+            <li>Refresh list setelah data berhasil dihapus</li>
+        </ul>
+    </div>
+
+    <h2>1. Update Layout Item RecyclerView</h2>
+    <p>Tambahkan tombol Delete di samping tombol Edit. Sekarang setiap item punya 2 tombol.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>res/layout/item_vehicle.xml — Update dengan tombol Delete</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>&lt;androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"&gt;
+
+    &lt;LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"&gt;
+
+        &lt;TextView
+            android:id="@+id/tvModel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Model"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#212121" /&gt;
+
+        &lt;TextView
+            android:id="@+id/tvDetail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Type - Manufacturer"
+            android:textSize="14sp"
+            android:textColor="#616161" /&gt;
+
+        &lt;!-- Layout untuk tombol Edit dan Delete --&gt;
+        &lt;LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"&gt;
+
+            &lt;Button
+                android:id="@+id/btnEdit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Edit"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" /&gt;
+
+            &lt;Button
+                android:id="@+id/btnDelete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Hapus"
+                android:backgroundTint="#D32F2F"
+                style="@style/Widget.MaterialComponents.Button" /&gt;
+
+        &lt;/LinearLayout&gt;
+
+    &lt;/LinearLayout&gt;
+
+&lt;/androidx.cardview.widget.CardView&gt;</pre>
+    </div>
+
+    <h2>2. Update VehicleAdapter</h2>
+    <p>Tambahkan listener untuk tombol Delete. Adapter sekarang punya 2 lambda: untuk Edit dan Delete.</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>adapter/VehicleAdapter.kt — Update dengan delete listener</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp.adapter
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import com.example.vehicleapiapp.R
+import com.example.vehicleapiapp.model.Vehicle
+
+class VehicleAdapter(
+    private val onEditClick: (Vehicle) -&gt; Unit,    // Lambda untuk handle klik Edit
+    private val onDeleteClick: (Vehicle) -&gt; Unit   // Lambda untuk handle klik Delete
 ) : RecyclerView.Adapter&lt;VehicleAdapter.VehicleViewHolder&gt;() {
 
     private val vehicles = mutableListOf&lt;Vehicle&gt;()
@@ -1185,89 +2217,36 @@ class VehicleAdapter(
             tvModel.text = vehicle.model
             tvDetail.text = "${vehicle.type} - ${vehicle.manufacturer}"
 
+            // Handle klik tombol Edit
             btnEdit.setOnClickListener {
                 onEditClick(vehicle)
             }
 
+            // Handle klik tombol Delete
             btnDelete.setOnClickListener {
                 onDeleteClick(vehicle)
             }
         }
     }
 }</pre>
-                </div>
+    </div>
 
-                <h3>5. Buat Layout MainActivity — XML Layout</h3>
-                <p>Layout utama berisi form input, tombol simpan, ProgressBar, dan RecyclerView.</p>
+    <h2>3. Update MainActivity</h2>
+    <p>Tambahkan handler untuk tombol Delete dengan konfirmasi dialog dan fungsi untuk menghapus data.</p>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>res/layout/activity_main.xml — XML Layout</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"&gt;
+    <div class="code-block">
+        <div class="code-header">
+            <span>MainActivity.kt — Versi lengkap dengan fitur Delete</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>package com.example.vehicleapiapp
 
-    &lt;EditText
-        android:id="@+id/etModel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Model kendaraan" /&gt;
-
-    &lt;EditText
-        android:id="@+id/etType"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tipe kendaraan" /&gt;
-
-    &lt;EditText
-        android:id="@+id/etManufacturer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Produsen" /&gt;
-
-    &lt;Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Simpan" /&gt;
-
-    &lt;ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone" /&gt;
-
-    &lt;androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvVehicles"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:layout_weight="1" /&gt;
-
-&lt;/LinearLayout&gt;</pre>
-                </div>
-
-                <h3>6. Ambil Data di MainActivity</h3>
-                <p>Request jaringan tidak boleh dijalankan di main thread. Karena itu, pemanggilan API dilakukan di dalam <code>lifecycleScope.launch</code>.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - setup GET</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>package com.example.vehicleapiapp
-
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -1275,389 +2254,92 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.vehicleapiapp.adapter.VehicleAdapter
 import com.example.vehicleapiapp.model.Vehicle
 import com.example.vehicleapiapp.network.RetrofitClient
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var etModel: EditText
-    private lateinit var etType: EditText
-    private lateinit var etManufacturer: EditText
-    private lateinit var btnSave: Button
+    
+    private lateinit var rvVehicles: RecyclerView
     private lateinit var progressBar: ProgressBar
+    private lateinit var fabAdd: FloatingActionButton
     private lateinit var adapter: VehicleAdapter
-
-    private var selectedVehicleId: Int? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        etModel = findViewById(R.id.etModel)
-        etType = findViewById(R.id.etType)
-        etManufacturer = findViewById(R.id.etManufacturer)
-        btnSave = findViewById(R.id.btnSave)
+        // Inisialisasi view
+        rvVehicles = findViewById(R.id.rvVehicles)
         progressBar = findViewById(R.id.progressBar)
+        fabAdd = findViewById(R.id.fabAdd)
 
+        // Setup RecyclerView dengan lambda untuk Edit dan Delete
         adapter = VehicleAdapter(
-            onEditClick = { vehicle -&gt; fillForm(vehicle) },
-            onDeleteClick = { vehicle -&gt; deleteVehicle(vehicle) }
+            onEditClick = { vehicle -&gt;
+                // Buka EditVehicleActivity
+                val intent = Intent(this, EditVehicleActivity::class.java)
+                intent.putExtra("VEHICLE_DATA", vehicle)
+                startActivity(intent)
+            },
+            onDeleteClick = { vehicle -&gt;
+                // Tampilkan dialog konfirmasi
+                showDeleteConfirmation(vehicle)
+            }
         )
-
-        val rvVehicles = findViewById&lt;RecyclerView&gt;(R.id.rvVehicles)
         rvVehicles.layoutManager = LinearLayoutManager(this)
         rvVehicles.adapter = adapter
 
-        btnSave.setOnClickListener {
-            saveVehicle()
+        // Setup FAB - Buka AddVehicleActivity
+        fabAdd.setOnClickListener {
+            val intent = Intent(this, AddVehicleActivity::class.java)
+            startActivity(intent)
         }
 
+        // Load data dari API
         loadVehicles()
     }
 
-    private fun loadVehicles() {
-        lifecycleScope.launch {
-            showLoading(true)
-
-            try {
-                val response = RetrofitClient.apiService.getVehicles()
-
-                if (response.isSuccessful) {
-                    val vehicles = response.body()?.data ?: emptyList()
-                    adapter.setData(vehicles)
-                } else {
-                    showMessage("Gagal mengambil data: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
-            } finally {
-                showLoading(false)
-            }
-        }
-    }
-
-    private fun showLoading(isLoading: Boolean) {
-        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-    }
-
-    private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun fillForm(vehicle: Vehicle) {
-        selectedVehicleId = vehicle.id
-        etModel.setText(vehicle.model)
-        etType.setText(vehicle.type)
-        etManufacturer.setText(vehicle.manufacturer)
-        btnSave.text = "Update"
-    }
-}</pre>
-                </div>
-            </article>
-
-            <!-- POST -->
-            <article id="crud-post">
-                <h2>POST - Tambah Data Vehicle</h2>
-                <p>POST digunakan untuk mengirim data baru ke server. Pada aplikasi ini, data diambil dari tiga input: model, type, dan manufacturer.</p>
-
-                <h3>1. Tambahkan Fungsi Validasi Input</h3>
-                <p>Validasi dilakukan sebelum request dikirim. Tujuannya agar aplikasi tidak mengirim data kosong dan tidak bergantung penuh pada validasi dari server.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - validasi input</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>private fun getVehicleFromInput(): Vehicle? {
-    val model = etModel.text.toString().trim()
-    val type = etType.text.toString().trim()
-    val manufacturer = etManufacturer.text.toString().trim()
-
-    if (model.isEmpty() || type.isEmpty() || manufacturer.isEmpty()) {
-        showMessage("Semua field wajib diisi")
-        return null
-    }
-
-    return Vehicle(
-        model = model,
-        type = type,
-        manufacturer = manufacturer
-    )
-}</pre>
-                </div>
-
-                <h3>2. Tambahkan Fungsi Simpan</h3>
-                <p>Fungsi <code>saveVehicle()</code> akan memilih operasi POST atau PUT. Jika <code>selectedVehicleId</code> kosong, berarti user sedang menambah data baru.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - saveVehicle dan createVehicle</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>private fun saveVehicle() {
-    val vehicle = getVehicleFromInput() ?: return
-    val id = selectedVehicleId
-
-    if (id == null) {
-        createVehicle(vehicle)
-    } else {
-        updateVehicle(id, vehicle)
-    }
-}
-
-private fun createVehicle(vehicle: Vehicle) {
-    lifecycleScope.launch {
-        showLoading(true)
-
-        try {
-            val response = RetrofitClient.apiService.createVehicle(vehicle)
-
-            if (response.isSuccessful) {
-                showMessage("Data berhasil ditambahkan")
-                clearForm()
-                loadVehicles()  // ⚠️ PENTING: Refresh data setelah create
-            } else {
-                showMessage("Gagal menambah data: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            showMessage("Error: ${e.message}")
-        } finally {
-            showLoading(false)
-        }
-    }
-}
-
-private fun clearForm() {
-    selectedVehicleId = null
-    etModel.text.clear()
-    etType.text.clear()
-    etManufacturer.text.clear()
-    btnSave.text = "Simpan"
-}</pre>
-                </div>
-
-                <div class="info-box">
-                    <h4>Kenapa loadVehicles() Dipanggil Lagi?</h4>
-                    <p style="margin-bottom:0;">Setelah data berhasil ditambah, RecyclerView perlu mengambil ulang data terbaru dari server. Dengan begitu, tampilan aplikasi selalu mengikuti kondisi data di API.</p>
-                </div>
-            </article>
-
-            <!-- PUT & DELETE -->
-            <article id="crud-put-delete">
-                <h2>PUT dan DELETE Data Vehicle</h2>
-                <p>PUT digunakan untuk memperbarui data yang sudah ada. DELETE digunakan untuk menghapus data berdasarkan ID.</p>
-
-                <h3>1. Update Data dengan PUT</h3>
-                <p>Ketika tombol Edit pada item diklik, data item akan masuk ke form dan <code>selectedVehicleId</code> terisi. Saat tombol Update ditekan, aplikasi memanggil endpoint PUT.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - updateVehicle</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>private fun updateVehicle(id: Int, vehicle: Vehicle) {
-    lifecycleScope.launch {
-        showLoading(true)
-
-        try {
-            val response = RetrofitClient.apiService.updateVehicle(id, vehicle)
-
-            if (response.isSuccessful) {
-                showMessage("Data berhasil diupdate")
-                clearForm()
-                loadVehicles()  // ⚠️ PENTING: Refresh data setelah update
-            } else {
-                showMessage("Gagal update data: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            showMessage("Error: ${e.message}")
-        } finally {
-            showLoading(false)
-        }
-    }
-}</pre>
-                </div>
-
-                <h3>2. Hapus Data dengan DELETE</h3>
-                <p>DELETE membutuhkan ID data. Karena ID berasal dari server, pastikan item yang akan dihapus memiliki nilai <code>id</code>.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - deleteVehicle</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>private fun deleteVehicle(vehicle: Vehicle) {
-    val id = vehicle.id ?: return
-
-    lifecycleScope.launch {
-        showLoading(true)
-
-        try {
-            val response = RetrofitClient.apiService.deleteVehicle(id)
-
-            if (response.isSuccessful) {
-                showMessage("Data berhasil dihapus")
-                loadVehicles()  // ⚠️ PENTING: Refresh data setelah delete
-            } else {
-                showMessage("Gagal hapus data: ${response.code()}")
-            }
-        } catch (e: Exception) {
-            showMessage("Error: ${e.message}")
-        } finally {
-            showLoading(false)
-        }
-    }
-}</pre>
-                </div>
-
-                <div class="warning-box">
-                    <h4>⚠️ Jangan Lupa Refresh Data!</h4>
-                    <p>Setelah operasi <strong>CREATE</strong>, <strong>UPDATE</strong>, atau <strong>DELETE</strong> berhasil, <strong>WAJIB</strong> panggil <code>loadVehicles()</code> untuk refresh RecyclerView.</p>
-                    <p style="margin-bottom:0;">Jika tidak dipanggil, data di server sudah berubah tapi tampilan di aplikasi masih menampilkan data lama. Ini akan membingungkan user!</p>
-                </div>
-
-                <h3>3. Versi Lengkap MainActivity</h3>
-                <p>Jika ingin mengecek susunan akhir kode, gabungkan semua fungsi sebelumnya menjadi satu file seperti berikut.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>MainActivity.kt - versi lengkap CRUD</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>package com.example.vehicleapiapp
-
-import android.os.Bundle
-import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.vehicleapiapp.adapter.VehicleAdapter
-import com.example.vehicleapiapp.model.Vehicle
-import com.example.vehicleapiapp.network.RetrofitClient
-import kotlinx.coroutines.launch
-
-class MainActivity : AppCompatActivity() {
-    private lateinit var etModel: EditText
-    private lateinit var etType: EditText
-    private lateinit var etManufacturer: EditText
-    private lateinit var btnSave: Button
-    private lateinit var progressBar: ProgressBar
-    private lateinit var adapter: VehicleAdapter
-
-    private var selectedVehicleId: Int? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        etModel = findViewById(R.id.etModel)
-        etType = findViewById(R.id.etType)
-        etManufacturer = findViewById(R.id.etManufacturer)
-        btnSave = findViewById(R.id.btnSave)
-        progressBar = findViewById(R.id.progressBar)
-
-        adapter = VehicleAdapter(
-            onEditClick = { vehicle -&gt; fillForm(vehicle) },
-            onDeleteClick = { vehicle -&gt; deleteVehicle(vehicle) }
-        )
-
-        findViewById&lt;RecyclerView&gt;(R.id.rvVehicles).apply {
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = this@MainActivity.adapter
-        }
-
-        btnSave.setOnClickListener {
-            saveVehicle()
-        }
-
+    // Dipanggil saat Activity kembali ke foreground
+    override fun onResume() {
+        super.onResume()
+        // Refresh data setiap kali kembali ke MainActivity
         loadVehicles()
     }
 
-    private fun loadVehicles() {
-        lifecycleScope.launch {
-            showLoading(true)
-            try {
-                val response = RetrofitClient.apiService.getVehicles()
-                if (response.isSuccessful) {
-                    val vehicles = response.body()?.data ?: emptyList()
-                    adapter.setData(vehicles)
-                } else {
-                    showMessage("Gagal mengambil data: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
-            } finally {
-                showLoading(false)
+    private fun showDeleteConfirmation(vehicle: Vehicle) {
+        AlertDialog.Builder(this)
+            .setTitle("Konfirmasi Hapus")
+            .setMessage("Apakah Anda yakin ingin menghapus ${vehicle.model}?")
+            .setPositiveButton("Hapus") { dialog, _ -&gt;
+                // User klik Hapus
+                deleteVehicle(vehicle)
+                dialog.dismiss()
             }
-        }
-    }
-
-    private fun saveVehicle() {
-        val vehicle = getVehicleFromInput() ?: return
-        val id = selectedVehicleId
-
-        if (id == null) {
-            createVehicle(vehicle)
-        } else {
-            updateVehicle(id, vehicle)
-        }
-    }
-
-    private fun createVehicle(vehicle: Vehicle) {
-        lifecycleScope.launch {
-            showLoading(true)
-            try {
-                val response = RetrofitClient.apiService.createVehicle(vehicle)
-                if (response.isSuccessful) {
-                    showMessage("Data berhasil ditambahkan")
-                    clearForm()
-                    loadVehicles()  // Refresh data setelah create
-                } else {
-                    showMessage("Gagal menambah data: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
-            } finally {
-                showLoading(false)
+            .setNegativeButton("Batal") { dialog, _ -&gt;
+                // User klik Batal
+                dialog.dismiss()
             }
-        }
-    }
-
-    private fun updateVehicle(id: Int, vehicle: Vehicle) {
-        lifecycleScope.launch {
-            showLoading(true)
-            try {
-                val response = RetrofitClient.apiService.updateVehicle(id, vehicle)
-                if (response.isSuccessful) {
-                    showMessage("Data berhasil diupdate")
-                    clearForm()
-                    loadVehicles()  // Refresh data setelah update
-                } else {
-                    showMessage("Gagal update data: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
-            } finally {
-                showLoading(false)
-            }
-        }
+            .show()
     }
 
     private fun deleteVehicle(vehicle: Vehicle) {
-        val id = vehicle.id ?: return
+        val id = vehicle.id ?: run {
+            showMessage("ID vehicle tidak valid")
+            return
+        }
 
         lifecycleScope.launch {
             showLoading(true)
+
             try {
                 val response = RetrofitClient.apiService.deleteVehicle(id)
+
                 if (response.isSuccessful) {
                     showMessage("Data berhasil dihapus")
-                    loadVehicles()  // Refresh data setelah delete
+                    // Refresh data setelah delete
+                    loadVehicles()
                 } else {
-                    showMessage("Gagal hapus data: ${response.code()}")
+                    showMessage("Gagal menghapus data: ${response.code()}")
                 }
             } catch (e: Exception) {
                 showMessage("Error: ${e.message}")
@@ -1667,37 +2349,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getVehicleFromInput(): Vehicle? {
-        val model = etModel.text.toString().trim()
-        val type = etType.text.toString().trim()
-        val manufacturer = etManufacturer.text.toString().trim()
-
-        if (model.isEmpty() || type.isEmpty() || manufacturer.isEmpty()) {
-            showMessage("Semua field wajib diisi")
-            return null
+    private fun loadVehicles() {
+        lifecycleScope.launch {
+            showLoading(true)
+            
+            try {
+                val response = RetrofitClient.apiService.getVehicles()
+                
+                if (response.isSuccessful) {
+                    val vehicles = response.body()?.data ?: emptyList()
+                    adapter.setData(vehicles)
+                    
+                    if (vehicles.isEmpty()) {
+                        showMessage("Belum ada data vehicle")
+                    }
+                } else {
+                    showMessage("Gagal mengambil data: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                showMessage("Error: ${e.message}")
+            } finally {
+                showLoading(false)
+            }
         }
-
-        return Vehicle(
-            model = model,
-            type = type,
-            manufacturer = manufacturer
-        )
-    }
-
-    private fun fillForm(vehicle: Vehicle) {
-        selectedVehicleId = vehicle.id
-        etModel.setText(vehicle.model)
-        etType.setText(vehicle.type)
-        etManufacturer.setText(vehicle.manufacturer)
-        btnSave.text = "Update"
-    }
-
-    private fun clearForm() {
-        selectedVehicleId = null
-        etModel.text.clear()
-        etType.text.clear()
-        etManufacturer.text.clear()
-        btnSave.text = "Simpan"
     }
 
     private fun showLoading(isLoading: Boolean) {
@@ -1708,92 +2382,88 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }</pre>
-                </div>
+    </div>
 
-                <div class="warning-box">
-                    <h4>Catatan Praktikum</h4>
-                    <p style="margin-bottom:0;">Kode di atas sengaja dibuat sederhana agar alur CRUD mudah dipahami. Pada project produksi, proses konfirmasi hapus, error handling, repository, ViewModel, dan state UI sebaiknya dibuat lebih rapi.</p>
-                </div>
-            </article>
+    <h2>4. Jalankan dan Test</h2>
+    <ol>
+        <li>Jalankan aplikasi</li>
+        <li>Klik tombol <strong>Hapus</strong> pada salah satu item</li>
+        <li>Dialog konfirmasi akan muncul</li>
+        <li>Klik <strong>Hapus</strong> untuk konfirmasi</li>
+        <li>Data akan terhapus dari server</li>
+        <li>List otomatis ter-refresh dan item yang dihapus hilang</li>
+    </ol>
 
-            <!-- HANDS ON 1 -->
-            <article id="handson-1">
-                <h2>Hands-On 1 - Praktik CRUD API Vehicle</h2>
-                <p>Kerjakan latihan berikut untuk memastikan aplikasi benar-benar terhubung ke API dan operasi CRUD berjalan dari sisi Android.</p>
+    <div class="info-box">
+        <h4>Checkpoint Tahap 5</h4>
+        <ul style="margin-bottom:0;">
+            <li>✓ Tombol Delete muncul di setiap item (warna merah)</li>
+            <li>✓ Klik Delete menampilkan dialog konfirmasi</li>
+            <li>✓ Dialog menampilkan nama vehicle yang akan dihapus</li>
+            <li>✓ Klik "Batal" menutup dialog tanpa hapus data</li>
+            <li>✓ Klik "Hapus" menghapus data dari server</li>
+            <li>✓ Setelah delete, list otomatis ter-refresh</li>
+            <li>✓ Item yang dihapus tidak muncul lagi di list</li>
+        </ul>
+    </div>
 
-                <ol class="ho-steps-list">
-                    <li>
-                        <strong>Buat project baru bernama VehicleApiApp.</strong>
-                        <p>Gunakan Empty Views Activity, Kotlin, dan layout XML.</p>
-                    </li>
-                    <li>
-                        <strong>Tambahkan dependency Retrofit dan RecyclerView.</strong>
-                        <p>Pastikan Gradle Sync berhasil sebelum lanjut ke tahap coding.</p>
-                    </li>
-                    <li>
-                        <strong>Buat package model, network, dan adapter.</strong>
-                        <p>Susun file sesuai struktur pada materi agar import lebih mudah dicek.</p>
-                    </li>
-                    <li>
-                        <strong>Buat model Vehicle dan ApiResponse.</strong>
-                        <p>Pastikan nama field sama dengan response JSON dari API.</p>
-                    </li>
-                    <li>
-                        <strong>Buat ApiService dan RetrofitClient.</strong>
-                        <p>Gunakan base URL <code>https://api.pahrul.my.id/api/</code>.</p>
-                    </li>
-                    <li>
-                        <strong>Buat layout activity_main.xml dan item_vehicle.xml.</strong>
-                        <p>Layout harus memiliki tiga input, tombol simpan, ProgressBar, dan RecyclerView.</p>
-                    </li>
-                    <li>
-                        <strong>Jalankan fitur GET.</strong>
-                        <p>Data dari API harus tampil di RecyclerView ketika aplikasi dibuka.</p>
-                    </li>
-                    <li>
-                        <strong>Jalankan fitur POST.</strong>
-                        <p>Isi form, tekan Simpan, lalu pastikan data baru muncul di list.</p>
-                    </li>
-                    <li>
-                        <strong>Jalankan fitur PUT.</strong>
-                        <p>Tekan Edit pada salah satu item, ubah isi form, lalu tekan Update.</p>
-                    </li>
-                    <li>
-                        <strong>Jalankan fitur DELETE.</strong>
-                        <p>Tekan Hapus pada salah satu item, lalu cek apakah data hilang dari list.</p>
-                    </li>
-                </ol>
+    <div class="info-box">
+        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <ul style="margin-bottom:0;">
+            <li><strong>AlertDialog:</strong> Menampilkan dialog konfirmasi ke user</li>
+            <li><strong>DELETE Request:</strong> Menghapus data dari server</li>
+            <li><strong>Multiple Lambda:</strong> Passing beberapa function sebagai parameter</li>
+            <li><strong>Elvis Operator (<code>?:</code>):</strong> Handling null dengan default value</li>
+            <li><strong>UX Best Practice:</strong> Selalu konfirmasi sebelum operasi destructive</li>
+        </ul>
+    </div>
 
-                <h3>Checklist Pengujian</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>Fitur</th><th>Hasil yang Diharapkan</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>GET</td><td>RecyclerView menampilkan daftar vehicle dari server</td></tr>
-                        <tr><td>POST</td><td>Data baru tersimpan dan list diperbarui</td></tr>
-                        <tr><td>PUT</td><td>Data lama berubah sesuai isi form</td></tr>
-                        <tr><td>DELETE</td><td>Data terhapus dan tidak muncul lagi di RecyclerView</td></tr>
-                        <tr><td>Validasi</td><td>Form kosong menampilkan pesan <code>Semua field wajib diisi</code></td></tr>
-                    </tbody>
-                </table>
+    <div class="warning-box">
+        <h4>Kenapa Perlu Konfirmasi?</h4>
+        <p>Operasi DELETE bersifat <strong>destructive</strong> (merusak/menghapus data). Sekali data dihapus dari server, tidak bisa dikembalikan. Oleh karena itu:</p>
+        <ul style="margin-bottom:0;">
+            <li><strong>Selalu</strong> tampilkan konfirmasi sebelum delete</li>
+            <li>Tampilkan informasi spesifik (nama item yang akan dihapus)</li>
+            <li>Gunakan warna merah untuk tombol delete (indikasi bahaya)</li>
+            <li>Jangan langsung hapus tanpa konfirmasi</li>
+        </ul>
+    </div>
 
-                <h3>Troubleshooting</h3>
-                <table class="data-table">
-                    <thead>
-                        <tr><th>Masalah</th><th>Penyebab Umum</th><th>Solusi</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>UnknownHostException</code></td><td>Device tidak punya koneksi internet</td><td>Cek Wi-Fi, data seluler, atau koneksi emulator</td></tr>
-                        <tr><td><code>Cleartext HTTP traffic not permitted</code></td><td>Menggunakan URL HTTP tanpa konfigurasi</td><td>Gunakan endpoint HTTPS seperti pada materi</td></tr>
-                        <tr><td><code>404 Not Found</code></td><td>Endpoint salah atau ID tidak tersedia</td><td>Cek path endpoint dan data yang dipilih</td></tr>
-                        <tr><td><code>422 Unprocessable Entity</code></td><td>Field wajib kosong atau format body salah</td><td>Pastikan model, type, dan manufacturer terisi</td></tr>
-                        <tr><td>Data tidak muncul</td><td>Adapter belum dipasang atau response data kosong</td><td>Cek Logcat, response API, dan pemanggilan <code>adapter.setData()</code></td></tr>
-                    </tbody>
-                </table>
-            </article>
+    <div class="info-box">
+        <h4>🎉 Selamat! CRUD Lengkap Sudah Selesai</h4>
+        <p>Anda sudah berhasil membuat aplikasi Android dengan fitur CRUD lengkap:</p>
+        <ul style="margin-bottom:0;">
+            <li><strong>Create (POST)</strong> — Tambah data baru via AddVehicleActivity</li>
+            <li><strong>Read (GET)</strong> — Tampilkan list data di MainActivity</li>
+            <li><strong>Update (PUT)</strong> — Edit data via EditVehicleActivity</li>
+            <li><strong>Delete (DELETE)</strong> — Hapus data dengan konfirmasi</li>
+        </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <ol style="margin-bottom:0;">
+            <li>Kenapa kita perlu konfirmasi untuk DELETE tapi tidak untuk CREATE/UPDATE?</li>
+            <li>Apa yang terjadi jika kita tidak memanggil <code>loadVehicles()</code> setelah delete?</li>
+            <li>Bagaimana cara membuat undo setelah delete? (hint: soft delete)</li>
+            <li>Kenapa tombol Delete diberi warna merah?</li>
+        </ol>
+    </div>
+
+    <div class="warning-box">
+        <h4>🚀 Tantangan Lanjutan</h4>
+        <p>Jika Anda ingin mengembangkan aplikasi lebih lanjut, coba fitur-fitur ini:</p>
+        <ol style="margin-bottom:0;">
+            <li><strong>Search:</strong> Tambahkan SearchView untuk mencari vehicle</li>
+            <li><strong>Pull to Refresh:</strong> Swipe down untuk refresh data</li>
+            <li><strong>Empty State:</strong> Tampilkan ilustrasi saat list kosong</li>
+            <li><strong>Loading Skeleton:</strong> Tampilkan placeholder saat loading</li>
+            <li><strong>Error Handling:</strong> Tampilkan pesan error yang lebih informatif</li>
+            <li><strong>Offline Mode:</strong> Simpan data di Room Database untuk akses offline</li>
+        </ol>
+    </div>
+</article>
         </section>
-
         <!-- ============================================ -->
         <!-- LOGIN DENGAN API -->
         <!-- ============================================ -->
