@@ -1022,7 +1022,7 @@ interface ApiService {
     @DELETE("vehicles/{id}")
     suspend fun deleteVehicle(
         @Path("id") id: Int
-    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
+    ): Response&lt;Unit&gt;
 }</pre>
                 </div>
 
@@ -1041,6 +1041,39 @@ interface ApiService {
                             <tr><td><code>@Body vehicle</code></td><td>Objek <code>Vehicle</code> diubah menjadi JSON dan dikirim sebagai body request (untuk POST dan PUT)</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="info-box">
+                    <h4>Kenapa DELETE Menggunakan Response&lt;Unit&gt;?</h4>
+                    <p>Perhatikan bahwa endpoint DELETE berbeda dengan endpoint lainnya:</p>
+                    <table style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Endpoint</th><th>Response Type</th><th>Alasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>getVehicles()</code></td>
+                                <td><code>Response&lt;ApiResponse&lt;List&lt;Vehicle&gt;&gt;&gt;</code></td>
+                                <td>Mengembalikan list data vehicle</td>
+                            </tr>
+                            <tr>
+                                <td><code>createVehicle()</code></td>
+                                <td><code>Response&lt;ApiResponse&lt;Vehicle&gt;&gt;</code></td>
+                                <td>Mengembalikan data vehicle yang baru dibuat</td>
+                            </tr>
+                            <tr>
+                                <td><code>updateVehicle()</code></td>
+                                <td><code>Response&lt;ApiResponse&lt;Vehicle&gt;&gt;</code></td>
+                                <td>Mengembalikan data vehicle yang sudah diupdate</td>
+                            </tr>
+                            <tr>
+                                <td><code>deleteVehicle()</code></td>
+                                <td><code>Response&lt;Unit&gt;</code></td>
+                                <td>Tidak mengembalikan data, hanya status sukses/gagal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:12px;margin-bottom:0;"><strong>Penjelasan:</strong> Response DELETE biasanya hanya mengembalikan status code (200 = sukses, 404 = tidak ditemukan) tanpa body data. Menggunakan <code>Response&lt;Unit&gt;</code> berarti kita hanya peduli dengan status response, tidak peduli dengan body-nya.</p>
                 </div>
 
                 <h3>File 2: RetrofitClient.kt</h3>
@@ -1846,12 +1879,12 @@ import com.example.vehicleapiapp.R
 import com.example.vehicleapiapp.model.Vehicle
 
 class VehicleAdapter(
-    private val onEditClick: (Vehicle) -&gt; Unit  // Lambda untuk handle klik Edit
-) : RecyclerView.Adapter&lt;VehicleAdapter.VehicleViewHolder&gt;() {
+    private val onEditClick: (Vehicle) -> Unit  // Lambda untuk handle klik Edit
+) : RecyclerView.Adapter<VehicleAdapter.VehicleViewHolder>() {
 
-    private val vehicles = mutableListOf&lt;Vehicle&gt;()
+    private val vehicles = mutableListOf<Vehicle>()
 
-    fun setData(newVehicles: List&lt;Vehicle&gt;) {
+    fun setData(newVehicles: List<Vehicle>) {
         vehicles.clear()
         vehicles.addAll(newVehicles)
         notifyDataSetChanged()
@@ -2213,11 +2246,11 @@ adapter = VehicleAdapter(
     <div class="info-box">
         <h4>Konsep Penting yang Dipelajari</h4>
         <ul style="margin-bottom:0;">
-            <li><strong>Parcelable:</strong> Cara mengirim object kompleks via Intent</li>
+            <li><strong>Intent Extras:</strong> Mengirim data sederhana (Int, String) antar Activity</li>
             <li><strong>Lambda Function:</strong> Passing function sebagai parameter (<code>onEditClick</code>)</li>
             <li><strong>PUT Request:</strong> Update data existing di server</li>
             <li><strong>Pre-fill Form:</strong> Menampilkan data existing di form input</li>
-            <li><strong>Intent Extra:</strong> Mengirim dan menerima data antar Activity</li>
+            <li><strong>apply { }:</strong> Scope function untuk konfigurasi object</li>
         </ul>
     </div>
 
@@ -2226,7 +2259,7 @@ adapter = VehicleAdapter(
         <ol style="margin-bottom:0;">
             <li>Apa perbedaan antara POST dan PUT?</li>
             <li>Kenapa kita perlu mengirim ID saat update, tapi tidak saat create?</li>
-            <li>Apa yang terjadi jika kita lupa menambahkan plugin <code>kotlin-parcelize</code>?</li>
+            <li>Apa kelebihan kirim data langsung via Intent extras dibanding kirim hanya ID?</li>
             <li>Kenapa kita pakai <code>inner class</code> di ViewHolder?</li>
         </ol>
     </div>
@@ -2234,8 +2267,8 @@ adapter = VehicleAdapter(
     <div class="warning-box">
         <h4>Troubleshooting</h4>
         <ul style="margin-bottom:0;">
-            <li><strong>Error "@Parcelize not found":</strong> Pastikan plugin <code>kotlin-parcelize</code> sudah ditambahkan di build.gradle.kts</li>
-            <li><strong>Form tidak terisi:</strong> Cek apakah data Vehicle berhasil dikirim via Intent (gunakan Log.d untuk debug)</li>
+            <li><strong>Form tidak terisi:</strong> Cek apakah data berhasil dikirim via Intent (gunakan Log.d untuk debug)</li>
+            <li><strong>vehicleId = 0:</strong> Pastikan <code>vehicle.id</code> tidak null saat dikirim dari MainActivity</li>
             <li><strong>Update gagal (404):</strong> Pastikan ID vehicle valid dan ada di server</li>
         </ul>
     </div>
@@ -2253,6 +2286,18 @@ adapter = VehicleAdapter(
             <li>Kirim request DELETE ke API</li>
             <li>Refresh list setelah data berhasil dihapus</li>
         </ul>
+    </div>
+
+    <div class="warning-box">
+        <h4>⚠️ Perhatian Saat Copy-Paste Kode</h4>
+        <p>Saat copy-paste kode dari halaman ini ke Android Studio, pastikan karakter <code>&lt;</code> dan <code>&gt;</code> ter-copy dengan benar sebagai <code>&lt;</code> dan <code>&gt;</code>, bukan sebagai HTML entity.</p>
+        <p><strong>Contoh yang SALAH:</strong></p>
+        <pre style="background:#ffe6e6;padding:8px;border-radius:4px;margin-top:8px;">List&amp;lt;Vehicle&amp;gt;  // ❌ Salah - akan error
+(Vehicle) -&amp;gt; Unit  // ❌ Salah - akan error</pre>
+        <p style="margin-top:8px;"><strong>Contoh yang BENAR:</strong></p>
+        <pre style="background:#e6ffe6;padding:8px;border-radius:4px;margin-top:8px;">List&lt;Vehicle&gt;  // ✅ Benar
+(Vehicle) -&gt; Unit  // ✅ Benar</pre>
+        <p style="margin-top:12px;margin-bottom:0;"><strong>Tips:</strong> Jika setelah paste ada error syntax, cek karakter <code>&lt;</code> <code>&gt;</code> dan <code>-&gt;</code> apakah sudah benar. Jika masih HTML entity, ganti manual di Android Studio.</p>
     </div>
 
     <h2>1. Update Layout Item RecyclerView</h2>
@@ -2347,13 +2392,13 @@ import com.example.vehicleapiapp.R
 import com.example.vehicleapiapp.model.Vehicle
 
 class VehicleAdapter(
-    private val onEditClick: (Vehicle) -&gt; Unit,    // Lambda untuk handle klik Edit
-    private val onDeleteClick: (Vehicle) -&gt; Unit   // Lambda untuk handle klik Delete
-) : RecyclerView.Adapter&lt;VehicleAdapter.VehicleViewHolder&gt;() {
+    private val onEditClick: (Vehicle) -> Unit,    // Lambda untuk handle klik Edit
+    private val onDeleteClick: (Vehicle) -> Unit   // Lambda untuk handle klik Delete
+) : RecyclerView.Adapter<VehicleAdapter.VehicleViewHolder>() {
 
-    private val vehicles = mutableListOf&lt;Vehicle&gt;()
+    private val vehicles = mutableListOf<Vehicle>()
 
-    fun setData(newVehicles: List&lt;Vehicle&gt;) {
+    fun setData(newVehicles: List<Vehicle>) {
         vehicles.clear()
         vehicles.addAll(newVehicles)
         notifyDataSetChanged()
@@ -2439,13 +2484,17 @@ class MainActivity : AppCompatActivity() {
 
         // Setup RecyclerView dengan lambda untuk Edit dan Delete
         adapter = VehicleAdapter(
-            onEditClick = { vehicle -&gt;
+            onEditClick = { vehicle ->
                 // Buka EditVehicleActivity
-                val intent = Intent(this, EditVehicleActivity::class.java)
-                intent.putExtra("VEHICLE_DATA", vehicle)
+                val intent = Intent(this, EditVehicleActivity::class.java).apply {
+                    putExtra("VEHICLE_ID", vehicle.id)
+                    putExtra("VEHICLE_MODEL", vehicle.model)
+                    putExtra("VEHICLE_TYPE", vehicle.type)
+                    putExtra("VEHICLE_MANUFACTURER", vehicle.manufacturer)
+                }
                 startActivity(intent)
             },
-            onDeleteClick = { vehicle -&gt;
+            onDeleteClick = { vehicle ->
                 // Tampilkan dialog konfirmasi
                 showDeleteConfirmation(vehicle)
             }
@@ -2474,12 +2523,12 @@ class MainActivity : AppCompatActivity() {
         AlertDialog.Builder(this)
             .setTitle("Konfirmasi Hapus")
             .setMessage("Apakah Anda yakin ingin menghapus ${vehicle.model}?")
-            .setPositiveButton("Hapus") { dialog, _ -&gt;
+            .setPositiveButton("Hapus") { dialog, _ ->
                 // User klik Hapus
                 deleteVehicle(vehicle)
                 dialog.dismiss()
             }
-            .setNegativeButton("Batal") { dialog, _ -&gt;
+            .setNegativeButton("Batal") { dialog, _ ->
                 // User klik Batal
                 dialog.dismiss()
             }
@@ -2546,6 +2595,21 @@ class MainActivity : AppCompatActivity() {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }</pre>
+    </div>
+
+    <div class="warning-box">
+        <h4>⚠️ PENTING: Pastikan loadVehicles() Dipanggil Setelah Delete</h4>
+        <p>Perhatikan baris ini di dalam fungsi <code>deleteVehicle()</code>:</p>
+        <pre style="background:#f5f5f5;padding:12px;border-radius:4px;margin-top:8px;">if (response.isSuccessful) {
+    showMessage("Data berhasil dihapus")
+    loadVehicles()  // &lt;-- WAJIB ada baris ini!
+}</pre>
+        <p style="margin-top:12px;"><strong>Kenapa Wajib?</strong></p>
+        <ul style="margin-bottom:0;">
+            <li><strong>Tanpa <code>loadVehicles()</code>:</strong> Data sudah terhapus di server, tapi RecyclerView masih menampilkan data lama (tidak sinkron)</li>
+            <li><strong>Dengan <code>loadVehicles()</code>:</strong> Setelah delete berhasil, aplikasi langsung request data terbaru dari server dan update RecyclerView</li>
+        </ul>
+        <p style="margin-top:12px;margin-bottom:0;"><strong>Alur Lengkap:</strong> User klik Hapus → Konfirmasi → DELETE request ke server → Server hapus data → Response sukses → <code>loadVehicles()</code> → GET request data terbaru → Update RecyclerView → Item hilang dari list</p>
     </div>
 
     <h2>4. Jalankan dan Test</h2>
