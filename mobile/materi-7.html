@@ -37,10 +37,11 @@
                     <li><a href="#crud-retrofit">Apa itu Retrofit?</a></li>
                     <li><a href="#crud-setup">Buat Project & Setup</a></li>
                     <li><a href="#crud-model">Data Model</a></li>
-                    <li><a href="#tahap-2-get">Tahap 2: Tampilkan Data (GET)</a></li>
-                    <li><a href="#tahap-3-post">Tahap 3: Tambah Data (POST)</a></li>
-                    <li><a href="#tahap-4-put">Tahap 4: Edit Data (PUT)</a></li>
-                    <li><a href="#tahap-5-delete">Tahap 5: Hapus Data (DELETE)</a></li>
+                    <li><a href="#crud-network">Tahap 1: ApiService &amp; RetrofitClient</a></li>
+                    <li><a href="#crud-get">Tahap 2: Tampilkan Data (GET)</a></li>
+                    <li><a href="#crud-post">Tahap 3: Tambah Data (POST)</a></li>
+                    <li><a href="#crud-put">Tahap 4: Edit Data (PUT)</a></li>
+                    <li><a href="#crud-delete">Tahap 5: Hapus Data (DELETE)</a></li>
                 </ul>
             </li>
 
@@ -49,6 +50,7 @@
                 <ul class="sub-menu">
                     <li><a href="#login-token">Token Authentication</a></li>
                     <li><a href="#login-impl">Implementasi Login</a></li>
+                    <li><a href="#login-logout">Implementasi Logout</a></li>
                 </ul>
             </li>
 
@@ -703,7 +705,7 @@ okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-i
                 </div>
 
                 <div class="info-box">
-                    <h4>💡 Penjelasan Format Dependency</h4>
+                    <h4>Penjelasan Format Dependency</h4>
                     <p>Dalam satu file <code>build.gradle.kts</code>, Anda bisa mencampur dua format:</p>
                     <ul style="margin-bottom:0;">
                         <li><code>implementation(libs.nama.library)</code> → Menggunakan Version Catalog (TOML)</li>
@@ -968,6 +970,162 @@ suspend fun deleteVehicle(@Path("id") id: Int): Response&lt;ApiResponse&lt;Vehic
                 <p style="margin-bottom:0;">Jangan skip tahap! Setiap tahap membangun fondasi untuk tahap berikutnya. Pastikan aplikasi berjalan dengan baik di satu tahap sebelum lanjut ke tahap berikutnya.</p>
             </div>
 
+            <!-- NETWORK LAYER -->
+            <article id="crud-network">
+                <h2>Tahap 1: Buat ApiService dan RetrofitClient</h2>
+                <p>Sebelum bisa mengambil atau mengirim data ke server, kita perlu membuat dua file di package <code>network</code>: <code>ApiService.kt</code> yang mendefinisikan semua endpoint, dan <code>RetrofitClient.kt</code> yang mengatur koneksi ke server. Kedua file ini menjadi fondasi untuk semua operasi CRUD di tahap berikutnya.</p>
+
+                <h3>File 1: ApiService.kt</h3>
+                <p><code>ApiService</code> adalah interface yang mendaftarkan semua endpoint API yang akan dipakai aplikasi. Setiap fungsi mewakili satu endpoint dengan method HTTP-nya masing-masing.</p>
+
+                <p><strong>Cara membuat file:</strong></p>
+                <ol>
+                    <li>Klik kanan pada package <code>network</code></li>
+                    <li>Pilih <strong>New → Kotlin Class/File</strong></li>
+                    <li>Ketik <code>ApiService</code>, pilih jenis <strong>Interface</strong>, tekan Enter</li>
+                    <li>Ganti seluruh isi file dengan kode berikut</li>
+                </ol>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>network/ApiService.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>package com.example.vehicleapiapp.network
+
+import com.example.vehicleapiapp.model.ApiResponse
+import com.example.vehicleapiapp.model.Vehicle
+import retrofit2.Response
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+
+interface ApiService {
+
+    @GET("vehicles")
+    suspend fun getVehicles(): Response&lt;ApiResponse&lt;List&lt;Vehicle&gt;&gt;&gt;
+
+    @POST("vehicles")
+    suspend fun createVehicle(
+        @Body vehicle: Vehicle
+    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
+
+    @PUT("vehicles/{id}")
+    suspend fun updateVehicle(
+        @Path("id") id: Int,
+        @Body vehicle: Vehicle
+    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
+
+    @DELETE("vehicles/{id}")
+    suspend fun deleteVehicle(
+        @Path("id") id: Int
+    ): Response&lt;ApiResponse&lt;Vehicle&gt;&gt;
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan Anotasi di ApiService</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Anotasi</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>@GET("vehicles")</code></td><td>HTTP GET ke <code>BASE_URL/vehicles</code> — untuk mengambil semua data</td></tr>
+                            <tr><td><code>@POST("vehicles")</code></td><td>HTTP POST ke <code>BASE_URL/vehicles</code> — untuk menambah data baru</td></tr>
+                            <tr><td><code>@PUT("vehicles/{id}")</code></td><td>HTTP PUT ke <code>BASE_URL/vehicles/1</code> — untuk mengupdate data berdasarkan ID</td></tr>
+                            <tr><td><code>@DELETE("vehicles/{id}")</code></td><td>HTTP DELETE ke <code>BASE_URL/vehicles/1</code> — untuk menghapus data berdasarkan ID</td></tr>
+                            <tr><td><code>@Path("id")</code></td><td>Mengganti <code>{id}</code> di URL dengan nilai yang dikirim. Contoh: <code>id = 3</code> → URL menjadi <code>vehicles/3</code></td></tr>
+                            <tr><td><code>@Body vehicle</code></td><td>Objek <code>Vehicle</code> diubah menjadi JSON dan dikirim sebagai body request (untuk POST dan PUT)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>File 2: RetrofitClient.kt</h3>
+                <p><code>RetrofitClient</code> adalah singleton object yang membuat dan menyimpan satu instance Retrofit. Semua Activity akan mengakses API melalui <code>RetrofitClient.apiService</code>.</p>
+
+                <p><strong>Cara membuat file:</strong></p>
+                <ol>
+                    <li>Klik kanan pada package <code>network</code></li>
+                    <li>Pilih <strong>New → Kotlin Class/File</strong></li>
+                    <li>Ketik <code>RetrofitClient</code>, pilih jenis <strong>Object</strong>, tekan Enter</li>
+                    <li>Ganti seluruh isi file dengan kode berikut</li>
+                </ol>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>network/RetrofitClient.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>package com.example.vehicleapiapp.network
+
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+object RetrofitClient {
+    private const val BASE_URL = "https://api.pahrul.my.id/api/"
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+
+    private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
+
+    val apiService: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan Kode RetrofitClient</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>BASE_URL</code></td><td>URL dasar API. Semua path di <code>ApiService</code> digabung dengan URL ini. Harus diakhiri <code>/</code></td></tr>
+                            <tr><td><code>HttpLoggingInterceptor</code></td><td>Mencatat semua request dan response ke Logcat — berguna untuk debugging</td></tr>
+                            <tr><td><code>OkHttpClient</code></td><td>HTTP engine di balik Retrofit, tempat menambahkan interceptor</td></tr>
+                            <tr><td><code>GsonConverterFactory</code></td><td>Mengubah JSON ke objek Kotlin dan sebaliknya secara otomatis</td></tr>
+                            <tr><td><code>by lazy</code></td><td>Instance <code>apiService</code> baru dibuat saat pertama kali dipanggil</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h4>Struktur Project Setelah Tahap Ini</h4>
+                    <p>Setelah semua file di tahap ini selesai, struktur project seharusnya seperti ini:</p>
+                    <pre style="background:#f5f5f5;padding:12px;border-radius:4px;font-size:0.9rem;margin-top:8px;">com.example.vehicleapiapp
+├── MainActivity.kt
+├── adapter/
+│   └── (akan diisi di tahap berikutnya)
+├── model/
+│   ├── Vehicle.kt
+│   └── ApiResponse.kt
+└── network/
+    ├── ApiService.kt
+    └── RetrofitClient.kt</pre>
+                    <p style="margin-top:8px;margin-bottom:0;">Pastikan semua file sudah ada sebelum lanjut ke Tahap 2. Jika ada file yang belum dibuat, kembali ke langkah sebelumnya.</p>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Verifikasi dengan Build Project</h4>
+                    <p style="margin-bottom:0;">Setelah membuat kedua file ini, lakukan build project (<strong>Ctrl+F9</strong>) untuk memastikan tidak ada error. Error yang umum terjadi di tahap ini biasanya karena nama package yang salah atau import yang belum ditambahkan.</p>
+                </div>
+            </article>
+
 <!-- TAHAP 2: TAMPILKAN DATA (GET ONLY) -->
 <article id="crud-get">
     <h1>Tahap 2: Tampilkan Data dari API</h1>
@@ -1229,7 +1387,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="warning-box">
-        <h4>🐛 Troubleshooting</h4>
+        <h4>Troubleshooting</h4>
         <ul style="margin-bottom:0;">
             <li><strong>List kosong:</strong> Cek Logcat, pastikan API response berhasil (status 200)</li>
             <li><strong>Error "Unable to resolve host":</strong> Cek izin INTERNET di AndroidManifest.xml</li>
@@ -1252,8 +1410,26 @@ class MainActivity : AppCompatActivity() {
         </ul>
     </div>
 
-    <h2>1. Buat Layout Form Tambah Data</h2>
-    <p>Buat file layout baru untuk form input vehicle.</p>
+    <h2>1. Buat AddVehicleActivity</h2>
+    <p>Buat Activity baru lewat menu Android Studio agar file Kotlin dan layout XML-nya terbuat sekaligus.</p>
+
+    <p><strong>Cara membuat AddVehicleActivity:</strong></p>
+    <ol>
+        <li>Klik kanan pada package <code>com.example.vehicleapiapp</code></li>
+        <li>Pilih <strong>New → Activity → Empty Views Activity</strong></li>
+        <li>Pada kolom <strong>Activity Name</strong>, ketik <code>AddVehicleActivity</code></li>
+        <li>Kolom <strong>Layout Name</strong> akan terisi otomatis menjadi <code>activity_add_vehicle</code></li>
+        <li>Klik <strong>Finish</strong></li>
+    </ol>
+
+    <p>Android Studio akan membuat dua file sekaligus dan otomatis mendaftarkan Activity ke <code>AndroidManifest.xml</code>:</p>
+    <ul>
+        <li><code>AddVehicleActivity.kt</code> — di dalam package utama</li>
+        <li><code>activity_add_vehicle.xml</code> — di dalam folder <code>res/layout</code></li>
+    </ul>
+
+    <h4>Update activity_add_vehicle.xml</h4>
+    <p>Buka <code>res/layout/activity_add_vehicle.xml</code>, pastikan mode <strong>Code</strong>, lalu ganti seluruh isinya:</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -1334,8 +1510,8 @@ class MainActivity : AppCompatActivity() {
 &lt;/LinearLayout&gt;</pre>
     </div>
 
-    <h2>2. Buat AddVehicleActivity</h2>
-    <p>Activity ini menangani input data dan mengirim ke API menggunakan method POST.</p>
+    <h4>Update AddVehicleActivity.kt</h4>
+    <p>Buka <code>AddVehicleActivity.kt</code> yang baru terbuat, lalu ganti seluruh isinya:</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -1450,122 +1626,59 @@ class AddVehicleActivity : AppCompatActivity() {
 }</pre>
     </div>
 
-    <h2>3. Update MainActivity</h2>
-    <p>Sekarang kita perlu mengubah MainActivity agar:</p>
-    <ul>
-        <li>Tombol FAB membuka AddVehicleActivity</li>
-        <li>Data di-refresh saat kembali dari AddVehicleActivity</li>
-    </ul>
+    <h2>2. Update MainActivity</h2>
+    <p>MainActivity perlu diupdate di dua bagian: ubah FAB agar membuka <code>AddVehicleActivity</code>, dan tambahkan <code>onResume()</code> agar data otomatis refresh saat kembali dari AddVehicleActivity.</p>
+
+    <h4>Bagian 1 — Ubah onClick FAB di dalam onCreate()</h4>
+    <p>Cari baris <code>fabAdd.setOnClickListener</code> di dalam <code>onCreate()</code>, lalu ganti isinya:</p>
 
     <div class="code-block">
         <div class="code-header">
-            <span>MainActivity.kt — Update bagian onCreate dan tambah onResume</span>
+            <span>MainActivity.kt — ganti isi fabAdd.setOnClickListener</span>
             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
         </div>
-        <pre>package com.example.vehicleapiapp
+        <pre>// Sebelumnya (Tahap 2):
+fabAdd.setOnClickListener {
+    Toast.makeText(this, "Fitur tambah data akan dibuat di tahap selanjutnya", Toast.LENGTH_SHORT).show()
+}
 
-import android.content.Intent
-import android.os.Bundle
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.vehicleapiapp.adapter.VehicleAdapter
-import com.example.vehicleapiapp.network.RetrofitClient
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import kotlinx.coroutines.launch
-
-class MainActivity : AppCompatActivity() {
-    
-    private lateinit var rvVehicles: RecyclerView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var fabAdd: FloatingActionButton
-    private lateinit var adapter: VehicleAdapter
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Inisialisasi view
-        rvVehicles = findViewById(R.id.rvVehicles)
-        progressBar = findViewById(R.id.progressBar)
-        fabAdd = findViewById(R.id.fabAdd)
-
-        // Setup RecyclerView
-        adapter = VehicleAdapter()
-        rvVehicles.layoutManager = LinearLayoutManager(this)
-        rvVehicles.adapter = adapter
-
-        // Setup FAB - Buka AddVehicleActivity
-        fabAdd.setOnClickListener {
-            val intent = Intent(this, AddVehicleActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Load data dari API
-        loadVehicles()
-    }
-
-    // Dipanggil saat Activity kembali ke foreground
-    override fun onResume() {
-        super.onResume()
-        // Refresh data setiap kali kembali ke MainActivity
-        loadVehicles()
-    }
-
-    private fun loadVehicles() {
-        lifecycleScope.launch {
-            showLoading(true)
-            
-            try {
-                val response = RetrofitClient.apiService.getVehicles()
-                
-                if (response.isSuccessful) {
-                    val vehicles = response.body()?.data ?: emptyList()
-                    adapter.setData(vehicles)
-                    
-                    if (vehicles.isEmpty()) {
-                        showMessage("Belum ada data vehicle")
-                    }
-                } else {
-                    showMessage("Gagal mengambil data: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
-            } finally {
-                showLoading(false)
-            }
-        }
-    }
-
-    private fun showLoading(isLoading: Boolean) {
-        progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-    }
-
-    private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
+// Ganti menjadi:
+fabAdd.setOnClickListener {
+    val intent = Intent(this, AddVehicleActivity::class.java)
+    startActivity(intent)
 }</pre>
     </div>
 
-    <h2>4. Daftarkan AddVehicleActivity di AndroidManifest.xml</h2>
-    <p>Jangan lupa mendaftarkan Activity baru di AndroidManifest.xml</p>
+    <p>Pastikan import <code>Intent</code> sudah ada di bagian atas file. Jika belum, tambahkan:</p>
 
     <div class="code-block">
         <div class="code-header">
-            <span>AndroidManifest.xml — Tambahkan di dalam tag &lt;application&gt;</span>
+            <span>MainActivity.kt — tambahkan import jika belum ada</span>
             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
         </div>
-        <pre>&lt;activity
-    android:name=".AddVehicleActivity"
-    android:exported="false"
-    android:label="Tambah Vehicle" /&gt;</pre>
+        <pre>import android.content.Intent</pre>
     </div>
 
-    <h2>5. Jalankan dan Test</h2>
+    <h4>Bagian 2 — Tambahkan onResume() setelah onCreate()</h4>
+    <p>Tambahkan fungsi <code>onResume()</code> tepat setelah penutup kurung kurawal <code>onCreate()</code>:</p>
+
+    <div class="code-block">
+        <div class="code-header">
+            <span>MainActivity.kt — tambahkan onResume() setelah onCreate()</span>
+            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+        </div>
+        <pre>override fun onResume() {
+    super.onResume()
+    loadVehicles() // Refresh data setiap kali MainActivity kembali ke foreground
+}</pre>
+    </div>
+
+    <div class="info-box">
+        <h4>Kenapa onResume() bukan onCreate()?</h4>
+        <p style="margin-bottom:0;"><code>onCreate()</code> hanya dipanggil sekali saat Activity pertama dibuat. <code>onResume()</code> dipanggil setiap kali Activity kembali ke foreground — termasuk setelah kembali dari AddVehicleActivity. Dengan menaruh <code>loadVehicles()</code> di <code>onResume()</code>, data selalu ter-refresh tanpa perlu mekanisme tambahan.</p>
+    </div>
+
+    <h2>3. Jalankan dan Test</h2>
     <ol>
         <li>Jalankan aplikasi</li>
         <li>Klik tombol FAB (tombol + di kanan bawah)</li>
@@ -1587,7 +1700,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="info-box">
-        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <h4>Konsep Penting yang Dipelajari</h4>
         <ul style="margin-bottom:0;">
             <li><strong>Intent:</strong> Cara berpindah antar Activity</li>
             <li><strong>Validasi Input:</strong> Cek data sebelum kirim ke server</li>
@@ -1598,7 +1711,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="warning-box">
-        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <h4>Pertanyaan untuk Dipikir</h4>
         <ol style="margin-bottom:0;">
             <li>Kenapa kita pakai <code>onResume()</code> untuk refresh data, bukan <code>onCreate()</code>?</li>
             <li>Apa yang terjadi jika kita tidak memanggil <code>finish()</code> di AddVehicleActivity?</li>
@@ -1621,12 +1734,50 @@ class MainActivity : AppCompatActivity() {
         </ul>
     </div>
 
-    <h2>1. Update Layout Item RecyclerView</h2>
-    <p>Tambahkan tombol Edit di layout item. Sekarang setiap item punya tombol untuk edit.</p>
+    <h2>1. Persiapan: Cara Kirim Data ke EditVehicleActivity</h2>
+    <p>Ketika user klik tombol Edit, kita perlu mengirim data vehicle ke EditVehicleActivity agar form bisa terisi otomatis. Ada 2 pendekatan:</p>
+
+    <div class="info-box">
+        <h4>Pilihan Pendekatan untuk Kirim Data</h4>
+        <table style="margin-top:12px;" class="data-table">
+            <thead>
+                <tr>
+                    <th>Pendekatan</th>
+                    <th>Cara Kerja</th>
+                    <th>Kelebihan</th>
+                    <th>Kekurangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>A. Kirim Data Langsung via Intent</strong></td>
+                    <td>Kirim <code>id</code>, <code>model</code>, <code>type</code>, <code>manufacturer</code> satu per satu via Intent extras</td>
+                    <td>Sederhana, tidak butuh plugin tambahan<br>Form langsung terisi<br>Tidak butuh request API lagi</td>
+                    <td>Harus kirim satu per satu (4 data)</td>
+                </tr>
+                <tr>
+                    <td><strong>B. Kirim Object dengan Parcelable</strong></td>
+                    <td>Kirim seluruh object <code>Vehicle</code> sekaligus menggunakan Parcelable</td>
+                    <td>Kirim object sekaligus<br>Lebih rapi jika data banyak</td>
+                    <td>Butuh plugin <code>kotlin-parcelize</code><br>Bisa konflik versi plugin</td>
+                </tr>
+                <tr>
+                    <td><strong>C. Kirim Hanya ID</strong></td>
+                    <td>Kirim hanya <code>vehicleId</code>, lalu di EditVehicleActivity panggil API <code>GET /vehicles/{id}</code></td>
+                    <td>Paling sederhana<br>Data selalu fresh dari server</td>
+                    <td>Butuh request API tambahan<br>Loading lebih lama<br>Butuh koneksi internet</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="margin-top:12px;margin-bottom:0;"><strong>Pilihan Terbaik:</strong> Kita akan pakai <strong>Pendekatan A (Kirim Data Langsung)</strong> karena sederhana, tidak butuh plugin tambahan, dan form langsung terisi tanpa loading.</p>
+    </div>
+
+    <h2>2. Update item_vehicle.xml — Tambah Tombol Edit</h2>
+    <p>Buka <code>res/layout/item_vehicle.xml</code> dan ganti seluruh isinya untuk menambahkan tombol Edit:</p>
 
     <div class="code-block">
         <div class="code-header">
-            <span>res/layout/item_vehicle.xml — Update dengan tombol Edit</span>
+            <span>res/layout/item_vehicle.xml — tambah tombol Edit</span>
             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
         </div>
         <pre>&lt;androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -1675,12 +1826,12 @@ class MainActivity : AppCompatActivity() {
 &lt;/androidx.cardview.widget.CardView&gt;</pre>
     </div>
 
-    <h2>2. Update VehicleAdapter</h2>
-    <p>Tambahkan listener untuk tombol Edit. Adapter akan memberitahu MainActivity saat tombol Edit diklik.</p>
+    <h2>3. Update VehicleAdapter</h2>
+    <p>Adapter perlu diupdate untuk menerima lambda <code>onEditClick</code> dan menghubungkannya ke tombol Edit. Ganti seluruh isi <code>VehicleAdapter.kt</code>:</p>
 
     <div class="code-block">
         <div class="code-header">
-            <span>adapter/VehicleAdapter.kt — Update dengan click listener</span>
+            <span>adapter/VehicleAdapter.kt — tambah onEditClick</span>
             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
         </div>
         <pre>package com.example.vehicleapiapp.adapter
@@ -1736,43 +1887,26 @@ class VehicleAdapter(
 }</pre>
     </div>
 
-    <h2>3. Buat Vehicle Parcelable</h2>
-    <p>Agar bisa mengirim object Vehicle via Intent, kita perlu membuat Vehicle menjadi Parcelable.</p>
+    <h2>4. Buat EditVehicleActivity</h2>
+    <p>Buat Activity baru lewat menu Android Studio agar file Kotlin dan layout XML-nya terbuat sekaligus.</p>
 
-    <div class="code-block">
-        <div class="code-header">
-            <span>model/Vehicle.kt — Update dengan Parcelable</span>
-            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-        </div>
-        <pre>package com.example.vehicleapiapp.model
+    <p><strong>Cara membuat EditVehicleActivity:</strong></p>
+    <ol>
+        <li>Klik kanan pada package <code>com.example.vehicleapiapp</code></li>
+        <li>Pilih <strong>New → Activity → Empty Views Activity</strong></li>
+        <li>Pada kolom <strong>Activity Name</strong>, ketik <code>EditVehicleActivity</code></li>
+        <li>Kolom <strong>Layout Name</strong> akan terisi otomatis menjadi <code>activity_edit_vehicle</code></li>
+        <li>Klik <strong>Finish</strong></li>
+    </ol>
 
-import android.os.Parcelable
-import kotlinx.parcelize.Parcelize
+    <p>Android Studio akan membuat dua file sekaligus dan otomatis mendaftarkan Activity ke <code>AndroidManifest.xml</code>:</p>
+    <ul>
+        <li><code>EditVehicleActivity.kt</code> — di dalam package utama</li>
+        <li><code>activity_edit_vehicle.xml</code> — di dalam folder <code>res/layout</code></li>
+    </ul>
 
-@Parcelize
-data class Vehicle(
-    val id: Int? = null,
-    val model: String,
-    val type: String,
-    val manufacturer: String,
-    val created_at: String? = null,
-    val updated_at: String? = null
-) : Parcelable</pre>
-    </div>
-
-    <div class="warning-box">
-        <h4>Tambahkan Plugin Parcelize</h4>
-        <p>Agar <code>@Parcelize</code> bisa digunakan, tambahkan plugin di <code>build.gradle.kts (Module: app)</code>:</p>
-        <pre style="background:#f5f5f5;padding:12px;border-radius:4px;margin-top:8px;">plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-parcelize")  // Tambahkan baris ini
-}</pre>
-        <p style="margin-top:8px;margin-bottom:0;">Setelah ditambahkan, klik <strong>Sync Now</strong>.</p>
-    </div>
-
-    <h2>4. Buat Layout EditVehicleActivity</h2>
-    <p>Layout untuk edit hampir sama dengan add, tapi judulnya berbeda.</p>
+    <h4>Update activity_edit_vehicle.xml</h4>
+    <p>Buka <code>res/layout/activity_edit_vehicle.xml</code>, pastikan mode <strong>Code</strong>, lalu ganti seluruh isinya:</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -1853,8 +1987,8 @@ data class Vehicle(
 &lt;/LinearLayout&gt;</pre>
     </div>
 
-    <h2>5. Buat EditVehicleActivity</h2>
-    <p>Activity ini menerima data Vehicle dari Intent, menampilkannya di form, lalu mengirim update ke API.</p>
+    <h4>Update EditVehicleActivity.kt</h4>
+    <p>Buka <code>EditVehicleActivity.kt</code> yang baru terbuat, lalu ganti seluruh isinya:</p>
 
     <div class="code-block">
         <div class="code-header">
@@ -1896,22 +2030,23 @@ class EditVehicleActivity : AppCompatActivity() {
         btnUpdate = findViewById(R.id.btnUpdate)
         progressBar = findViewById(R.id.progressBar)
 
-        // Ambil data Vehicle dari Intent
-        val vehicle = intent.getParcelableExtra&lt;Vehicle&gt;("VEHICLE_DATA")
-        
-        if (vehicle != null) {
-            // Simpan ID untuk update nanti
-            vehicleId = vehicle.id ?: 0
+        // Ambil data dari Intent extras
+        vehicleId = intent.getIntExtra("VEHICLE_ID", 0)
+        val model = intent.getStringExtra("VEHICLE_MODEL") ?: ""
+        val type = intent.getStringExtra("VEHICLE_TYPE") ?: ""
+        val manufacturer = intent.getStringExtra("VEHICLE_MANUFACTURER") ?: ""
 
-            // Isi form dengan data existing
-            etModel.setText(vehicle.model)
-            etType.setText(vehicle.type)
-            etManufacturer.setText(vehicle.manufacturer)
-        } else {
+        // Validasi: pastikan ID valid
+        if (vehicleId == 0) {
             showMessage("Data vehicle tidak ditemukan")
             finish()
             return
         }
+
+        // Isi form dengan data existing
+        etModel.setText(model)
+        etType.setText(type)
+        etManufacturer.setText(manufacturer)
 
         // Setup tombol update
         btnUpdate.setOnClickListener {
@@ -1988,41 +2123,71 @@ class EditVehicleActivity : AppCompatActivity() {
 }</pre>
     </div>
 
-    <h2>6. Update MainActivity</h2>
-    <p>Tambahkan handler untuk tombol Edit yang akan membuka EditVehicleActivity.</p>
+    <h2>5. Update MainActivity</h2>
+    <p>Cari baris inisialisasi <code>adapter</code> di dalam <code>onCreate()</code>, lalu ganti karena sekarang <code>VehicleAdapter</code> membutuhkan parameter <code>onEditClick</code>:</p>
 
     <div class="code-block">
         <div class="code-header">
-            <span>MainActivity.kt — Update bagian adapter</span>
+            <span>MainActivity.kt — ganti inisialisasi adapter</span>
             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
         </div>
-        <pre>// Setup RecyclerView dengan lambda untuk handle klik Edit
+        <pre>// Sebelumnya (Tahap 2 & 3):
+adapter = VehicleAdapter()
+
+// Ganti menjadi:
 adapter = VehicleAdapter(
-    onEditClick = { vehicle -&gt;
-        // Buka EditVehicleActivity dan kirim data vehicle
-        val intent = Intent(this, EditVehicleActivity::class.java)
-        intent.putExtra("VEHICLE_DATA", vehicle)
+    onEditClick = { vehicle ->
+        val intent = Intent(this, EditVehicleActivity::class.java).apply {
+            putExtra("VEHICLE_ID", vehicle.id)
+            putExtra("VEHICLE_MODEL", vehicle.model)
+            putExtra("VEHICLE_TYPE", vehicle.type)
+            putExtra("VEHICLE_MANUFACTURER", vehicle.manufacturer)
+        }
         startActivity(intent)
     }
-)
-rvVehicles.layoutManager = LinearLayoutManager(this)
-rvVehicles.adapter = adapter</pre>
+)</pre>
     </div>
 
-    <h2>7. Daftarkan EditVehicleActivity di AndroidManifest.xml</h2>
-
-    <div class="code-block">
-        <div class="code-header">
-            <span>AndroidManifest.xml — Tambahkan di dalam tag &lt;application&gt;</span>
-            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-        </div>
-        <pre>&lt;activity
-    android:name=".EditVehicleActivity"
-    android:exported="false"
-    android:label="Edit Vehicle" /&gt;</pre>
+    <div class="info-box">
+        <h4>Penjelasan Kode</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Penjelasan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>onEditClick = { vehicle -> ... }</code></td>
+                    <td>Lambda yang dipanggil ketika tombol Edit diklik, menerima object <code>vehicle</code></td>
+                </tr>
+                <tr>
+                    <td><code>Intent(...).apply { }</code></td>
+                    <td>Membuat Intent dan langsung mengisi data di dalam blok <code>apply</code></td>
+                </tr>
+                <tr>
+                    <td><code>putExtra("VEHICLE_ID", vehicle.id)</code></td>
+                    <td>Kirim ID vehicle (tipe Int)</td>
+                </tr>
+                <tr>
+                    <td><code>putExtra("VEHICLE_MODEL", vehicle.model)</code></td>
+                    <td>Kirim model vehicle (tipe String)</td>
+                </tr>
+                <tr>
+                    <td><code>putExtra("VEHICLE_TYPE", vehicle.type)</code></td>
+                    <td>Kirim type vehicle (tipe String)</td>
+                </tr>
+                <tr>
+                    <td><code>putExtra("VEHICLE_MANUFACTURER", ...)</code></td>
+                    <td>Kirim manufacturer vehicle (tipe String)</td>
+                </tr>
+            </tbody>
+        </table>
+        <p style="margin-bottom:0;margin-top:12px;">Dengan cara ini, kita mengirim 4 data sederhana (1 Int + 3 String) tanpa perlu Parcelable atau plugin tambahan.</p>
     </div>
 
-    <h2>8. Jalankan dan Test</h2>
+    <h2>6. Jalankan dan Test</h2>
     <ol>
         <li>Jalankan aplikasi</li>
         <li>Klik tombol <strong>Edit</strong> pada salah satu item</li>
@@ -2046,7 +2211,7 @@ rvVehicles.adapter = adapter</pre>
     </div>
 
     <div class="info-box">
-        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <h4>Konsep Penting yang Dipelajari</h4>
         <ul style="margin-bottom:0;">
             <li><strong>Parcelable:</strong> Cara mengirim object kompleks via Intent</li>
             <li><strong>Lambda Function:</strong> Passing function sebagai parameter (<code>onEditClick</code>)</li>
@@ -2057,7 +2222,7 @@ rvVehicles.adapter = adapter</pre>
     </div>
 
     <div class="warning-box">
-        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <h4>Pertanyaan untuk Dipikir</h4>
         <ol style="margin-bottom:0;">
             <li>Apa perbedaan antara POST dan PUT?</li>
             <li>Kenapa kita perlu mengirim ID saat update, tapi tidak saat create?</li>
@@ -2067,7 +2232,7 @@ rvVehicles.adapter = adapter</pre>
     </div>
 
     <div class="warning-box">
-        <h4>🐛 Troubleshooting</h4>
+        <h4>Troubleshooting</h4>
         <ul style="margin-bottom:0;">
             <li><strong>Error "@Parcelize not found":</strong> Pastikan plugin <code>kotlin-parcelize</code> sudah ditambahkan di build.gradle.kts</li>
             <li><strong>Form tidak terisi:</strong> Cek apakah data Vehicle berhasil dikirim via Intent (gunakan Log.d untuk debug)</li>
@@ -2407,7 +2572,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="info-box">
-        <h4>💡 Konsep Penting yang Dipelajari</h4>
+        <h4>Konsep Penting yang Dipelajari</h4>
         <ul style="margin-bottom:0;">
             <li><strong>AlertDialog:</strong> Menampilkan dialog konfirmasi ke user</li>
             <li><strong>DELETE Request:</strong> Menghapus data dari server</li>
@@ -2429,7 +2594,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="info-box">
-        <h4>🎉 Selamat! CRUD Lengkap Sudah Selesai</h4>
+        <h4>CRUD Lengkap Sudah Selesai</h4>
         <p>Anda sudah berhasil membuat aplikasi Android dengan fitur CRUD lengkap:</p>
         <ul style="margin-bottom:0;">
             <li><strong>Create (POST)</strong> — Tambah data baru via AddVehicleActivity</li>
@@ -2440,7 +2605,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="warning-box">
-        <h4>❓ Pertanyaan untuk Dipikir</h4>
+        <h4>Pertanyaan untuk Dipikir</h4>
         <ol style="margin-bottom:0;">
             <li>Kenapa kita perlu konfirmasi untuk DELETE tapi tidak untuk CREATE/UPDATE?</li>
             <li>Apa yang terjadi jika kita tidak memanggil <code>loadVehicles()</code> setelah delete?</li>
@@ -2450,7 +2615,7 @@ class MainActivity : AppCompatActivity() {
     </div>
 
     <div class="warning-box">
-        <h4>🚀 Tantangan Lanjutan</h4>
+        <h4>Tantangan Lanjutan</h4>
         <p>Jika Anda ingin mengembangkan aplikasi lebih lanjut, coba fitur-fitur ini:</p>
         <ol style="margin-bottom:0;">
             <li><strong>Search:</strong> Tambahkan SearchView untuk mencari vehicle</li>
@@ -2563,33 +2728,142 @@ class MainActivity : AppCompatActivity() {
                 </table>
 
                 <h3>2. Tambahkan Dependency dan Permission</h3>
-                <p>Dependency yang digunakan sama seperti materi Retrofit sebelumnya, tetapi aplikasi login tidak membutuhkan RecyclerView.</p>
+                <p>Dependency yang digunakan sama seperti project CRUD Vehicle sebelumnya, tetapi project login tidak membutuhkan RecyclerView karena tidak menampilkan list data.</p>
+
+                <div class="info-box">
+                    <h4>Library yang Akan Ditambahkan</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Library</th><th>Fungsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>lifecycle-runtime-ktx</code></td><td>Mendukung coroutines di Activity</td></tr>
+                            <tr><td><code>retrofit</code></td><td>HTTP client untuk memanggil API</td></tr>
+                            <tr><td><code>converter-gson</code></td><td>Mengubah JSON menjadi objek Kotlin</td></tr>
+                            <tr><td><code>logging-interceptor</code></td><td>Menampilkan log request/response untuk debugging</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Dua Cara Menambahkan Dependency</h4>
+                    <p>Cek file <code>build.gradle.kts (Module: app)</code> Anda terlebih dahulu:</p>
+                    <ul style="margin-bottom:0;">
+                        <li>Jika ada <code>libs.androidx.core.ktx</code> → gunakan <strong>Cara A (TOML)</strong></li>
+                        <li>Jika ada <code>"androidx.core:core-ktx:1.x.x"</code> → gunakan <strong>Cara B (Langsung KTS)</strong></li>
+                    </ul>
+                </div>
+
+                <h4>Cara A: Menggunakan Version Catalog (TOML) — Untuk Project Baru</h4>
+
+                <p><strong>Langkah A.1: Tambahkan versi di <code>gradle/libs.versions.toml</code> bagian [versions]</strong></p>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>build.gradle.kts (Module: app)</span>
+                        <span>gradle/libs.versions.toml — bagian [versions]</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>[versions]
+agp = "8.7.3"
+kotlin = "2.0.21"
+coreKtx = "1.13.1"
+# ... versi lain yang sudah ada ...
+
+# Tambahkan di bawah ini
+lifecycleRuntimeKtx = "2.8.4"
+retrofit = "2.11.0"
+okhttp = "4.12.0"</pre>
+                </div>
+
+                <p><strong>Langkah A.2: Tambahkan library di <code>gradle/libs.versions.toml</code> bagian [libraries]</strong></p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>gradle/libs.versions.toml — bagian [libraries]</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+# ... library lain yang sudah ada ...
+
+# Tambahkan di bawah ini
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { group = "com.squareup.retrofit2", name = "converter-gson", version.ref = "retrofit" }
+okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okhttp" }</pre>
+                </div>
+
+                <p><strong>Langkah A.3: Gunakan library di <code>build.gradle.kts (Module: app)</code></strong></p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app) — blok dependencies</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("com.google.android.material:material:1.12.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    // Dependency bawaan Android Studio
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
 
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    // Tambahkan dependency baru di bawah ini
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging.interceptor)
+
+    // Test dependencies (biarkan seperti semula)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }</pre>
                 </div>
 
+                <h4>Cara B: Langsung di KTS — Untuk Project Lama</h4>
+                <p>Tambahkan dependency langsung di file <code>build.gradle.kts (Module: app)</code>.</p>
+
                 <div class="code-block">
                     <div class="code-header">
-                        <span>AndroidManifest.xml</span>
+                        <span>build.gradle.kts (Module: app) — blok dependencies</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>dependencies {
+    // Dependency bawaan Android Studio (biarkan seperti ini)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+
+    // Tambahkan dependency baru di bawah ini
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Test dependencies (biarkan seperti semula)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}</pre>
+                </div>
+
+                <h4>Sync Gradle</h4>
+                <p>Setelah menambahkan dependency, klik <strong>Sync Now</strong> yang muncul di bagian atas editor. Tunggu hingga proses sync selesai tanpa error.</p>
+
+                <h4>Tambahkan Izin Internet</h4>
+                <p>Buka file <code>AndroidManifest.xml</code>, lalu tambahkan izin <code>INTERNET</code> <strong>sebelum</strong> tag <code>&lt;application&gt;</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml — tambahkan izin internet</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"&gt;
 
+    &lt;!-- Tambahkan baris ini --&gt;
     &lt;uses-permission android:name="android.permission.INTERNET" /&gt;
 
     &lt;application
@@ -2614,12 +2888,62 @@ class MainActivity : AppCompatActivity() {
 &lt;/manifest&gt;</pre>
                 </div>
 
+                <div class="info-box">
+                    <h4>Kenapa Perlu Izin Internet?</h4>
+                    <p style="margin-bottom:0;">Android menerapkan sistem permission untuk melindungi privasi user. Tanpa deklarasi <code>INTERNET</code> di manifest, aplikasi tidak bisa melakukan koneksi jaringan dan akan error saat memanggil API login.</p>
+                </div>
+
                 <h3>3. Buat Model Login</h3>
-                <p>Buat package <code>model</code>, lalu tambahkan model untuk request login, response login, dan data user.</p>
+                <p>Model digunakan untuk memetakan data JSON dari API menjadi objek Kotlin. Untuk fitur login, ada tiga model yang perlu dibuat: model untuk <strong>request</strong> (data yang dikirim ke server), model untuk <strong>user</strong> (data user dari server), dan model untuk <strong>response</strong> (pembungkus seluruh response login).</p>
+
+                <div class="info-box">
+                    <h4>Ringkasan File yang Akan Dibuat</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>File</th><th>Fungsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>LoginRequest.kt</code></td><td>Data yang dikirim saat login (email dan password)</td></tr>
+                            <tr><td><code>User.kt</code></td><td>Data user yang dikembalikan server setelah login berhasil</td></tr>
+                            <tr><td><code>LoginResponse.kt</code></td><td>Pembungkus seluruh response login (success, message, data)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h4>Buat Package model Terlebih Dahulu</h4>
+                    <p>Sebelum membuat file model, buat dulu package <code>model</code> di dalam package utama aplikasi:</p>
+                    <ol style="margin-bottom:0;">
+                        <li>Di panel Project, buka <code>app → java → com.example.loginapiapp</code></li>
+                        <li>Klik kanan pada <code>com.example.loginapiapp</code></li>
+                        <li>Pilih <strong>New → Package</strong></li>
+                        <li>Ketik <code>model</code>, lalu tekan Enter</li>
+                    </ol>
+                    <p style="margin-top:8px;margin-bottom:0;">Setelah package <code>model</code> terbuat, struktur project akan terlihat seperti ini:</p>
+                    <pre style="background:#f5f5f5;padding:12px;border-radius:4px;font-size:0.9rem;margin-top:8px;">com.example.loginapiapp
+├── MainActivity.kt
+└── model/
+    └── (file model akan dibuat di sini)</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Cara Membuat File Kotlin di dalam Package model</h4>
+                    <p>Langkah ini berlaku untuk semua file model di bawah:</p>
+                    <ol style="margin-bottom:0;">
+                        <li>Klik kanan pada package <code>model</code> yang baru dibuat</li>
+                        <li>Pilih <strong>New → Kotlin Class/File</strong></li>
+                        <li>Ketik nama file (contoh: <code>LoginRequest</code>)</li>
+                        <li>Pilih jenis: <strong>Class</strong></li>
+                        <li>Tekan Enter, lalu ganti isi file dengan kode di bawah</li>
+                    </ol>
+                </div>
+
+                <h4>File 1: LoginRequest.kt</h4>
+                <p>Model ini merepresentasikan data yang dikirim ke server saat user menekan tombol login. Field-nya harus sesuai dengan yang diminta API: <code>email</code> dan <code>password</code>.</p>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>model/LoginRequest.kt — Data Class</span>
+                        <span>model/LoginRequest.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp.model
@@ -2630,9 +2954,26 @@ data class LoginRequest(
 )</pre>
                 </div>
 
+                <div class="info-box">
+                    <h4>Hubungan LoginRequest dengan JSON yang Dikirim</h4>
+                    <p>Saat Retrofit mengirim request, Gson akan mengubah objek <code>LoginRequest</code> menjadi JSON secara otomatis. Nama field di data class harus sama persis dengan nama field yang diharapkan API.</p>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Field di Data Class</th><th>JSON yang Dikirim ke API</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>val email: String</code></td><td><code>"email": "admin@example.com"</code></td></tr>
+                            <tr><td><code>val password: String</code></td><td><code>"password": "password"</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>File 2: User.kt</h4>
+                <p>Model ini merepresentasikan data user yang ada di dalam response login. Field-nya mengikuti struktur objek <code>user</code> pada JSON response dari server.</p>
+
                 <div class="code-block">
                     <div class="code-header">
-                        <span>model/User.kt — Data Class</span>
+                        <span>model/User.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp.model
@@ -2646,9 +2987,30 @@ data class User(
 )</pre>
                 </div>
 
+                <div class="info-box">
+                    <h4>Hubungan User.kt dengan JSON Response</h4>
+                    <p>Setiap field di <code>User.kt</code> dipetakan dari bagian <code>data.user</code> pada response login.</p>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Field di Data Class</th><th>JSON dari Server</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>val id: Int</code></td><td><code>"id": 1</code></td></tr>
+                            <tr><td><code>val name: String</code></td><td><code>"name": "Admin"</code></td></tr>
+                            <tr><td><code>val email: String</code></td><td><code>"email": "admin@example.com"</code></td></tr>
+                            <tr><td><code>val role: String</code></td><td><code>"role": "admin"</code></td></tr>
+                            <tr><td><code>val is_active: Boolean</code></td><td><code>"is_active": true</code></td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:8px;margin-bottom:0;">Di praktikum ini, yang dipakai hanya <code>name</code> untuk ditampilkan ke halaman home. Field lain tetap dibuat agar model lengkap dan bisa digunakan kembali jika dibutuhkan.</p>
+                </div>
+
+                <h4>File 3: LoginResponse.kt</h4>
+                <p>Model ini merepresentasikan seluruh response dari endpoint login. Karena response login punya struktur bertingkat — ada <code>success</code>, <code>message</code>, dan <code>data</code> yang di dalamnya berisi <code>token</code> dan <code>user</code> — kita perlu dua data class dalam satu file.</p>
+
                 <div class="code-block">
                     <div class="code-header">
-                        <span>model/LoginResponse.kt — Data Class</span>
+                        <span>model/LoginResponse.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp.model
@@ -2665,12 +3027,82 @@ data class LoginData(
 )</pre>
                 </div>
 
-                <h3>4. Buat ApiService dan RetrofitClient</h3>
-                <p>Endpoint login menggunakan method POST. Karena path endpoint adalah <code>/api/login</code>, base URL dibuat sampai <code>/api/</code>, lalu path Retrofit cukup <code>login</code>.</p>
+                <div class="info-box">
+                    <h4>Kenapa Ada Dua Data Class dalam Satu File?</h4>
+                    <p>Lihat struktur JSON response login berikut:</p>
+                    <pre style="background:#f5f5f5;padding:12px;border-radius:4px;font-size:0.9rem;margin-top:8px;">{
+  "success": true,
+  "message": "Login berhasil",
+  "data": {              &lt;-- ini dipetakan oleh LoginData
+    "token": "1|abc...",
+    "user": { ... }      &lt;-- ini dipetakan oleh User
+  }
+}</pre>
+                    <p style="margin-top:8px;">Field <code>data</code> di dalam <code>LoginResponse</code> bukan tipe primitif (bukan String atau Int), melainkan sebuah objek JSON tersendiri. Karena itu kita butuh data class terpisah bernama <code>LoginData</code> untuk memetakannya.</p>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Data Class</th><th>Memetakan Bagian JSON</th><th>Field</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>LoginResponse</code></td><td>Objek paling luar</td><td>success, message, data</td></tr>
+                            <tr><td><code>LoginData</code></td><td>Isi dari field <code>data</code></td><td>token, user</td></tr>
+                            <tr><td><code>User</code></td><td>Isi dari field <code>user</code></td><td>id, name, email, role, is_active</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:8px;margin-bottom:0;">Field <code>data</code> di <code>LoginResponse</code> dibuat nullable (<code>LoginData?</code>) karena saat login gagal, server tidak mengembalikan field <code>data</code> — hanya <code>success: false</code> dan <code>message</code>.</p>
+                </div>
+
+                <div class="info-box">
+                    <h4>Cara Mengakses Data Setelah Response Diterima</h4>
+                    <p>Setelah Retrofit menerima response dan Gson mengubahnya menjadi objek Kotlin, data diakses seperti ini:</p>
+                    <pre style="background:#f5f5f5;padding:12px;border-radius:4px;font-size:0.9rem;margin-top:8px;">val response = RetrofitClient.apiService.login(request)
+
+// Akses token
+val token = response.body()?.data?.token
+
+// Akses nama user
+val name = response.body()?.data?.user?.name
+
+// Akses pesan dari server
+val message = response.body()?.message</pre>
+                    <p style="margin-top:8px;margin-bottom:0;">Tanda <code>?.</code> (safe call) digunakan karena setiap level bisa bernilai null — misalnya jika login gagal, <code>data</code> akan null sehingga akses ke <code>data?.token</code> tidak menyebabkan crash.</p>
+                </div>
+
+                <h3>4. Buat Package network, ApiService, dan RetrofitClient</h3>
+                <p>Kedua file ini menangani konfigurasi koneksi ke server. <code>ApiService</code> mendefinisikan endpoint yang tersedia, sedangkan <code>RetrofitClient</code> mengatur bagaimana Retrofit terhubung ke server.</p>
+
+                <div class="info-box">
+                    <h4>Buat Package network Terlebih Dahulu</h4>
+                    <p>Sama seperti package <code>model</code>, buat dulu package <code>network</code> sebelum membuat file di dalamnya:</p>
+                    <ol style="margin-bottom:0;">
+                        <li>Di panel Project, klik kanan pada <code>com.example.loginapiapp</code></li>
+                        <li>Pilih <strong>New → Package</strong></li>
+                        <li>Ketik <code>network</code>, lalu tekan Enter</li>
+                    </ol>
+                    <p style="margin-top:8px;margin-bottom:0;">Setelah kedua package dibuat, struktur project akan terlihat seperti ini:</p>
+                    <pre style="background:#f5f5f5;padding:12px;border-radius:4px;font-size:0.9rem;margin-top:8px;">com.example.loginapiapp
+├── MainActivity.kt
+├── model/
+│   ├── LoginRequest.kt
+│   ├── User.kt
+│   └── LoginResponse.kt
+└── network/
+    └── (ApiService.kt dan RetrofitClient.kt akan dibuat di sini)</pre>
+                </div>
+
+                <h4>File 1: ApiService.kt</h4>
+                <p><code>ApiService</code> adalah sebuah <strong>interface</strong> yang mendefinisikan daftar endpoint API yang bisa dipanggil oleh aplikasi. Setiap fungsi di dalam interface ini mewakili satu endpoint.</p>
+
+                <p>Buat file baru di package <code>network</code>:</p>
+                <ol>
+                    <li>Klik kanan pada package <code>network</code></li>
+                    <li>Pilih <strong>New → Kotlin Class/File</strong></li>
+                    <li>Ketik <code>ApiService</code>, pilih jenis <strong>Interface</strong>, tekan Enter</li>
+                </ol>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>network/ApiService.kt — Interface</span>
+                        <span>network/ApiService.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp.network
@@ -2689,9 +3121,34 @@ interface ApiService {
 }</pre>
                 </div>
 
+                <div class="info-box">
+                    <h4>Penjelasan Kode ApiService</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>@POST("login")</code></td><td>Menandai fungsi ini sebagai HTTP POST ke path <code>login</code>. Path ini digabung dengan base URL sehingga menjadi <code>https://api.pahrul.my.id/api/login</code></td></tr>
+                            <tr><td><code>suspend fun</code></td><td>Fungsi ini berjalan secara asynchronous menggunakan Coroutines, tidak memblokir UI thread</td></tr>
+                            <tr><td><code>@Body request: LoginRequest</code></td><td>Objek <code>LoginRequest</code> akan diubah menjadi JSON dan dikirim sebagai body request</td></tr>
+                            <tr><td><code>Response&lt;LoginResponse&gt;</code></td><td>Retrofit membungkus response dalam <code>Response</code> agar kita bisa mengecek status code sebelum membaca data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>File 2: RetrofitClient.kt</h4>
+                <p><code>RetrofitClient</code> adalah <strong>singleton object</strong> yang bertugas membuat dan menyimpan satu instance Retrofit untuk digunakan di seluruh aplikasi. Dibuat sebagai singleton agar koneksi tidak dibuat ulang setiap kali dipanggil.</p>
+
+                <p>Buat file baru di package <code>network</code>:</p>
+                <ol>
+                    <li>Klik kanan pada package <code>network</code></li>
+                    <li>Pilih <strong>New → Kotlin Class/File</strong></li>
+                    <li>Ketik <code>RetrofitClient</code>, pilih jenis <strong>Object</strong>, tekan Enter</li>
+                </ol>
+
                 <div class="code-block">
                     <div class="code-header">
-                        <span>network/RetrofitClient.kt — Singleton Object</span>
+                        <span>network/RetrofitClient.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp.network
@@ -2723,12 +3180,64 @@ object RetrofitClient {
 }</pre>
                 </div>
 
-                <h3>5. Buat Layout Login — XML Layout</h3>
-                <p>Layout login berisi input email, input password, tombol login, dan ProgressBar.</p>
+                <div class="info-box">
+                    <h4>Penjelasan Kode RetrofitClient</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>BASE_URL</code></td><td>URL dasar API. Semua path di <code>ApiService</code> akan digabung dengan URL ini. Harus diakhiri dengan <code>/</code></td></tr>
+                            <tr><td><code>HttpLoggingInterceptor</code></td><td>Mencatat semua request dan response ke Logcat — berguna untuk debugging. Hapus atau ganti ke <code>NONE</code> saat rilis ke production</td></tr>
+                            <tr><td><code>OkHttpClient</code></td><td>HTTP engine di balik Retrofit. Di sini kita menambahkan logging interceptor ke dalamnya</td></tr>
+                            <tr><td><code>GsonConverterFactory</code></td><td>Memberitahu Retrofit untuk menggunakan Gson saat mengubah JSON ke objek Kotlin dan sebaliknya</td></tr>
+                            <tr><td><code>by lazy</code></td><td>Instance <code>apiService</code> baru dibuat saat pertama kali dipanggil, bukan saat aplikasi dimulai</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box">
+                    <h4>Kenapa BASE_URL Harus Diakhiri Garis Miring?</h4>
+                    <p>Retrofit menggabungkan <code>BASE_URL</code> dengan path di <code>@POST("login")</code>. Jika base URL tidak diakhiri <code>/</code>, penggabungan akan salah:</p>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>BASE_URL</th><th>Path</th><th>Hasil</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>https://api.pahrul.my.id/api/</code></td><td><code>login</code></td><td><code>https://api.pahrul.my.id/api/login</code></td><td>Benar</td></tr>
+                            <tr><td><code>https://api.pahrul.my.id/api</code></td><td><code>login</code></td><td><code>https://api.pahrul.my.id/login</code></td><td>Salah</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>5. Buat Layout Login</h3>
+                <p>Layout login adalah tampilan yang dilihat user pertama kali saat membuka aplikasi. File layout ini sudah otomatis terbuat saat project dibuat dengan nama <code>activity_main.xml</code>. Buka file tersebut dan ganti seluruh isinya dengan kode berikut.</p>
+
+                <p><strong>Cara membuka file layout:</strong></p>
+                <ol>
+                    <li>Di panel Project, buka <code>app → res → layout</code></li>
+                    <li>Klik dua kali pada <code>activity_main.xml</code></li>
+                    <li>Pastikan tampilan editor dalam mode <strong>Code</strong> (bukan Design), lalu ganti seluruh isinya</li>
+                </ol>
+
+                <div class="info-box">
+                    <h4>Komponen yang Ada di Layout Login</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>ID</th><th>Komponen</th><th>Fungsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>etEmail</code></td><td>EditText</td><td>Input email user, keyboard otomatis muncul dalam mode email</td></tr>
+                            <tr><td><code>etPassword</code></td><td>EditText</td><td>Input password, teks disembunyikan secara otomatis</td></tr>
+                            <tr><td><code>btnLogin</code></td><td>Button</td><td>Tombol untuk memulai proses login</td></tr>
+                            <tr><td><code>progressBar</code></td><td>ProgressBar</td><td>Indikator loading saat request sedang berjalan, awalnya disembunyikan</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>res/layout/activity_main.xml — XML Layout</span>
+                        <span>res/layout/activity_main.xml</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -2741,7 +3250,7 @@ object RetrofitClient {
     &lt;TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Login API"
+        android:text="Login"
         android:textAlignment="center"
         android:textSize="24sp"
         android:textStyle="bold" /&gt;
@@ -2758,6 +3267,7 @@ object RetrofitClient {
         android:id="@+id/etPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:hint="Password"
         android:inputType="textPassword" /&gt;
 
@@ -2778,12 +3288,48 @@ object RetrofitClient {
 &lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>6. Buat Layout Home — XML Layout</h3>
-                <p>Halaman utama hanya menampilkan nama user yang berhasil login.</p>
+                <h3>6. Buat HomeActivity</h3>
+                <p><code>HomeActivity</code> adalah halaman yang ditampilkan setelah login berhasil. Buat Activity ini lewat menu Android Studio agar file Kotlin dan layout XML-nya terbuat sekaligus secara otomatis.</p>
+
+                <p><strong>Cara membuat HomeActivity:</strong></p>
+                <ol>
+                    <li>Klik kanan pada package <code>com.example.loginapiapp</code></li>
+                    <li>Pilih <strong>New → Activity → Empty Views Activity</strong></li>
+                    <li>Pada kolom <strong>Activity Name</strong>, ketik <code>HomeActivity</code></li>
+                    <li>Kolom <strong>Layout Name</strong> akan terisi otomatis menjadi <code>activity_home</code></li>
+                    <li>Klik <strong>Finish</strong></li>
+                </ol>
+
+                <p>Android Studio akan membuat dua file sekaligus:</p>
+                <ul>
+                    <li><code>HomeActivity.kt</code> — di dalam package <code>com.example.loginapiapp</code></li>
+                    <li><code>activity_home.xml</code> — di dalam folder <code>res/layout</code></li>
+                </ul>
+
+                <div class="info-box">
+                    <h4>AndroidManifest.xml Otomatis Diupdate</h4>
+                    <p style="margin-bottom:0;">Saat membuat Activity lewat menu <strong>New → Activity</strong>, Android Studio otomatis mendaftarkan <code>HomeActivity</code> ke <code>AndroidManifest.xml</code>. Tidak perlu menambahkan secara manual.</p>
+                </div>
+
+                <h4>Update activity_home.xml</h4>
+                <p>Buka file <code>res/layout/activity_home.xml</code> yang baru terbuat, pastikan editor dalam mode <strong>Code</strong>, lalu ganti seluruh isinya dengan kode berikut:</p>
+
+                <div class="info-box">
+                    <h4>Komponen Layout Home</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>ID</th><th>Komponen</th><th>Fungsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>tvWelcome</code></td><td>TextView</td><td>Teks sambutan statis "Selamat datang,"</td></tr>
+                            <tr><td><code>tvName</code></td><td>TextView</td><td>Menampilkan nama user yang diterima dari Intent</td></tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>res/layout/activity_home.xml — XML Layout</span>
+                        <span>res/layout/activity_home.xml</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -2794,23 +3340,97 @@ object RetrofitClient {
     android:padding="24dp"&gt;
 
     &lt;TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selamat datang,"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="#616161" /&gt;
+
+    &lt;TextView
         android:id="@+id/tvName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
         android:text="Nama User"
         android:textAlignment="center"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold" /&gt;
 
 &lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>7. Buat MainActivity untuk Proses Login — Activity Class</h3>
-                <p><code>MainActivity</code> adalah <strong>Activity class</strong> yang membaca input, mengirim request login, lalu membuka <code>HomeActivity</code> jika login berhasil.</p>
+                <h4>Update HomeActivity.kt</h4>
+                <p>Buka <code>HomeActivity.kt</code> yang baru terbuat, lalu ganti seluruh isinya dengan kode berikut:</p>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>MainActivity.kt — Activity Class</span>
+                        <span>HomeActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>package com.example.loginapiapp
+
+import android.os.Bundle
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+
+class HomeActivity : AppCompatActivity() {
+
+    companion object {
+        // Konstanta untuk key Intent, dipakai di MainActivity saat mengirim data
+        const val EXTRA_NAME = "extra_name"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_home)
+
+        // Ambil nama user yang dikirim dari MainActivity
+        val name = intent.getStringExtra(EXTRA_NAME).orEmpty()
+
+        // Tampilkan nama user ke TextView
+        val tvName = findViewById&lt;TextView&gt;(R.id.tvName)
+        tvName.text = name
+    }
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Penjelasan Kode HomeActivity</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>companion object</code></td><td>Tempat mendefinisikan konstanta yang bisa diakses dari luar class tanpa membuat instance. <code>EXTRA_NAME</code> dipakai di <code>MainActivity</code> saat mengirim data via Intent</td></tr>
+                            <tr><td><code>intent.getStringExtra(EXTRA_NAME)</code></td><td>Mengambil data String yang dikirim dari Activity sebelumnya menggunakan key <code>EXTRA_NAME</code></td></tr>
+                            <tr><td><code>.orEmpty()</code></td><td>Jika nilai yang diambil dari Intent adalah null, ganti dengan String kosong agar tidak crash</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>7. Buat MainActivity</h3>
+                <p><code>MainActivity</code> menangani seluruh logika login: membaca input dari form, memvalidasi, mengirim request ke API, lalu berpindah ke <code>HomeActivity</code> jika berhasil.</p>
+
+                <p>File ini sudah otomatis terbuat saat project dibuat. Buka <code>MainActivity.kt</code> dan ganti seluruh isinya dengan kode berikut.</p>
+
+                <div class="info-box">
+                    <h4>Alur Kerja MainActivity</h4>
+                    <ol style="margin-bottom:0;">
+                        <li>User mengisi email dan password, lalu klik tombol Login</li>
+                        <li>Aplikasi memvalidasi input — jika kosong, tampilkan pesan error</li>
+                        <li>Buat objek <code>LoginRequest</code> dari input user</li>
+                        <li>Kirim request ke API menggunakan Retrofit di dalam coroutine</li>
+                        <li>Jika response berhasil (<code>isSuccessful</code>), ambil nama user dari response</li>
+                        <li>Buka <code>HomeActivity</code> dan kirim nama user via Intent</li>
+                        <li>Jika gagal, tampilkan pesan error dari server</li>
+                    </ol>
+                </div>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>MainActivity.kt</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp
@@ -2838,37 +3458,45 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Hubungkan variabel dengan view di layout
         etEmail = findViewById(R.id.etEmail)
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
         progressBar = findViewById(R.id.progressBar)
 
+        // Panggil fungsi login saat tombol diklik
         btnLogin.setOnClickListener {
             login()
         }
     }
 
     private fun login() {
+        // Ambil teks dari input dan hapus spasi di awal/akhir
         val email = etEmail.text.toString().trim()
         val password = etPassword.text.toString().trim()
 
+        // Validasi: pastikan kedua field tidak kosong
         if (email.isEmpty() || password.isEmpty()) {
             showMessage("Email dan password wajib diisi")
             return
         }
 
+        // Jalankan request di coroutine agar tidak memblokir UI
         lifecycleScope.launch {
             showLoading(true)
 
             try {
+                // Buat objek request dan kirim ke API
                 val request = LoginRequest(email, password)
                 val response = RetrofitClient.apiService.login(request)
 
                 if (response.isSuccessful) {
+                    // Ambil nama user dari response
                     val loginData = response.body()?.data
                     val userName = loginData?.user?.name.orEmpty()
 
                     if (userName.isNotEmpty()) {
+                        // Buka HomeActivity dan kirim nama user
                         val intent = Intent(this@MainActivity, HomeActivity::class.java)
                         intent.putExtra(HomeActivity.EXTRA_NAME, userName)
                         startActivity(intent)
@@ -2876,11 +3504,14 @@ class MainActivity : AppCompatActivity() {
                         showMessage("Data user tidak ditemukan")
                     }
                 } else {
-                    showMessage("Email atau password salah")
+                    // Tampilkan pesan dari server jika login gagal
+                    val errorMessage = response.body()?.message ?: "Email atau password salah"
+                    showMessage(errorMessage)
                 }
             } catch (e: Exception) {
-                showMessage("Error: ${e.message}")
+                showMessage("Tidak dapat terhubung ke server: ${e.message}")
             } finally {
+                // Sembunyikan loading baik berhasil maupun gagal
                 showLoading(false)
             }
         }
@@ -2897,21 +3528,155 @@ class MainActivity : AppCompatActivity() {
 }</pre>
                 </div>
 
-                <h3>8. Buat HomeActivity — Activity Class</h3>
-                <p><code>HomeActivity</code> adalah <strong>Activity class</strong> yang menerima nama user dari Intent, lalu menampilkannya ke TextView. Sesuai target praktikum, halaman ini hanya menampilkan nama user.</p>
+                <div class="info-box">
+                    <h4>Penjelasan Bagian Penting</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>lifecycleScope.launch</code></td><td>Menjalankan kode di dalam coroutine yang terikat dengan lifecycle Activity. Coroutine otomatis dibatalkan jika Activity dihancurkan</td></tr>
+                            <tr><td><code>response.isSuccessful</code></td><td>Bernilai <code>true</code> jika status code antara 200–299. Untuk login berhasil, server mengembalikan <code>200</code></td></tr>
+                            <tr><td><code>response.body()?.data</code></td><td>Mengambil isi response. Tanda <code>?.</code> mencegah crash jika body null (misalnya saat koneksi terputus)</td></tr>
+                            <tr><td><code>this@MainActivity</code></td><td>Merujuk ke context <code>MainActivity</code> dari dalam lambda coroutine, karena <code>this</code> di dalam lambda merujuk ke scope yang berbeda</td></tr>
+                            <tr><td><code>finally</code></td><td>Blok ini selalu dijalankan, baik request berhasil maupun gagal — digunakan untuk menyembunyikan loading</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 id="login-logout">8. Implementasi Logout</h3>
+                <p>Logout pada aplikasi berbasis token berarti menghapus token yang tersimpan di sisi client sehingga user tidak bisa lagi mengakses halaman yang memerlukan autentikasi. Pada praktikum ini, token disimpan sementara di <code>SharedPreferences</code>, lalu dihapus saat user logout.</p>
+
+                <div class="info-box">
+                    <h4>Alur Logout</h4>
+                    <ol style="margin-bottom:0;">
+                        <li>Setelah login berhasil, simpan token ke <code>SharedPreferences</code></li>
+                        <li>Di <code>HomeActivity</code>, tampilkan tombol Logout di menu toolbar</li>
+                        <li>Saat tombol Logout diklik, hapus token dari <code>SharedPreferences</code></li>
+                        <li>Kembali ke <code>MainActivity</code> dan tutup <code>HomeActivity</code> agar user tidak bisa kembali dengan tombol Back</li>
+                    </ol>
+                </div>
+
+                <h4>Update MainActivity — Simpan Token Setelah Login</h4>
+                <p>Ubah bagian yang menangani response login berhasil di <code>MainActivity.kt</code>. Cari blok <code>if (response.isSuccessful)</code> di dalam fungsi <code>login()</code>, lalu tambahkan dua baris berikut — satu untuk mengambil token dari response, satu untuk menyimpannya ke <code>SharedPreferences</code>.</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Baris</th><th>Status</th><th>Keterangan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>val token = loginData?.token.orEmpty()</code></td><td>Tambah baru</td><td>Ambil token dari response login</td></tr>
+                        <tr><td><code>val prefs = ...</code> dan <code>prefs.edit()...</code></td><td>Tambah baru</td><td>Simpan token ke SharedPreferences sebelum pindah ke HomeActivity</td></tr>
+                        <tr><td>Baris lainnya</td><td>Tidak berubah</td><td>Kode yang sudah ada sebelumnya</td></tr>
+                    </tbody>
+                </table>
 
                 <div class="code-block">
                     <div class="code-header">
-                        <span>HomeActivity.kt — Activity Class</span>
+                        <span>MainActivity.kt — bagian login() yang diupdate</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>if (response.isSuccessful) {
+    val loginData = response.body()?.data
+    val userName = loginData?.user?.name.orEmpty()
+    val token = loginData?.token.orEmpty()      // &lt;-- TAMBAHKAN baris ini
+
+    if (userName.isNotEmpty()) {
+        // TAMBAHKAN dua baris ini untuk menyimpan token
+        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+        prefs.edit().putString("token", token).apply()
+
+        // Baris di bawah ini sudah ada sebelumnya, tidak perlu diubah
+        val intent = Intent(this@MainActivity, HomeActivity::class.java)
+        intent.putExtra(HomeActivity.EXTRA_NAME, userName)
+        startActivity(intent)
+    } else {
+        showMessage("Data user tidak ditemukan")
+    }
+} else {
+    val errorMessage = response.body()?.message ?: "Email atau password salah"
+    showMessage(errorMessage)
+}</pre>
+                </div>
+
+                <div class="info-box">
+                    <h4>Apa itu SharedPreferences?</h4>
+                    <p><code>SharedPreferences</code> adalah mekanisme penyimpanan key-value sederhana di Android untuk menyimpan data kecil yang perlu bertahan antar sesi, seperti token atau preferensi user.</p>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>getSharedPreferences("auth", MODE_PRIVATE)</code></td><td>Membuka file preferences bernama <code>auth</code>. <code>MODE_PRIVATE</code> berarti hanya aplikasi ini yang bisa membacanya</td></tr>
+                            <tr><td><code>prefs.edit().putString("token", token).apply()</code></td><td>Menyimpan token dengan key <code>"token"</code>. <code>apply()</code> menyimpan secara asynchronous</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>Update activity_home.xml — Tambah Tombol Logout</h4>
+                <p>Tambahkan tombol Logout di layout home. Tombol ditempatkan di bawah nama user.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_home.xml — update lengkap</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selamat datang,"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="#616161" /&gt;
+
+    &lt;TextView
+        android:id="@+id/tvName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Nama User"
+        android:textAlignment="center"
+        android:textSize="28sp"
+        android:textStyle="bold" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Logout"
+        android:backgroundTint="#D32F2F" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h4>Update HomeActivity.kt — Tambah Logika Logout</h4>
+                <p>Update <code>HomeActivity.kt</code> untuk menangani klik tombol Logout: hapus token dari <code>SharedPreferences</code>, lalu kembali ke <code>MainActivity</code>.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>HomeActivity.kt — update lengkap</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>package com.example.loginapiapp
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 
 class HomeActivity : AppCompatActivity() {
+
     companion object {
         const val EXTRA_NAME = "extra_name"
     }
@@ -2920,16 +3685,127 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
+        // Tampilkan nama user
         val name = intent.getStringExtra(EXTRA_NAME).orEmpty()
         val tvName = findViewById&lt;TextView&gt;(R.id.tvName)
         tvName.text = name
+
+        // Setup tombol logout
+        val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
+        btnLogout.setOnClickListener {
+            showLogoutConfirmation()
+        }
+    }
+
+    private fun showLogoutConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Konfirmasi Logout")
+            .setMessage("Apakah Anda yakin ingin keluar?")
+            .setPositiveButton("Logout") { dialog, _ ->
+                logout()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Batal") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun logout() {
+        // Hapus token dari SharedPreferences
+        val prefs = getSharedPreferences("auth", MODE_PRIVATE)
+        prefs.edit().remove("token").apply()
+
+        // Kembali ke MainActivity dan tutup semua Activity di atasnya
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
     }
 }</pre>
                 </div>
 
+                <div class="info-box">
+                    <h4>Penjelasan Kode Logout</h4>
+                    <table class="data-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Kode</th><th>Penjelasan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>prefs.edit().remove("token").apply()</code></td><td>Menghapus token dari <code>SharedPreferences</code>. Setelah ini token tidak ada lagi di device</td></tr>
+                            <tr><td><code>FLAG_ACTIVITY_NEW_TASK</code></td><td>Membuat task baru untuk <code>MainActivity</code></td></tr>
+                            <tr><td><code>FLAG_ACTIVITY_CLEAR_TASK</code></td><td>Menutup semua Activity yang ada di back stack. User tidak bisa kembali ke <code>HomeActivity</code> dengan tombol Back setelah logout</td></tr>
+                            <tr><td><code>AlertDialog</code></td><td>Dialog konfirmasi sebelum logout — mencegah logout tidak sengaja</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Kenapa Perlu FLAG_ACTIVITY_CLEAR_TASK?</h4>
+                    <p style="margin-bottom:0;">Tanpa flag ini, setelah logout user masih bisa menekan tombol Back dan kembali ke <code>HomeActivity</code> tanpa login ulang. Flag <code>CLEAR_TASK</code> memastikan seluruh back stack dibersihkan sehingga satu-satunya halaman yang aktif adalah <code>MainActivity</code>.</p>
+                </div>
+
+                <h3>9. Jalankan dan Test Aplikasi</h3>
+                <p>Setelah semua file selesai dibuat, jalankan aplikasi dan lakukan pengujian berikut:</p>
+
+                <table class="data-table">
+                    <thead>
+                        <tr><th>Skenario</th><th>Input</th><th>Hasil yang Diharapkan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Field kosong</td>
+                            <td>Email dan password dibiarkan kosong</td>
+                            <td>Toast "Email dan password wajib diisi"</td>
+                        </tr>
+                        <tr>
+                            <td>Kredensial salah</td>
+                            <td>Email atau password tidak sesuai</td>
+                            <td>Toast pesan error dari server</td>
+                        </tr>
+                        <tr>
+                            <td>Login berhasil</td>
+                            <td>Email dan password benar</td>
+                            <td>Berpindah ke HomeActivity, nama user tampil</td>
+                        </tr>
+                        <tr>
+                            <td>Loading state</td>
+                            <td>Saat request sedang berjalan</td>
+                            <td>ProgressBar muncul, tombol Login tidak bisa diklik</td>
+                        </tr>
+                        <tr>
+                            <td>Logout</td>
+                            <td>Klik tombol Logout di HomeActivity</td>
+                            <td>Dialog konfirmasi muncul, klik Logout kembali ke halaman login</td>
+                        </tr>
+                        <tr>
+                            <td>Back setelah logout</td>
+                            <td>Tekan tombol Back setelah logout</td>
+                            <td>Aplikasi tidak kembali ke HomeActivity — back stack sudah dibersihkan</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="info-box">
+                    <h4>Checkpoint Akhir</h4>
+                    <p>Pastikan semua hal berikut sudah berjalan sebelum lanjut ke tugas:</p>
+                    <ul style="margin-bottom:0;">
+                        <li>Struktur package sudah benar: <code>model/</code> dan <code>network/</code> ada di dalam package utama</li>
+                        <li>Semua file model sudah dibuat: <code>LoginRequest.kt</code>, <code>User.kt</code>, <code>LoginResponse.kt</code></li>
+                        <li>File network sudah dibuat: <code>ApiService.kt</code>, <code>RetrofitClient.kt</code></li>
+                        <li>Layout sudah dibuat: <code>activity_main.xml</code> dan <code>activity_home.xml</code></li>
+                        <li>Activity sudah dibuat: <code>MainActivity.kt</code> dan <code>HomeActivity.kt</code></li>
+                        <li><code>HomeActivity</code> sudah terdaftar di <code>AndroidManifest.xml</code></li>
+                        <li>Login berhasil membuka HomeActivity dan menampilkan nama user</li>
+                        <li>Token tersimpan di <code>SharedPreferences</code> setelah login berhasil</li>
+                        <li>Tombol Logout muncul di HomeActivity</li>
+                        <li>Klik Logout menampilkan dialog konfirmasi</li>
+                        <li>Setelah logout, kembali ke halaman login dan tidak bisa Back ke HomeActivity</li>
+                    </ul>
+                </div>
+
                 <div class="warning-box">
                     <h4>Catatan Keamanan</h4>
-                    <p style="margin-bottom:0;">Pada contoh ini token belum disimpan karena target praktikum hanya menampilkan nama user setelah login. Jika aplikasi perlu mengakses endpoint yang terkunci seperti <code>/api/users</code>, simpan token dengan mekanisme yang lebih aman, lalu kirim sebagai header <code>Authorization: Bearer token</code>.</p>
+                    <p style="margin-bottom:0;">Pada praktikum ini token tidak disimpan karena tujuannya hanya menampilkan nama user setelah login. Pada aplikasi nyata, token perlu disimpan menggunakan <code>SharedPreferences</code> atau <code>EncryptedSharedPreferences</code>, lalu dikirim sebagai header <code>Authorization: Bearer {token}</code> pada setiap request ke endpoint yang memerlukan autentikasi.</p>
                 </div>
             </article>
         </section>
