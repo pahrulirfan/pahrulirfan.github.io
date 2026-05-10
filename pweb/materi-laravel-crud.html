@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi Laravel CRUD - Pemrograman Web</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #3d6b8e 0%, #2c4f6b 100%) !important;
+        }
+        .sidebar h3 { color: #3d6b8e !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #3d6b8e !important; }
+        .sidebar ul li a.active { background-color: #3d6b8e !important; }
+        section h2 { border-bottom: 3px solid #3d6b8e !important; }
+        th { background: linear-gradient(135deg, #3d6b8e 0%, #2c4f6b 100%) !important; }
+        .badge { background: #3d6b8e !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #3d6b8e !important; }
+
+        .laravel-red { color: #3d6b8e; font-weight: bold; }
+        .cmd-prompt { color: #2e8b6e; }
+        .cmd-output { color: #7f8c8d; font-style: italic; }
+        .php-tag { color: #7b5ea7; font-weight: bold; }
+        .php-var { color: #c0392b; }
+        .php-string { color: #2e8b6e; }
+        .php-keyword { color: #2471a3; font-weight: bold; }
+        .php-function { color: #d4820a; }
+        .php-comment { color: #7f8c8d; font-style: italic; }
+        .php-number { color: #b7560a; }
+        .blade-tag { color: #3d6b8e; font-weight: bold; }
+        .html-tag { color: #c0392b; }
+        .html-attr { color: #d4820a; }
+
+        .file-label {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px 5px 0 0;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-bottom: -1px;
+            position: relative;
+            z-index: 1;
+        }
+        .file-php { background: #7b5ea7; color: white; }
+        .file-blade { background: #3d6b8e; color: white; }
+        .file-terminal { background: #2c3e50; color: white; }
+        .file-env { background: #2e8b6e; color: white; }
+        .file-config { background: #5a7fa8; color: white; }
+
+        .folder-tree {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            padding: 20px 25px;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            line-height: 1.9;
+            font-size: 0.9em;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .folder-tree .folder { color: #f9e2af; }
+        .folder-tree .file { color: #89b4fa; }
+        .folder-tree .important { color: #a6e3a1; font-weight: bold; }
+        .folder-tree .comment { color: #6c7086; font-style: italic; }
+
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .flow-box {
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            min-width: 110px;
+            font-size: 0.85em;
+        }
+        .flow-arrow {
+            font-size: 1.3em;
+            color: #7f8c8d;
+        }
+
+        .step-card {
+            background: linear-gradient(135deg, #f0f5fa, #e3edf5);
+            border: 2px solid #3d6b8e;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        .step-card h4 { color: #3d6b8e; margin-bottom: 15px; }
+
+        .step-number {
+            display: inline-flex;
+            width: 30px;
+            height: 30px;
+            background: #3d6b8e;
+            color: white;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        /* ── MVC Cards ── */
+        .mvc-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .mvc-box {
+            border-radius: 10px;
+            padding: 22px 20px;
+            color: white;
+            text-align: left;
+            box-shadow: 0 4px 14px rgba(0,0,0,.15);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .mvc-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(0,0,0,.2);
+        }
+        .mvc-box h4 {
+            font-size: 1.1em;
+            margin: 0 0 3px;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+        .mvc-box .mvc-subtitle {
+            font-size: 0.8em;
+            opacity: .85;
+            margin: 0 0 12px;
+        }
+        .mvc-box .mvc-file {
+            display: inline-block;
+            background: rgba(255,255,255,.18);
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 0.75em;
+            font-family: monospace;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255,255,255,.25);
+        }
+        .mvc-box ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border-top: 1px solid rgba(255,255,255,.2);
+            padding-top: 12px;
+        }
+        .mvc-box li {
+            padding: 4px 0;
+            font-size: 0.84em;
+            line-height: 1.4;
+        }
+        .mvc-box li::before {
+            content: "— ";
+            opacity: .6;
+        }
+
+        /* ── MVC Flow Diagram ── */
+        .mvc-flow-wrapper {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 28px 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .mvc-flow-wrapper h4 {
+            color: #475569;
+            text-align: center;
+            margin: 0 0 22px;
+            font-size: 0.82em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .mvc-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            flex-wrap: nowrap;
+            min-width: 560px;
+        }
+        .mvc-flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .mvc-flow-node .node-box {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.78em;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            min-width: 72px;
+            line-height: 1.3;
+        }
+        .mvc-flow-node .node-sub {
+            color: #64748b;
+            font-size: 0.65em;
+            text-align: center;
+            font-family: monospace;
+        }
+        .mvc-flow-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 0 4px;
+            margin-bottom: 22px;
+        }
+        .mvc-flow-connector .arrow-line {
+            width: 32px;
+            height: 2px;
+            background: #cbd5e1;
+            position: relative;
+        }
+        .mvc-flow-connector .arrow-line::after {
+            content: '▶';
+            position: absolute;
+            right: -7px;
+            top: -6px;
+            color: #94a3b8;
+            font-size: 0.65em;
+        }
+        .mvc-flow-connector .arrow-label {
+            color: #94a3b8;
+            font-size: 0.6em;
+            white-space: nowrap;
+        }
+        .mvc-flow-connector.bidirectional .arrow-line::before {
+            content: '◀';
+            position: absolute;
+            left: -7px;
+            top: -6px;
+            color: #94a3b8;
+            font-size: 0.65em;
+        }
+        .mvc-flow-divider {
+            border: none;
+            border-top: 1px solid #e2e8f0;
+            margin: 18px 0;
+        }
+        .mvc-flow-label {
+            color: #94a3b8;
+            font-size: 0.72em;
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        /* ── Responsibility Table ── */
+        .mvc-responsibility {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .mvc-resp-card {
+            border-radius: 10px;
+            border-top: 4px solid;
+            padding: 16px;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        }
+        .mvc-resp-card h5 {
+            margin: 0 0 12px;
+            font-size: 0.9em;
+        }
+        .mvc-resp-card .resp-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.82em;
+            color: #374151;
+        }
+        .mvc-resp-card .resp-item:last-child { border-bottom: none; }
+        .mvc-resp-card .resp-item code {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #1e40af;
+        }
+
+        @media (max-width: 768px) {
+            .mvc-grid { grid-template-columns: 1fr; }
+            .mvc-responsibility { grid-template-columns: 1fr; }
+        }
+
+        /* ── Section show/hide ── */
+        main.content > section {
+            display: none;
+        }
+        main.content > section.active-section {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Materi Laravel CRUD - Pemrograman Web</h1>
+        <p>Praktek CRUD dengan Laravel Framework</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#overview" class="active">1. Overview & Persiapan</a></li>
+                <li><a href="#setup">2. Migration, Model & Controller</a></li>
+                <li><a href="#views">3. View (Blade Template)</a></li>
+                <li><a href="#ringkasan">4. Ringkasan & Alur CRUD</a></li>
+            </ul>
+
+            <h3>Materi Dasar</h3>
+            <ul>
+                <li><a href="materi-laravel.html">&larr; Kembali ke Materi Dasar</a></li>
+            </ul>
+
+            <h3>Link Terkait</h3>
+            <ul>
+                <li><a href="https://laravel.com/docs" target="_blank">Dokumentasi Laravel</a></li>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">eLearning</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+
+            <!-- Section 1: Overview -->
+            <section id="overview">
+                <h2>1. Overview &amp; Persiapan <span class="badge badge-important">Hands-On</span></h2>
+
+                <p>Setelah bisa membuat halaman statik, sekarang kita buat aplikasi <strong>CRUD (Create, Read, Update, Delete)</strong> sederhana — yaitu manajemen data <strong>Produk</strong>. Ini adalah fondasi dari hampir semua aplikasi web nyata.</p>
+
+                <div class="info-box">
+                    <strong>Yang akan dibuat:</strong>
+                    <ul>
+                        <li>Menampilkan daftar produk (Read)</li>
+                        <li>Form tambah produk baru (Create)</li>
+                        <li>Form edit produk (Update)</li>
+                        <li>Hapus produk (Delete)</li>
+                    </ul>
+                </div>
+
+                <!-- ── Tabel Database ── -->
+                <h3>Tabel Database yang Akan Dibuat</h3>
+                <p>Dalam praktek ini kita hanya menggunakan <strong>satu tabel</strong> bernama <code>products</code>. Tabel ini dibuat otomatis oleh Laravel melalui <em>migration</em> — tidak perlu buka phpMyAdmin untuk membuat tabel secara manual.</p>
+
+                <table>
+                    <tr>
+                        <th>Nama Tabel</th>
+                        <th>Dibuat Via</th>
+                        <th>Model Laravel</th>
+                        <th>Keterangan</th>
+                    </tr>
+                    <tr>
+                        <td><code>products</code></td>
+                        <td><code>php artisan migrate</code></td>
+                        <td><code>App\Models\Product</code></td>
+                        <td>Data produk (nama, harga, stok, deskripsi)</td>
+                    </tr>
+                </table>
+
+                <h4 style="margin-top:20px;">Struktur Kolom Tabel <code>products</code></h4>
+                <table>
+                    <tr>
+                        <th>Kolom</th>
+                        <th>Tipe Data</th>
+                        <th>Keterangan</th>
+                        <th>Wajib?</th>
+                    </tr>
+                    <tr>
+                        <td><code>id</code></td>
+                        <td><code>BIGINT UNSIGNED</code></td>
+                        <td>Primary key, auto increment</td>
+                        <td>Otomatis</td>
+                    </tr>
+                    <tr>
+                        <td><code>name</code></td>
+                        <td><code>VARCHAR(255)</code></td>
+                        <td>Nama produk</td>
+                        <td>Ya</td>
+                    </tr>
+                    <tr>
+                        <td><code>description</code></td>
+                        <td><code>TEXT</code></td>
+                        <td>Deskripsi produk</td>
+                        <td>Boleh kosong</td>
+                    </tr>
+                    <tr>
+                        <td><code>price</code></td>
+                        <td><code>DECIMAL(10,2)</code></td>
+                        <td>Harga produk (contoh: 15000.00)</td>
+                        <td>Ya</td>
+                    </tr>
+                    <tr>
+                        <td><code>stock</code></td>
+                        <td><code>INT</code></td>
+                        <td>Jumlah stok, default 0</td>
+                        <td>Ya</td>
+                    </tr>
+                    <tr>
+                        <td><code>created_at</code></td>
+                        <td><code>TIMESTAMP</code></td>
+                        <td>Waktu data dibuat</td>
+                        <td>Otomatis</td>
+                    </tr>
+                    <tr>
+                        <td><code>updated_at</code></td>
+                        <td><code>TIMESTAMP</code></td>
+                        <td>Waktu data terakhir diubah</td>
+                        <td>Otomatis</td>
+                    </tr>
+                </table>
+
+                <!-- ── File yang Akan Dibuat ── -->
+                <h3>File yang Akan Dibuat</h3>
+                <p>Berikut daftar semua file yang akan kita buat selama praktek ini, beserta fungsinya masing-masing:</p>
+
+                <table>
+                    <tr>
+                        <th>File</th>
+                        <th>Dibuat Via</th>
+                        <th>Fungsi</th>
+                    </tr>
+                    <tr>
+                        <td><code>database/migrations/xxxx_create_products_table.php</code></td>
+                        <td><code>make:migration</code></td>
+                        <td>Mendefinisikan struktur tabel <code>products</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>app/Models/Product.php</code></td>
+                        <td><code>make:model</code></td>
+                        <td>Model Eloquent untuk tabel <code>products</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>app/Http/Controllers/ProductController.php</code></td>
+                        <td><code>make:controller --resource</code></td>
+                        <td>Controller dengan 7 method CRUD</td>
+                    </tr>
+                    <tr>
+                        <td><code>routes/web.php</code></td>
+                        <td>Edit manual</td>
+                        <td>Mendaftarkan route resource untuk produk</td>
+                    </tr>
+                    <tr>
+                        <td><code>resources/views/products/index.blade.php</code></td>
+                        <td>Buat manual</td>
+                        <td>Halaman daftar semua produk</td>
+                    </tr>
+                    <tr>
+                        <td><code>resources/views/products/create.blade.php</code></td>
+                        <td>Buat manual</td>
+                        <td>Form tambah produk baru</td>
+                    </tr>
+                    <tr>
+                        <td><code>resources/views/products/edit.blade.php</code></td>
+                        <td>Buat manual</td>
+                        <td>Form edit produk</td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Urutan Pengerjaan:</strong> Migration → Model → Controller → Route → View. Urutan ini penting karena setiap langkah bergantung pada langkah sebelumnya — Controller butuh Model, View butuh Controller, dst.
+                </div>
+
+            </section>
+
+            <!-- Section 2: Setup (Migration, Model, Controller, Route) -->
+            <section id="setup">
+                <h2>2. Migration, Model &amp; Controller <span class="badge">Langkah 1–6</span></h2>
+
+                <h3>Langkah 1 — Konfigurasi Database</h3>
+                <p>Buka file <code>.env</code>, sesuaikan konfigurasi database:</p>
+                <span class="file-label file-env">📄 .env</span>
+                <pre><code>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=belajar_laravel
+DB_USERNAME=root
+DB_PASSWORD=</code></pre>
+
+                <div class="warning-box">
+                    <strong>Pastikan:</strong> Database <code>belajar_laravel</code> sudah dibuat di phpMyAdmin / MySQL sebelum lanjut.
+                </div>
+
+                <h3>Langkah 2 — Buat Migration</h3>
+                <p><strong>Migration</strong> adalah cara Laravel membuat tabel database lewat kode PHP — pengganti membuat tabel manual di phpMyAdmin.</p>
+                <span class="file-label file-terminal">💻 Terminal</span>
+                <pre><code><span class="cmd-prompt">$</span> php artisan make:migration create_products_table
+
+<span class="cmd-output">INFO  Migration [database/migrations/2024_01_01_000000_create_products_table.php] created successfully.</span></code></pre>
+
+                <p>Buka file migration yang baru dibuat, isi strukturnya:</p>
+                <span class="file-label file-php">📄 database/migrations/xxxx_create_products_table.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+
+<span class="php-keyword">use</span> Illuminate\Database\Migrations\Migration;
+<span class="php-keyword">use</span> Illuminate\Database\Schema\Blueprint;
+<span class="php-keyword">use</span> Illuminate\Support\Facades\Schema;
+
+<span class="php-keyword">return new class extends</span> Migration
+{
+    <span class="php-keyword">public function</span> <span class="php-function">up</span>(): void
+    {
+        Schema::<span class="php-function">create</span>(<span class="php-string">'products'</span>, <span class="php-keyword">function</span> (Blueprint <span class="php-var">$table</span>) {
+            <span class="php-var">$table</span>-><span class="php-function">id</span>();                                      <span class="php-comment">// kolom id (auto increment)</span>
+            <span class="php-var">$table</span>-><span class="php-function">string</span>(<span class="php-string">'name'</span>);                          <span class="php-comment">// nama produk (VARCHAR)</span>
+            <span class="php-var">$table</span>-><span class="php-function">text</span>(<span class="php-string">'description'</span>)-><span class="php-function">nullable</span>();      <span class="php-comment">// deskripsi (boleh kosong)</span>
+            <span class="php-var">$table</span>-><span class="php-function">decimal</span>(<span class="php-string">'price'</span>, <span class="php-number">10</span>, <span class="php-number">2</span>);               <span class="php-comment">// harga (DECIMAL)</span>
+            <span class="php-var">$table</span>-><span class="php-function">integer</span>(<span class="php-string">'stock'</span>)-><span class="php-function">default</span>(<span class="php-number">0</span>);          <span class="php-comment">// stok (default 0)</span>
+            <span class="php-var">$table</span>-><span class="php-function">timestamps</span>();                             <span class="php-comment">// created_at & updated_at</span>
+        });
+    }
+
+    <span class="php-keyword">public function</span> <span class="php-function">down</span>(): void
+    {
+        Schema::<span class="php-function">dropIfExists</span>(<span class="php-string">'products'</span>);
+    }
+};</code></pre>
+
+                <h3>Langkah 3 — Jalankan Migration</h3>
+                <span class="file-label file-terminal">💻 Terminal</span>
+                <pre><code><span class="cmd-prompt">$</span> php artisan migrate
+
+<span class="cmd-output">INFO  Running migrations.
+  2024_01_01_000000_create_products_table ..... 10ms DONE</span></code></pre>
+
+                <p>Cek di phpMyAdmin — tabel <code>products</code> sudah terbuat otomatis dengan kolom sesuai migration.</p>
+
+                <div class="info-box">
+                    <strong>Padanan Migration vs SQL Manual:</strong>
+                    <table>
+                        <tr>
+                            <th>Migration Laravel</th>
+                            <th>SQL Equivalent</th>
+                        </tr>
+                        <tr>
+                            <td><code>$table->id()</code></td>
+                            <td><code>id INT AUTO_INCREMENT PRIMARY KEY</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>$table->string('name')</code></td>
+                            <td><code>name VARCHAR(255) NOT NULL</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>$table->text('description')->nullable()</code></td>
+                            <td><code>description TEXT NULL</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>$table->decimal('price', 10, 2)</code></td>
+                            <td><code>price DECIMAL(10,2) NOT NULL</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>$table->integer('stock')->default(0)</code></td>
+                            <td><code>stock INT DEFAULT 0</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>$table->timestamps()</code></td>
+                            <td><code>created_at TIMESTAMP, updated_at TIMESTAMP</code></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <h3>Langkah 4 — Buat Model</h3>
+                <p><strong>Model</strong> adalah class PHP yang merepresentasikan tabel database. Satu model = satu tabel.</p>
+                <span class="file-label file-terminal">💻 Terminal</span>
+                <pre><code><span class="cmd-prompt">$</span> php artisan make:model Product
+
+<span class="cmd-output">INFO  Model [app/Models/Product.php] created successfully.</span></code></pre>
+
+                <span class="file-label file-php">📄 app/Models/Product.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+
+<span class="php-keyword">namespace</span> App\Models;
+
+<span class="php-keyword">use</span> Illuminate\Database\Eloquent\Model;
+
+<span class="php-keyword">class</span> <span class="php-function">Product</span> <span class="php-keyword">extends</span> Model
+{
+    <span class="php-comment">// Kolom yang boleh diisi via create() / update()</span>
+    <span class="php-keyword">protected</span> <span class="php-var">$fillable</span> = [
+        <span class="php-string">'name'</span>,
+        <span class="php-string">'description'</span>,
+        <span class="php-string">'price'</span>,
+        <span class="php-string">'stock'</span>,
+    ];
+}</code></pre>
+
+                <div class="info-box">
+                    <strong>Apa itu <code>$fillable</code>?</strong><br>
+                    Daftar kolom yang <em>boleh</em> diisi secara massal (mass assignment). Ini fitur keamanan Laravel — kolom yang tidak ada di <code>$fillable</code> tidak bisa diisi via <code>create()</code> meskipun datanya dikirim dari form.
+                </div>
+
+                <h3>Langkah 5 — Buat Controller</h3>
+                <span class="file-label file-terminal">💻 Terminal</span>
+                <pre><code><span class="cmd-prompt">$</span> php artisan make:controller ProductController --resource
+
+<span class="cmd-output">INFO  Controller [app/Http/Controllers/ProductController.php] created successfully.</span></code></pre>
+
+                <p>Flag <code>--resource</code> otomatis membuat 7 method standar CRUD sekaligus.</p>
+
+                <span class="file-label file-php">📄 app/Http/Controllers/ProductController.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+
+<span class="php-keyword">namespace</span> App\Http\Controllers;
+
+<span class="php-keyword">use</span> App\Models\Product;
+<span class="php-keyword">use</span> Illuminate\Http\Request;
+
+<span class="php-keyword">class</span> <span class="php-function">ProductController</span> <span class="php-keyword">extends</span> Controller
+{
+    <span class="php-comment">// READ — tampilkan semua produk</span>
+    <span class="php-keyword">public function</span> <span class="php-function">index</span>()
+    {
+        <span class="php-var">$products</span> = Product::<span class="php-function">latest</span>()-><span class="php-function">get</span>();
+        <span class="php-keyword">return</span> <span class="php-function">view</span>(<span class="php-string">'products.index'</span>, <span class="php-function">compact</span>(<span class="php-string">'products'</span>));
+    }
+
+    <span class="php-comment">// CREATE — tampilkan form tambah</span>
+    <span class="php-keyword">public function</span> <span class="php-function">create</span>()
+    {
+        <span class="php-keyword">return</span> <span class="php-function">view</span>(<span class="php-string">'products.create'</span>);
+    }
+
+    <span class="php-comment">// CREATE — simpan data baru ke database</span>
+    <span class="php-keyword">public function</span> <span class="php-function">store</span>(Request <span class="php-var">$request</span>)
+    {
+        <span class="php-var">$request</span>-><span class="php-function">validate</span>([
+            <span class="php-string">'name'</span>  => <span class="php-string">'required|max:255'</span>,
+            <span class="php-string">'price'</span> => <span class="php-string">'required|numeric|min:0'</span>,
+            <span class="php-string">'stock'</span> => <span class="php-string">'required|integer|min:0'</span>,
+        ]);
+
+        Product::<span class="php-function">create</span>(<span class="php-var">$request</span>-><span class="php-function">only</span>([<span class="php-string">'name'</span>, <span class="php-string">'description'</span>, <span class="php-string">'price'</span>, <span class="php-string">'stock'</span>]));
+
+        <span class="php-keyword">return</span> <span class="php-function">redirect</span>()-><span class="php-function">route</span>(<span class="php-string">'products.index'</span>)
+                     -><span class="php-function">with</span>(<span class="php-string">'success'</span>, <span class="php-string">'Produk berhasil ditambahkan!'</span>);
+    }
+
+    <span class="php-comment">// UPDATE — tampilkan form edit</span>
+    <span class="php-keyword">public function</span> <span class="php-function">edit</span>(Product <span class="php-var">$product</span>)
+    {
+        <span class="php-keyword">return</span> <span class="php-function">view</span>(<span class="php-string">'products.edit'</span>, <span class="php-function">compact</span>(<span class="php-string">'product'</span>));
+    }
+
+    <span class="php-comment">// UPDATE — simpan perubahan ke database</span>
+    <span class="php-keyword">public function</span> <span class="php-function">update</span>(Request <span class="php-var">$request</span>, Product <span class="php-var">$product</span>)
+    {
+        <span class="php-var">$request</span>-><span class="php-function">validate</span>([
+            <span class="php-string">'name'</span>  => <span class="php-string">'required|max:255'</span>,
+            <span class="php-string">'price'</span> => <span class="php-string">'required|numeric|min:0'</span>,
+            <span class="php-string">'stock'</span> => <span class="php-string">'required|integer|min:0'</span>,
+        ]);
+
+        <span class="php-var">$product</span>-><span class="php-function">update</span>(<span class="php-var">$request</span>-><span class="php-function">only</span>([<span class="php-string">'name'</span>, <span class="php-string">'description'</span>, <span class="php-string">'price'</span>, <span class="php-string">'stock'</span>]));
+
+        <span class="php-keyword">return</span> <span class="php-function">redirect</span>()-><span class="php-function">route</span>(<span class="php-string">'products.index'</span>)
+                     -><span class="php-function">with</span>(<span class="php-string">'success'</span>, <span class="php-string">'Produk berhasil diperbarui!'</span>);
+    }
+
+    <span class="php-comment">// DELETE — hapus data dari database</span>
+    <span class="php-keyword">public function</span> <span class="php-function">destroy</span>(Product <span class="php-var">$product</span>)
+    {
+        <span class="php-var">$product</span>-><span class="php-function">delete</span>();
+
+        <span class="php-keyword">return</span> <span class="php-function">redirect</span>()-><span class="php-function">route</span>(<span class="php-string">'products.index'</span>)
+                     -><span class="php-function">with</span>(<span class="php-string">'success'</span>, <span class="php-string">'Produk berhasil dihapus!'</span>);
+    }
+}</code></pre>
+
+                <div class="info-box">
+                    <strong>Route Model Binding:</strong><br>
+                    Perhatikan parameter <code>Product $product</code> di method <code>edit</code>, <code>update</code>, <code>destroy</code>. Laravel otomatis mencari data berdasarkan <code>id</code> dari URL — tidak perlu tulis <code>Product::find($id)</code> manual. Kalau data tidak ditemukan, Laravel otomatis return 404.
+                </div>
+
+                <h3>Langkah 6 — Daftarkan Route Resource</h3>
+                <p>Satu baris <code>Route::resource</code> otomatis membuat <strong>7 route CRUD</strong> sekaligus.</p>
+
+                <span class="file-label file-php">📄 routes/web.php</span>
+                <pre><code><span class="php-tag">&lt;?php</span>
+
+<span class="php-keyword">use</span> Illuminate\Support\Facades\Route;
+<span class="php-keyword">use</span> App\Http\Controllers\ProductController;
+
+<span class="php-comment">// Satu baris ini = 7 route CRUD otomatis</span>
+Route::<span class="php-function">resource</span>(<span class="php-string">'products'</span>, ProductController::<span class="php-keyword">class</span>);</code></pre>
+
+                <h3>7 Route yang Dihasilkan Otomatis</h3>
+                <table>
+                    <tr>
+                        <th>Method</th>
+                        <th>URL</th>
+                        <th>Action</th>
+                        <th>Fungsi</th>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>/products</code></td>
+                        <td><code>index</code></td>
+                        <td>Tampilkan semua produk</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>/products/create</code></td>
+                        <td><code>create</code></td>
+                        <td>Tampilkan form tambah</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#d4820a">POST</span></td>
+                        <td><code>/products</code></td>
+                        <td><code>store</code></td>
+                        <td>Simpan data baru</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>/products/{id}</code></td>
+                        <td><code>show</code></td>
+                        <td>Tampilkan detail satu produk</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>/products/{id}/edit</code></td>
+                        <td><code>edit</code></td>
+                        <td>Tampilkan form edit</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#2471a3">PUT</span></td>
+                        <td><code>/products/{id}</code></td>
+                        <td><code>update</code></td>
+                        <td>Simpan perubahan</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge" style="background:#c0392b">DELETE</span></td>
+                        <td><code>/products/{id}</code></td>
+                        <td><code>destroy</code></td>
+                        <td>Hapus data</td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Cek route via terminal:</strong>
+                    <pre><code><span class="cmd-prompt">$</span> php artisan route:list --path=products
+
+<span class="cmd-output">GET|HEAD   products ............. products.index › ProductController@index
+GET|HEAD   products/create ...... products.create › ProductController@create
+POST       products ............. products.store › ProductController@store
+GET|HEAD   products/{product} ... products.show › ProductController@show
+GET|HEAD   products/{product}/edit products.edit › ProductController@edit
+PUT|PATCH  products/{product} ... products.update › ProductController@update
+DELETE     products/{product} ... products.destroy › ProductController@destroy</span></code></pre>
+                </div>
+
+                <div class="warning-box">
+                    <strong>HTML form hanya support GET dan POST.</strong> Untuk PUT dan DELETE, Laravel pakai <em>method spoofing</em> via field tersembunyi di dalam form:
+                    <pre><code><span class="php-comment">&lt;!-- Untuk UPDATE --&gt;</span>
+<span class="blade-tag">@method</span>(<span class="php-string">'PUT'</span>)
+
+<span class="php-comment">&lt;!-- Untuk DELETE --&gt;</span>
+<span class="blade-tag">@method</span>(<span class="php-string">'DELETE'</span>)</code></pre>
+                </div>
+
+            </section>
+
+            <!-- Section 3: Views (Blade Templates) -->
+            <section id="views">
+                <h2>3. View (Blade Template) <span class="badge">Langkah 7–9</span></h2>
+
+                <h3>Langkah 7 — Buat View: index (Daftar Produk)</h3>
+                <p>Buat folder <code>resources/views/products/</code> lalu buat file-file berikut.</p>
+
+                <span class="file-label file-blade">📄 resources/views/products/index.blade.php</span>
+                <pre><code><span class="blade-tag">@extends</span>(<span class="php-string">'layouts.app'</span>)
+<span class="blade-tag">@section</span>(<span class="php-string">'title'</span>, <span class="php-string">'Daftar Produk'</span>)
+
+<span class="blade-tag">@section</span>(<span class="php-string">'content'</span>)
+<span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"d-flex justify-content-between align-items-center mb-3"</span><span class="html-tag">&gt;</span>
+    <span class="html-tag">&lt;h2&gt;</span>Daftar Produk<span class="html-tag">&lt;/h2&gt;</span>
+    <span class="html-tag">&lt;a</span> <span class="html-attr">href</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.create') }}</span>"</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-primary"</span><span class="html-tag">&gt;</span>+ Tambah Produk<span class="html-tag">&lt;/a&gt;</span>
+<span class="html-tag">&lt;/div&gt;</span>
+
+<span class="php-comment">&lt;!-- Pesan sukses --&gt;</span>
+<span class="blade-tag">@if</span>(<span class="php-function">session</span>(<span class="php-string">'success'</span>))
+    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"alert alert-success"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ session('success') }}</span><span class="html-tag">&lt;/div&gt;</span>
+<span class="blade-tag">@endif</span>
+
+<span class="html-tag">&lt;table</span> <span class="html-attr">class</span>=<span class="php-string">"table table-bordered table-hover"</span><span class="html-tag">&gt;</span>
+    <span class="html-tag">&lt;thead</span> <span class="html-attr">class</span>=<span class="php-string">"table-dark"</span><span class="html-tag">&gt;</span>
+        <span class="html-tag">&lt;tr&gt;</span>
+            <span class="html-tag">&lt;th&gt;</span>#<span class="html-tag">&lt;/th&gt;</span>
+            <span class="html-tag">&lt;th&gt;</span>Nama Produk<span class="html-tag">&lt;/th&gt;</span>
+            <span class="html-tag">&lt;th&gt;</span>Harga<span class="html-tag">&lt;/th&gt;</span>
+            <span class="html-tag">&lt;th&gt;</span>Stok<span class="html-tag">&lt;/th&gt;</span>
+            <span class="html-tag">&lt;th&gt;</span>Aksi<span class="html-tag">&lt;/th&gt;</span>
+        <span class="html-tag">&lt;/tr&gt;</span>
+    <span class="html-tag">&lt;/thead&gt;</span>
+    <span class="html-tag">&lt;tbody&gt;</span>
+        <span class="blade-tag">@forelse</span>(<span class="php-var">$products</span> <span class="php-keyword">as</span> <span class="php-var">$product</span>)
+        <span class="html-tag">&lt;tr&gt;</span>
+            <span class="html-tag">&lt;td&gt;</span><span class="blade-tag">{{ $loop->iteration }}</span><span class="html-tag">&lt;/td&gt;</span>
+            <span class="html-tag">&lt;td&gt;</span><span class="blade-tag">{{ $product->name }}</span><span class="html-tag">&lt;/td&gt;</span>
+            <span class="html-tag">&lt;td&gt;</span>Rp <span class="blade-tag">{{ number_format($product->price, 0, ',', '.') }}</span><span class="html-tag">&lt;/td&gt;</span>
+            <span class="html-tag">&lt;td&gt;</span><span class="blade-tag">{{ $product->stock }}</span><span class="html-tag">&lt;/td&gt;</span>
+            <span class="html-tag">&lt;td&gt;</span>
+                <span class="html-tag">&lt;a</span> <span class="html-attr">href</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.edit', $product) }}</span>"</span>
+                   <span class="html-attr">class</span>=<span class="php-string">"btn btn-sm btn-warning"</span><span class="html-tag">&gt;</span>Edit<span class="html-tag">&lt;/a&gt;</span>
+                <span class="html-tag">&lt;form</span> <span class="html-attr">action</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.destroy', $product) }}</span>"</span>
+                      <span class="html-attr">method</span>=<span class="php-string">"POST"</span> <span class="html-attr">class</span>=<span class="php-string">"d-inline"</span>
+                      <span class="html-attr">onsubmit</span>=<span class="php-string">"return confirm('Yakin hapus produk ini?')"</span><span class="html-tag">&gt;</span>
+                    <span class="blade-tag">@csrf</span>
+                    <span class="blade-tag">@method</span>(<span class="php-string">'DELETE'</span>)
+                    <span class="html-tag">&lt;button</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-sm btn-danger"</span><span class="html-tag">&gt;</span>Hapus<span class="html-tag">&lt;/button&gt;</span>
+                <span class="html-tag">&lt;/form&gt;</span>
+            <span class="html-tag">&lt;/td&gt;</span>
+        <span class="html-tag">&lt;/tr&gt;</span>
+        <span class="blade-tag">@empty</span>
+        <span class="html-tag">&lt;tr&gt;</span>
+            <span class="html-tag">&lt;td</span> <span class="html-attr">colspan</span>=<span class="php-string">"5"</span> <span class="html-attr">class</span>=<span class="php-string">"text-center text-muted"</span><span class="html-tag">&gt;</span>Belum ada produk.<span class="html-tag">&lt;/td&gt;</span>
+        <span class="html-tag">&lt;/tr&gt;</span>
+        <span class="blade-tag">@endforelse</span>
+    <span class="html-tag">&lt;/tbody&gt;</span>
+<span class="html-tag">&lt;/table&gt;</span>
+<span class="blade-tag">@endsection</span></code></pre>
+
+                <h3>Langkah 8 — Buat View: create (Form Tambah)</h3>
+                <span class="file-label file-blade">📄 resources/views/products/create.blade.php</span>
+                <pre><code><span class="blade-tag">@extends</span>(<span class="php-string">'layouts.app'</span>)
+<span class="blade-tag">@section</span>(<span class="php-string">'title'</span>, <span class="php-string">'Tambah Produk'</span>)
+
+<span class="blade-tag">@section</span>(<span class="php-string">'content'</span>)
+<span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"row justify-content-center"</span><span class="html-tag">&gt;</span>
+    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-7"</span><span class="html-tag">&gt;</span>
+        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card shadow-sm"</span><span class="html-tag">&gt;</span>
+            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card-header"</span><span class="html-tag">&gt;</span><span class="html-tag">&lt;h5&gt;</span>Tambah Produk Baru<span class="html-tag">&lt;/h5&gt;&lt;/div&gt;</span>
+            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card-body"</span><span class="html-tag">&gt;</span>
+                <span class="html-tag">&lt;form</span> <span class="html-attr">action</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.store') }}</span>"</span> <span class="html-attr">method</span>=<span class="php-string">"POST"</span><span class="html-tag">&gt;</span>
+                    <span class="blade-tag">@csrf</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"mb-3"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Nama Produk <span class="html-tag">&lt;span</span> <span class="html-attr">class</span>=<span class="php-string">"text-danger"</span><span class="html-tag">&gt;</span>*<span class="html-tag">&lt;/span&gt;&lt;/label&gt;</span>
+                        <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"text"</span> <span class="html-attr">name</span>=<span class="php-string">"name"</span>
+                               <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('name') is-invalid @enderror</span>"</span>
+                               <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('name') }}</span>"</span><span class="html-tag">&gt;</span>
+                        <span class="blade-tag">@error</span>(<span class="php-string">'name'</span>)
+                            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                        <span class="blade-tag">@enderror</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"mb-3"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Deskripsi<span class="html-tag">&lt;/label&gt;</span>
+                        <span class="html-tag">&lt;textarea</span> <span class="html-attr">name</span>=<span class="php-string">"description"</span> <span class="html-attr">class</span>=<span class="php-string">"form-control"</span> <span class="html-attr">rows</span>=<span class="php-string">"3"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ old('description') }}</span><span class="html-tag">&lt;/textarea&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"row"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-6 mb-3"</span><span class="html-tag">&gt;</span>
+                            <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Harga <span class="html-tag">&lt;span</span> <span class="html-attr">class</span>=<span class="php-string">"text-danger"</span><span class="html-tag">&gt;</span>*<span class="html-tag">&lt;/span&gt;&lt;/label&gt;</span>
+                            <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"number"</span> <span class="html-attr">name</span>=<span class="php-string">"price"</span> <span class="html-attr">step</span>=<span class="php-string">"0.01"</span>
+                                   <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('price') is-invalid @enderror</span>"</span>
+                                   <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('price') }}</span>"</span><span class="html-tag">&gt;</span>
+                            <span class="blade-tag">@error</span>(<span class="php-string">'price'</span>)
+                                <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                            <span class="blade-tag">@enderror</span>
+                        <span class="html-tag">&lt;/div&gt;</span>
+                        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-6 mb-3"</span><span class="html-tag">&gt;</span>
+                            <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Stok <span class="html-tag">&lt;span</span> <span class="html-attr">class</span>=<span class="php-string">"text-danger"</span><span class="html-tag">&gt;</span>*<span class="html-tag">&lt;/span&gt;&lt;/label&gt;</span>
+                            <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"number"</span> <span class="html-attr">name</span>=<span class="php-string">"stock"</span>
+                                   <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('stock') is-invalid @enderror</span>"</span>
+                                   <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('stock') }}</span>"</span><span class="html-tag">&gt;</span>
+                            <span class="blade-tag">@error</span>(<span class="php-string">'stock'</span>)
+                                <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                            <span class="blade-tag">@enderror</span>
+                        <span class="html-tag">&lt;/div&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"d-flex gap-2"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;button</span> <span class="html-attr">type</span>=<span class="php-string">"submit"</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-primary"</span><span class="html-tag">&gt;</span>Simpan<span class="html-tag">&lt;/button&gt;</span>
+                        <span class="html-tag">&lt;a</span> <span class="html-attr">href</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.index') }}</span>"</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-secondary"</span><span class="html-tag">&gt;</span>Batal<span class="html-tag">&lt;/a&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+                <span class="html-tag">&lt;/form&gt;</span>
+            <span class="html-tag">&lt;/div&gt;</span>
+        <span class="html-tag">&lt;/div&gt;</span>
+    <span class="html-tag">&lt;/div&gt;</span>
+<span class="html-tag">&lt;/div&gt;</span>
+<span class="blade-tag">@endsection</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Dua fitur penting di form ini:</strong>
+                    <ul>
+                        <li><code>@error('field')</code> — menampilkan pesan error validasi per field, otomatis dari <code>$request->validate()</code> di Controller</li>
+                        <li><code>old('field')</code> — mengisi ulang nilai input setelah validasi gagal, sehingga user tidak perlu ketik ulang dari awal</li>
+                    </ul>
+                </div>
+
+                <h3>Langkah 9 — Buat View: edit (Form Edit)</h3>
+                <span class="file-label file-blade">📄 resources/views/products/edit.blade.php</span>
+                <pre><code><span class="blade-tag">@extends</span>(<span class="php-string">'layouts.app'</span>)
+<span class="blade-tag">@section</span>(<span class="php-string">'title'</span>, <span class="php-string">'Edit Produk'</span>)
+
+<span class="blade-tag">@section</span>(<span class="php-string">'content'</span>)
+<span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"row justify-content-center"</span><span class="html-tag">&gt;</span>
+    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-7"</span><span class="html-tag">&gt;</span>
+        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card shadow-sm"</span><span class="html-tag">&gt;</span>
+            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card-header"</span><span class="html-tag">&gt;</span><span class="html-tag">&lt;h5&gt;</span>Edit Produk<span class="html-tag">&lt;/h5&gt;&lt;/div&gt;</span>
+            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"card-body"</span><span class="html-tag">&gt;</span>
+                <span class="html-tag">&lt;form</span> <span class="html-attr">action</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.update', $product) }}</span>"</span> <span class="html-attr">method</span>=<span class="php-string">"POST"</span><span class="html-tag">&gt;</span>
+                    <span class="blade-tag">@csrf</span>
+                    <span class="blade-tag">@method</span>(<span class="php-string">'PUT'</span>)  <span class="php-comment">&lt;!-- wajib untuk UPDATE --&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"mb-3"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Nama Produk<span class="html-tag">&lt;/label&gt;</span>
+                        <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"text"</span> <span class="html-attr">name</span>=<span class="php-string">"name"</span>
+                               <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('name') is-invalid @enderror</span>"</span>
+                               <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('name', $product->name) }}</span>"</span><span class="html-tag">&gt;</span>
+                        <span class="blade-tag">@error</span>(<span class="php-string">'name'</span>)
+                            <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                        <span class="blade-tag">@enderror</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"mb-3"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Deskripsi<span class="html-tag">&lt;/label&gt;</span>
+                        <span class="html-tag">&lt;textarea</span> <span class="html-attr">name</span>=<span class="php-string">"description"</span> <span class="html-attr">class</span>=<span class="php-string">"form-control"</span> <span class="html-attr">rows</span>=<span class="php-string">"3"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ old('description', $product->description) }}</span><span class="html-tag">&lt;/textarea&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"row"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-6 mb-3"</span><span class="html-tag">&gt;</span>
+                            <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Harga<span class="html-tag">&lt;/label&gt;</span>
+                            <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"number"</span> <span class="html-attr">name</span>=<span class="php-string">"price"</span> <span class="html-attr">step</span>=<span class="php-string">"0.01"</span>
+                                   <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('price') is-invalid @enderror</span>"</span>
+                                   <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('price', $product->price) }}</span>"</span><span class="html-tag">&gt;</span>
+                            <span class="blade-tag">@error</span>(<span class="php-string">'price'</span>)
+                                <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                            <span class="blade-tag">@enderror</span>
+                        <span class="html-tag">&lt;/div&gt;</span>
+                        <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"col-md-6 mb-3"</span><span class="html-tag">&gt;</span>
+                            <span class="html-tag">&lt;label</span> <span class="html-attr">class</span>=<span class="php-string">"form-label"</span><span class="html-tag">&gt;</span>Stok<span class="html-tag">&lt;/label&gt;</span>
+                            <span class="html-tag">&lt;input</span> <span class="html-attr">type</span>=<span class="php-string">"number"</span> <span class="html-attr">name</span>=<span class="php-string">"stock"</span>
+                                   <span class="html-attr">class</span>=<span class="php-string">"form-control <span class="blade-tag">@error('stock') is-invalid @enderror</span>"</span>
+                                   <span class="html-attr">value</span>=<span class="php-string">"<span class="blade-tag">{{ old('stock', $product->stock) }}</span>"</span><span class="html-tag">&gt;</span>
+                            <span class="blade-tag">@error</span>(<span class="php-string">'stock'</span>)
+                                <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"invalid-feedback"</span><span class="html-tag">&gt;</span><span class="blade-tag">{{ $message }}</span><span class="html-tag">&lt;/div&gt;</span>
+                            <span class="blade-tag">@enderror</span>
+                        <span class="html-tag">&lt;/div&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+
+                    <span class="html-tag">&lt;div</span> <span class="html-attr">class</span>=<span class="php-string">"d-flex gap-2"</span><span class="html-tag">&gt;</span>
+                        <span class="html-tag">&lt;button</span> <span class="html-attr">type</span>=<span class="php-string">"submit"</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-warning"</span><span class="html-tag">&gt;</span>Update<span class="html-tag">&lt;/button&gt;</span>
+                        <span class="html-tag">&lt;a</span> <span class="html-attr">href</span>=<span class="php-string">"<span class="blade-tag">{{ route('products.index') }}</span>"</span> <span class="html-attr">class</span>=<span class="php-string">"btn btn-secondary"</span><span class="html-tag">&gt;</span>Batal<span class="html-tag">&lt;/a&gt;</span>
+                    <span class="html-tag">&lt;/div&gt;</span>
+                <span class="html-tag">&lt;/form&gt;</span>
+            <span class="html-tag">&lt;/div&gt;</span>
+        <span class="html-tag">&lt;/div&gt;</span>
+    <span class="html-tag">&lt;/div&gt;</span>
+<span class="html-tag">&lt;/div&gt;</span>
+<span class="blade-tag">@endsection</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Perbedaan create vs edit:</strong>
+                    <ul>
+                        <li>Form action mengarah ke <code>products.update</code> bukan <code>products.store</code></li>
+                        <li>Wajib ada <code>@method('PUT')</code></li>
+                        <li><code>old('name', $product->name)</code> — argumen kedua adalah nilai default dari database, tampil saat pertama buka form edit</li>
+                    </ul>
+                </div>
+
+            </section>
+
+            <!-- Section 4: Ringkasan -->
+            <section id="ringkasan">
+                <h2>4. Ringkasan &amp; Alur CRUD <span class="badge">Penutup</span></h2>
+
+                <h3>Ringkasan Alur CRUD</h3>
+                <table>
+                    <tr>
+                        <th>Operasi</th>
+                        <th>URL</th>
+                        <th>Method</th>
+                        <th>Controller</th>
+                        <th>View</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Read</strong></td>
+                        <td><code>/products</code></td>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>index()</code></td>
+                        <td><code>products/index</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Create (form)</strong></td>
+                        <td><code>/products/create</code></td>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>create()</code></td>
+                        <td><code>products/create</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Create (simpan)</strong></td>
+                        <td><code>/products</code></td>
+                        <td><span class="badge" style="background:#d4820a">POST</span></td>
+                        <td><code>store()</code></td>
+                        <td>redirect → index</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Update (form)</strong></td>
+                        <td><code>/products/{id}/edit</code></td>
+                        <td><span class="badge" style="background:#2e8b6e">GET</span></td>
+                        <td><code>edit()</code></td>
+                        <td><code>products/edit</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Update (simpan)</strong></td>
+                        <td><code>/products/{id}</code></td>
+                        <td><span class="badge" style="background:#2471a3">PUT</span></td>
+                        <td><code>update()</code></td>
+                        <td>redirect → index</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Delete</strong></td>
+                        <td><code>/products/{id}</code></td>
+                        <td><span class="badge" style="background:#c0392b">DELETE</span></td>
+                        <td><code>destroy()</code></td>
+                        <td>redirect → index</td>
+                    </tr>
+                </table>
+
+                <h3>Alur Request CRUD</h3>
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background:#2c3e50;">🌐<br>Browser<br>Request</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box" style="background:#8e44ad;">🛤️<br>Route<br>Resource</div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box" style="background:#d4820a;">🎮<br>Product<br>Controller</div>
+                    <div class="flow-arrow">↔</div>
+                    <div class="flow-box" style="background:#2e8b6e;">📦<br>Product<br>Model</div>
+                    <div class="flow-arrow">↔</div>
+                    <div class="flow-box" style="background:#2471a3;">🗄️<br>Tabel<br>products</div>
+                </div>
+                <div class="flow-diagram">
+                    <div class="flow-box" style="background:#d4820a;">🎮<br>Controller</div>
+                    <div class="flow-arrow">→ $data →</div>
+                    <div class="flow-box" style="background:#3d6b8e;">👁️<br>Blade<br>View</div>
+                    <div class="flow-arrow">→ HTML →</div>
+                    <div class="flow-box" style="background:#2c3e50;">🌐<br>Browser<br>Response</div>
+                </div>
+
+            </section>
+
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Materi Pemrograman Web - Laravel Framework</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2024</p>
+    </footer>
+
+    <script>
+        // ── Tab/section show-hide ──────────────────────────────────────────
+        const sections  = document.querySelectorAll('main.content > section');
+        const navLinks  = document.querySelectorAll('.sidebar ul li a[href^="#"]');
+
+        function showSection(id) {
+            sections.forEach(s => s.classList.toggle('active-section', s.id === id));
+            navLinks.forEach(a => {
+                const match = a.getAttribute('href') === '#' + id;
+                a.classList.toggle('active', match);
+            });
+        }
+
+        navLinks.forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const id = this.getAttribute('href').slice(1);
+                showSection(id);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                history.replaceState(null, '', '#' + id);
+            });
+        });
+
+        // Tampilkan section sesuai hash URL, atau section pertama
+        const initId = location.hash ? location.hash.slice(1) : sections[0]?.id;
+        if (initId) showSection(initId);
+    </script>
+</body>
+</html>
