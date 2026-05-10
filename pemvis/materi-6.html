@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - Integrasi Machine Learning</title>
+        <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Integrasi Machine Learning</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Konsep Dasar</div>
+                    <a href="#overview" class="nav-link active">
+                        <span class="nav-number">1</span>Overview & Arsitektur
+                    </a>
+                    <a href="#setup" class="nav-link">
+                        <span class="nav-number">2</span>Setup Environment
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Membuat Model</div>
+                    <a href="#dataset" class="nav-link">
+                        <span class="nav-number">3</span>Persiapan Dataset
+                    </a>
+                    <a href="#training" class="nav-link">
+                        <span class="nav-number">4</span>Training Model
+                    </a>
+                    <a href="#export-pkl" class="nav-link">
+                        <span class="nav-number">5</span>Export ke .pkl
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Integrasi PySide6</div>
+                    <a href="#load-model" class="nav-link">
+                        <span class="nav-number">6</span>Load Model di PySide6
+                    </a>
+                    <a href="#prediction-ui" class="nav-link">
+                        <span class="nav-number">7</span>UI Prediksi Sederhana
+                    </a>
+                    <a href="#app-klasifikasi" class="nav-link">
+                        <span class="nav-number">8</span>App: Klasifikasi Iris
+                    </a>
+                    <a href="#app-prediksi-harga" class="nav-link">
+                        <span class="nav-number">9</span>App: Prediksi Harga Rumah
+                    </a>
+                    <a href="#best-practices" class="nav-link">
+                        <span class="nav-number">10</span>Best Practices
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigasi</div>
+                    <a href="threading_api.html" class="nav-link">
+                        <span class="nav-number">←</span>Materi Sebelumnya
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Integrasi Machine Learning di Aplikasi Desktop PySide6</h1>
+                <p class="subtitle">Membangun aplikasi prediksi menggunakan model scikit-learn (.pkl) dengan antarmuka PySide6</p>
+            </header>
+
+            <!-- Capaian -->
+            <section class="section">
+                <h2>Capaian Pembelajaran</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan materi ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Membuat dan melatih model machine learning sederhana menggunakan scikit-learn</li>
+                        <li>Mengexport model ke file .pkl menggunakan joblib/pickle</li>
+                        <li>Memuat model .pkl di aplikasi PySide6</li>
+                        <li>Membangun UI interaktif untuk input data dan menampilkan hasil prediksi</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Section 1: Overview -->
+            <section class="section" id="overview">
+                <h2>1. Overview & Arsitektur</h2>
+
+                <p>Dalam praktikum ini, kita akan membangun aplikasi desktop yang mampu melakukan <strong>prediksi</strong> menggunakan model machine learning. Alurnya terbagi menjadi dua fase: <strong>Training</strong> (membuat model) dan <strong>Deployment</strong> (menggunakan model di aplikasi).</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Fase 1: Training (Dilakukan Sekali)</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Dataset<br><small>(CSV/Built-in)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Preprocessing<br><small>(Clean, Split)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">Train Model<br><small>(scikit-learn)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Export<br><small>(.pkl file)</small></div>
+                    </div>
+                </div>
+
+                <div class="diagram">
+                    <div class="diagram-title">Fase 2: Deployment (Aplikasi PySide6)</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Load .pkl<br><small>(joblib)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">User Input<br><small>(PySide6 Form)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">model.predict()<br><small>(Prediksi)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Tampilkan Hasil<br><small>(UI)</small></div>
+                    </div>
+                </div>
+
+                <h3>Apa itu File .pkl?</h3>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">File .pkl (Pickle)</div>
+                    <p><strong>Pickle</strong> adalah format serialisasi bawaan Python yang mengubah objek Python (termasuk model ML) menjadi byte stream yang bisa disimpan ke file. File .pkl menyimpan seluruh state model yang sudah dilatih, sehingga bisa langsung digunakan untuk prediksi tanpa perlu training ulang.</p>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Tanpa .pkl (Training Ulang)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Training setiap kali aplikasi dibuka</li>
+                                <li>Butuh dataset lengkap</li>
+                                <li>Lambat saat startup</li>
+                                <li>Memakan resource besar</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Dengan .pkl (Load Model)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Training hanya sekali</li>
+                                <li>Cukup load file .pkl kecil</li>
+                                <li>Startup cepat (hitungan detik)</li>
+                                <li>Resource minimal</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Jenis Model yang Akan Dibuat</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Jenis</th>
+                                <th>Tujuan</th>
+                                <th>Output</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Klasifikasi</strong></td>
+                                <td>Memprediksi kategori/label</td>
+                                <td>Kelas diskrit</td>
+                                <td>Jenis bunga, spam/not spam</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Regresi</strong></td>
+                                <td>Memprediksi nilai numerik</td>
+                                <td>Angka kontinu</td>
+                                <td>Harga rumah, suhu</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 2: Setup -->
+            <section class="section" id="setup">
+                <h2>2. Setup Environment</h2>
+
+                <p>Install library yang dibutuhkan sebelum memulai:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal / Command Prompt</span>
+                        <span class="code-badge">Install</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Library untuk Machine Learning</span>
+pip install scikit-learn
+
+<span class="comment"># Library untuk manipulasi data</span>
+pip install pandas numpy
+
+<span class="comment"># Library untuk serialisasi model (biasanya sudah include)</span>
+pip install joblib
+
+<span class="comment"># PySide6 (jika belum)</span>
+pip install PySide6
+
+<span class="comment"># Install semua sekaligus</span>
+pip install scikit-learn pandas numpy joblib PySide6</code></pre>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Library</th>
+                                <th>Fungsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">scikit-learn</span></td>
+                                <td>Training model ML (klasifikasi, regresi, preprocessing)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">pandas</span></td>
+                                <td>Manipulasi data tabular (DataFrame)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">numpy</span></td>
+                                <td>Operasi numerik dan array</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">joblib</span></td>
+                                <td>Serialisasi model ke .pkl (lebih cepat dari pickle untuk numpy)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">joblib vs pickle</div>
+                    <p>Gunakan <span class="inline-code">joblib</span> untuk menyimpan model scikit-learn karena lebih efisien untuk objek yang mengandung array numpy besar. Module <span class="inline-code">pickle</span> bawaan Python juga bisa digunakan, tetapi <span class="inline-code">joblib</span> direkomendasikan oleh dokumentasi scikit-learn.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Persiapan Dataset -->
+            <section class="section" id="dataset">
+                <h2>3. Persiapan Dataset</h2>
+
+                <p>Scikit-learn menyediakan beberapa dataset built-in yang cocok untuk belajar. Kita akan menggunakan dua dataset:</p>
+
+                <h3>Dataset 1: Iris (Klasifikasi)</h3>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Dataset Iris</div>
+                    <p>Dataset klasik berisi 150 sampel bunga iris dengan 3 spesies: <strong>Setosa</strong>, <strong>Versicolor</strong>, dan <strong>Virginica</strong>. Setiap sampel memiliki 4 fitur: panjang sepal, lebar sepal, panjang petal, lebar petal.</p>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fitur (Input)</th>
+                                <th>Satuan</th>
+                                <th>Range</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Sepal Length (panjang kelopak)</td>
+                                <td>cm</td>
+                                <td>4.3 - 7.9</td>
+                            </tr>
+                            <tr>
+                                <td>Sepal Width (lebar kelopak)</td>
+                                <td>cm</td>
+                                <td>2.0 - 4.4</td>
+                            </tr>
+                            <tr>
+                                <td>Petal Length (panjang mahkota)</td>
+                                <td>cm</td>
+                                <td>1.0 - 6.9</td>
+                            </tr>
+                            <tr>
+                                <td>Petal Width (lebar mahkota)</td>
+                                <td>cm</td>
+                                <td>0.1 - 2.5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Dataset 2: California Housing (Regresi)</h3>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Dataset California Housing</div>
+                    <p>Dataset berisi informasi harga rumah di California. Target adalah <strong>median harga rumah</strong> (dalam $100,000). Fitur termasuk median income, jumlah kamar rata-rata, populasi area, dll.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">explore_dataset.py</span>
+                        <span class="code-badge">Explore</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris, fetch_california_housing
+<span class="keyword">import</span> pandas <span class="keyword">as</span> pd
+
+<span class="comment"># ===== IRIS DATASET =====</span>
+iris = load_iris()
+
+<span class="builtin">print</span>(<span class="string">"=== IRIS ==="</span>)
+<span class="builtin">print</span>(<span class="string">f"Jumlah sampel : </span>{iris.data.shape[<span class="number">0</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Jumlah fitur  : </span>{iris.data.shape[<span class="number">1</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Nama fitur    : </span>{iris.feature_names}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Nama target   : </span>{iris.target_names}<span class="string">"</span>)
+
+<span class="comment"># Tampilkan sebagai DataFrame</span>
+df_iris = pd.DataFrame(iris.data, columns=iris.feature_names)
+df_iris[<span class="string">'species'</span>] = [iris.target_names[t] <span class="keyword">for</span> t <span class="keyword">in</span> iris.target]
+<span class="builtin">print</span>(df_iris.head(<span class="number">10</span>))
+<span class="builtin">print</span>(df_iris.describe())
+
+
+<span class="comment"># ===== CALIFORNIA HOUSING =====</span>
+housing = fetch_california_housing()
+
+<span class="builtin">print</span>(<span class="string">"\n=== CALIFORNIA HOUSING ==="</span>)
+<span class="builtin">print</span>(<span class="string">f"Jumlah sampel : </span>{housing.data.shape[<span class="number">0</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Jumlah fitur  : </span>{housing.data.shape[<span class="number">1</span>]}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Nama fitur    : </span>{housing.feature_names}<span class="string">"</span>)
+
+df_housing = pd.DataFrame(housing.data, columns=housing.feature_names)
+df_housing[<span class="string">'price'</span>] = housing.target
+<span class="builtin">print</span>(df_housing.head(<span class="number">10</span>))
+<span class="builtin">print</span>(df_housing.describe())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Training -->
+            <section class="section" id="training">
+                <h2>4. Training Model</h2>
+
+                <p>Proses training terdiri dari beberapa langkah standar: load data, split train/test, pilih algoritma, latih model, evaluasi akurasi.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Alur Training Model</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Load Data</div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Split<br><small>(Train/Test)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">model.fit()<br><small>(Training)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Evaluasi<br><small>(Accuracy)</small></div>
+                    </div>
+                </div>
+
+                <h3>Algoritma yang Digunakan</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Algoritma</th>
+                                <th>Jenis</th>
+                                <th>Kegunaan</th>
+                                <th>Class scikit-learn</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Random Forest Classifier</td>
+                                <td>Klasifikasi</td>
+                                <td>Prediksi kategori</td>
+                                <td><span class="table-code">RandomForestClassifier</span></td>
+                            </tr>
+                            <tr>
+                                <td>Random Forest Regressor</td>
+                                <td>Regresi</td>
+                                <td>Prediksi nilai numerik</td>
+                                <td><span class="table-code">RandomForestRegressor</span></td>
+                            </tr>
+                            <tr>
+                                <td>Decision Tree</td>
+                                <td>Keduanya</td>
+                                <td>Sederhana, mudah dipahami</td>
+                                <td><span class="table-code">DecisionTreeClassifier</span></td>
+                            </tr>
+                            <tr>
+                                <td>SVM</td>
+                                <td>Keduanya</td>
+                                <td>Akurasi tinggi</td>
+                                <td><span class="table-code">SVC / SVR</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Training Model Klasifikasi (Iris)</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">train_iris_model.py</span>
+                        <span class="code-badge">Training</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> load_iris
+<span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split
+<span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> accuracy_score, classification_report
+<span class="keyword">import</span> joblib
+
+<span class="comment"># ===== STEP 1: Load Dataset =====</span>
+iris = load_iris()
+X = iris.data           <span class="comment"># Fitur (150 x 4)</span>
+y = iris.target         <span class="comment"># Target/Label (150,)</span>
+
+<span class="builtin">print</span>(<span class="string">f"Dataset shape: </span>{X.shape}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Target names : </span>{iris.target_names}<span class="string">"</span>)
+
+
+<span class="comment"># ===== STEP 2: Split Train/Test =====</span>
+<span class="comment"># 80% untuk training, 20% untuk testing</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, 
+    test_size=<span class="number">0.2</span>,       <span class="comment"># 20% untuk test</span>
+    random_state=<span class="number">42</span>      <span class="comment"># Agar hasil reproducible</span>
+)
+
+<span class="builtin">print</span>(<span class="string">f"\nTrain set: </span>{X_train.shape[<span class="number">0</span>]}<span class="string"> sampel"</span>)
+<span class="builtin">print</span>(<span class="string">f"Test set : </span>{X_test.shape[<span class="number">0</span>]}<span class="string"> sampel"</span>)
+
+
+<span class="comment"># ===== STEP 3: Buat dan Latih Model =====</span>
+model = RandomForestClassifier(
+    n_estimators=<span class="number">100</span>,     <span class="comment"># Jumlah decision tree</span>
+    random_state=<span class="number">42</span>
+)
+
+<span class="comment"># Training model dengan data training</span>
+model.fit(X_train, y_train)
+
+<span class="builtin">print</span>(<span class="string">"\nModel berhasil dilatih!"</span>)
+
+
+<span class="comment"># ===== STEP 4: Evaluasi Model =====</span>
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+
+<span class="builtin">print</span>(<span class="string">f"\nAkurasi: </span>{accuracy * <span class="number">100</span>:.2f}<span class="string">%"</span>)
+<span class="builtin">print</span>(<span class="string">"\nClassification Report:"</span>)
+<span class="builtin">print</span>(classification_report(y_test, y_pred, target_names=iris.target_names))
+
+
+<span class="comment"># ===== STEP 5: Simpan Model ke .pkl =====</span>
+joblib.dump(model, <span class="string">'iris_model.pkl'</span>)
+<span class="builtin">print</span>(<span class="string">"Model disimpan ke 'iris_model.pkl'"</span>)
+
+
+<span class="comment"># ===== STEP 6: Test Load Model =====</span>
+loaded_model = joblib.load(<span class="string">'iris_model.pkl'</span>)
+
+<span class="comment"># Test prediksi dengan data contoh</span>
+sample = [[<span class="number">5.1</span>, <span class="number">3.5</span>, <span class="number">1.4</span>, <span class="number">0.2</span>]]  <span class="comment"># Seharusnya Setosa</span>
+prediction = loaded_model.predict(sample)
+<span class="builtin">print</span>(<span class="string">f"\nTest prediksi: </span>{iris.target_names[prediction[<span class="number">0</span>]]}<span class="string">"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <h3>Training Model Regresi (Harga Rumah)</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">train_housing_model.py</span>
+                        <span class="code-badge">Training</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> fetch_california_housing
+<span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> train_test_split
+<span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestRegressor
+<span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> mean_absolute_error, r2_score
+<span class="keyword">import</span> joblib
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+
+<span class="comment"># ===== STEP 1: Load Dataset =====</span>
+housing = fetch_california_housing()
+X = housing.data
+y = housing.target  <span class="comment"># Harga dalam $100,000</span>
+
+<span class="builtin">print</span>(<span class="string">f"Dataset shape: </span>{X.shape}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"Fitur: </span>{housing.feature_names}<span class="string">"</span>)
+
+
+<span class="comment"># ===== STEP 2: Preprocessing - Normalisasi =====</span>
+<span class="comment"># Scaler penting untuk beberapa algoritma</span>
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+
+<span class="comment"># ===== STEP 3: Split Train/Test =====</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=<span class="number">0.2</span>, random_state=<span class="number">42</span>
+)
+
+
+<span class="comment"># ===== STEP 4: Training =====</span>
+model = RandomForestRegressor(
+    n_estimators=<span class="number">100</span>,
+    random_state=<span class="number">42</span>,
+    n_jobs=-<span class="number">1</span>   <span class="comment"># Gunakan semua CPU core</span>
+)
+model.fit(X_train, y_train)
+
+<span class="builtin">print</span>(<span class="string">"Model berhasil dilatih!"</span>)
+
+
+<span class="comment"># ===== STEP 5: Evaluasi =====</span>
+y_pred = model.predict(X_test)
+
+mae = mean_absolute_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+<span class="builtin">print</span>(<span class="string">f"\nMean Absolute Error: $</span>{mae * <span class="number">100000</span>:,.0f}<span class="string">"</span>)
+<span class="builtin">print</span>(<span class="string">f"R² Score: </span>{r2:.4f}<span class="string">"</span>)
+
+
+<span class="comment"># ===== STEP 6: Simpan Model DAN Scaler =====</span>
+<span class="comment"># PENTING: Simpan scaler juga karena input harus di-scale</span>
+joblib.dump(model, <span class="string">'housing_model.pkl'</span>)
+joblib.dump(scaler, <span class="string">'housing_scaler.pkl'</span>)
+
+<span class="builtin">print</span>(<span class="string">"\nModel disimpan ke 'housing_model.pkl'"</span>)
+<span class="builtin">print</span>(<span class="string">"Scaler disimpan ke 'housing_scaler.pkl'"</span>)</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">Jangan Lupa Simpan Scaler!</div>
+                    <p>Jika menggunakan <span class="inline-code">StandardScaler</span> atau preprocessing lain saat training, <strong>scaler tersebut juga harus disimpan ke .pkl</strong> dan di-load bersamaan dengan model. Input user di aplikasi harus melalui scaler yang sama sebelum diprediksi.</p>
+                </div>
+            </section>
+
+            <!-- Section 5: Export ke .pkl -->
+            <section class="section" id="export-pkl">
+                <h2>5. Export & Load File .pkl</h2>
+
+                <p>Ada dua cara utama untuk menyimpan dan memuat model: <span class="inline-code">joblib</span> dan <span class="inline-code">pickle</span>.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">save_load_model.py</span>
+                        <span class="code-badge">Serialisasi</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> joblib
+<span class="keyword">import</span> pickle
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># CARA 1: joblib (DIREKOMENDASIKAN)</span>
+<span class="comment"># ==========================================</span>
+
+<span class="comment"># Simpan model</span>
+joblib.dump(model, <span class="string">'model.pkl'</span>)
+
+<span class="comment"># Load model</span>
+loaded_model = joblib.load(<span class="string">'model.pkl'</span>)
+
+<span class="comment"># Langsung bisa dipakai prediksi</span>
+result = loaded_model.predict(data)
+
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># CARA 2: pickle (Bawaan Python)</span>
+<span class="comment"># ==========================================</span>
+
+<span class="comment"># Simpan model</span>
+<span class="keyword">with</span> <span class="builtin">open</span>(<span class="string">'model.pkl'</span>, <span class="string">'wb'</span>) <span class="keyword">as</span> f:
+    pickle.dump(model, f)
+
+<span class="comment"># Load model</span>
+<span class="keyword">with</span> <span class="builtin">open</span>(<span class="string">'model.pkl'</span>, <span class="string">'rb'</span>) <span class="keyword">as</span> f:
+    loaded_model = pickle.load(f)
+
+
+<span class="comment"># ==========================================</span>
+<span class="comment"># SIMPAN MULTIPLE OBJECTS</span>
+<span class="comment"># ==========================================</span>
+
+<span class="comment"># Simpan model + scaler + metadata dalam satu file</span>
+model_package = {
+    <span class="string">'model'</span>: model,
+    <span class="string">'scaler'</span>: scaler,
+    <span class="string">'feature_names'</span>: [<span class="string">'feature1'</span>, <span class="string">'feature2'</span>],
+    <span class="string">'target_names'</span>: [<span class="string">'class_a'</span>, <span class="string">'class_b'</span>],
+    <span class="string">'version'</span>: <span class="string">'1.0'</span>
+}
+
+joblib.dump(model_package, <span class="string">'model_package.pkl'</span>)
+
+<span class="comment"># Load</span>
+package = joblib.load(<span class="string">'model_package.pkl'</span>)
+model = package[<span class="string">'model'</span>]
+scaler = package[<span class="string">'scaler'</span>]</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Tips: Simpan Sebagai Package</div>
+                    <p>Simpan model, scaler, feature names, dan metadata lain dalam satu dictionary, lalu dump ke satu file .pkl. Ini memudahkan distribusi dan memastikan semua komponen kompatibel.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: Load Model di PySide6 -->
+            <section class="section" id="load-model">
+                <h2>6. Load Model di PySide6</h2>
+
+                <p>Berikut cara memuat model .pkl dan menggunakannya di dalam aplikasi PySide6:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">model_handler.py</span>
+                        <span class="code-badge">Handler</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> joblib
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">import</span> os
+
+<span class="keyword">class</span> <span class="class-name">ModelHandler</span>:
+    <span class="string">"""
+    Class untuk mengelola model ML.
+    Memisahkan logic ML dari UI (Separation of Concerns).
+    """</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="self">self</span>.model = <span class="keyword">None</span>
+        <span class="self">self</span>.scaler = <span class="keyword">None</span>
+        <span class="self">self</span>.feature_names = []
+        <span class="self">self</span>.target_names = []
+        <span class="self">self</span>.is_loaded = <span class="keyword">False</span>
+    
+    <span class="keyword">def</span> <span class="function">load_model</span>(<span class="self">self</span>, <span class="parameter">model_path</span>, <span class="parameter">scaler_path</span>=<span class="keyword">None</span>):
+        <span class="string">"""Load model dan opsional scaler dari file .pkl"""</span>
+        <span class="keyword">try</span>:
+            <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(model_path):
+                <span class="keyword">raise</span> <span class="class-name">FileNotFoundError</span>(<span class="string">f"File tidak ditemukan: </span>{model_path}<span class="string">"</span>)
+            
+            <span class="self">self</span>.model = joblib.load(model_path)
+            
+            <span class="keyword">if</span> scaler_path <span class="keyword">and</span> os.path.exists(scaler_path):
+                <span class="self">self</span>.scaler = joblib.load(scaler_path)
+            
+            <span class="self">self</span>.is_loaded = <span class="keyword">True</span>
+            <span class="keyword">return</span> <span class="keyword">True</span>, <span class="string">"Model berhasil dimuat"</span>
+        
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            <span class="self">self</span>.is_loaded = <span class="keyword">False</span>
+            <span class="keyword">return</span> <span class="keyword">False</span>, <span class="string">f"Gagal memuat model: </span>{<span class="builtin">str</span>(e)}<span class="string">"</span>
+    
+    <span class="keyword">def</span> <span class="function">predict</span>(<span class="self">self</span>, <span class="parameter">features</span>):
+        <span class="string">"""
+        Melakukan prediksi.
+        
+        Args:
+            features: list of float, contoh [5.1, 3.5, 1.4, 0.2]
+        
+        Returns:
+            prediction result
+        """</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.is_loaded:
+            <span class="keyword">raise</span> <span class="class-name">RuntimeError</span>(<span class="string">"Model belum dimuat!"</span>)
+        
+        <span class="comment"># Konversi ke numpy array 2D (model butuh 2D input)</span>
+        X = np.array(features).reshape(<span class="number">1</span>, -<span class="number">1</span>)
+        
+        <span class="comment"># Apply scaler jika ada</span>
+        <span class="keyword">if</span> <span class="self">self</span>.scaler:
+            X = <span class="self">self</span>.scaler.transform(X)
+        
+        <span class="comment"># Prediksi</span>
+        prediction = <span class="self">self</span>.model.predict(X)
+        
+        <span class="keyword">return</span> prediction[<span class="number">0</span>]
+    
+    <span class="keyword">def</span> <span class="function">predict_proba</span>(<span class="self">self</span>, <span class="parameter">features</span>):
+        <span class="string">"""Prediksi dengan probabilitas (hanya untuk klasifikasi)"""</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.is_loaded:
+            <span class="keyword">raise</span> <span class="class-name">RuntimeError</span>(<span class="string">"Model belum dimuat!"</span>)
+        
+        X = np.array(features).reshape(<span class="number">1</span>, -<span class="number">1</span>)
+        
+        <span class="keyword">if</span> <span class="self">self</span>.scaler:
+            X = <span class="self">self</span>.scaler.transform(X)
+        
+        <span class="keyword">if</span> <span class="builtin">hasattr</span>(<span class="self">self</span>.model, <span class="string">'predict_proba'</span>):
+            <span class="keyword">return</span> <span class="self">self</span>.model.predict_proba(X)[<span class="number">0</span>]
+        
+        <span class="keyword">return</span> <span class="keyword">None</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>np.array(features).reshape(1, -1)</h4>
+                            <p>Model scikit-learn menerima input 2D. <span class="inline-code">reshape(1, -1)</span> mengubah array 1D <span class="inline-code">[5.1, 3.5, 1.4, 0.2]</span> menjadi 2D <span class="inline-code">[[5.1, 3.5, 1.4, 0.2]]</span> (1 sampel, N fitur).</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>scaler.transform(X)</h4>
+                            <p>Jika saat training menggunakan scaler, input prediksi juga harus di-transform dengan scaler yang <strong>sama</strong>. Gunakan <span class="inline-code">transform()</span>, bukan <span class="inline-code">fit_transform()</span>.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>model.predict(X)</h4>
+                            <p>Mengembalikan array prediksi. Untuk 1 sampel, hasilnya <span class="inline-code">[prediction]</span>, jadi kita ambil index 0.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: UI Prediksi Sederhana -->
+            <section class="section" id="prediction-ui">
+                <h2>7. UI Prediksi Sederhana</h2>
+
+                <p>Contoh paling minimal untuk memuat model dan melakukan prediksi dari PySide6:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">simple_prediction_ui.py</span>
+                        <span class="code-badge">Simple</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> joblib
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QDoubleSpinBox, QFormLayout, QMessageBox
+)
+
+<span class="keyword">class</span> <span class="class-name">SimplePredictionApp</span>(QWidget):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Prediksi Iris - Sederhana"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">350</span>)
+        
+        <span class="comment"># Load model</span>
+        <span class="keyword">try</span>:
+            <span class="self">self</span>.model = joblib.load(<span class="string">'iris_model.pkl'</span>)
+            <span class="self">self</span>.target_names = [<span class="string">'Setosa'</span>, <span class="string">'Versicolor'</span>, <span class="string">'Virginica'</span>]
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(<span class="keyword">None</span>, <span class="string">"Error"</span>, <span class="string">f"Gagal load model:\n</span>{e}<span class="string">"</span>)
+            sys.exit(<span class="number">1</span>)
+        
+        <span class="self">self</span>.setup_ui()
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        layout = QVBoxLayout(<span class="self">self</span>)
+        form = QFormLayout()
+        
+        <span class="comment"># 4 input untuk 4 fitur iris</span>
+        <span class="self">self</span>.sepal_length = QDoubleSpinBox()
+        <span class="self">self</span>.sepal_length.setRange(<span class="number">0.0</span>, <span class="number">10.0</span>)
+        <span class="self">self</span>.sepal_length.setValue(<span class="number">5.1</span>)
+        <span class="self">self</span>.sepal_length.setSingleStep(<span class="number">0.1</span>)
+        form.addRow(<span class="string">"Sepal Length (cm):"</span>, <span class="self">self</span>.sepal_length)
+        
+        <span class="self">self</span>.sepal_width = QDoubleSpinBox()
+        <span class="self">self</span>.sepal_width.setRange(<span class="number">0.0</span>, <span class="number">10.0</span>)
+        <span class="self">self</span>.sepal_width.setValue(<span class="number">3.5</span>)
+        <span class="self">self</span>.sepal_width.setSingleStep(<span class="number">0.1</span>)
+        form.addRow(<span class="string">"Sepal Width (cm):"</span>, <span class="self">self</span>.sepal_width)
+        
+        <span class="self">self</span>.petal_length = QDoubleSpinBox()
+        <span class="self">self</span>.petal_length.setRange(<span class="number">0.0</span>, <span class="number">10.0</span>)
+        <span class="self">self</span>.petal_length.setValue(<span class="number">1.4</span>)
+        <span class="self">self</span>.petal_length.setSingleStep(<span class="number">0.1</span>)
+        form.addRow(<span class="string">"Petal Length (cm):"</span>, <span class="self">self</span>.petal_length)
+        
+        <span class="self">self</span>.petal_width = QDoubleSpinBox()
+        <span class="self">self</span>.petal_width.setRange(<span class="number">0.0</span>, <span class="number">10.0</span>)
+        <span class="self">self</span>.petal_width.setValue(<span class="number">0.2</span>)
+        <span class="self">self</span>.petal_width.setSingleStep(<span class="number">0.1</span>)
+        form.addRow(<span class="string">"Petal Width (cm):"</span>, <span class="self">self</span>.petal_width)
+        
+        layout.addLayout(form)
+        
+        <span class="comment"># Tombol prediksi</span>
+        <span class="self">self</span>.predict_btn = QPushButton(<span class="string">"Prediksi!"</span>)
+        <span class="self">self</span>.predict_btn.clicked.connect(<span class="self">self</span>.do_predict)
+        <span class="self">self</span>.predict_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #3498db; color: white;
+                padding: 12px; border: none; border-radius: 6px;
+                font-size: 14px; font-weight: bold;
+            }
+            QPushButton:hover { background-color: #2980b9; }
+        """</span>)
+        layout.addWidget(<span class="self">self</span>.predict_btn)
+        
+        <span class="comment"># Label hasil</span>
+        <span class="self">self</span>.result_label = QLabel(<span class="string">"Hasil prediksi akan muncul di sini"</span>)
+        <span class="self">self</span>.result_label.setStyleSheet(<span class="string">"""
+            QLabel {
+                background: #f0f0f0; padding: 20px;
+                border-radius: 8px; font-size: 16px;
+                text-align: center;
+            }
+        """</span>)
+        <span class="self">self</span>.result_label.setWordWrap(<span class="keyword">True</span>)
+        layout.addWidget(<span class="self">self</span>.result_label)
+    
+    <span class="keyword">def</span> <span class="function">do_predict</span>(<span class="self">self</span>):
+        <span class="comment"># Ambil nilai dari input</span>
+        features = [
+            <span class="self">self</span>.sepal_length.value(),
+            <span class="self">self</span>.sepal_width.value(),
+            <span class="self">self</span>.petal_length.value(),
+            <span class="self">self</span>.petal_width.value()
+        ]
+        
+        <span class="comment"># Prediksi</span>
+        X = np.array(features).reshape(<span class="number">1</span>, -<span class="number">1</span>)
+        prediction = <span class="self">self</span>.model.predict(X)[<span class="number">0</span>]
+        probabilities = <span class="self">self</span>.model.predict_proba(X)[<span class="number">0</span>]
+        
+        species = <span class="self">self</span>.target_names[prediction]
+        confidence = probabilities[prediction] * <span class="number">100</span>
+        
+        <span class="comment"># Tampilkan hasil</span>
+        result_text = <span class="string">f"Spesies: </span>{species}<span class="string">\n"</span>
+        result_text += <span class="string">f"Confidence: </span>{confidence:.1f}<span class="string">%\n\n"</span>
+        
+        <span class="keyword">for</span> i, name <span class="keyword">in</span> <span class="builtin">enumerate</span>(<span class="self">self</span>.target_names):
+            result_text += <span class="string">f"  </span>{name}<span class="string">: </span>{probabilities[i]*<span class="number">100</span>:.1f}<span class="string">%\n"</span>
+        
+        <span class="self">self</span>.result_label.setText(result_text)
+        
+        <span class="comment"># Warna berdasarkan confidence</span>
+        <span class="keyword">if</span> confidence > <span class="number">90</span>:
+            color = <span class="string">"#27ae60"</span>
+        <span class="keyword">elif</span> confidence > <span class="number">70</span>:
+            color = <span class="string">"#f39c12"</span>
+        <span class="keyword">else</span>:
+            color = <span class="string">"#e74c3c"</span>
+        
+        <span class="self">self</span>.result_label.setStyleSheet(<span class="string">f"""
+            QLabel {{
+                background: #f0f0f0; padding: 20px;
+                border-radius: 8px; font-size: 14px;
+                border-left: 5px solid </span>{color}<span class="string">;
+            }}
+        """</span>)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = SimplePredictionApp()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 8: App Klasifikasi Iris -->
+            <section class="section" id="app-klasifikasi">
+                <h2>8. Aplikasi Lengkap: Klasifikasi Iris</h2>
+
+                <p>Aplikasi profesional dengan QMainWindow, status bar, riwayat prediksi, dan struktur kode yang rapi.</p>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Prasyarat</div>
+                    <p>Jalankan <span class="inline-code">train_iris_model.py</span> terlebih dahulu untuk menghasilkan file <span class="inline-code">iris_model.pkl</span> sebelum menjalankan aplikasi ini.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">iris_classifier_app.py</span>
+                        <span class="code-badge">Complete</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> joblib
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">import</span> os
+<span class="keyword">import</span> csv
+<span class="keyword">from</span> datetime <span class="keyword">import</span> datetime
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QPushButton, QLabel, QDoubleSpinBox, QFormLayout, QMessageBox,
+    QTableWidget, QTableWidgetItem, QHeaderView, QSplitter,
+    QGroupBox, QFileDialog, QStyle
+)
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence
+
+
+<span class="keyword">class</span> <span class="class-name">IrisClassifierApp</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Iris Flower Classifier"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">800</span>, <span class="number">550</span>)
+        
+        <span class="self">self</span>.target_names = [<span class="string">'Setosa'</span>, <span class="string">'Versicolor'</span>, <span class="string">'Virginica'</span>]
+        <span class="self">self</span>.history = []
+        
+        <span class="self">self</span>.load_ml_model()
+        <span class="self">self</span>.create_actions()
+        <span class="self">self</span>.create_menus()
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Model loaded. Ready."</span>)
+    
+    <span class="keyword">def</span> <span class="function">load_ml_model</span>(<span class="self">self</span>):
+        model_path = <span class="string">'iris_model.pkl'</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(model_path):
+            QMessageBox.critical(<span class="keyword">None</span>, <span class="string">"Error"</span>,
+                <span class="string">f"File '</span>{model_path}<span class="string">' tidak ditemukan!\n"</span>
+                <span class="string">"Jalankan train_iris_model.py terlebih dahulu."</span>)
+            sys.exit(<span class="number">1</span>)
+        <span class="self">self</span>.model = joblib.load(model_path)
+    
+    <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
+        style = <span class="self">self</span>.style()
+        <span class="self">self</span>.export_action = QAction(<span class="string">"&amp;Export History CSV"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.export_action.setIcon(style.standardIcon(QStyle.SP_DialogSaveButton))
+        <span class="self">self</span>.export_action.setShortcut(<span class="string">"Ctrl+E"</span>)
+        <span class="self">self</span>.export_action.triggered.connect(<span class="self">self</span>.export_csv)
+        
+        <span class="self">self</span>.clear_action = QAction(<span class="string">"&amp;Clear History"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.clear_action.setIcon(style.standardIcon(QStyle.SP_TrashIcon))
+        <span class="self">self</span>.clear_action.triggered.connect(<span class="self">self</span>.clear_history)
+        
+        <span class="self">self</span>.exit_action = QAction(<span class="string">"E&amp;xit"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.exit_action.setShortcut(QKeySequence.Quit)
+        <span class="self">self</span>.exit_action.triggered.connect(<span class="self">self</span>.close)
+    
+    <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
+        file_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="self">self</span>.export_action)
+        file_menu.addAction(<span class="self">self</span>.clear_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.exit_action)
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        main_layout = QVBoxLayout(central)
+        
+        splitter = QSplitter(Qt.Horizontal)
+        
+        <span class="comment"># === Panel Kiri: Input & Prediksi ===</span>
+        left = QWidget()
+        left_layout = QVBoxLayout(left)
+        
+        <span class="comment"># Input Group</span>
+        input_group = QGroupBox(<span class="string">"Input Pengukuran (cm)"</span>)
+        form = QFormLayout()
+        
+        <span class="self">self</span>.inputs = {}
+        features = [
+            (<span class="string">'sepal_length'</span>, <span class="string">'Sepal Length'</span>, <span class="number">5.1</span>, <span class="number">0.1</span>, <span class="number">10.0</span>),
+            (<span class="string">'sepal_width'</span>, <span class="string">'Sepal Width'</span>, <span class="number">3.5</span>, <span class="number">0.1</span>, <span class="number">10.0</span>),
+            (<span class="string">'petal_length'</span>, <span class="string">'Petal Length'</span>, <span class="number">1.4</span>, <span class="number">0.1</span>, <span class="number">10.0</span>),
+            (<span class="string">'petal_width'</span>, <span class="string">'Petal Width'</span>, <span class="number">0.2</span>, <span class="number">0.1</span>, <span class="number">10.0</span>),
+        ]
+        
+        <span class="keyword">for</span> key, label, default, min_v, max_v <span class="keyword">in</span> features:
+            spin = QDoubleSpinBox()
+            spin.setRange(min_v, max_v)
+            spin.setValue(default)
+            spin.setSingleStep(<span class="number">0.1</span>)
+            spin.setDecimals(<span class="number">1</span>)
+            <span class="self">self</span>.inputs[key] = spin
+            form.addRow(<span class="string">f"</span>{label}<span class="string">:"</span>, spin)
+        
+        input_group.setLayout(form)
+        left_layout.addWidget(input_group)
+        
+        <span class="comment"># Predict Button</span>
+        <span class="self">self</span>.predict_btn = QPushButton(<span class="string">"Prediksi Spesies"</span>)
+        <span class="self">self</span>.predict_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #27ae60; color: white;
+                padding: 12px; border: none; border-radius: 6px;
+                font-size: 14px; font-weight: bold;
+            }
+            QPushButton:hover { background-color: #219a52; }
+        """</span>)
+        <span class="self">self</span>.predict_btn.clicked.connect(<span class="self">self</span>.do_predict)
+        left_layout.addWidget(<span class="self">self</span>.predict_btn)
+        
+        <span class="comment"># Result Group</span>
+        result_group = QGroupBox(<span class="string">"Hasil Prediksi"</span>)
+        result_layout = QVBoxLayout()
+        
+        <span class="self">self</span>.result_species = QLabel(<span class="string">"Spesies: -"</span>)
+        <span class="self">self</span>.result_species.setStyleSheet(<span class="string">"font-size: 18px; font-weight: bold;"</span>)
+        result_layout.addWidget(<span class="self">self</span>.result_species)
+        
+        <span class="self">self</span>.result_detail = QLabel(<span class="string">"Masukkan data dan klik Prediksi"</span>)
+        <span class="self">self</span>.result_detail.setWordWrap(<span class="keyword">True</span>)
+        result_layout.addWidget(<span class="self">self</span>.result_detail)
+        
+        result_group.setLayout(result_layout)
+        left_layout.addWidget(result_group)
+        left_layout.addStretch()
+        
+        splitter.addWidget(left)
+        
+        <span class="comment"># === Panel Kanan: History ===</span>
+        right = QWidget()
+        right_layout = QVBoxLayout(right)
+        
+        right_layout.addWidget(QLabel(<span class="string">"&lt;b&gt;Riwayat Prediksi&lt;/b&gt;"</span>))
+        
+        <span class="self">self</span>.history_table = QTableWidget()
+        <span class="self">self</span>.history_table.setColumnCount(<span class="number">6</span>)
+        <span class="self">self</span>.history_table.setHorizontalHeaderLabels([
+            <span class="string">'SL'</span>, <span class="string">'SW'</span>, <span class="string">'PL'</span>, <span class="string">'PW'</span>, <span class="string">'Prediksi'</span>, <span class="string">'Confidence'</span>
+        ])
+        <span class="self">self</span>.history_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        <span class="self">self</span>.history_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        right_layout.addWidget(<span class="self">self</span>.history_table)
+        
+        splitter.addWidget(right)
+        splitter.setSizes([<span class="number">300</span>, <span class="number">500</span>])
+        
+        main_layout.addWidget(splitter)
+    
+    <span class="keyword">def</span> <span class="function">do_predict</span>(<span class="self">self</span>):
+        <span class="comment"># Ambil input</span>
+        features = [
+            <span class="self">self</span>.inputs[<span class="string">'sepal_length'</span>].value(),
+            <span class="self">self</span>.inputs[<span class="string">'sepal_width'</span>].value(),
+            <span class="self">self</span>.inputs[<span class="string">'petal_length'</span>].value(),
+            <span class="self">self</span>.inputs[<span class="string">'petal_width'</span>].value(),
+        ]
+        
+        <span class="comment"># Prediksi</span>
+        X = np.array(features).reshape(<span class="number">1</span>, -<span class="number">1</span>)
+        prediction = <span class="self">self</span>.model.predict(X)[<span class="number">0</span>]
+        proba = <span class="self">self</span>.model.predict_proba(X)[<span class="number">0</span>]
+        
+        species = <span class="self">self</span>.target_names[prediction]
+        confidence = proba[prediction] * <span class="number">100</span>
+        
+        <span class="comment"># Update UI</span>
+        <span class="self">self</span>.result_species.setText(<span class="string">f"Spesies: </span>{species}<span class="string">"</span>)
+        
+        detail = <span class="string">f"Confidence: </span>{confidence:.1f}<span class="string">%\n\n"</span>
+        <span class="keyword">for</span> i, name <span class="keyword">in</span> <span class="builtin">enumerate</span>(<span class="self">self</span>.target_names):
+            bar = <span class="string">'█'</span> * <span class="builtin">int</span>(proba[i] * <span class="number">20</span>)
+            detail += <span class="string">f"</span>{name:<span class="number">12</span>}<span class="string">: </span>{proba[i]*<span class="number">100</span>:5.1f}<span class="string">% </span>{bar}<span class="string">\n"</span>
+        <span class="self">self</span>.result_detail.setText(detail)
+        
+        <span class="comment"># Simpan ke history</span>
+        <span class="self">self</span>.add_to_history(features, species, confidence)
+        
+        <span class="self">self</span>.statusBar().showMessage(
+            <span class="string">f"Prediksi: </span>{species}<span class="string"> (</span>{confidence:.1f}<span class="string">%)"</span>, <span class="number">5000</span>
+        )
+    
+    <span class="keyword">def</span> <span class="function">add_to_history</span>(<span class="self">self</span>, <span class="parameter">features</span>, <span class="parameter">species</span>, <span class="parameter">confidence</span>):
+        row = <span class="self">self</span>.history_table.rowCount()
+        <span class="self">self</span>.history_table.insertRow(row)
+        
+        <span class="keyword">for</span> col, val <span class="keyword">in</span> <span class="builtin">enumerate</span>(features):
+            <span class="self">self</span>.history_table.setItem(row, col, QTableWidgetItem(<span class="string">f"</span>{val:.1f}<span class="string">"</span>))
+        
+        <span class="self">self</span>.history_table.setItem(row, <span class="number">4</span>, QTableWidgetItem(species))
+        <span class="self">self</span>.history_table.setItem(row, <span class="number">5</span>, QTableWidgetItem(<span class="string">f"</span>{confidence:.1f}<span class="string">%"</span>))
+        
+        <span class="self">self</span>.history.append(features + [species, <span class="string">f"</span>{confidence:.1f}<span class="string">%"</span>])
+        <span class="self">self</span>.history_table.scrollToBottom()
+    
+    <span class="keyword">def</span> <span class="function">export_csv</span>(<span class="self">self</span>):
+        <span class="keyword">if</span> <span class="keyword">not</span> <span class="self">self</span>.history:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Kosong"</span>, <span class="string">"Belum ada data untuk di-export."</span>)
+            <span class="keyword">return</span>
+        
+        path, _ = QFileDialog.getSaveFileName(<span class="self">self</span>, <span class="string">"Export CSV"</span>, <span class="string">"predictions.csv"</span>, <span class="string">"CSV (*.csv)"</span>)
+        <span class="keyword">if</span> path:
+            <span class="keyword">with</span> <span class="builtin">open</span>(path, <span class="string">'w'</span>, newline=<span class="string">''</span>) <span class="keyword">as</span> f:
+                writer = csv.writer(f)
+                writer.writerow([<span class="string">'Sepal L'</span>, <span class="string">'Sepal W'</span>, <span class="string">'Petal L'</span>, <span class="string">'Petal W'</span>, <span class="string">'Species'</span>, <span class="string">'Confidence'</span>])
+                writer.writerows(<span class="self">self</span>.history)
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Data di-export ke:\n</span>{path}<span class="string">"</span>)
+    
+    <span class="keyword">def</span> <span class="function">clear_history</span>(<span class="self">self</span>):
+        <span class="self">self</span>.history.clear()
+        <span class="self">self</span>.history_table.setRowCount(<span class="number">0</span>)
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"History cleared"</span>, <span class="number">3000</span>)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = IrisClassifierApp()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 9: App Prediksi Harga Rumah -->
+            <section class="section" id="app-prediksi-harga">
+                <h2>9. Aplikasi Lengkap: Prediksi Harga Rumah</h2>
+
+                <p>Contoh kedua menggunakan model regresi untuk memprediksi harga rumah. Perhatikan perbedaan dalam menangani model yang memerlukan scaler.</p>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Prasyarat</div>
+                    <p>Jalankan <span class="inline-code">train_housing_model.py</span> terlebih dahulu untuk menghasilkan file <span class="inline-code">housing_model.pkl</span> dan <span class="inline-code">housing_scaler.pkl</span>.</p>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">housing_predictor_app.py</span>
+                        <span class="code-badge">Complete</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> joblib
+<span class="keyword">import</span> numpy <span class="keyword">as</span> np
+<span class="keyword">import</span> os
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QDoubleSpinBox, QFormLayout,
+    QMessageBox, QGroupBox, QSpinBox
+)
+
+
+<span class="keyword">class</span> <span class="class-name">HousingPredictorApp</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"California Housing Price Predictor"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">420</span>, <span class="number">600</span>)
+        
+        <span class="self">self</span>.load_ml_model()
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Model loaded. Ready."</span>)
+    
+    <span class="keyword">def</span> <span class="function">load_ml_model</span>(<span class="self">self</span>):
+        <span class="keyword">try</span>:
+            <span class="self">self</span>.model = joblib.load(<span class="string">'housing_model.pkl'</span>)
+            <span class="self">self</span>.scaler = joblib.load(<span class="string">'housing_scaler.pkl'</span>)
+        <span class="keyword">except</span> <span class="class-name">Exception</span> <span class="keyword">as</span> e:
+            QMessageBox.critical(<span class="keyword">None</span>, <span class="string">"Error"</span>,
+                <span class="string">f"Gagal load model:\n</span>{e}<span class="string">\n\n"</span>
+                <span class="string">"Jalankan train_housing_model.py dahulu."</span>)
+            sys.exit(<span class="number">1</span>)
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Feature names sesuai dataset California Housing</span>
+        <span class="comment"># MedInc, HouseAge, AveRooms, AveBedrms,</span>
+        <span class="comment"># Population, AveOccup, Latitude, Longitude</span>
+        
+        input_group = QGroupBox(<span class="string">"Input Data Area Perumahan"</span>)
+        form = QFormLayout()
+        
+        <span class="self">self</span>.med_income = QDoubleSpinBox()
+        <span class="self">self</span>.med_income.setRange(<span class="number">0.0</span>, <span class="number">20.0</span>)
+        <span class="self">self</span>.med_income.setValue(<span class="number">3.5</span>)
+        <span class="self">self</span>.med_income.setDecimals(<span class="number">2</span>)
+        <span class="self">self</span>.med_income.setSuffix(<span class="string">"  ($10K)"</span>)
+        form.addRow(<span class="string">"Median Income:"</span>, <span class="self">self</span>.med_income)
+        
+        <span class="self">self</span>.house_age = QSpinBox()
+        <span class="self">self</span>.house_age.setRange(<span class="number">1</span>, <span class="number">52</span>)
+        <span class="self">self</span>.house_age.setValue(<span class="number">20</span>)
+        <span class="self">self</span>.house_age.setSuffix(<span class="string">"  tahun"</span>)
+        form.addRow(<span class="string">"Usia Rumah:"</span>, <span class="self">self</span>.house_age)
+        
+        <span class="self">self</span>.ave_rooms = QDoubleSpinBox()
+        <span class="self">self</span>.ave_rooms.setRange(<span class="number">1.0</span>, <span class="number">50.0</span>)
+        <span class="self">self</span>.ave_rooms.setValue(<span class="number">5.0</span>)
+        <span class="self">self</span>.ave_rooms.setSuffix(<span class="string">"  rooms"</span>)
+        form.addRow(<span class="string">"Rata-rata Kamar:"</span>, <span class="self">self</span>.ave_rooms)
+        
+        <span class="self">self</span>.ave_bedrooms = QDoubleSpinBox()
+        <span class="self">self</span>.ave_bedrooms.setRange(<span class="number">0.5</span>, <span class="number">20.0</span>)
+        <span class="self">self</span>.ave_bedrooms.setValue(<span class="number">1.0</span>)
+        form.addRow(<span class="string">"Rata-rata Kamar Tidur:"</span>, <span class="self">self</span>.ave_bedrooms)
+        
+        <span class="self">self</span>.population = QSpinBox()
+        <span class="self">self</span>.population.setRange(<span class="number">1</span>, <span class="number">50000</span>)
+        <span class="self">self</span>.population.setValue(<span class="number">1000</span>)
+        <span class="self">self</span>.population.setSuffix(<span class="string">"  orang"</span>)
+        form.addRow(<span class="string">"Populasi Area:"</span>, <span class="self">self</span>.population)
+        
+        <span class="self">self</span>.ave_occup = QDoubleSpinBox()
+        <span class="self">self</span>.ave_occup.setRange(<span class="number">1.0</span>, <span class="number">30.0</span>)
+        <span class="self">self</span>.ave_occup.setValue(<span class="number">3.0</span>)
+        form.addRow(<span class="string">"Rata-rata Penghuni:"</span>, <span class="self">self</span>.ave_occup)
+        
+        <span class="self">self</span>.latitude = QDoubleSpinBox()
+        <span class="self">self</span>.latitude.setRange(<span class="number">32.0</span>, <span class="number">42.0</span>)
+        <span class="self">self</span>.latitude.setValue(<span class="number">37.0</span>)
+        <span class="self">self</span>.latitude.setDecimals(<span class="number">2</span>)
+        form.addRow(<span class="string">"Latitude:"</span>, <span class="self">self</span>.latitude)
+        
+        <span class="self">self</span>.longitude = QDoubleSpinBox()
+        <span class="self">self</span>.longitude.setRange(-<span class="number">125.0</span>, -<span class="number">114.0</span>)
+        <span class="self">self</span>.longitude.setValue(-<span class="number">122.0</span>)
+        <span class="self">self</span>.longitude.setDecimals(<span class="number">2</span>)
+        form.addRow(<span class="string">"Longitude:"</span>, <span class="self">self</span>.longitude)
+        
+        input_group.setLayout(form)
+        layout.addWidget(input_group)
+        
+        <span class="comment"># Predict Button</span>
+        predict_btn = QPushButton(<span class="string">"Prediksi Harga"</span>)
+        predict_btn.setStyleSheet(<span class="string">"""
+            QPushButton {
+                background-color: #e67e22; color: white;
+                padding: 12px; border: none; border-radius: 6px;
+                font-size: 14px; font-weight: bold;
+            }
+            QPushButton:hover { background-color: #d35400; }
+        """</span>)
+        predict_btn.clicked.connect(<span class="self">self</span>.do_predict)
+        layout.addWidget(predict_btn)
+        
+        <span class="comment"># Result</span>
+        result_group = QGroupBox(<span class="string">"Hasil Prediksi"</span>)
+        result_layout = QVBoxLayout()
+        
+        <span class="self">self</span>.result_price = QLabel(<span class="string">"Harga: -"</span>)
+        <span class="self">self</span>.result_price.setStyleSheet(<span class="string">"font-size: 22px; font-weight: bold; color: #27ae60;"</span>)
+        result_layout.addWidget(<span class="self">self</span>.result_price)
+        
+        <span class="self">self</span>.result_note = QLabel(<span class="string">"Masukkan data area dan klik Prediksi"</span>)
+        <span class="self">self</span>.result_note.setWordWrap(<span class="keyword">True</span>)
+        result_layout.addWidget(<span class="self">self</span>.result_note)
+        
+        result_group.setLayout(result_layout)
+        layout.addWidget(result_group)
+        
+        layout.addStretch()
+    
+    <span class="keyword">def</span> <span class="function">do_predict</span>(<span class="self">self</span>):
+        features = [
+            <span class="self">self</span>.med_income.value(),
+            <span class="self">self</span>.house_age.value(),
+            <span class="self">self</span>.ave_rooms.value(),
+            <span class="self">self</span>.ave_bedrooms.value(),
+            <span class="self">self</span>.population.value(),
+            <span class="self">self</span>.ave_occup.value(),
+            <span class="self">self</span>.latitude.value(),
+            <span class="self">self</span>.longitude.value(),
+        ]
+        
+        <span class="comment"># Transform input menggunakan scaler yang SAMA dari training</span>
+        X = np.array(features).reshape(<span class="number">1</span>, -<span class="number">1</span>)
+        X_scaled = <span class="self">self</span>.scaler.transform(X)
+        
+        <span class="comment"># Prediksi (hasilnya dalam $100,000)</span>
+        prediction = <span class="self">self</span>.model.predict(X_scaled)[<span class="number">0</span>]
+        price_usd = prediction * <span class="number">100000</span>
+        
+        <span class="self">self</span>.result_price.setText(<span class="string">f"Estimasi: ${price_usd:,.0f}"</span>)
+        <span class="self">self</span>.result_note.setText(
+            <span class="string">f"Median Income: ${</span><span class="self">self</span>.med_income.value() * <span class="number">10000</span>:,.0f}<span class="string">/tahun\n"</span>
+            <span class="string">f"Model output: </span>{prediction:.4f}<span class="string"> (x $100K)\n\n"</span>
+            <span class="string">"Catatan: Prediksi berdasarkan data historis California."</span>
+        )
+        
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Prediksi: ${price_usd:,.0f}"</span>, <span class="number">5000</span>)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    window = HousingPredictorApp()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 10: Best Practices -->
+            <section class="section" id="best-practices">
+                <h2>10. Best Practices</h2>
+
+                <h3>Struktur Project yang Direkomendasikan</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">project_structure</span>
+                        <span class="code-badge">Folder</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>ml_app/
+│
+├── main.py                 <span class="comment"># Entry point aplikasi</span>
+│
+├── models/                 <span class="comment"># File .pkl model</span>
+│   ├── iris_model.pkl
+│   └── housing_model.pkl
+│
+├── training/               <span class="comment"># Script training (terpisah dari app)</span>
+│   ├── train_iris.py
+│   └── train_housing.py
+│
+├── ml/                     <span class="comment"># ML handler</span>
+│   ├── __init__.py
+│   └── model_handler.py    <span class="comment"># Class ModelHandler</span>
+│
+├── ui/                     <span class="comment"># PySide6 UI</span>
+│   ├── __init__.py
+│   └── main_window.py
+│
+└── utils/                  <span class="comment"># Utilitas</span>
+    ├── __init__.py
+    └── validators.py</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Checklist Best Practices</div>
+                    <ul>
+                        <li><strong>Pisahkan training dan inference.</strong> Script training jangan digabung dengan aplikasi.</li>
+                        <li><strong>Simpan scaler bersama model.</strong> Jika preprocessing digunakan, simpan juga scaler-nya.</li>
+                        <li><strong>Cek file .pkl saat startup.</strong> Beri pesan error yang jelas jika file tidak ditemukan.</li>
+                        <li><strong>Gunakan ModelHandler terpisah.</strong> Jangan masukkan logic ML langsung di UI class.</li>
+                        <li><strong>Validasi input sebelum prediksi.</strong> Pastikan nilai input berada dalam range yang wajar.</li>
+                        <li><strong>Tampilkan confidence/probability.</strong> User perlu tahu seberapa yakin model.</li>
+                        <li><strong>Gunakan QDoubleSpinBox.</strong> Lebih mudah mengontrol input numerik daripada QLineEdit.</li>
+                        <li><strong>Gunakan threading untuk model besar.</strong> Jika model lambat, load dan prediksi di thread terpisah.</li>
+                    </ul>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Kesalahan Umum yang Harus Dihindari</div>
+                    <ul>
+                        <li><strong>Lupa reshape input:</strong> Selalu gunakan <span class="inline-code">.reshape(1, -1)</span> untuk single prediction</li>
+                        <li><strong>Lupa scale input:</strong> Jika training pakai scaler, prediksi juga harus pakai scaler yang sama</li>
+                        <li><strong>Pakai fit_transform saat prediksi:</strong> Gunakan <span class="inline-code">transform()</span> saja, bukan <span class="inline-code">fit_transform()</span></li>
+                        <li><strong>Versi library berbeda:</strong> Pastikan versi scikit-learn saat training dan inference sama</li>
+                        <li><strong>Tidak handle FileNotFoundError:</strong> Selalu cek apakah file .pkl ada sebelum load</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum</h2>
+
+                <div class="exercise-box">
+                    <h3>Tugas: Aplikasi Prediksi ML</h3>
+                    <p>Pilih SATU dari tugas berikut:</p>
+                    <ol>
+                        <li><strong>Klasifikasi Wine:</strong> Gunakan dataset <span class="inline-code">load_wine()</span> dari scikit-learn. Buat model untuk memprediksi kelas wine berdasarkan komposisi kimianya. Buat UI input dan tampilkan hasil + probabilitas.</li>
+                        <li><strong>Klasifikasi Diabetes:</strong> Gunakan dataset <span class="inline-code">load_diabetes()</span>. Buat model regresi untuk memprediksi progression diabetes. Tampilkan prediksi nilai dan kategori resiko (rendah/sedang/tinggi).</li>
+                        <li><strong>Dataset Sendiri:</strong> Buat/cari dataset CSV sendiri (minimal 100 baris, 3 fitur). Training model, export .pkl, buat aplikasi PySide6 untuk prediksi.</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Ketentuan Pengumpulan</div>
+                    <ul>
+                        <li>Sertakan script training (<span class="inline-code">train_model.py</span>) dan aplikasi (<span class="inline-code">main.py</span>)</li>
+                        <li>Sertakan file .pkl hasil training</li>
+                        <li>ModelHandler terpisah dari UI</li>
+                        <li>Tampilkan confidence/probability</li>
+                        <li>Ada validasi input</li>
+                        <li>Sertakan README.md dengan instruksi menjalankan</li>
+                        <li>Kumpulkan dalam format ZIP</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen</th>
+                                    <th>Bobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Script training dan evaluasi model</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Export .pkl (model + scaler jika perlu)</td>
+                                    <td>10%</td>
+                                </tr>
+                                <tr>
+                                    <td>Load model dan prediksi di PySide6</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>UI input yang sesuai (SpinBox, validasi)</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Tampilan hasil (confidence, probabilitas)</td>
+                                    <td>15%</td>
+                                </tr>
+                                <tr>
+                                    <td>Struktur project dan dokumentasi</td>
+                                    <td>10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('contextmenu', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!'); });
+            block.addEventListener('selectstart', e => e.preventDefault());
+            block.addEventListener('dragstart', e => e.preventDefault());
+            block.addEventListener('copy', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!'); });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                const sel = window.getSelection();
+                if (sel.anchorNode?.parentElement?.closest('.code-block')) {
+                    e.preventDefault();
+                    alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+                }
+            }
+        });
+
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            let current = '';
+            sections.forEach(s => { if (pageYOffset >= s.offsetTop - 100) current = s.getAttribute('id'); });
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        });
+
+        console.log('%cPERHATIAN!', 'color: red; font-size: 24px; font-weight: bold;');
+        console.log('%cKode dilindungi. Ketik manual untuk belajar!', 'font-size: 14px;');
+    </script>
+</body>
+</html>

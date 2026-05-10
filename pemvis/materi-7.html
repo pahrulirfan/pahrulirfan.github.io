@@ -1,0 +1,1358 @@
+<!DOCTYPE html><html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Praktikum PySide6 - Packaging & Distribusi</title>
+        <link rel="stylesheet" href="assets/css/style-2.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>Praktikum PySide6</h2>
+                <p>Packaging & Distribusi</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Persiapan</div>
+                    <a href="#overview" class="nav-link active">
+                        <span class="nav-number">1</span>Overview Distribusi
+                    </a>
+                    <a href="#project-sample" class="nav-link">
+                        <span class="nav-number">2</span>Project Contoh (CRUD)
+                    </a>
+                    <a href="#tools" class="nav-link">
+                        <span class="nav-number">3</span>Tools Packaging
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">PyInstaller</div>
+                    <a href="#pyinstaller-basic" class="nav-link">
+                        <span class="nav-number">4</span>PyInstaller Dasar
+                    </a>
+                    <a href="#pyinstaller-onefile" class="nav-link">
+                        <span class="nav-number">5</span>Mode One-File
+                    </a>
+                    <a href="#pyinstaller-spec" class="nav-link">
+                        <span class="nav-number">6</span>File .spec
+                    </a>
+                    <a href="#include-data" class="nav-link">
+                        <span class="nav-number">7</span>Include Data Files
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Multi-Platform</div>
+                    <a href="#windows" class="nav-link">
+                        <span class="nav-number">8</span>Build untuk Windows
+                    </a>
+                    <a href="#macos" class="nav-link">
+                        <span class="nav-number">9</span>Build untuk macOS
+                    </a>
+                    <a href="#linux" class="nav-link">
+                        <span class="nav-number">10</span>Build untuk Linux
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Advanced</div>
+                    <a href="#troubleshooting" class="nav-link">
+                        <span class="nav-number">11</span>Troubleshooting
+                    </a>
+                    <a href="#checklist" class="nav-link">
+                        <span class="nav-number">12</span>Checklist Distribusi
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Latihan</div>
+                    <a href="#latihan" class="nav-link">
+                        <span class="nav-number">★</span>Tugas Praktikum
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Navigasi</div>
+                    <a href="machine_learning.html" class="nav-link">
+                        <span class="nav-number">←</span>Materi Sebelumnya
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Packaging & Distribusi Aplikasi PySide6</h1>
+                <p class="subtitle">Mengubah project Python menjadi aplikasi executable (.exe / .app / binary) yang siap didistribusikan</p>
+            </header>
+
+            <!-- Capaian -->
+            <section class="section">
+                <h2>Capaian Pembelajaran</h2>
+                <div class="info-box success">
+                    <div class="info-box-title">Setelah menyelesaikan materi ini, mahasiswa mampu:</div>
+                    <ol>
+                        <li>Menyiapkan project PySide6 untuk distribusi</li>
+                        <li>Menggunakan PyInstaller untuk membuat executable</li>
+                        <li>Menangani penyertaan file data (database, icon, resource)</li>
+                        <li>Membangun aplikasi untuk Windows, macOS, dan Linux</li>
+                        <li>Melakukan troubleshooting masalah packaging umum</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Section 1: Overview -->
+            <section class="section" id="overview">
+                <h2>1. Overview Distribusi Aplikasi</h2>
+
+                <p>Saat kita menulis aplikasi Python, user harus menginstall Python dan semua dependency untuk menjalankannya. Ini tidak praktis untuk distribusi ke end-user. Solusinya adalah <strong>packaging</strong> — membungkus seluruh aplikasi beserta interpreter Python dan library ke dalam satu executable.</p>
+
+                <div class="diagram">
+                    <div class="diagram-title">Dari Source Code ke Executable</div>
+                    <div class="flow-container">
+                        <div class="flow-box">Source Code<br><small>(.py files)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Dependencies<br><small>(PySide6, dll)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box highlight">PyInstaller<br><small>(Bundling)</small></div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-box">Executable<br><small>(.exe/.app)</small></div>
+                    </div>
+                </div>
+
+                <h3>Apa yang Dibundel?</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Komponen</th>
+                                <th>Deskripsi</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Python Interpreter</td>
+                                <td>Mesin Python itu sendiri</td>
+                                <td>python311.dll</td>
+                            </tr>
+                            <tr>
+                                <td>Source Code</td>
+                                <td>File .py kita (dikompilasi ke .pyc)</td>
+                                <td>main.py → main.pyc</td>
+                            </tr>
+                            <tr>
+                                <td>Dependencies</td>
+                                <td>Library pihak ketiga</td>
+                                <td>PySide6, sqlite3, joblib</td>
+                            </tr>
+                            <tr>
+                                <td>Data Files</td>
+                                <td>File non-Python</td>
+                                <td>.db, .png, .ico, .pkl</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">Tanpa Packaging</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>User harus install Python</li>
+                                <li>User harus pip install dependencies</li>
+                                <li>Jalankan via command line</li>
+                                <li>Rawan error versi library</li>
+                                <li>Source code terlihat</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">Dengan Packaging</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Double-click langsung jalan</li>
+                                <li>Tidak perlu install apapun</li>
+                                <li>Seperti aplikasi native</li>
+                                <li>Versi library terkunci</li>
+                                <li>Source code terlindungi</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Output per Platform</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Platform</th>
+                                <th>Output</th>
+                                <th>Distribusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Windows</td>
+                                <td><span class="table-code">.exe</span></td>
+                                <td>File .exe atau installer .msi / Inno Setup</td>
+                            </tr>
+                            <tr>
+                                <td>macOS</td>
+                                <td><span class="table-code">.app</span></td>
+                                <td>Bundle .app atau .dmg</td>
+                            </tr>
+                            <tr>
+                                <td>Linux</td>
+                                <td><span class="table-code">binary</span></td>
+                                <td>Binary executable, AppImage, atau .deb</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Cross-Compilation Tidak Didukung</div>
+                    <p>PyInstaller <strong>tidak bisa</strong> cross-compile. Untuk membuat .exe, Anda harus build di Windows. Untuk .app, build di macOS. Untuk binary Linux, build di Linux. Gunakan Virtual Machine atau CI/CD jika perlu build multi-platform.</p>
+                </div>
+            </section>
+
+            <!-- Section 2: Project Contoh -->
+            <section class="section" id="project-sample">
+                <h2>2. Project Contoh: CRUD Mahasiswa</h2>
+
+                <p>Kita akan menggunakan project CRUD sederhana sebagai contoh yang akan di-package. Buat struktur folder dan file berikut:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Struktur Project</span>
+                        <span class="code-badge">Folder</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>crud_mahasiswa/
+│
+├── main.py                <span class="comment"># Entry point</span>
+├── database.py            <span class="comment"># DatabaseManager</span>
+├── icon.ico               <span class="comment"># Icon aplikasi (opsional)</span>
+└── README.md</code></pre>
+                    </div>
+                </div>
+
+                <h3>File 1: database.py</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">database.py</span>
+                        <span class="code-badge">Database</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sqlite3
+<span class="keyword">import</span> os
+<span class="keyword">import</span> sys
+
+<span class="keyword">class</span> <span class="class-name">DatabaseManager</span>:
+    <span class="string">"""Manager untuk operasi database SQLite"""</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">db_name</span>=<span class="string">'mahasiswa.db'</span>):
+        <span class="comment"># Penting: tentukan path database yang benar</span>
+        <span class="comment"># Saat di-bundle, working directory bisa berbeda</span>
+        <span class="self">self</span>.db_path = <span class="self">self</span>.get_db_path(db_name)
+        <span class="self">self</span>.init_db()
+    
+    <span class="keyword">def</span> <span class="function">get_db_path</span>(<span class="self">self</span>, <span class="parameter">db_name</span>):
+        <span class="string">"""
+        Menentukan path database yang benar.
+        
+        Saat dijalankan sebagai .exe (frozen), 
+        file database disimpan di direktori yang sama 
+        dengan executable agar bisa ditulis.
+        """</span>
+        <span class="keyword">if</span> <span class="builtin">getattr</span>(sys, <span class="string">'frozen'</span>, <span class="keyword">False</span>):
+            <span class="comment"># Jika dijalankan sebagai executable (PyInstaller)</span>
+            app_dir = os.path.dirname(sys.executable)
+        <span class="keyword">else</span>:
+            <span class="comment"># Jika dijalankan sebagai script Python biasa</span>
+            app_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        <span class="keyword">return</span> os.path.join(app_dir, db_name)
+    
+    <span class="keyword">def</span> <span class="function">get_connection</span>(<span class="self">self</span>):
+        conn = sqlite3.connect(<span class="self">self</span>.db_path)
+        conn.row_factory = sqlite3.Row
+        <span class="keyword">return</span> conn
+    
+    <span class="keyword">def</span> <span class="function">init_db</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'''
+                CREATE TABLE IF NOT EXISTS mahasiswa (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nim TEXT UNIQUE NOT NULL,
+                    nama TEXT NOT NULL,
+                    jurusan TEXT NOT NULL,
+                    semester INTEGER DEFAULT 1
+                )
+            '''</span>)
+    
+    <span class="keyword">def</span> <span class="function">add</span>(<span class="self">self</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>, <span class="parameter">jurusan</span>, <span class="parameter">semester</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'INSERT INTO mahasiswa (nim, nama, jurusan, semester) VALUES (?,?,?,?)'</span>,
+                (nim, nama, jurusan, semester)
+            )
+    
+    <span class="keyword">def</span> <span class="function">get_all</span>(<span class="self">self</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(<span class="string">'SELECT * FROM mahasiswa ORDER BY nama'</span>).fetchall()
+    
+    <span class="keyword">def</span> <span class="function">get_by_id</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(<span class="string">'SELECT * FROM mahasiswa WHERE id=?'</span>, (id,)).fetchone()
+    
+    <span class="keyword">def</span> <span class="function">update</span>(<span class="self">self</span>, <span class="parameter">id</span>, <span class="parameter">nim</span>, <span class="parameter">nama</span>, <span class="parameter">jurusan</span>, <span class="parameter">semester</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(
+                <span class="string">'UPDATE mahasiswa SET nim=?, nama=?, jurusan=?, semester=? WHERE id=?'</span>,
+                (nim, nama, jurusan, semester, id)
+            )
+    
+    <span class="keyword">def</span> <span class="function">delete</span>(<span class="self">self</span>, <span class="parameter">id</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            conn.execute(<span class="string">'DELETE FROM mahasiswa WHERE id=?'</span>, (id,))
+    
+    <span class="keyword">def</span> <span class="function">search</span>(<span class="self">self</span>, <span class="parameter">keyword</span>):
+        <span class="keyword">with</span> <span class="self">self</span>.get_connection() <span class="keyword">as</span> conn:
+            <span class="keyword">return</span> conn.execute(
+                <span class="string">'SELECT * FROM mahasiswa WHERE nama LIKE ? OR nim LIKE ?'</span>,
+                (<span class="string">f'%</span>{keyword}<span class="string">%'</span>, <span class="string">f'%</span>{keyword}<span class="string">%'</span>)
+            ).fetchall()</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">PENTING: get_db_path()</div>
+                    <p>Method <span class="inline-code">get_db_path()</span> adalah kunci agar database berfungsi setelah di-package. Saat aplikasi dijadikan .exe, working directory bisa berbeda dari lokasi .exe. Kita gunakan <span class="inline-code">sys.frozen</span> untuk mendeteksi apakah berjalan sebagai executable, lalu simpan database di folder yang sama dengan .exe.</p>
+                </div>
+
+                <h3>File 2: main.py</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">main.py</span>
+                        <span class="code-badge">Entry Point</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> sqlite3
+<span class="keyword">from</span> PySide6.QtWidgets <span class="keyword">import</span> (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QTableWidget, QTableWidgetItem, QPushButton, QLineEdit,
+    QLabel, QFormLayout, QMessageBox, QHeaderView, QDialog,
+    QDialogButtonBox, QSpinBox, QComboBox, QStyle, QFileDialog
+)
+<span class="keyword">from</span> PySide6.QtGui <span class="keyword">import</span> QAction, QKeySequence
+<span class="keyword">from</span> PySide6.QtCore <span class="keyword">import</span> Qt
+<span class="keyword">import</span> csv
+
+<span class="keyword">from</span> database <span class="keyword">import</span> DatabaseManager
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># DIALOG: Tambah/Edit Mahasiswa</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">MahasiswaDialog</span>(QDialog):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>, <span class="parameter">parent</span>=<span class="keyword">None</span>, <span class="parameter">data</span>=<span class="keyword">None</span>):
+        <span class="builtin">super</span>().__init__(parent)
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Edit Mahasiswa"</span> <span class="keyword">if</span> data <span class="keyword">else</span> <span class="string">"Tambah Mahasiswa"</span>)
+        <span class="self">self</span>.setMinimumWidth(<span class="number">320</span>)
+        
+        layout = QVBoxLayout(<span class="self">self</span>)
+        form = QFormLayout()
+        
+        <span class="self">self</span>.nim_input = QLineEdit()
+        <span class="self">self</span>.nim_input.setPlaceholderText(<span class="string">"8 digit angka"</span>)
+        <span class="self">self</span>.nim_input.setMaxLength(<span class="number">8</span>)
+        form.addRow(<span class="string">"NIM:"</span>, <span class="self">self</span>.nim_input)
+        
+        <span class="self">self</span>.nama_input = QLineEdit()
+        <span class="self">self</span>.nama_input.setPlaceholderText(<span class="string">"Nama lengkap"</span>)
+        form.addRow(<span class="string">"Nama:"</span>, <span class="self">self</span>.nama_input)
+        
+        <span class="self">self</span>.jurusan_combo = QComboBox()
+        <span class="self">self</span>.jurusan_combo.addItems([
+            <span class="string">'Teknik Informatika'</span>, <span class="string">'Sistem Informasi'</span>,
+            <span class="string">'Teknik Komputer'</span>, <span class="string">'Manajemen Informatika'</span>
+        ])
+        form.addRow(<span class="string">"Jurusan:"</span>, <span class="self">self</span>.jurusan_combo)
+        
+        <span class="self">self</span>.semester_spin = QSpinBox()
+        <span class="self">self</span>.semester_spin.setRange(<span class="number">1</span>, <span class="number">14</span>)
+        form.addRow(<span class="string">"Semester:"</span>, <span class="self">self</span>.semester_spin)
+        
+        layout.addLayout(form)
+        
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(<span class="self">self</span>.validate_and_accept)
+        buttons.rejected.connect(<span class="self">self</span>.reject)
+        layout.addWidget(buttons)
+        
+        <span class="keyword">if</span> data:
+            <span class="self">self</span>.nim_input.setText(data[<span class="string">'nim'</span>])
+            <span class="self">self</span>.nama_input.setText(data[<span class="string">'nama'</span>])
+            <span class="self">self</span>.jurusan_combo.setCurrentText(data[<span class="string">'jurusan'</span>])
+            <span class="self">self</span>.semester_spin.setValue(data[<span class="string">'semester'</span>])
+    
+    <span class="keyword">def</span> <span class="function">validate_and_accept</span>(<span class="self">self</span>):
+        nim = <span class="self">self</span>.nim_input.text().strip()
+        nama = <span class="self">self</span>.nama_input.text().strip()
+        
+        <span class="keyword">if</span> <span class="keyword">not</span> nim <span class="keyword">or</span> <span class="keyword">not</span> nim.isdigit() <span class="keyword">or</span> <span class="builtin">len</span>(nim) != <span class="number">8</span>:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi"</span>, <span class="string">"NIM harus 8 digit angka!"</span>)
+            <span class="self">self</span>.nim_input.setFocus()
+            <span class="keyword">return</span>
+        <span class="keyword">if</span> <span class="keyword">not</span> nama <span class="keyword">or</span> <span class="builtin">len</span>(nama) < <span class="number">3</span>:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Validasi"</span>, <span class="string">"Nama minimal 3 karakter!"</span>)
+            <span class="self">self</span>.nama_input.setFocus()
+            <span class="keyword">return</span>
+        <span class="self">self</span>.accept()
+    
+    <span class="keyword">def</span> <span class="function">get_data</span>(<span class="self">self</span>):
+        <span class="keyword">return</span> {
+            <span class="string">'nim'</span>: <span class="self">self</span>.nim_input.text().strip(),
+            <span class="string">'nama'</span>: <span class="self">self</span>.nama_input.text().strip(),
+            <span class="string">'jurusan'</span>: <span class="self">self</span>.jurusan_combo.currentText(),
+            <span class="string">'semester'</span>: <span class="self">self</span>.semester_spin.value()
+        }
+
+
+<span class="comment"># ============================================</span>
+<span class="comment"># MAIN WINDOW</span>
+<span class="comment"># ============================================</span>
+
+<span class="keyword">class</span> <span class="class-name">MainWindow</span>(QMainWindow):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="self">self</span>):
+        <span class="builtin">super</span>().__init__()
+        <span class="self">self</span>.setWindowTitle(<span class="string">"Sistem Data Mahasiswa v1.0"</span>)
+        <span class="self">self</span>.setGeometry(<span class="number">100</span>, <span class="number">100</span>, <span class="number">750</span>, <span class="number">500</span>)
+        
+        <span class="self">self</span>.db = DatabaseManager()
+        <span class="self">self</span>.create_actions()
+        <span class="self">self</span>.create_menus()
+        <span class="self">self</span>.create_toolbar()
+        <span class="self">self</span>.setup_ui()
+        <span class="self">self</span>.load_data()
+    
+    <span class="keyword">def</span> <span class="function">create_actions</span>(<span class="self">self</span>):
+        style = <span class="self">self</span>.style()
+        
+        <span class="self">self</span>.add_action = QAction(<span class="string">"&amp;Tambah"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.add_action.setIcon(style.standardIcon(QStyle.SP_FileIcon))
+        <span class="self">self</span>.add_action.setShortcut(<span class="string">"Ctrl+N"</span>)
+        <span class="self">self</span>.add_action.triggered.connect(<span class="self">self</span>.add_mahasiswa)
+        
+        <span class="self">self</span>.edit_action = QAction(<span class="string">"&amp;Edit"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.edit_action.setShortcut(<span class="string">"Ctrl+E"</span>)
+        <span class="self">self</span>.edit_action.triggered.connect(<span class="self">self</span>.edit_mahasiswa)
+        
+        <span class="self">self</span>.delete_action = QAction(<span class="string">"&amp;Hapus"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.delete_action.setIcon(style.standardIcon(QStyle.SP_TrashIcon))
+        <span class="self">self</span>.delete_action.setShortcut(QKeySequence.Delete)
+        <span class="self">self</span>.delete_action.triggered.connect(<span class="self">self</span>.delete_mahasiswa)
+        
+        <span class="self">self</span>.export_action = QAction(<span class="string">"E&amp;xport CSV"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.export_action.setIcon(style.standardIcon(QStyle.SP_DialogSaveButton))
+        <span class="self">self</span>.export_action.setShortcut(<span class="string">"Ctrl+Shift+E"</span>)
+        <span class="self">self</span>.export_action.triggered.connect(<span class="self">self</span>.export_csv)
+        
+        <span class="self">self</span>.exit_action = QAction(<span class="string">"E&amp;xit"</span>, <span class="self">self</span>)
+        <span class="self">self</span>.exit_action.setShortcut(<span class="string">"Ctrl+Q"</span>)
+        <span class="self">self</span>.exit_action.triggered.connect(<span class="self">self</span>.close)
+    
+    <span class="keyword">def</span> <span class="function">create_menus</span>(<span class="self">self</span>):
+        file_menu = <span class="self">self</span>.menuBar().addMenu(<span class="string">"&amp;File"</span>)
+        file_menu.addAction(<span class="self">self</span>.add_action)
+        file_menu.addAction(<span class="self">self</span>.edit_action)
+        file_menu.addAction(<span class="self">self</span>.delete_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.export_action)
+        file_menu.addSeparator()
+        file_menu.addAction(<span class="self">self</span>.exit_action)
+    
+    <span class="keyword">def</span> <span class="function">create_toolbar</span>(<span class="self">self</span>):
+        toolbar = <span class="self">self</span>.addToolBar(<span class="string">"Main"</span>)
+        toolbar.addAction(<span class="self">self</span>.add_action)
+        toolbar.addAction(<span class="self">self</span>.delete_action)
+        toolbar.addSeparator()
+        toolbar.addAction(<span class="self">self</span>.export_action)
+    
+    <span class="keyword">def</span> <span class="function">setup_ui</span>(<span class="self">self</span>):
+        central = QWidget()
+        <span class="self">self</span>.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        
+        <span class="comment"># Search</span>
+        search_layout = QHBoxLayout()
+        <span class="self">self</span>.search_input = QLineEdit()
+        <span class="self">self</span>.search_input.setPlaceholderText(<span class="string">"Cari nama atau NIM..."</span>)
+        <span class="self">self</span>.search_input.textChanged.connect(<span class="self">self</span>.search_data)
+        search_layout.addWidget(QLabel(<span class="string">"Cari:"</span>))
+        search_layout.addWidget(<span class="self">self</span>.search_input)
+        layout.addLayout(search_layout)
+        
+        <span class="comment"># Table</span>
+        <span class="self">self</span>.table = QTableWidget()
+        <span class="self">self</span>.table.setColumnCount(<span class="number">5</span>)
+        <span class="self">self</span>.table.setHorizontalHeaderLabels([<span class="string">'ID'</span>, <span class="string">'NIM'</span>, <span class="string">'Nama'</span>, <span class="string">'Jurusan'</span>, <span class="string">'Semester'</span>])
+        <span class="self">self</span>.table.setSelectionBehavior(QTableWidget.SelectRows)
+        <span class="self">self</span>.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        <span class="self">self</span>.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        <span class="self">self</span>.table.setColumnWidth(<span class="number">0</span>, <span class="number">40</span>)
+        <span class="self">self</span>.table.doubleClicked.connect(<span class="self">self</span>.edit_mahasiswa)
+        layout.addWidget(<span class="self">self</span>.table)
+        
+        <span class="comment"># Buttons</span>
+        btn_layout = QHBoxLayout()
+        
+        btn_add = QPushButton(<span class="string">"Tambah"</span>)
+        btn_add.clicked.connect(<span class="self">self</span>.add_mahasiswa)
+        btn_layout.addWidget(btn_add)
+        
+        btn_edit = QPushButton(<span class="string">"Edit"</span>)
+        btn_edit.clicked.connect(<span class="self">self</span>.edit_mahasiswa)
+        btn_layout.addWidget(btn_edit)
+        
+        btn_delete = QPushButton(<span class="string">"Hapus"</span>)
+        btn_delete.clicked.connect(<span class="self">self</span>.delete_mahasiswa)
+        btn_layout.addWidget(btn_delete)
+        
+        btn_refresh = QPushButton(<span class="string">"Refresh"</span>)
+        btn_refresh.clicked.connect(<span class="self">self</span>.load_data)
+        btn_layout.addWidget(btn_refresh)
+        
+        layout.addLayout(btn_layout)
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">"Ready"</span>)
+    
+    <span class="keyword">def</span> <span class="function">load_data</span>(<span class="self">self</span>):
+        data = <span class="self">self</span>.db.get_all()
+        <span class="self">self</span>.populate_table(data)
+    
+    <span class="keyword">def</span> <span class="function">populate_table</span>(<span class="self">self</span>, <span class="parameter">data</span>):
+        <span class="self">self</span>.table.setRowCount(<span class="number">0</span>)
+        <span class="keyword">for</span> row_data <span class="keyword">in</span> data:
+            row = <span class="self">self</span>.table.rowCount()
+            <span class="self">self</span>.table.insertRow(row)
+            <span class="self">self</span>.table.setItem(row, <span class="number">0</span>, QTableWidgetItem(<span class="builtin">str</span>(row_data[<span class="string">'id'</span>])))
+            <span class="self">self</span>.table.setItem(row, <span class="number">1</span>, QTableWidgetItem(row_data[<span class="string">'nim'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">2</span>, QTableWidgetItem(row_data[<span class="string">'nama'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">3</span>, QTableWidgetItem(row_data[<span class="string">'jurusan'</span>]))
+            <span class="self">self</span>.table.setItem(row, <span class="number">4</span>, QTableWidgetItem(<span class="builtin">str</span>(row_data[<span class="string">'semester'</span>])))
+        <span class="self">self</span>.statusBar().showMessage(<span class="string">f"Total: </span>{<span class="builtin">len</span>(data)}<span class="string"> mahasiswa"</span>)
+    
+    <span class="keyword">def</span> <span class="function">search_data</span>(<span class="self">self</span>):
+        keyword = <span class="self">self</span>.search_input.text().strip()
+        data = <span class="self">self</span>.db.search(keyword) <span class="keyword">if</span> keyword <span class="keyword">else</span> <span class="self">self</span>.db.get_all()
+        <span class="self">self</span>.populate_table(data)
+    
+    <span class="keyword">def</span> <span class="function">get_selected_id</span>(<span class="self">self</span>):
+        row = <span class="self">self</span>.table.currentRow()
+        <span class="keyword">if</span> row < <span class="number">0</span>:
+            <span class="keyword">return</span> <span class="keyword">None</span>
+        <span class="keyword">return</span> <span class="builtin">int</span>(<span class="self">self</span>.table.item(row, <span class="number">0</span>).text())
+    
+    <span class="keyword">def</span> <span class="function">add_mahasiswa</span>(<span class="self">self</span>):
+        dialog = MahasiswaDialog(<span class="self">self</span>)
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            d = dialog.get_data()
+            <span class="keyword">try</span>:
+                <span class="self">self</span>.db.add(d[<span class="string">'nim'</span>], d[<span class="string">'nama'</span>], d[<span class="string">'jurusan'</span>], d[<span class="string">'semester'</span>])
+                <span class="self">self</span>.load_data()
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil ditambahkan!"</span>)
+            <span class="keyword">except</span> sqlite3.IntegrityError:
+                QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM sudah terdaftar!"</span>)
+    
+    <span class="keyword">def</span> <span class="function">edit_mahasiswa</span>(<span class="self">self</span>):
+        id = <span class="self">self</span>.get_selected_id()
+        <span class="keyword">if</span> <span class="keyword">not</span> id:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih data yang akan diedit!"</span>)
+            <span class="keyword">return</span>
+        mhs = <span class="self">self</span>.db.get_by_id(id)
+        dialog = MahasiswaDialog(<span class="self">self</span>, <span class="builtin">dict</span>(mhs))
+        <span class="keyword">if</span> dialog.exec() == QDialog.Accepted:
+            d = dialog.get_data()
+            <span class="keyword">try</span>:
+                <span class="self">self</span>.db.update(id, d[<span class="string">'nim'</span>], d[<span class="string">'nama'</span>], d[<span class="string">'jurusan'</span>], d[<span class="string">'semester'</span>])
+                <span class="self">self</span>.load_data()
+                QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">"Data berhasil diupdate!"</span>)
+            <span class="keyword">except</span> sqlite3.IntegrityError:
+                QMessageBox.warning(<span class="self">self</span>, <span class="string">"Error"</span>, <span class="string">"NIM sudah digunakan!"</span>)
+    
+    <span class="keyword">def</span> <span class="function">delete_mahasiswa</span>(<span class="self">self</span>):
+        id = <span class="self">self</span>.get_selected_id()
+        <span class="keyword">if</span> <span class="keyword">not</span> id:
+            QMessageBox.warning(<span class="self">self</span>, <span class="string">"Peringatan"</span>, <span class="string">"Pilih data yang akan dihapus!"</span>)
+            <span class="keyword">return</span>
+        reply = QMessageBox.question(<span class="self">self</span>, <span class="string">"Konfirmasi"</span>, <span class="string">"Yakin ingin menghapus?"</span>,
+            QMessageBox.Yes | QMessageBox.No)
+        <span class="keyword">if</span> reply == QMessageBox.Yes:
+            <span class="self">self</span>.db.delete(id)
+            <span class="self">self</span>.load_data()
+    
+    <span class="keyword">def</span> <span class="function">export_csv</span>(<span class="self">self</span>):
+        path, _ = QFileDialog.getSaveFileName(<span class="self">self</span>, <span class="string">"Export CSV"</span>, <span class="string">"mahasiswa.csv"</span>, <span class="string">"CSV (*.csv)"</span>)
+        <span class="keyword">if</span> path:
+            data = <span class="self">self</span>.db.get_all()
+            <span class="keyword">with</span> <span class="builtin">open</span>(path, <span class="string">'w'</span>, newline=<span class="string">''</span>, encoding=<span class="string">'utf-8'</span>) <span class="keyword">as</span> f:
+                writer = csv.writer(f)
+                writer.writerow([<span class="string">'ID'</span>, <span class="string">'NIM'</span>, <span class="string">'Nama'</span>, <span class="string">'Jurusan'</span>, <span class="string">'Semester'</span>])
+                <span class="keyword">for</span> row <span class="keyword">in</span> data:
+                    writer.writerow([row[<span class="string">'id'</span>], row[<span class="string">'nim'</span>], row[<span class="string">'nama'</span>], row[<span class="string">'jurusan'</span>], row[<span class="string">'semester'</span>]])
+            QMessageBox.information(<span class="self">self</span>, <span class="string">"Sukses"</span>, <span class="string">f"Data di-export ke:\n</span>{path}<span class="string">"</span>)
+
+
+<span class="keyword">if</span> __name__ == <span class="string">"__main__"</span>:
+    app = QApplication(sys.argv)
+    app.setApplicationName(<span class="string">"Sistem Data Mahasiswa"</span>)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Test Project Dulu!</div>
+                    <p>Sebelum melakukan packaging, pastikan project berjalan dengan benar menggunakan: <span class="inline-code">python main.py</span>. Jika masih ada error, perbaiki dulu sebelum build.</p>
+                </div>
+            </section>
+
+            <!-- Section 3: Tools -->
+            <section class="section" id="tools">
+                <h2>3. Tools Packaging</h2>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tool</th>
+                                <th>Kelebihan</th>
+                                <th>Kekurangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">PyInstaller</span></td>
+                                <td>Paling populer, support PySide6 baik, aktif dikembangkan</td>
+                                <td>Ukuran output besar</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">cx_Freeze</span></td>
+                                <td>Cross-platform, setup.py based</td>
+                                <td>Konfigurasi lebih rumit</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Nuitka</span></td>
+                                <td>Compile ke C, performa terbaik, ukuran kecil</td>
+                                <td>Build lebih lama, butuh C compiler</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p>Kita akan menggunakan <strong>PyInstaller</strong> karena paling mudah dan paling banyak digunakan.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal</span>
+                        <span class="code-badge">Install</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>pip install pyinstaller</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: PyInstaller Basic -->
+            <section class="section" id="pyinstaller-basic">
+                <h2>4. PyInstaller Dasar</h2>
+
+                <p>Perintah paling sederhana untuk membuat executable:</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal - Basic Build</span>
+                        <span class="code-badge">Command</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Masuk ke folder project</span>
+cd crud_mahasiswa
+
+<span class="comment"># Build paling sederhana</span>
+pyinstaller main.py
+
+<span class="comment"># Hasilnya ada di folder dist/main/</span>
+<span class="comment"># Berisi main.exe + banyak file pendukung</span></code></pre>
+                    </div>
+                </div>
+
+                <h3>Hasil Build Default</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Struktur Output Default</span>
+                        <span class="code-badge">Folder</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>crud_mahasiswa/
+├── main.py
+├── database.py
+├── build/                 <span class="comment"># File temporary build (bisa dihapus)</span>
+├── dist/                  <span class="comment"># HASIL BUILD</span>
+│   └── main/
+│       ├── main.exe       <span class="comment"># Executable utama</span>
+│       ├── python311.dll
+│       ├── PySide6/       <span class="comment"># Library PySide6</span>
+│       └── ...            <span class="comment"># File pendukung lainnya</span>
+└── main.spec              <span class="comment"># Konfigurasi build</span></code></pre>
+                    </div>
+                </div>
+
+                <h3>Opsi PyInstaller yang Sering Digunakan</h3>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Opsi</th>
+                                <th>Deskripsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">--onefile</span></td>
+                                <td>Bundel semua ke satu file .exe</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--windowed</span></td>
+                                <td>Tanpa console window (untuk GUI app)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--name=NamaApp</span></td>
+                                <td>Nama file output</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--icon=icon.ico</span></td>
+                                <td>Icon untuk executable</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--add-data "src;dst"</span></td>
+                                <td>Menyertakan file data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--hidden-import=module</span></td>
+                                <td>Import module yang tidak terdeteksi otomatis</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--clean</span></td>
+                                <td>Bersihkan cache sebelum build</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">--noconfirm</span></td>
+                                <td>Overwrite tanpa konfirmasi</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Section 5: One-File Mode -->
+            <section class="section" id="pyinstaller-onefile">
+                <h2>5. Mode One-File vs One-Folder</h2>
+
+                <div class="comparison-grid">
+                    <div class="comparison-box">
+                        <div class="comparison-header traditional">One-Folder (Default)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Banyak file dalam satu folder</li>
+                                <li>Startup lebih cepat</li>
+                                <li>Mudah update satu komponen</li>
+                                <li>Cocok jika distribusi via folder/zip</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="comparison-box">
+                        <div class="comparison-header event-driven">One-File (--onefile)</div>
+                        <div class="comparison-content">
+                            <ul>
+                                <li>Satu file .exe saja</li>
+                                <li>Startup lebih lambat (extract ke temp)</li>
+                                <li>Lebih mudah didistribusikan</li>
+                                <li>Cocok untuk aplikasi kecil-sedang</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal - Build Commands</span>
+                        <span class="code-badge">Command</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># ===== BUILD ONE-FOLDER (Recommended untuk PySide6) =====</span>
+pyinstaller --windowed --name="SistemMahasiswa" --noconfirm main.py
+
+
+<span class="comment"># ===== BUILD ONE-FILE =====</span>
+pyinstaller --onefile --windowed --name="SistemMahasiswa" --noconfirm main.py
+
+
+<span class="comment"># ===== BUILD DENGAN ICON =====</span>
+pyinstaller --onefile --windowed --name="SistemMahasiswa" --icon=icon.ico --noconfirm main.py
+
+
+<span class="comment"># ===== BUILD LENGKAP (REKOMENDASI untuk project ini) =====</span>
+pyinstaller --windowed --name="SistemMahasiswa" --icon=icon.ico --noconfirm --clean main.py</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">One-File dan Database SQLite</div>
+                    <p>Mode <span class="inline-code">--onefile</span> meng-extract file ke folder temporary saat dijalankan. File database <strong>tidak boleh</strong> di-bundle di dalam .exe karena akan hilang setelah ditutup. Itulah mengapa <span class="inline-code">get_db_path()</span> di <span class="inline-code">database.py</span> menyimpan database di lokasi executable, bukan di folder temporary.</p>
+                </div>
+            </section>
+
+            <!-- Section 6: .spec File -->
+            <section class="section" id="pyinstaller-spec">
+                <h2>6. File .spec (Konfigurasi Build)</h2>
+
+                <p>Setelah menjalankan PyInstaller pertama kali, file <span class="inline-code">.spec</span> otomatis dibuat. File ini berisi konfigurasi build yang bisa di-edit dan dijalankan ulang.</p>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">SistemMahasiswa.spec</span>
+                        <span class="code-badge">.spec</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># -*- mode: python ; coding: utf-8 -*-</span>
+
+a = Analysis(
+    [<span class="string">'main.py'</span>],                <span class="comment"># Entry point</span>
+    pathex=[],
+    binaries=[],
+    datas=[],                     <span class="comment"># Data files (lihat section berikut)</span>
+    hiddenimports=[],             <span class="comment"># Module yang tidak terdeteksi otomatis</span>
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],                  <span class="comment"># Module yang tidak dibutuhkan</span>
+    noarchive=<span class="keyword">False</span>,
+)
+
+pyz = PYZ(a.pure)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=<span class="keyword">True</span>,
+    name=<span class="string">'SistemMahasiswa'</span>,       <span class="comment"># Nama executable</span>
+    debug=<span class="keyword">False</span>,
+    bootloader_ignore_signals=<span class="keyword">False</span>,
+    strip=<span class="keyword">False</span>,
+    upx=<span class="keyword">True</span>,                    <span class="comment"># Kompresi UPX</span>
+    console=<span class="keyword">False</span>,                <span class="comment"># False = tanpa console (GUI)</span>
+    icon=<span class="string">'icon.ico'</span>,              <span class="comment"># Icon aplikasi</span>
+)
+
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=<span class="keyword">False</span>,
+    upx=<span class="keyword">True</span>,
+    name=<span class="string">'SistemMahasiswa'</span>,
+)</code></pre>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal - Build dari .spec</span>
+                        <span class="code-badge">Command</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Build menggunakan file .spec yang sudah di-edit</span>
+pyinstaller SistemMahasiswa.spec --noconfirm</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 7: Include Data Files -->
+            <section class="section" id="include-data">
+                <h2>7. Menyertakan Data Files</h2>
+
+                <p>Jika aplikasi membutuhkan file tambahan (icon, gambar, template database, file .pkl), file tersebut harus disertakan secara eksplisit.</p>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Kapan Menyertakan vs Tidak</div>
+                    <ul>
+                        <li><strong>Sertakan:</strong> Icon, gambar UI, template, file read-only</li>
+                        <li><strong>JANGAN sertakan:</strong> Database yang akan ditulis (buat saat runtime via init_db)</li>
+                        <li><strong>Sertakan jika read-only:</strong> File .pkl model ML</li>
+                    </ul>
+                </div>
+
+                <h3>Cara Menyertakan File</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal - add-data</span>
+                        <span class="code-badge">Command</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Windows: pemisah titik koma (;)</span>
+pyinstaller --windowed --add-data "icon.ico;." --add-data "templates;templates" main.py
+
+<span class="comment"># macOS / Linux: pemisah titik dua (:)</span>
+pyinstaller --windowed --add-data "icon.ico:." --add-data "templates:templates" main.py
+
+<span class="comment"># Format: "source_path;destination_path_in_bundle"</span>
+<span class="comment">#   .  = root folder bundle</span>
+<span class="comment">#   templates = folder 'templates' di dalam bundle</span></code></pre>
+                    </div>
+                </div>
+
+                <h3>Mengakses Data Files di Kode</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">resource_path.py</span>
+                        <span class="code-badge">Helper</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="keyword">import</span> sys
+<span class="keyword">import</span> os
+
+<span class="keyword">def</span> <span class="function">resource_path</span>(<span class="parameter">relative_path</span>):
+    <span class="string">"""
+    Mendapatkan path absolut ke resource file.
+    
+    Saat di-bundle oleh PyInstaller:
+    - File yang di-add-data diekstrak ke sys._MEIPASS (folder temp)
+    - Fungsi ini mengarahkan ke folder yang benar
+    
+    Saat development biasa:
+    - Mengarah ke folder project
+    """</span>
+    <span class="keyword">if</span> <span class="builtin">getattr</span>(sys, <span class="string">'frozen'</span>, <span class="keyword">False</span>):
+        <span class="comment"># Dijalankan sebagai executable PyInstaller</span>
+        base_path = sys._MEIPASS
+    <span class="keyword">else</span>:
+        <span class="comment"># Dijalankan sebagai script Python</span>
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    
+    <span class="keyword">return</span> os.path.join(base_path, relative_path)
+
+
+<span class="comment"># ===== Contoh Penggunaan =====</span>
+
+<span class="comment"># Untuk icon yang di-bundle</span>
+icon_path = resource_path(<span class="string">'icon.ico'</span>)
+
+<span class="comment"># Untuk model ML yang di-bundle</span>
+model_path = resource_path(<span class="string">'models/iris_model.pkl'</span>)
+
+<span class="comment"># TAPI untuk database yang HARUS BISA DITULIS,</span>
+<span class="comment"># gunakan get_db_path() dari database.py</span>
+<span class="comment"># karena sys._MEIPASS adalah READ-ONLY</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box danger">
+                    <div class="info-box-title">READ-ONLY vs WRITABLE</div>
+                    <ul>
+                        <li><span class="inline-code">sys._MEIPASS</span> (resource_path) → <strong>READ-ONLY</strong>. Untuk icon, gambar, file .pkl, template.</li>
+                        <li><span class="inline-code">os.path.dirname(sys.executable)</span> (get_db_path) → <strong>WRITABLE</strong>. Untuk database, log, user data.</li>
+                    </ul>
+                    <p>Jangan simpan database di <span class="inline-code">_MEIPASS</span> karena folder itu dihapus saat aplikasi ditutup (mode --onefile)!</p>
+                </div>
+            </section>
+
+            <!-- Section 8: Windows -->
+            <section class="section" id="windows">
+                <h2>8. Build untuk Windows</h2>
+
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Pastikan Berjalan Normal</h4>
+                            <p>Jalankan <span class="inline-code">python main.py</span> dan test semua fitur CRUD.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Gunakan Virtual Environment (Opsional tapi Direkomendasikan)</h4>
+                            <p>Build di virtual environment yang bersih menghasilkan executable yang lebih kecil karena hanya library yang dibutuhkan yang di-bundle.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Jalankan PyInstaller</h4>
+                            <p>Gunakan perintah build di bawah.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <div class="step-content">
+                            <h4>Test Executable</h4>
+                            <p>Jalankan .exe dari folder <span class="inline-code">dist/</span> dan pastikan semua fitur berfungsi.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Windows - Build Commands</span>
+                        <span class="code-badge">CMD/PowerShell</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Step 1: Buat virtual environment (opsional, rekomendasi)</span>
+python -m venv venv
+venv\Scripts\activate
+
+<span class="comment"># Step 2: Install dependencies</span>
+pip install PySide6 pyinstaller
+
+<span class="comment"># Step 3: Test aplikasi</span>
+python main.py
+
+<span class="comment"># Step 4: Build executable</span>
+pyinstaller --windowed --name="SistemMahasiswa" --icon=icon.ico --noconfirm --clean main.py
+
+<span class="comment"># Step 5: Test executable</span>
+dist\SistemMahasiswa\SistemMahasiswa.exe
+
+<span class="comment"># ===== JIKA INGIN SINGLE FILE =====</span>
+pyinstaller --onefile --windowed --name="SistemMahasiswa" --icon=icon.ico --noconfirm --clean main.py
+
+<span class="comment"># Hasilnya: dist/SistemMahasiswa.exe</span></code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Cara Distribusi di Windows</div>
+                    <ul>
+                        <li><strong>Cara sederhana:</strong> Zip folder <span class="inline-code">dist/SistemMahasiswa/</span> dan kirimkan</li>
+                        <li><strong>Cara profesional:</strong> Gunakan Inno Setup untuk membuat installer .exe</li>
+                        <li><strong>Jika single file:</strong> Cukup kirim file <span class="inline-code">SistemMahasiswa.exe</span></li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 9: macOS -->
+            <section class="section" id="macos">
+                <h2>9. Build untuk macOS</h2>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">macOS - Build Commands</span>
+                        <span class="code-badge">Terminal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Step 1: Buat virtual environment</span>
+python3 -m venv venv
+source venv/bin/activate
+
+<span class="comment"># Step 2: Install dependencies</span>
+pip install PySide6 pyinstaller
+
+<span class="comment"># Step 3: Build .app bundle</span>
+pyinstaller --windowed --name="SistemMahasiswa" --noconfirm --clean main.py
+
+<span class="comment"># Hasilnya: dist/SistemMahasiswa.app</span>
+
+<span class="comment"># Step 4: Test</span>
+open dist/SistemMahasiswa.app
+
+<span class="comment"># ===== Jika ingin single file =====</span>
+pyinstaller --onefile --windowed --name="SistemMahasiswa" --noconfirm main.py
+
+<span class="comment"># ===== Dengan icon .icns (macOS menggunakan .icns, bukan .ico) =====</span>
+pyinstaller --windowed --name="SistemMahasiswa" --icon=icon.icns --noconfirm main.py</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">macOS Spesifik</div>
+                    <ul>
+                        <li>macOS menggunakan format icon <span class="inline-code">.icns</span>, bukan <span class="inline-code">.ico</span></li>
+                        <li>Hasil build adalah bundle <span class="inline-code">.app</span> (sebenarnya folder)</li>
+                        <li>Untuk distribusi, bungkus dalam <span class="inline-code">.dmg</span> menggunakan tool seperti <span class="inline-code">create-dmg</span></li>
+                        <li>Mungkin perlu code signing untuk distribusi publik</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 10: Linux -->
+            <section class="section" id="linux">
+                <h2>10. Build untuk Linux</h2>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Linux - Build Commands</span>
+                        <span class="code-badge">Terminal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Step 1: Buat virtual environment</span>
+python3 -m venv venv
+source venv/bin/activate
+
+<span class="comment"># Step 2: Install dependencies</span>
+pip install PySide6 pyinstaller
+
+<span class="comment"># Step 3: Build binary</span>
+pyinstaller --windowed --name="SistemMahasiswa" --noconfirm --clean main.py
+
+<span class="comment"># Hasilnya: dist/SistemMahasiswa/SistemMahasiswa (binary executable)</span>
+
+<span class="comment"># Step 4: Test</span>
+./dist/SistemMahasiswa/SistemMahasiswa
+
+<span class="comment"># ===== Single file =====</span>
+pyinstaller --onefile --windowed --name="SistemMahasiswa" --noconfirm main.py
+
+<span class="comment"># Beri permission executable</span>
+chmod +x dist/SistemMahasiswa</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Distribusi Linux</div>
+                    <ul>
+                        <li><strong>Sederhana:</strong> Tar.gz folder dist dan kirimkan</li>
+                        <li><strong>AppImage:</strong> Gunakan <span class="inline-code">appimage-builder</span> untuk portable app</li>
+                        <li><strong>.deb:</strong> Buat package Debian menggunakan <span class="inline-code">fpm</span></li>
+                        <li>Build di distro tertua yang ingin didukung (misal Ubuntu 20.04)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 11: Troubleshooting -->
+            <section class="section" id="troubleshooting">
+                <h2>11. Troubleshooting</h2>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Masalah</th>
+                                <th>Penyebab</th>
+                                <th>Solusi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ModuleNotFoundError</td>
+                                <td>PyInstaller tidak mendeteksi import</td>
+                                <td>Tambahkan <span class="table-code">--hidden-import=module_name</span></td>
+                            </tr>
+                            <tr>
+                                <td>Database error / file not found</td>
+                                <td>Path salah setelah bundling</td>
+                                <td>Gunakan <span class="table-code">get_db_path()</span> dan <span class="table-code">resource_path()</span></td>
+                            </tr>
+                            <tr>
+                                <td>.exe langsung tertutup</td>
+                                <td>Error tapi console tidak terlihat</td>
+                                <td>Build tanpa <span class="table-code">--windowed</span> dulu untuk debug</td>
+                            </tr>
+                            <tr>
+                                <td>Ukuran .exe terlalu besar</td>
+                                <td>Banyak library tidak terpakai</td>
+                                <td>Build di venv bersih, tambahkan <span class="table-code">--exclude-module</span></td>
+                            </tr>
+                            <tr>
+                                <td>Antivirus memblokir .exe</td>
+                                <td>False positive dari packer</td>
+                                <td>Tambahkan exception, atau sign executable</td>
+                            </tr>
+                            <tr>
+                                <td>PySide6 plugin error</td>
+                                <td>Plugin Qt tidak ter-bundle</td>
+                                <td>Tambahkan <span class="table-code">--hidden-import=PySide6.QtSvg</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>Tips Debug</h3>
+
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">Terminal - Debug Build</span>
+                        <span class="code-badge">Debug</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code><span class="comment"># Build TANPA --windowed untuk melihat error di console</span>
+pyinstaller --name="SistemMahasiswa" --noconfirm main.py
+
+<span class="comment"># Jalankan .exe dari command prompt untuk melihat output</span>
+dist\SistemMahasiswa\SistemMahasiswa.exe
+
+<span class="comment"># Setelah debug selesai, build ulang DENGAN --windowed</span>
+pyinstaller --windowed --name="SistemMahasiswa" --noconfirm main.py</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Mengurangi Ukuran Build</div>
+                    <ul>
+                        <li>Gunakan <strong>virtual environment bersih</strong> dengan hanya library yang dibutuhkan</li>
+                        <li>Tambahkan <span class="inline-code">--exclude-module matplotlib,numpy,scipy</span> jika tidak dipakai</li>
+                        <li>Install <span class="inline-code">upx</span> untuk kompresi otomatis</li>
+                        <li>Pertimbangkan <span class="inline-code">Nuitka</span> jika ukuran sangat penting</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Section 12: Checklist -->
+            <section class="section" id="checklist">
+                <h2>12. Checklist Sebelum Distribusi</h2>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Checklist Distribusi</div>
+                    <ol>
+                        <li>Aplikasi berjalan normal saat <span class="inline-code">python main.py</span></li>
+                        <li>Build berhasil tanpa error</li>
+                        <li>Executable berjalan di komputer <strong>lain</strong> (tanpa Python installed)</li>
+                        <li>Database terbuat otomatis dan bisa CRUD</li>
+                        <li>File data (icon, template) ter-load dengan benar</li>
+                        <li>Tidak ada console window muncul (--windowed)</li>
+                        <li>Icon aplikasi terlihat benar</li>
+                        <li>Export CSV berfungsi</li>
+                        <li>Tidak ada error saat close aplikasi</li>
+                        <li>Sertakan README untuk instruksi user</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- Latihan -->
+            <section class="section" id="latihan">
+                <h2>Tugas Praktikum</h2>
+
+                <div class="exercise-box">
+                    <h3>Tugas: Package Aplikasi Anda</h3>
+                    <p>Ambil salah satu project yang sudah dibuat di praktikum sebelumnya, kemudian package menjadi executable:</p>
+                    <ol>
+                        <li>Pastikan project menggunakan <span class="inline-code">get_db_path()</span> dan <span class="inline-code">resource_path()</span></li>
+                        <li>Build menggunakan PyInstaller (mode one-folder)</li>
+                        <li>Test executable di komputer lain jika memungkinkan</li>
+                        <li>Buat file README.md berisi instruksi penggunaan</li>
+                        <li>Zip folder output dist/ dan kumpulkan</li>
+                    </ol>
+                </div>
+
+                <div class="info-box warning">
+                    <div class="info-box-title">Ketentuan</div>
+                    <ul>
+                        <li>Aplikasi harus berfungsi penuh tanpa install Python</li>
+                        <li>Database harus terbuat otomatis saat pertama kali dijalankan</li>
+                        <li>Tidak boleh ada console window muncul</li>
+                        <li>Sertakan screenshot aplikasi yang berjalan sebagai .exe</li>
+                        <li>Sertakan file .spec yang digunakan</li>
+                    </ul>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Rubrik Penilaian</div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Komponen</th>
+                                    <th>Bobot</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Executable berhasil dibuild dan berjalan</td>
+                                    <td>30%</td>
+                                </tr>
+                                <tr>
+                                    <td>Database berfungsi (CRUD) di executable</td>
+                                    <td>25%</td>
+                                </tr>
+                                <tr>
+                                    <td>Path handling benar (resource_path / get_db_path)</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>Tanpa console, icon benar, UI rapi</td>
+                                    <td>15%</td>
+                                </tr>
+                                <tr>
+                                    <td>README dan dokumentasi</td>
+                                    <td>10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) document.getElementById('sidebar').classList.remove('active');
+            });
+        });
+
+        document.querySelectorAll('.code-block').forEach(block => {
+            block.addEventListener('contextmenu', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!'); });
+            block.addEventListener('selectstart', e => e.preventDefault());
+            block.addEventListener('dragstart', e => e.preventDefault());
+            block.addEventListener('copy', e => { e.preventDefault(); alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!'); });
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                const sel = window.getSelection();
+                if (sel.anchorNode?.parentElement?.closest('.code-block')) {
+                    e.preventDefault();
+                    alert('Kode tidak dapat disalin. Silakan ketik manual untuk latihan!');
+                }
+            }
+        });
+
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('.section');
+            let current = '';
+            sections.forEach(s => { if (pageYOffset >= s.offsetTop - 100) current = s.getAttribute('id'); });
+            document.querySelectorAll('.nav-link').forEach(l => {
+                l.classList.remove('active');
+                if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+            });
+        });
+
+        console.log('%cPERHATIAN!', 'color: red; font-size: 24px; font-weight: bold;');
+        console.log('%cKode dilindungi. Ketik manual untuk belajar!', 'font-size: 14px;');
+    </script>
+</body>
+</html>
