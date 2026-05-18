@@ -37,7 +37,8 @@
                     <li><a href="#auth-register">Register Email</a></li>
                     <li><a href="#auth-login">Login Email</a></li>
                     <li><a href="#auth-logout">Logout & Cek Status</a></li>
-                    <li><a href="#handson-1">Hands-On 1</a></li>
+                    <li><a href="#auth-splash">Splash Screen</a></li>
+                    <li><a href="#auth-penutup">Penutup</a></li>
                 </ul>
             </li>
             <li class="nav-item">
@@ -769,7 +770,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                 <div class="storage-grid">
                     <div class="storage-card">
                         <div class="storage-card-body">
-                            <div class="storage-card-num" style="background:#1565c0;font-size:1.2rem;">📧</div>
                             <div class="storage-card-title">Email &amp; Password</div>
                             <div class="storage-card-meta"><span class="storage-tag tag-blue">Dibahas</span></div>
                             <div class="storage-card-desc">Login klasik dengan email dan password</div>
@@ -777,7 +777,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                     </div>
                     <div class="storage-card">
                         <div class="storage-card-body">
-                            <div class="storage-card-num" style="background:#c62828;font-size:1.2rem;">🔴</div>
                             <div class="storage-card-title">Google Sign-In</div>
                             <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
                             <div class="storage-card-desc">Login dengan akun Google</div>
@@ -785,7 +784,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                     </div>
                     <div class="storage-card">
                         <div class="storage-card-body">
-                            <div class="storage-card-num" style="background:#37474f;font-size:1.2rem;">📱</div>
                             <div class="storage-card-title">Phone Number</div>
                             <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
                             <div class="storage-card-desc">Login dengan OTP via SMS</div>
@@ -793,7 +791,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                     </div>
                     <div class="storage-card">
                         <div class="storage-card-body">
-                            <div class="storage-card-num" style="background:#4a148c;font-size:1.2rem;">👤</div>
                             <div class="storage-card-title">Anonymous</div>
                             <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
                             <div class="storage-card-desc">Login tanpa akun (guest mode)</div>
@@ -804,40 +801,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                 <h3>Cara Kerja Firebase Auth</h3>
                 <p>Saat user berhasil login, Firebase mengembalikan objek <code>FirebaseUser</code> yang berisi informasi user (uid, email, displayName, dll). UID ini unik per user dan digunakan sebagai identifier di database.</p>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Mendapatkan instance FirebaseAuth</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.auth
-
-class AuthActivity : AppCompatActivity() {
-
-    // Deklarasi di level class
-    private lateinit var auth: FirebaseAuth
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_auth)
-
-        // Inisialisasi Firebase Auth
-        auth = Firebase.auth
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Cek apakah user sudah login saat app dibuka
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            // User sudah login, arahkan ke halaman utama
-            navigateToHome()
-        }
-    }
-}</pre>
-                </div>
-
                 <div class="info-box">
                     <h4>Aktifkan Email/Password di Firebase Console</h4>
                     <p>Sebelum bisa menggunakan login email/password, aktifkan dulu di Firebase Console:</p>
@@ -845,8 +808,94 @@ class AuthActivity : AppCompatActivity() {
                 </div>
             </article>
 
+            <!-- ALUR PENGERJAAN -->
+            <article id="auth-alur">
+                <h2>Alur Pengerjaan</h2>
+                <p>Pada bagian ini kita akan membuat fitur Register, Login, Logout, dan Splash Screen menggunakan Firebase Authentication. Berikut urutan file yang akan dibuat:</p>
+
+                <div class="step-flow" style="margin-top:16px;">
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">1</div>
+                        <div>
+                            <strong>activity_register.xml</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Layout halaman Register — berisi input email, password, dan tombol Daftar</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">2</div>
+                        <div>
+                            <strong>RegisterActivity.kt</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Logika register — membaca input, memanggil Firebase, menangani sukses/gagal</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">3</div>
+                        <div>
+                            <strong>activity_login.xml</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Layout halaman Login — berisi input email, password, dan tombol Masuk</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">4</div>
+                        <div>
+                            <strong>LoginActivity.kt</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Logika login — autentikasi user ke Firebase, redirect ke Home jika berhasil</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">5</div>
+                        <div>
+                            <strong>activity_home.xml</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Layout halaman Home — menampilkan email user yang sedang login dan tombol Logout</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">6</div>
+                        <div>
+                            <strong>HomeActivity.kt</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Halaman setelah login — menampilkan info user dan menangani logout</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">7</div>
+                        <div>
+                            <strong>activity_splash.xml</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Layout halaman Splash — tampilan awal saat aplikasi mengecek status login</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#1565c0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">8</div>
+                        <div>
+                            <strong>SplashActivity.kt</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Cek user sudah login atau belum, lalu arahkan ke Home atau Login</p>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:16px;">
+                        <div style="min-width:32px;height:32px;border-radius:50%;background:#2e7d32;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;">9</div>
+                        <div>
+                            <strong>AndroidManifest.xml</strong>
+                            <p style="margin:2px 0 0;color:#555;font-size:0.9rem;">Daftarkan semua Activity yang sudah dibuat agar bisa dijalankan oleh sistem Android</p>
+                        </div>
+                    </div>
+
+                </div>
+            </article>
+
+
             <!-- REGISTER -->
             <article id="auth-register">
+                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>RegisterActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>RegisterActivity.kt</code> dan <code>activity_register.xml</code> sekaligus.
+                </div>
                 <h2>Register dengan Email &amp; Password</h2>
                 <p>Untuk mendaftarkan user baru, gunakan method <code>createUserWithEmailAndPassword()</code>. Method ini bersifat asynchronous dan mengembalikan <code>Task</code>.</p>
 
@@ -1004,8 +1053,72 @@ class RegisterActivity : AppCompatActivity() {
 
             <!-- LOGIN -->
             <article id="auth-login">
+                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>LoginActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>LoginActivity.kt</code> dan <code>activity_login.xml</code> sekaligus.
+                </div>
                 <h2>Login dengan Email &amp; Password</h2>
                 <p>Untuk login user yang sudah terdaftar, gunakan method <code>signInWithEmailAndPassword()</code>.</p>
+
+                <h3>Layout XML — activity_login.xml</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_login.xml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Masuk Akun"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="32dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Email"
+        android:inputType="textEmailAddress"
+        android:layout_marginBottom="12dp" /&gt;
+
+    &lt;EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Password"
+        android:inputType="textPassword"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Masuk" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnGoRegister"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Belum punya akun? Daftar" /&gt;
+
+    &lt;ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_marginTop="16dp" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
 
                 <h3>LoginActivity.kt</h3>
                 <div class="code-block">
@@ -1035,7 +1148,12 @@ class LoginActivity : AppCompatActivity() {
         val etEmail    = findViewById&lt;EditText&gt;(R.id.etEmail)
         val etPassword = findViewById&lt;EditText&gt;(R.id.etPassword)
         val btnLogin   = findViewById&lt;Button&gt;(R.id.btnLogin)
+        val btnGoRegister = findViewById&lt;Button&gt;(R.id.btnGoRegister)
         val progressBar = findViewById&lt;ProgressBar&gt;(R.id.progressBar)
+
+        btnGoRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+        }
 
         btnLogin.setOnClickListener {
             val email    = etEmail.text.toString().trim()
@@ -1057,7 +1175,7 @@ class LoginActivity : AppCompatActivity() {
                     if (task.isSuccessful) {
                         val user = auth.currentUser
                         Toast.makeText(this, "Selamat datang, ${user?.email}", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, MainActivity::class.java))
+                        startActivity(Intent(this, HomeActivity::class.java))
                         finish()
                     } else {
                         Toast.makeText(this, "Login gagal: ${task.exception?.message}", Toast.LENGTH_LONG).show()
@@ -1089,169 +1207,47 @@ user?.isEmailVerified  // Apakah email sudah diverifikasi</pre>
 
             <!-- LOGOUT & CEK STATUS -->
             <article id="auth-logout">
+                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>HomeActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>HomeActivity.kt</code> dan <code>activity_home.xml</code> sekaligus.
+                </div>
                 <h2>Logout &amp; Cek Status Login</h2>
 
-                <h3>Logout</h3>
-                <p>Logout sangat sederhana — cukup panggil <code>auth.signOut()</code>. Setelah logout, <code>auth.currentUser</code> akan bernilai <code>null</code>.</p>
-
+                <h3>Layout XML — activity_home.xml</h3>
                 <div class="code-block">
                     <div class="code-header">
-                        <span>Logout user</span>
+                        <span>res/layout/activity_home.xml</span>
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
-                    <pre>btnLogout.setOnClickListener {
-    auth.signOut()
-    Toast.makeText(this, "Berhasil logout", Toast.LENGTH_SHORT).show()
-    // Kembali ke halaman login
-    startActivity(Intent(this, LoginActivity::class.java))
-    finish()
-}</pre>
+                    <pre>&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Selamat datang!"
+        android:textAlignment="center"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" /&gt;
+
+    &lt;Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Logout" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
                 </div>
 
-                <h3>Cek Status Login (Auto-login)</h3>
-                <p>Gunakan pola ini di <code>MainActivity</code> atau <code>SplashActivity</code> untuk mengecek apakah user sudah login sebelumnya, sehingga tidak perlu login ulang setiap buka app.</p>
+                <h3>HomeActivity.kt</h3>
+                <p>Halaman Home menampilkan email user yang sedang login. Tombol Logout memanggil <code>auth.signOut()</code>, lalu mengembalikan user ke halaman Login.</p>
 
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Pola auto-login di onStart()</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>class SplashActivity : AppCompatActivity() {
-
-    private val auth = Firebase.auth
-
-    override fun onStart() {
-        super.onStart()
-
-        val currentUser = auth.currentUser
-
-        if (currentUser != null) {
-            // User sudah login sebelumnya → langsung ke MainActivity
-            startActivity(Intent(this, MainActivity::class.java))
-        } else {
-            // Belum login → arahkan ke LoginActivity
-            startActivity(Intent(this, LoginActivity::class.java))
-        }
-        finish()
-    }
-}</pre>
-                </div>
-
-                <h3>AuthStateListener — Pantau Perubahan Status Login</h3>
-                <p>Untuk memantau perubahan status login secara real-time (misalnya token expired), gunakan <code>AuthStateListener</code>.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>AuthStateListener</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>class MainActivity : AppCompatActivity() {
-
-    private val auth = Firebase.auth
-    private lateinit var authStateListener: FirebaseAuth.AuthStateListener
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            val user = firebaseAuth.currentUser
-            if (user == null) {
-                // User logout atau token expired
-                startActivity(Intent(this, LoginActivity::class.java))
-                finish()
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        auth.addAuthStateListener(authStateListener)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        auth.removeAuthStateListener(authStateListener)  // Jangan lupa remove!
-    }
-}</pre>
-                </div>
-            </article>
-
-            <!-- HANDS-ON 1 -->
-            <article id="handson-1">
-                <h2>🛠️ Hands-On 1 — Aplikasi Login Sederhana</h2>
-
-                <div class="task-box">
-                    <h2>Tugas: Buat Aplikasi Login dengan Firebase Auth</h2>
-                    <p>Buat aplikasi Android sederhana dengan 3 screen: Register, Login, dan Home. Gunakan Firebase Authentication untuk mengelola akun pengguna.</p>
-                </div>
-
-                <h3>Struktur Project</h3>
-                <div class="file-tree-box">
-                    <div class="ftb-title">📁 Project Structure</div>
-                    <div class="ftb-tree">
-                        <div class="ftb-row"><span class="ftb-folder">📁 app/src/main/</span></div>
-                        <div class="ftb-row ftb-indent1"><span class="ftb-folder">📁 java/com/example/firebaseauth/</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">SplashActivity.kt</span> <span class="ftb-badge">cek status login</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">RegisterActivity.kt</span> <span class="ftb-badge">daftar akun</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">LoginActivity.kt</span> <span class="ftb-badge">masuk akun</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">HomeActivity.kt</span> <span class="ftb-badge">halaman utama</span></div>
-                        <div class="ftb-row ftb-indent1"><span class="ftb-folder">📁 res/layout/</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_splash.xml</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_register.xml</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_login.xml</span></div>
-                        <div class="ftb-row ftb-indent2"><span class="ftb-file new">activity_home.xml</span></div>
-                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">google-services.json</span> <span class="ftb-badge">sudah ada dari setup</span></div>
-                    </div>
-                </div>
-
-                <h3>Langkah Pengerjaan</h3>
-                <div class="steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div class="step-content">
-                            <h4>Setup Project</h4>
-                            <p>Buat project Android baru, hubungkan ke Firebase, dan tambahkan dependency <code>firebase-auth-ktx</code> seperti yang sudah dipelajari di bagian Setup.</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div class="step-content">
-                            <h4>Buat Layout</h4>
-                            <p>Buat 4 file layout XML. Untuk <code>activity_login.xml</code> dan <code>activity_register.xml</code>, gunakan contoh layout yang sudah ada di materi di atas.</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div class="step-content">
-                            <h4>Implementasi SplashActivity</h4>
-                            <p>Di <code>onStart()</code>, cek <code>auth.currentUser</code>. Jika tidak null → ke HomeActivity, jika null → ke LoginActivity. Jadikan SplashActivity sebagai launcher di <code>AndroidManifest.xml</code>.</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">4</div>
-                        <div class="step-content">
-                            <h4>Implementasi Register &amp; Login</h4>
-                            <p>Gunakan kode dari materi di atas. Pastikan ada validasi input sebelum memanggil Firebase.</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">5</div>
-                        <div class="step-content">
-                            <h4>Buat HomeActivity</h4>
-                            <p>Tampilkan email user yang sedang login (<code>auth.currentUser?.email</code>) dan tombol Logout yang memanggil <code>auth.signOut()</code> lalu kembali ke LoginActivity.</p>
-                        </div>
-                    </div>
-                    <div class="step">
-                        <div class="step-number">6</div>
-                        <div class="step-content">
-                            <h4>Uji Coba</h4>
-                            <p>Jalankan aplikasi, daftar akun baru, logout, lalu login kembali. Cek di Firebase Console → Authentication → Users apakah akun berhasil terdaftar.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Kode HomeActivity.kt</h3>
                 <div class="code-block">
                     <div class="code-header">
                         <span>HomeActivity.kt</span>
@@ -1261,6 +1257,7 @@ user?.isEmailVerified  // Apakah email sudah diverifikasi</pre>
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
@@ -1276,12 +1273,12 @@ class HomeActivity : AppCompatActivity() {
         val tvWelcome = findViewById&lt;TextView&gt;(R.id.tvWelcome)
         val btnLogout = findViewById&lt;Button&gt;(R.id.btnLogout)
 
-        // Tampilkan info user yang sedang login
         val user = auth.currentUser
         tvWelcome.text = "Selamat datang!\n${user?.email}"
 
         btnLogout.setOnClickListener {
             auth.signOut()
+            Toast.makeText(this, "Berhasil logout", Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
@@ -1289,7 +1286,7 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        // Jika user tidak login, paksa kembali ke login
+
         if (auth.currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -1297,19 +1294,144 @@ class HomeActivity : AppCompatActivity() {
     }
 }</pre>
                 </div>
+            </article>
 
-                <div class="info-box">
-                    <h4>Checklist Penilaian</h4>
-                    <ul>
-                        <li>Aplikasi bisa register akun baru</li>
-                        <li>Aplikasi bisa login dengan akun yang sudah terdaftar</li>
-                        <li>Halaman Home menampilkan email user yang login</li>
-                        <li>Tombol logout berfungsi dan kembali ke halaman login</li>
-                        <li>Jika app ditutup lalu dibuka lagi, user tidak perlu login ulang</li>
-                        <li>Akun terdaftar terlihat di Firebase Console → Authentication → Users</li>
-                    </ul>
+            <!-- SPLASH SCREEN -->
+            <article id="auth-splash">
+                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>SplashActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>SplashActivity.kt</code> dan <code>activity_splash.xml</code> sekaligus.
+                </div>
+                <h2>Splash Screen &amp; Cek Status Login</h2>
+                <p>Splash Screen menjadi halaman pertama aplikasi. Halaman ini tampil selama 2 detik, lalu mengecek <code>auth.currentUser</code>: jika user sudah login, masuk ke Home; jika belum, masuk ke Login.</p>
+
+                <h3>Layout XML — activity_splash.xml</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>res/layout/activity_splash.xml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"&gt;
+
+    &lt;TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Firebase Auth App"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" /&gt;
+
+    &lt;ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" /&gt;
+
+&lt;/LinearLayout&gt;</pre>
+                </div>
+
+                <h3>SplashActivity.kt</h3>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>SplashActivity.kt</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>import android.content.Intent
+import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.Firebase
+import com.google.firebase.auth.auth
+
+class SplashActivity : AppCompatActivity() {
+
+    private val auth = Firebase.auth
+    private val splashDelay = 2000L
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_splash)
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            val currentUser = auth.currentUser
+
+            if (currentUser != null) {
+                startActivity(Intent(this, HomeActivity::class.java))
+            } else {
+                startActivity(Intent(this, LoginActivity::class.java))
+            }
+
+            finish()
+        }, splashDelay)
+    }
+}</pre>
+                </div>
+
+                <h3>AndroidManifest.xml</h3>
+                <p>Daftarkan semua Activity di <code>AndroidManifest.xml</code>. Jadikan <code>SplashActivity</code> sebagai launcher agar proses cek login berjalan saat aplikasi pertama dibuka.</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>AndroidManifest.xml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android"&gt;
+
+    &lt;application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"&gt;
+
+        &lt;activity android:name=".SplashActivity"&gt;
+            &lt;intent-filter&gt;
+                &lt;action android:name="android.intent.action.MAIN" /&gt;
+                &lt;category android:name="android.intent.category.LAUNCHER" /&gt;
+            &lt;/intent-filter&gt;
+        &lt;/activity&gt;
+
+        &lt;activity android:name=".RegisterActivity" /&gt;
+        &lt;activity android:name=".LoginActivity" /&gt;
+        &lt;activity android:name=".HomeActivity" /&gt;
+
+    &lt;/application&gt;
+
+&lt;/manifest&gt;</pre>
                 </div>
             </article>
+
+            <!-- PENUTUP AUTH -->
+            <article id="auth-penutup">
+                <h2>Penutup Firebase Authentication</h2>
+                <p>Bagian Firebase Authentication ini bukan lagi tahap menghubungkan project ke Firebase. Koneksi Firebase sudah dipastikan pada bagian setup sebelumnya. Di bagian ini fokusnya adalah membuat alur autentikasi yang lengkap: user bisa daftar akun, login, masuk ke halaman Home, logout, dan aplikasi bisa mengecek status login lewat Splash Screen.</p>
+
+                <div class="info-box">
+                    <h4>Checklist Setelah Menyelesaikan Authentication</h4>
+                    <ul>
+                        <li><code>activity_register.xml</code> dan <code>RegisterActivity.kt</code> sudah dibuat untuk daftar akun</li>
+                        <li><code>activity_login.xml</code> dan <code>LoginActivity.kt</code> sudah dibuat untuk masuk akun</li>
+                        <li><code>activity_home.xml</code> dan <code>HomeActivity.kt</code> sudah dibuat untuk menampilkan user login dan tombol logout</li>
+                        <li><code>activity_splash.xml</code> dan <code>SplashActivity.kt</code> sudah dibuat untuk cek status login saat aplikasi dibuka</li>
+                        <li>Semua Activity sudah didaftarkan di <code>AndroidManifest.xml</code></li>
+                        <li>Provider <strong>Email/Password</strong> sudah aktif di Firebase Console</li>
+                    </ul>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Cara Memastikan Berhasil</h4>
+                    <p>Jalankan aplikasi dari Android Studio. Aplikasi harus membuka Splash Screen sebentar, lalu menuju Login. Coba daftar akun baru, pastikan akun muncul di Firebase Console → Authentication → Users, kemudian logout dan login ulang memakai akun yang sama.</p>
+                </div>
+            </article>
+
         </section>
 
         <!-- ============================================ -->
@@ -1726,15 +1848,15 @@ db.collection("notes").document(noteId)
 
                 <div class="task-box">
                     <h2>Tugas: Buat Aplikasi CRUD Catatan</h2>
-                    <p>Kembangkan aplikasi dari Hands-On 1. Setelah login, user bisa membuat, melihat, mengedit, dan menghapus catatan pribadi yang tersimpan di Cloud Firestore.</p>
+                    <p>Kembangkan aplikasi dari materi Authentication. Setelah login, user bisa membuat, melihat, mengedit, dan menghapus catatan pribadi yang tersimpan di Cloud Firestore.</p>
                 </div>
 
                 <h3>Struktur Project</h3>
                 <div class="file-tree-box">
-                    <div class="ftb-title">📁 Project Structure (tambahan dari Hands-On 1)</div>
+                    <div class="ftb-title">📁 Project Structure (tambahan dari Authentication)</div>
                     <div class="ftb-tree">
                         <div class="ftb-row"><span class="ftb-folder">📁 java/com/example/firebaseapp/</span></div>
-                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari HO-1</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari Authentication</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">NoteListActivity.kt</span> <span class="ftb-badge">daftar catatan + realtime</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">AddEditNoteActivity.kt</span> <span class="ftb-badge">tambah / edit catatan</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">Note.kt</span> <span class="ftb-badge">data class</span></div>
@@ -2281,7 +2403,7 @@ messagesRef.addChildEventListener(object : ChildEventListener {
                     <div class="ftb-title">📁 Project Structure</div>
                     <div class="ftb-tree">
                         <div class="ftb-row"><span class="ftb-folder">📁 java/com/example/chatapp/</span></div>
-                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari HO-1</span></div>
+                        <div class="ftb-row ftb-indent1"><span class="ftb-file exist">LoginActivity.kt</span> <span class="ftb-badge">dari Authentication</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">ChatActivity.kt</span> <span class="ftb-badge">layar chat utama</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">Message.kt</span> <span class="ftb-badge">data class pesan</span></div>
                         <div class="ftb-row ftb-indent1"><span class="ftb-file new">ChatAdapter.kt</span> <span class="ftb-badge">RecyclerView adapter</span></div>
@@ -3350,7 +3472,7 @@ Glide.with(this)
                 const target = document.getElementById(targetId);
                 if (!target) return;
 
-                // Kasus 1: target sendiri adalah .section (misal handson-1/2/3)
+                // Kasus 1: target sendiri adalah .section
                 if (target.classList.contains('section')) {
                     document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
                     target.style.display = 'block';
