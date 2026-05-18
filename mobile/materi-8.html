@@ -771,13 +771,6 @@ D/FirebaseTest: Status: Tidak ada user yang login</pre>
                             <div class="storage-card-desc">Login dengan OTP via SMS</div>
                         </div>
                     </div>
-                    <div class="storage-card">
-                        <div class="storage-card-body">
-                            <div class="storage-card-title">Anonymous</div>
-                            <div class="storage-card-meta"><span class="storage-tag tag-gray">Tidak dibahas</span></div>
-                            <div class="storage-card-desc">Login tanpa akun (guest mode)</div>
-                        </div>
-                    </div>
                 </div>
 
                 <h3>Cara Kerja Firebase Auth</h3>
@@ -1464,19 +1457,35 @@ class SplashActivity : AppCompatActivity() {
                     </tbody>
                 </table>
 
-                <div class="info-box">
-                    <h4>Inisialisasi Firestore</h4>
+                <div class="warning-box">
+                    <h4>Cek Dependency Sebelum Mulai</h4>
+                    <p>Sebelum mengikuti materi ini, pastikan dependency Firestore sudah ada di project. Ada dua file yang perlu dicek:</p>
+
+                    <p><strong>1. gradle/libs.versions.toml</strong> — pastikan versi dan library Firestore sudah terdaftar:</p>
                     <div class="code-block" style="margin-top:8px;">
                         <div class="code-header">
-                            <span>Mendapatkan instance Firestore</span>
+                            <span>gradle/libs.versions.toml</span>
                             <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                         </div>
-                        <pre>import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+                        <pre>[versions]
+firebaseFirestore = "25.1.1"  // ← pastikan baris ini ada
 
-// Cukup satu baris — bisa dipanggil dari mana saja
-val db = Firebase.firestore</pre>
+[libraries]
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }  // ← pastikan baris ini ada</pre>
                     </div>
+
+                    <p style="margin-top:12px;"><strong>2. build.gradle.kts (Module: app)</strong> — pastikan dependency Firestore sudah ditambahkan di blok <code>dependencies</code>:</p>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header">
+                            <span>build.gradle.kts (Module: app)</span>
+                            <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                        </div>
+                        <pre>dependencies {
+    implementation(libs.firebase.auth)       // sudah ada dari materi Authentication
+    implementation(libs.firebase.firestore)  // ← pastikan baris ini ada
+}</pre>
+                    </div>
+                    <p style="margin-bottom:0;">Jika salah satu belum ada, kembali ke bagian <strong>Setup Firebase → Tambah Dependencies</strong> dan ikuti langkah penambahan dependency Firestore. Setelah ditambahkan, lakukan <strong>Sync Project with Gradle Files</strong> sebelum melanjutkan.</p>
                 </div>
             </article>
 
@@ -1613,6 +1622,9 @@ data class Note(
 
             <!-- NOTE.KT & ITEM_NOTE.XML -->
             <article id="fs-note-kt">
+                
+                <h2>Note.kt &amp; item_note.xml</h2>
+
                 <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
                     <strong>Buat dua file baru:</strong>
                     <ol style="margin:6px 0 0;padding-left:18px;line-height:2;">
@@ -1620,7 +1632,6 @@ data class Note(
                         <li>Klik kanan pada folder <code>res/layout</code> → <strong>New → Layout Resource File</strong> → beri nama <code>item_note</code> → <strong>OK</strong></li>
                     </ol>
                 </div>
-                <h2>Note.kt &amp; item_note.xml</h2>
 
                 <h3>Note.kt — Data Class</h3>
                 <p><code>Note.kt</code> adalah representasi Kotlin dari satu dokumen di collection <code>notes</code> Firestore. Setiap field di data class ini akan menjadi field di dokumen Firestore.</p>
@@ -1631,9 +1642,10 @@ data class Note(
                         <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
                     </div>
                     <pre>import com.google.firebase.Timestamp
+import com.google.firebase.firestore.Exclude
 
 data class Note(
-    val id        : String     = "",
+    @Exclude val id        : String     = "",  // tidak disimpan ke Firestore
     val title     : String     = "",
     val content   : String     = "",
     val userId    : String     = "",
@@ -1650,6 +1662,19 @@ data class Note(
                     <h4>Kenapa Ada Field <code>id</code>?</h4>
                     <p>Field <code>id</code> tidak disimpan ke Firestore — ini hanya dipakai di sisi Android untuk menyimpan ID dokumen Firestore setelah data dibaca. Saat membaca data, kita isi manual dengan <code>.copy(id = document.id)</code>.</p>
                     <p style="margin-bottom:0;">Ini penting agar saat user menekan tombol Edit atau Hapus, kita tahu dokumen mana yang harus diupdate atau dihapus.</p>
+                </div>
+
+                <div class="warning-box">
+                    <h4>Jangan Lupa <code>.copy(id = doc.id)</code> Saat Membaca Data</h4>
+                    <p>Field <code>id</code> diberi anotasi <code>@Exclude</code> agar Firestore tidak menyimpannya ke dokumen — jika tidak, setiap dokumen akan punya field <code>id: ""</code> yang tidak berguna. Nilai <code>id</code> harus diisi manual saat membaca data dengan <code>.copy(id = doc.id)</code>.</p>
+                    <div class="code-block" style="margin-top:8px;">
+                        <div class="code-header"><span>Cara membaca dokumen yang benar</span></div>
+                        <pre>// ✅ Benar — id diisi dari document.id
+doc.toObject(Note::class.java)?.copy(id = doc.id)
+
+// ❌ Salah — id akan kosong "", hapus/edit tidak akan bekerja
+doc.toObject(Note::class.java)</pre>
+                    </div>
                 </div>
 
                 <h3>item_note.xml — Layout Satu Item Catatan</h3>
@@ -1740,10 +1765,13 @@ data class Note(
 
             <!-- NOTEADAPTER.KT -->
             <article id="fs-adapter">
+                
+                <h2>NoteAdapter.kt</h2>
+
                 <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
                     <strong>Buat file baru:</strong> Klik kanan pada package → <strong>New → Kotlin Class/File</strong> → pilih <strong>Class</strong> → beri nama <code>NoteAdapter</code> → <strong>Enter</strong>.
                 </div>
-                <h2>NoteAdapter.kt</h2>
+
                 <p>Adapter ini menghubungkan list data <code>Note</code> dengan RecyclerView. Menggunakan <code>ListAdapter</code> dengan <code>DiffUtil</code> agar update list lebih efisien — hanya item yang berubah yang di-render ulang.</p>
 
                 <div class="code-block">
@@ -1819,12 +1847,12 @@ class NoteAdapter(
 
             <!-- NOTE LIST ACTIVITY -->
             <article id="fs-note-list">
-                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
-                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>NoteListActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>NoteListActivity.kt</code> dan <code>activity_note_list.xml</code> sekaligus.
-                </div>
+                
                 <h2>activity_note_list.xml &amp; NoteListActivity.kt</h2>
                 <p>Halaman ini adalah halaman utama setelah login. Menampilkan semua catatan milik user secara realtime — setiap perubahan di Firestore langsung tercermin di list tanpa refresh manual.</p>
-
+<div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>NoteListActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>NoteListActivity.kt</code> dan <code>activity_note_list.xml</code> sekaligus.
+                </div>
                 <h3>Langkah 1 — Buat Layout activity_note_list.xml</h3>
                 <p>Layout ini berisi <code>RecyclerView</code> untuk menampilkan daftar catatan dan <code>FloatingActionButton</code> (FAB) di pojok kanan bawah sebagai tombol tambah catatan baru.</p>
 
@@ -1845,6 +1873,17 @@ class NoteAdapter(
         android:layout_height="match_parent"
         android:padding="8dp"
         android:clipToPadding="false" /&gt;
+
+    &lt;!-- Tampil saat tidak ada catatan --&gt;
+    &lt;TextView
+        android:id="@+id/tvEmpty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Belum ada catatan.\nTambah catatan baru dengan tombol +"
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:visibility="gone" /&gt;
 
     &lt;com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
@@ -1868,6 +1907,8 @@ class NoteAdapter(
                     </div>
                     <pre>import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -1892,6 +1933,7 @@ class NoteListActivity : AppCompatActivity() {
 
         val recyclerView = findViewById&lt;RecyclerView&gt;(R.id.recyclerView)
         val fab          = findViewById&lt;FloatingActionButton&gt;(R.id.fab)
+        val tvEmpty      = findViewById&lt;TextView&gt;(R.id.tvEmpty)
 
         adapter = NoteAdapter(
             onEdit = { note ->
@@ -1916,7 +1958,8 @@ class NoteListActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val userId = auth.currentUser?.uid ?: return
+        val userId  = auth.currentUser?.uid ?: return
+        val tvEmpty = findViewById&lt;TextView&gt;(R.id.tvEmpty)
 
         // Pasang realtime listener — list otomatis update saat Firestore berubah
         listenerReg = db.collection("notes")
@@ -1930,7 +1973,11 @@ class NoteListActivity : AppCompatActivity() {
                 val notes = snapshot?.documents?.mapNotNull { doc ->
                     doc.toObject(Note::class.java)?.copy(id = doc.id)
                 } ?: emptyList()
+
                 adapter.submitList(notes)
+
+                // Tampilkan empty state jika tidak ada catatan
+                tvEmpty.visibility = if (notes.isEmpty()) View.VISIBLE else View.GONE
             }
     }
 
@@ -1940,6 +1987,10 @@ class NoteListActivity : AppCompatActivity() {
     }
 
     private fun deleteNote(noteId: String) {
+        if (noteId.isEmpty()) {
+            Toast.makeText(this, "ID catatan tidak valid", Toast.LENGTH_SHORT).show()
+            return
+        }
         db.collection("notes").document(noteId)
             .delete()
             .addOnSuccessListener {
@@ -1960,12 +2011,12 @@ class NoteListActivity : AppCompatActivity() {
 
             <!-- ADD EDIT NOTE ACTIVITY -->
             <article id="fs-add-edit">
-                <div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
-                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>AddEditNoteActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>AddEditNoteActivity.kt</code> dan <code>activity_add_edit_note.xml</code> sekaligus.
-                </div>
+                
                 <h2>activity_add_edit_note.xml &amp; AddEditNoteActivity.kt</h2>
                 <p>Activity ini dipakai untuk dua keperluan sekaligus: <strong>tambah catatan baru</strong> dan <strong>edit catatan yang sudah ada</strong>. Perbedaannya hanya ditentukan dari ada tidaknya <code>noteId</code> di Intent yang dikirim dari <code>NoteListActivity</code>.</p>
-
+<div style="background:#f3f4f6;border-left:4px solid #1565c0;border-radius:4px;padding:10px 14px;margin-bottom:16px;font-size:0.9rem;">
+                    <strong>Buat Activity baru:</strong> Klik kanan pada package → <strong>New → Activity → Empty Views Activity</strong> → beri nama <code>AddEditNoteActivity</code> → <strong>Finish</strong>. Android Studio otomatis membuat <code>AddEditNoteActivity.kt</code> dan <code>activity_add_edit_note.xml</code> sekaligus.
+                </div>
                 <h3>Langkah 1 — Buat Layout activity_add_edit_note.xml</h3>
                 <div class="code-block">
                     <div class="code-header">
