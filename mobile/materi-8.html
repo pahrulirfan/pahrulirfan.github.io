@@ -396,7 +396,7 @@
                     </div>
                 </div>
 
-                <div class="info-box">
+                <div class="info-box">4. Tambah Dependencies Firebase
                     <h4>Aktifkan Layanan yang Dibutuhkan</h4>
                     <p>Firebase Console kini menggunakan navigasi berbasis <strong>kategori produk</strong> di sidebar kiri. Aktifkan layanan berikut satu per satu:</p>
                     <table class="data-table" style="margin-top:10px;">
@@ -416,7 +416,7 @@
                             <tr>
                                 <td><strong>Cloud Firestore</strong></td>
                                 <td><code>Databases &amp; Storage</code> → NoSQL</td>
-                                <td>Databases &amp; Storage → Firestore → Create database → Start in test mode → Next → Done</td>
+                                <td>Databases &amp; Storage → Firestore → Create database → pilih <strong></strong>Standard edition</strong> → Next → isi Database ID &amp; location (biarkan default) → Next → pada Configure pilih <strong>Start in test mode</strong> → Create</td>
                             </tr>
                             <tr>
                                 <td><strong>Realtime Database</strong></td>
@@ -442,9 +442,9 @@
                 <h3>Cara A — Firebase Assistant (Direkomendasikan)</h3>
                 <ol style="margin: 8px 0 0; padding-left: 20px; line-height: 2;">
                     <li>Di Android Studio, klik menu <strong>Tools → Firebase</strong> — panel Firebase Assistant muncul di kanan.</li>
-                    <li>Pilih layanan, misalnya <strong>Authentication → Authenticate using a custom authentication system</strong>, lalu klik <strong>Connect to Firebase</strong>.</li>
-                    <li>Browser terbuka untuk login Google → pilih project Firebase yang sudah dibuat → klik <strong>Connect</strong>.</li>
-                    <li>File <code>google-services.json</code> otomatis didownload dan ditempatkan ke folder <code>app/</code>.</li>
+                    <li>Pilih layanan, misalnya <strong>Authentication → Authenticate using a custom authentication system</strong>.</li>
+                    <li>Klik <strong>Connect your app to Firebase</strong> — browser terbuka untuk login Google → pilih project Firebase yang sudah dibuat → klik <strong>Connect</strong>. Jika berhasil, statusnya berubah menjadi <em>✓ Connected</em>.</li>
+                    <li>Klik <strong>Add the Firebase Authentication SDK to your app</strong> — dependencies otomatis ditambahkan ke <code>build.gradle</code>.</li>
                 </ol>
 
                 <h3>Cara B — Manual via Firebase Console</h3>
@@ -464,114 +464,93 @@
             <!-- ======== TAMBAH DEPENDENCIES ======== -->
             <article id="setup-deps">
                 <h2>4. Tambah Dependencies Firebase</h2>
-                <p>Firebase menggunakan sistem plugin <strong>Google Services</strong> untuk membaca file <code>google-services.json</code>. Konfigurasi dilakukan di dua file Gradle.</p>
-
-                <h3>Project-level build.gradle.kts</h3>
-                <p>Tambahkan Google Services plugin di file <code>build.gradle.kts (Project)</code>.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>build.gradle.kts (Project level)</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>// build.gradle.kts (Project: NamaProject)
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    id("com.google.gms.google-services") version "4.4.2" apply false
-}</pre>
-                </div>
-
-                <h3>build.gradle.kts (Module: app)</h3>
-                <p>Tambahkan plugin Google Services dan dependencies Firebase yang dibutuhkan di file <code>build.gradle.kts (Module: app)</code>.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>build.gradle.kts (Module: app) — tambahkan plugin dan dependencies</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    id("com.google.gms.google-services")  // ← tambahkan ini
-}
-
-dependencies {
-    // Firebase BoM — mengelola versi semua library Firebase secara otomatis
-    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
-
-    // Tambahkan layanan Firebase yang dibutuhkan (tanpa versi, sudah diatur BoM)
-    implementation("com.google.firebase:firebase-auth-ktx")       // Authentication
-    implementation("com.google.firebase:firebase-firestore-ktx")  // Cloud Firestore
-    implementation("com.google.firebase:firebase-database-ktx")   // Realtime Database
-    implementation("com.google.firebase:firebase-storage-ktx")    // Storage
-
-    // Coroutines untuk operasi async
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-}</pre>
-                </div>
+                <p>Jika kamu menggunakan <strong>Cara A (Firebase Assistant)</strong>, plugin Google Services dan dependency <code>firebase-auth</code> sudah otomatis ditambahkan. Kamu hanya perlu menambahkan dependency untuk layanan lain yang belum ada, yaitu <strong>Cloud Firestore</strong>.</p>
 
                 <div class="info-box">
-                    <h4>Apa itu Firebase BoM?</h4>
-                    <p><strong>BoM (Bill of Materials)</strong> adalah cara Firebase merekomendasikan pengelolaan versi library. Dengan mendeklarasikan satu versi BoM, semua library Firebase yang Anda tambahkan akan otomatis menggunakan versi yang kompatibel satu sama lain — tidak perlu menulis versi di tiap dependency.</p>
-                    <p style="margin-bottom:0;">Cek versi BoM terbaru di: <code>firebase.google.com/docs/android/setup</code></p>
+                    <h4>Sudah Otomatis oleh Firebase Assistant</h4>
+                    <p>Setelah mengikuti Cara A, file <code>build.gradle.kts</code> kamu sudah berisi:</p>
+                    <ul style="margin: 8px 0 0; padding-left: 20px; line-height: 2;">
+                        <li>Plugin <code>google.gms.google.services</code> di Project level dan Module level</li>
+                        <li>Dependency <code>firebase.auth</code> di Module level</li>
+                        <li>File <code>google-services.json</code> sudah ada di folder <code>app/</code></li>
+                    </ul>
+                    <p style="margin-bottom:0;">Jangan tambahkan ulang hal-hal di atas — akan menyebabkan duplikat dan error saat build.</p>
+                </div>
+
+                <h3>Tambah Dependency Firestore</h3>
+                <p>Karena materi ini juga menggunakan Cloud Firestore, ada dua file yang perlu diupdate.</p>
+
+                <p><strong>Langkah 1</strong> — Tambahkan versi dan library di <code>gradle/libs.versions.toml</code>:</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>gradle/libs.versions.toml</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>[versions]
+# ... versi lainnya ...
+firebaseAuth = "24.1.0"
+firebaseFirestore = "25.1.1"  // ← tambahkan ini
+
+[libraries]
+# ... library lainnya ...
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }  // ← tambahkan ini</pre>
+                </div>
+
+                <p><strong>Langkah 2</strong> — Tambahkan dependency di <code>build.gradle.kts (Module: app)</code>:</p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <span>build.gradle.kts (Module: app) — tambahkan Firestore</span>
+                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
+                    </div>
+                    <pre>dependencies {
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)  // ← tambahkan ini
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+}</pre>
                 </div>
 
                 <h3>Verifikasi Setup</h3>
-                <p>Setelah menambahkan semua konfigurasi, lakukan <strong>Sync Project with Gradle Files</strong> (klik ikon gajah di toolbar atau <kbd>Ctrl+Shift+O</kbd>). Jika tidak ada error, setup berhasil.</p>
-
-                <div class="code-block">
-                    <div class="code-header">
-                        <span>Cek koneksi Firebase di MainActivity.kt</span>
-                        <button class="copy-btn" onclick="copyCode(this)" title="Copy kode">&#128203;</button>
-                    </div>
-                    <pre>import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Cek apakah Firebase Auth sudah terhubung
-        val auth = Firebase.auth
-        val currentUser = auth.currentUser
-
-        if (currentUser != null) {
-            Log.d("Firebase", "User sudah login: ${currentUser.email}")
-        } else {
-            Log.d("Firebase", "Firebase terhubung! Belum ada user yang login.")
-        }
-    }
-}</pre>
-                </div>
-
-                <p>Jalankan aplikasi dan buka <strong>Logcat</strong> di Android Studio. Jika muncul pesan <em>"Firebase terhubung!"</em> tanpa error, berarti setup sudah berhasil.</p>
+                <p>Setelah menambahkan dependency, lakukan <strong>Sync Project with Gradle Files</strong> (klik ikon gajah di toolbar atau <kbd>Ctrl+Shift+O</kbd>). Jika tidak ada error, setup sudah berhasil dan siap digunakan.</p>
 
                 <div class="data-table" style="overflow:hidden;border-radius:8px;margin-top:24px;">
                     <table class="data-table" style="margin:0;">
                         <thead>
                             <tr>
                                 <th>File</th>
-                                <th>Yang Ditambahkan</th>
-                                <th>Fungsi</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
                                 <td><code>google-services.json</code></td>
-                                <td>Di folder <code>app/</code></td>
-                                <td>Konfigurasi koneksi ke project Firebase</td>
+                                <td>✅ Sudah ada</td>
+                                <td>Otomatis oleh Firebase Assistant</td>
                             </tr>
                             <tr>
-                                <td><code>build.gradle.kts (Project)</code></td>
                                 <td>Plugin <code>google-services</code></td>
-                                <td>Membaca dan memproses google-services.json</td>
+                                <td>✅ Sudah ada</td>
+                                <td>Otomatis oleh Firebase Assistant</td>
                             </tr>
                             <tr>
-                                <td><code>build.gradle.kts (Module: app)</code></td>
-                                <td>Plugin + dependencies Firebase</td>
-                                <td>Mengaktifkan library Firebase di aplikasi</td>
+                                <td><code>firebase.auth</code></td>
+                                <td>✅ Sudah ada</td>
+                                <td>Otomatis oleh Firebase Assistant</td>
+                            </tr>
+                            <tr>
+                                <td><code>firebase.firestore</code></td>
+                                <td>⚠️ Perlu ditambah</td>
+                                <td>Tambahkan manual seperti langkah di atas</td>
                             </tr>
                         </tbody>
                     </table>
