@@ -26,6 +26,9 @@
     }
     .login-box input:focus { border-color: #2e6da4; }
     .login-error { color: #dc3545; font-size: 13px; margin-bottom: 10px; display: none; }
+    .login-warn  { color: #fd7e14; font-size: 13px; margin-bottom: 10px; display: none; }
+    .login-lock  { color: #dc3545; font-size: 13px; margin-bottom: 10px; display: none;
+                   background: #fff3f3; border: 1px solid #f5c6cb; border-radius: 8px; padding: 10px; }
 
     /* LAYOUT */
     header {
@@ -103,6 +106,8 @@
     <h2>🔐 Admin Panel</h2>
     <p>Monitoring Jurnal OJS</p>
     <div class="login-error" id="loginError">Password salah</div>
+    <div class="login-warn"  id="loginWarn"></div>
+    <div class="login-lock"  id="loginLock"></div>
     <input type="password" id="inputPassword" placeholder="Masukkan password admin"
       onkeydown="if(event.key==='Enter') doLogin()">
     <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Masuk</button>
@@ -160,183 +165,7 @@
 
 <div class="toast" id="toast"></div>
 
-<script>
-const ADMIN_KEY = "ojs_admin_token";
-
-// ── LOGIN ──────────────────────────────────────────
-function doLogin() {
-  const pw = document.getElementById("inputPassword").value;
-  if (!pw) return;
-
-  sessionStorage.setItem(ADMIN_KEY, pw);
-  verifyAndLoad();
-}
-
-function logout() {
-  sessionStorage.removeItem(ADMIN_KEY);
-  location.reload();
-}
-
-async function verifyAndLoad() {
-  const token = sessionStorage.getItem(ADMIN_KEY);
-  if (!token) return;
-
-  // Verifikasi password dengan hit endpoint admin
-  const res = await fetch("/api/admin?action=verify", {
-    headers: { "x-admin-secret": token }
-  });
-
-  if (res.status === 403) {
-    document.getElementById("loginError").style.display = "block";
-    sessionStorage.removeItem(ADMIN_KEY);
-    return;
-  }
-
-  document.getElementById("loginWrap").style.display = "none";
-  document.getElementById("adminWrap").style.display = "block";
-  loadUrls();
-}
-
-// ── LOAD URLs ──────────────────────────────────────
-async function loadUrls() {
-  const token = sessionStorage.getItem(ADMIN_KEY);
-  const res = await fetch("/api/admin?action=get-urls", {
-    headers: { "x-admin-secret": token }
-  });
-  const data = await res.json();
-  const journals = data.journals ?? [];
-
-  renderTabelJurnal(journals);
-  document.getElementById("jumlahUrl").textContent = journals.length;
-}
-
-function renderTabelJurnal(journals) {
-  const tbody = document.getElementById("bodyJurnal");
-  tbody.innerHTML = journals.map((j, i) => barisHtml(i, j.name, j.url)).join("");
-  updateJumlah();
-}
-
-function barisHtml(i, name = "", url = "") {
-  return `<tr id="baris-${i}" style="border-bottom:1px solid #f0f0f0">
-    <td style="padding:6px 8px">
-      <input type="text" value="${escHtml(name)}" maxlength="200"
-        placeholder="Nama jurnal..."
-        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none"
-        oninput="updateJumlah()">
-    </td>
-    <td style="padding:6px 8px">
-      <input type="url" value="${escHtml(url)}"
-        placeholder="https://..."
-        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none">
-    </td>
-    <td style="padding:6px 8px;text-align:center">
-      <button onclick="hapusBaris(this)" style="background:none;border:none;cursor:pointer;color:#dc3545;font-size:16px" title="Hapus">✕</button>
-    </td>
-  </tr>`;
-}
-
-function tambahBaris() {
-  const tbody = document.getElementById("bodyJurnal");
-  const i = tbody.rows.length;
-  const tr = document.createElement("tr");
-  tr.id = `baris-${i}`;
-  tr.style.borderBottom = "1px solid #f0f0f0";
-  tr.innerHTML = barisHtml(i).match(/<td[\s\S]*<\/tr>/)?.[0]
-    ?? barisHtml(i).replace(/^<tr[^>]*>|<\/tr>$/g, "");
-  // Lebih simpel:
-  tbody.insertAdjacentHTML("beforeend", barisHtml(Date.now()));
-  updateJumlah();
-  tbody.lastElementChild.querySelector("input").focus();
-}
-
-function hapusBaris(btn) {
-  btn.closest("tr").remove();
-  updateJumlah();
-}
-
-function updateJumlah() {
-  const rows = document.querySelectorAll("#bodyJurnal tr");
-  document.getElementById("jumlahUrl").textContent = rows.length;
-}
-
-function escHtml(str) {
-  return String(str).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
-}
-
-function getJournalsFromTable() {
-  const rows = document.querySelectorAll("#bodyJurnal tr");
-  const result = [];
-  rows.forEach(row => {
-    const inputs = row.querySelectorAll("input");
-    const name = inputs[0].value.trim().slice(0, 200);
-    const url  = inputs[1].value.trim();
-    if (url) result.push({ name, url });
-  });
-  return result;
-}
-
-// ── SIMPAN URLs ────────────────────────────────────
-async function simpanUrls() {
-  const token = sessionStorage.getItem(ADMIN_KEY);
-  const journals = getJournalsFromTable();
-
-  if (journals.length === 0) return showToast("Minimal 1 jurnal", "error");
-
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = "⏳ Menyimpan & mengecek jurnal baru...";
-
-  const res = await fetch("/api/admin?action=set-urls", {
-    method: "POST",
-    headers: { "x-admin-secret": token, "Content-Type": "application/json" },
-    body: JSON.stringify({ journals })
-  });
-
-  btn.disabled = false;
-  btn.textContent = "💾 Simpan Perubahan";
-
-  if (res.ok) {
-    const data = await res.json();
-    const msg = data.jurnalBaru > 0
-      ? `✅ Disimpan. ${data.jurnalBaru} jurnal baru langsung dicek.`
-      : `✅ ${journals.length} jurnal berhasil disimpan`;
-    showToast(msg, "success");
-    document.getElementById("jumlahUrl").textContent = journals.length;
-  } else {
-    showToast("Gagal menyimpan", "error");
-  }
-}
-
-// ── RESET CACHE ────────────────────────────────────
-async function resetCache() {
-  const token = sessionStorage.getItem(ADMIN_KEY);
-  const btn = document.getElementById("btnReset");
-  btn.disabled = true;
-  btn.textContent = "Menghapus cache...";
-
-  const res = await fetch("/api/admin?action=reset-cache", {
-    method: "POST",
-    headers: { "x-admin-secret": token }
-  });
-
-  btn.disabled = false;
-  btn.textContent = "🔄 Paksa Cek Ulang Sekarang";
-
-  if (res.ok) showToast("✅ Cache dihapus. Buka halaman monitoring untuk cek ulang.", "success");
-  else showToast("Gagal menghapus cache", "error");
-}
-
-// ── TOAST ──────────────────────────────────────────
-function showToast(msg, type = "") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = "toast show " + type;
-  setTimeout(() => t.className = "toast", 3000);
-}
-
-// Auto-login jika sudah ada session
-verifyAndLoad();
-</script>
+<script>const ADMIN_KEY="ojs_admin_token";let lockCountdown=null;function doLogin(){const e=document.getElementById("inputPassword").value;e&&(sessionStorage.setItem(ADMIN_KEY,e),verifyAndLoad())}function logout(){sessionStorage.removeItem(ADMIN_KEY),location.reload()}function showLoginError(e){document.getElementById("loginError").style.display="block",document.getElementById("loginError").textContent=e,document.getElementById("loginWarn").style.display="none",document.getElementById("loginLock").style.display="none"}function showLoginWarn(e){document.getElementById("loginWarn").style.display="block",document.getElementById("loginWarn").textContent=e,document.getElementById("loginError").style.display="none",document.getElementById("loginLock").style.display="none"}function startLockCountdown(e){const t=document.getElementById("loginLock"),n=document.querySelector(".login-box .btn-primary");document.getElementById("loginError").style.display="none",document.getElementById("loginWarn").style.display="none",t.style.display="block",n.disabled=!0,lockCountdown&&clearInterval(lockCountdown),lockCountdown=setInterval(()=>{const o=Math.ceil((e-Date.now())/1e3);if(o<=0)return clearInterval(lockCountdown),t.style.display="none",n.disabled=!1,document.getElementById("inputPassword").value="",void document.getElementById("inputPassword").focus();const a=Math.floor(o/60),l=o%60;t.textContent=`🔒 Terlalu banyak percobaan. Coba lagi dalam ${a}:${String(l).padStart(2,"0")} menit.`},1e3)}async function verifyAndLoad(){const e=sessionStorage.getItem(ADMIN_KEY);if(!e)return;const t=document.querySelector(".login-box .btn-primary");let n;t.disabled=!0,t.textContent="Memverifikasi...";try{n=await fetch("/api/admin?action=verify",{headers:{"x-admin-secret":e}})}catch{return t.disabled=!1,t.textContent="Masuk",void showLoginError("Gagal terhubung ke server.")}if(t.disabled=!1,t.textContent="Masuk",429===n.status){const e=await n.json().catch(()=>({}));return sessionStorage.removeItem(ADMIN_KEY),void startLockCountdown(e.lockedUntil??Date.now()+9e5)}if(403===n.status){const e=await n.json().catch(()=>({}));return sessionStorage.removeItem(ADMIN_KEY),void(void 0!==e.remaining?showLoginWarn(`Password salah. Sisa percobaan: ${e.remaining}`):showLoginError("Password salah."))}document.getElementById("loginError").style.display="none",document.getElementById("loginWarn").style.display="none",document.getElementById("loginLock").style.display="none",document.getElementById("loginWrap").style.display="none",document.getElementById("adminWrap").style.display="block",loadUrls()}async function loadUrls(){const e=sessionStorage.getItem(ADMIN_KEY),t=await fetch("/api/admin?action=get-urls",{headers:{"x-admin-secret":e}}),n=(await t.json()).journals??[];renderTabelJurnal(n),document.getElementById("jumlahUrl").textContent=n.length}function renderTabelJurnal(e){document.getElementById("bodyJurnal").innerHTML=e.map((e,t)=>barisHtml(t,e.name,e.url)).join(""),updateJumlah()}function barisHtml(e,t="",n=""){return`<tr id="baris-${e}" style="border-bottom:1px solid #f0f0f0">\n    <td style="padding:6px 8px">\n      <input type="text" value="${escHtml(t)}" maxlength="200"\n        placeholder="Nama jurnal..."\n        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none"\n        oninput="updateJumlah()">\n    </td>\n    <td style="padding:6px 8px">\n      <input type="url" value="${escHtml(n)}"\n        placeholder="https://..."\n        style="width:100%;padding:6px 10px;border:1px solid #ddd;border-radius:6px;font-size:13px;outline:none">\n    </td>\n    <td style="padding:6px 8px;text-align:center">\n      <button onclick="hapusBaris(this)" style="background:none;border:none;cursor:pointer;color:#dc3545;font-size:16px" title="Hapus">✕</button>\n    </td>\n  </tr>`}function tambahBaris(){const e=document.getElementById("bodyJurnal"),t=e.rows.length,n=document.createElement("tr");n.id=`baris-${t}`,n.style.borderBottom="1px solid #f0f0f0",n.innerHTML=barisHtml(t).match(/<td[\s\S]*<\/tr>/)?.[0]??barisHtml(t).replace(/^<tr[^>]*>|<\/tr>$/g,""),e.insertAdjacentHTML("afterbegin",barisHtml(Date.now())),updateJumlah(),e.firstElementChild.querySelector("input").focus()}function hapusBaris(e){e.closest("tr").remove(),updateJumlah()}function updateJumlah(){const e=document.querySelectorAll("#bodyJurnal tr");document.getElementById("jumlahUrl").textContent=e.length}function escHtml(e){return String(e).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;")}function getJournalsFromTable(){const e=document.querySelectorAll("#bodyJurnal tr"),t=[];return e.forEach(e=>{const n=e.querySelectorAll("input"),o=n[0].value.trim().slice(0,200),a=n[1].value.trim();a&&t.push({name:o,url:a})}),t}async function simpanUrls(){const e=sessionStorage.getItem(ADMIN_KEY),t=getJournalsFromTable();if(0===t.length)return showToast("Minimal 1 jurnal","error");const n=event.target;n.disabled=!0,n.textContent="⏳ Menyimpan & mengecek jurnal baru...";const o=await fetch("/api/admin?action=set-urls",{method:"POST",headers:{"x-admin-secret":e,"Content-Type":"application/json"},body:JSON.stringify({journals:t})});if(n.disabled=!1,n.textContent="💾 Simpan Perubahan",o.ok){const e=await o.json();showToast(e.jurnalBaru>0?`✅ Disimpan. ${e.jurnalBaru} jurnal baru langsung dicek.`:`✅ ${t.length} jurnal berhasil disimpan`,"success"),document.getElementById("jumlahUrl").textContent=t.length}else showToast("Gagal menyimpan","error")}async function resetCache(){const e=sessionStorage.getItem(ADMIN_KEY),t=document.getElementById("btnReset");t.disabled=!0,t.textContent="Menghapus cache...";const n=await fetch("/api/admin?action=reset-cache",{method:"POST",headers:{"x-admin-secret":e}});t.disabled=!1,t.textContent="🔄 Paksa Cek Ulang Sekarang",n.ok?showToast("✅ Cache dihapus. Buka halaman monitoring untuk cek ulang.","success"):showToast("Gagal menghapus cache","error")}function showToast(e,t=""){const n=document.getElementById("toast");n.textContent=e,n.className="toast show "+t,setTimeout(()=>n.className="toast",3e3)}verifyAndLoad();</script>
 
 </body>
 </html>

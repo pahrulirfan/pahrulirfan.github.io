@@ -67,18 +67,120 @@ async function cekSatuJurnal(jurnal) {
   }
 }
 
-function isAuthorized(req) {
-  return req.headers["x-admin-secret"] === process.env.ADMIN_SECRET;
+// Escalating lockout: 2 gagal → 15 menit, 4 gagal → 1 jam, 6 gagal → 24 jam
+const LOCKOUT_STAGES = [
+  { threshold: 2, sec: 15 * 60,      label: "15 menit" },
+  { threshold: 4, sec: 60 * 60,      label: "1 jam"    },
+  { threshold: 6, sec: 24 * 60 * 60, label: "24 jam"   },
+];
+const ATTEMPT_WINDOW = 10 * 60; // reset counter setelah 10 menit tanpa percobaan (sebelum lockout pertama)
+
+function getLockoutStage(attempts) {
+  // Cari stage tertinggi yang threshold-nya sudah tercapai
+  for (let i = LOCKOUT_STAGES.length - 1; i >= 0; i--) {
+    if (attempts >= LOCKOUT_STAGES[i].threshold) return LOCKOUT_STAGES[i];
+  }
+  return null;
+}
+
+function getClientIp(req) {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (forwarded) return forwarded.split(",")[0].trim();
+  return req.socket?.remoteAddress ?? "unknown";
+}
+
+async function checkRateLimit(ip) {
+  const key  = `rl:${ip}`;
+  const data = await kvGet(key);
+  if (!data) return { blocked: false, attempts: 0 };
+
+  if (data.lockedUntil && Date.now() < data.lockedUntil) {
+    return { blocked: true, lockedUntil: data.lockedUntil };
+  }
+  return { blocked: false, attempts: data.attempts ?? 0 };
+}
+
+async function recordFailedAttempt(ip) {
+  const key  = `rl:${ip}`;
+  const data = await kvGet(key) ?? { attempts: 0, lockCount: 0 };
+
+  // Jika lockout sudah lewat, jangan reset attempts — biarkan akumulasi
+  // tapi hapus lockedUntil agar bisa coba lagi
+  if (data.lockedUntil && Date.now() >= data.lockedUntil) {
+    data.lockedUntil = null;
+  }
+
+  data.attempts = (data.attempts ?? 0) + 1;
+
+  const stage = getLockoutStage(data.attempts);
+  if (stage) {
+    data.lockedUntil = Date.now() + stage.sec * 1000;
+    // TTL = durasi lockout terpanjang (24 jam) agar data tidak hilang sebelum waktunya
+    await kvSet(key, data, 24 * 60 * 60);
+    return { locked: true, lockedUntil: data.lockedUntil, label: stage.label };
+  }
+
+  // Belum kena lockout — simpan dengan window pendek
+  await kvSet(key, data, ATTEMPT_WINDOW);
+  // Sisa percobaan sampai lockout pertama
+  return { locked: false, remaining: LOCKOUT_STAGES[0].threshold - data.attempts };
+}
+
+async function clearRateLimit(ip) {
+  await kvDel(`rl:${ip}`);
+}
+
+function isPasswordCorrect(req) {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return false;
+  // Constant-time comparison untuk mencegah timing attack
+  const provided = req.headers["x-admin-secret"] ?? "";
+  if (provided.length !== secret.length) return false;
+  let diff = 0;
+  for (let i = 0; i < secret.length; i++) {
+    diff |= provided.charCodeAt(i) ^ secret.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
 
-  if (!isAuthorized(req)) {
-    return res.status(403).json({ error: "Forbidden" });
+  const action = req.query.action;
+  const ip     = getClientIp(req);
+
+  // Cek rate limit sebelum verifikasi password
+  const rl = await checkRateLimit(ip);
+  if (rl.blocked) {
+    const retryAfter = Math.ceil((rl.lockedUntil - Date.now()) / 1000);
+    res.setHeader("Retry-After", retryAfter);
+    return res.status(429).json({
+      error: "Terlalu banyak percobaan. Coba lagi nanti.",
+      lockedUntil: rl.lockedUntil,
+      retryAfter,
+    });
   }
 
-  const action = req.query.action;
+  // Verifikasi password
+  if (!isPasswordCorrect(req)) {
+    const result = await recordFailedAttempt(ip);
+    if (result.locked) {
+      const retryAfter = Math.ceil((result.lockedUntil - Date.now()) / 1000);
+      res.setHeader("Retry-After", retryAfter);
+      return res.status(429).json({
+        error: `Terlalu banyak percobaan. Akun dikunci ${result.label}.`,
+        lockedUntil: result.lockedUntil,
+        retryAfter,
+      });
+    }
+    return res.status(403).json({
+      error: "Password salah",
+      remaining: result.remaining,
+    });
+  }
+
+  // Login berhasil — hapus counter
+  await clearRateLimit(ip);
 
   if (action === "verify") {
     return res.json({ ok: true });
