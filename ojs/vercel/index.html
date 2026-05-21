@@ -156,7 +156,7 @@
   <header>
     <div>
       <h1>Monitoring Jurnal OJS</h1>
-      <p>Status ketersediaan jurnal diperbarui setiap 2 jam sekali</p>
+      <p>Status ketersediaan jurnal diperbarui otomatis setiap 2 jam oleh sistem</p>
     </div>
   </header>
 
@@ -178,7 +178,6 @@
   <div class="panel">
     <div class="info-bar" style="border-bottom: dashed 1px lightgray; padding-bottom: 10px; margin-bottom: 10px;">
       <span class="chip blue" id="waktuCek">Memuat...</span>
-      <span class="chip" id="nextCek"></span>
     </div>
 
     <div class="toolbar">
@@ -243,6 +242,45 @@
 </div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.mini.min.js"></script>
-<script>let allData=[],filtered=[],currentPage=1,perPage=10,sortCol=null,sortDir="asc",filterStatus="all",searchQuery="",waktuCekStr="";async function loadHasil(){try{const t=await fetch("/api/hasil"),e=await t.json();allData=e.hasil.map((t,e)=>({no:e+1,...t}));const a=new Date(e.waktuCek).toLocaleString("id-ID");waktuCekStr=a,document.getElementById("waktuCek").textContent="Dicek: "+a,startCountdown(new Date(e.nextCek)),updateStats(),applyFilter(),document.getElementById("btnXlsx").style.display=""}catch{document.getElementById("tbody").innerHTML='<tr><td colspan="4" style="text-align:center;padding:40px;color:red">\n        Gagal memuat data. Coba refresh halaman.\n      </td></tr>'}}function updateStats(){document.getElementById("s-total").textContent=allData.length,document.getElementById("s-ok").textContent=allData.filter(t=>"ok"===t.status).length,document.getElementById("s-down").textContent=allData.filter(t=>"down"===t.status).length,document.getElementById("s-warn").textContent=allData.filter(t=>"warn"===t.status).length}function setFilter(t,e){filterStatus=t,document.getElementById("filterStatus").value=t,document.querySelectorAll(".stat-card").forEach(t=>t.classList.remove("active")),e.classList.add("active"),currentPage=1,applyFilter()}function onFilterChange(){filterStatus=document.getElementById("filterStatus").value,document.querySelectorAll(".stat-card").forEach(t=>t.classList.remove("active")),currentPage=1,applyFilter()}function onSearch(){searchQuery=document.getElementById("searchInput").value.toLowerCase(),currentPage=1,applyFilter()}function onPerPageChange(){perPage=parseInt(document.getElementById("perPage").value),currentPage=1,renderTable()}function applyFilter(){filtered=allData.filter(t=>{const e="all"===filterStatus||t.status===filterStatus,a=!searchQuery||t.url.toLowerCase().includes(searchQuery)||(t.name??"").toLowerCase().includes(searchQuery);return e&&a}),sortCol&&applySort(),renderTable()}function sortBy(t,e){sortCol===t?sortDir="asc"===sortDir?"desc":"asc":(sortCol=t,sortDir="asc"),document.querySelectorAll("thead th").forEach(t=>t.classList.remove("asc","desc")),e.classList.add(sortDir),applySort(),renderTable()}function applySort(){filtered.sort((t,e)=>{let a=t[sortCol]??"",n=e[sortCol]??"";return"number"==typeof a&&"number"==typeof n?"asc"===sortDir?a-n:n-a:(a=String(a).toLowerCase(),n=String(n).toLowerCase(),"asc"===sortDir?a.localeCompare(n):n.localeCompare(a))})}function renderTable(){const t=filtered.length,e=Math.max(1,Math.ceil(t/perPage));currentPage>e&&(currentPage=e);const a=(currentPage-1)*perPage,n=Math.min(a+perPage,t),r=filtered.slice(a,n),o={ok:'<span class="badge ok">🟢 Lancar</span>',down:'<span class="badge down">🔴 Down</span>',warn:'<span class="badge warn">🟡 Peringatan</span>'};0===r.length?document.getElementById("tbody").innerHTML='<tr><td colspan="4" style="text-align:center;padding:30px;color:#aaa">\n        Tidak ada data ditemukan\n      </td></tr>':document.getElementById("tbody").innerHTML=r.map((t,e)=>`\n      <tr>\n        <td style="color:#aaa;font-size:12px">${a+e+1}</td>\n        <td style="font-weight:500">${t.name??'<span style="color:#aaa">-</span>'}</td>\n        <td><a href="${t.url}" target="_blank">${t.url}</a></td>\n        <td>${o[t.status]??'<span class="badge pending">-</span>'}</td>\n        <td style="font-size:12px;color:#666">${t.code??"-"}</td>\n      </tr>`).join(""),document.getElementById("pageInfo").textContent=0===t?"Tidak ada data":`Menampilkan ${a+1}–${n} dari ${t} jurnal`,renderPagination(e)}function renderPagination(t){const e=document.getElementById("pagination");if(t<=1)return void(e.innerHTML="");const a=window.innerWidth<640;let n="";n+=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${1===currentPage?"disabled":""}>‹</button>`,pageRange(currentPage,t,a).forEach(t=>{n+="..."===t?'<button class="page-btn" disabled>…</button>':`<button class="page-btn ${t===currentPage?"active":""}" onclick="goPage(${t})">${t}</button>`}),n+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===t?"disabled":""}>›</button>`,e.innerHTML=n}function pageRange(t,e,a){if(e<=(a?3:7))return Array.from({length:e},(t,e)=>e+1);const n=[];if(a){const a=2,r=Math.max(1,Math.min(t-a,e-4)),o=Math.min(e,r+4);for(let t=r;t<=o;t++)n.push(t);return n}n.push(1),t>3&&n.push("...");for(let a=Math.max(2,t-1);a<=Math.min(e-1,t+1);a++)n.push(a);return t<e-2&&n.push("..."),n.push(e),n}function goPage(t){const e=Math.ceil(filtered.length/perPage);t<1||t>e||(currentPage=t,renderTable(),window.scrollTo({top:0,behavior:"smooth"}))}function startCountdown(t){!function e(){const a=Math.max(0,Math.floor((t-Date.now())/1e3)),n=Math.floor(a/3600).toString().padStart(2,"0"),r=Math.floor(a%3600/60).toString().padStart(2,"0"),o=(a%60).toString().padStart(2,"0");document.getElementById("nextCek").textContent=a>0?`Cek berikutnya: ${n}:${r}:${o}`:"Siap dicek ulang",a>0&&setTimeout(e,1e3)}()}function exportCSV(){if(!allData.length)return;const t=[["No","Nama Jurnal","URL","Status","HTTP Code"]];allData.forEach(e=>t.push([e.no,e.name??"",e.url,e.status,e.code]));const e=t.map(t=>t.map(t=>`"${t}"`).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([e],{type:"text/csv"})),a.download=`monitoring-ojs-${(new Date).toISOString().slice(0,10)}.csv`,a.click()}function exportXLSX(){if(!allData.length)return;const t={ok:"Lancar",down:"Down",warn:"Peringatan"},e=allData.map((e,a)=>({No:a+1,"Nama Jurnal":e.name??"",Link:e.url,Status:t[e.status]??e.status,"HTTP Code":e.code??"-","Tanggal Terakhir Dicek":waktuCekStr})),a=XLSX.utils.json_to_sheet(e);a["!cols"]=[{wch:5},{wch:50},{wch:55},{wch:12},{wch:12},{wch:24}];const n=XLSX.utils.book_new();XLSX.utils.book_append_sheet(n,a,"Monitoring OJS"),(new Date).toISOString().slice(0,10),XLSX.writeFile(n,`monitoring-jurnal-unram-${(new Date).toLocaleString("id-ID").replace(/[/:]/g,"-").replace(/\s/g,"_")}.xlsx`)}loadHasil();</script>
+<script>
+let allData=[],filtered=[],currentPage=1,perPage=10,sortCol=null,sortDir="asc",filterStatus="all",searchQuery="",waktuCekStr="";
+
+async function loadHasil(){
+  try{
+    const t=await fetch("/api/hasil"),e=await t.json();
+    if(e.noData||!e.hasil||e.hasil.length===0){
+      document.getElementById("waktuCek").textContent="Belum ada data — menunggu pengecekan terjadwal";
+      document.getElementById("tbody").innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:#aaa">Data belum tersedia. Pengecekan dilakukan otomatis oleh sistem setiap 2 jam.</td></tr>';
+      updateStats();
+      return;
+    }
+    allData=e.hasil.map((t,e)=>({no:e+1,...t}));
+    const a=new Date(e.waktuCek).toLocaleString("id-ID");
+    waktuCekStr=a;
+    document.getElementById("waktuCek").textContent="Dicek: "+a;
+    updateStats();applyFilter();
+    document.getElementById("btnXlsx").style.display="";
+  }catch{
+    document.getElementById("tbody").innerHTML='<tr><td colspan="5" style="text-align:center;padding:40px;color:red">Gagal memuat data. Coba refresh halaman.</td></tr>';
+  }
+}
+
+function updateStats(){document.getElementById("s-total").textContent=allData.length,document.getElementById("s-ok").textContent=allData.filter(t=>"ok"===t.status).length,document.getElementById("s-down").textContent=allData.filter(t=>"down"===t.status).length,document.getElementById("s-warn").textContent=allData.filter(t=>"warn"===t.status).length}
+function setFilter(t,e){filterStatus=t,document.getElementById("filterStatus").value=t,document.querySelectorAll(".stat-card").forEach(t=>t.classList.remove("active")),e.classList.add("active"),currentPage=1,applyFilter()}
+function onFilterChange(){filterStatus=document.getElementById("filterStatus").value,document.querySelectorAll(".stat-card").forEach(t=>t.classList.remove("active")),currentPage=1,applyFilter()}
+function onSearch(){searchQuery=document.getElementById("searchInput").value.toLowerCase(),currentPage=1,applyFilter()}
+function onPerPageChange(){perPage=parseInt(document.getElementById("perPage").value),currentPage=1,renderTable()}
+function applyFilter(){filtered=allData.filter(t=>{const e="all"===filterStatus||t.status===filterStatus,a=!searchQuery||t.url.toLowerCase().includes(searchQuery)||(t.name??"").toLowerCase().includes(searchQuery);return e&&a}),sortCol&&applySort(),renderTable()}
+function sortBy(t,e){sortCol===t?sortDir="asc"===sortDir?"desc":"asc":(sortCol=t,sortDir="asc"),document.querySelectorAll("thead th").forEach(t=>t.classList.remove("asc","desc")),e.classList.add(sortDir),applySort(),renderTable()}
+function applySort(){filtered.sort((t,e)=>{let a=t[sortCol]??"",n=e[sortCol]??"";return"number"==typeof a&&"number"==typeof n?"asc"===sortDir?a-n:n-a:(a=String(a).toLowerCase(),n=String(n).toLowerCase(),"asc"===sortDir?a.localeCompare(n):n.localeCompare(a))})}
+function renderTable(){const t=filtered.length,e=Math.max(1,Math.ceil(t/perPage));currentPage>e&&(currentPage=e);const a=(currentPage-1)*perPage,n=Math.min(a+perPage,t),r=filtered.slice(a,n),o={ok:'<span class="badge ok">🟢 Lancar</span>',down:'<span class="badge down">🔴 Down</span>',warn:'<span class="badge warn">🟡 Peringatan</span>'};0===r.length?document.getElementById("tbody").innerHTML='<tr><td colspan="5" style="text-align:center;padding:30px;color:#aaa">Tidak ada data ditemukan</td></tr>':document.getElementById("tbody").innerHTML=r.map((t,e)=>`<tr><td style="color:#aaa;font-size:12px">${a+e+1}</td><td style="font-weight:500">${t.name??'<span style="color:#aaa">-</span>'}</td><td><a href="${t.url}" target="_blank">${t.url}</a></td><td>${o[t.status]??'<span class="badge pending">-</span>'}</td><td style="font-size:12px;color:#666">${t.code??"-"}</td></tr>`).join(""),document.getElementById("pageInfo").textContent=0===t?"Tidak ada data":`Menampilkan ${a+1}–${n} dari ${t} jurnal`,renderPagination(e)}
+function renderPagination(t){const e=document.getElementById("pagination");if(t<=1)return void(e.innerHTML="");const a=window.innerWidth<640;let n="";n+=`<button class="page-btn" onclick="goPage(${currentPage-1})" ${1===currentPage?"disabled":""}>‹</button>`,pageRange(currentPage,t,a).forEach(t=>{n+="..."===t?'<button class="page-btn" disabled>…</button>':`<button class="page-btn ${t===currentPage?"active":""}" onclick="goPage(${t})">${t}</button>`}),n+=`<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===t?"disabled":""}>›</button>`,e.innerHTML=n}
+function pageRange(t,e,a){if(e<=(a?3:7))return Array.from({length:e},(t,e)=>e+1);const n=[];if(a){const a=2,r=Math.max(1,Math.min(t-a,e-4)),o=Math.min(e,r+4);for(let t=r;t<=o;t++)n.push(t);return n}n.push(1),t>3&&n.push("...");for(let a=Math.max(2,t-1);a<=Math.min(e-1,t+1);a++)n.push(a);return t<e-2&&n.push("..."),n.push(e),n}
+function goPage(t){const e=Math.ceil(filtered.length/perPage);t<1||t>e||(currentPage=t,renderTable(),window.scrollTo({top:0,behavior:"smooth"}))}
+function exportCSV(){if(!allData.length)return;const t=[["No","Nama Jurnal","URL","Status","HTTP Code"]];allData.forEach(e=>t.push([e.no,e.name??"",e.url,e.status,e.code]));const e=t.map(t=>t.map(t=>`"${t}"`).join(",")).join("\n"),a=document.createElement("a");a.href=URL.createObjectURL(new Blob([e],{type:"text/csv"})),a.download=`monitoring-ojs-${(new Date).toISOString().slice(0,10)}.csv`,a.click()}
+function exportXLSX(){if(!allData.length)return;const t={ok:"Lancar",down:"Down",warn:"Peringatan"},e=allData.map((e,a)=>({No:a+1,"Nama Jurnal":e.name??"",Link:e.url,Status:t[e.status]??e.status,"HTTP Code":e.code??"-","Tanggal Terakhir Dicek":waktuCekStr})),a=XLSX.utils.json_to_sheet(e);a["!cols"]=[{wch:5},{wch:50},{wch:55},{wch:12},{wch:12},{wch:24}];const n=XLSX.utils.book_new();XLSX.utils.book_append_sheet(n,a,"Monitoring OJS"),XLSX.writeFile(n,`monitoring-jurnal-unram-${(new Date).toLocaleString("id-ID").replace(/[/:]/g,"-").replace(/\s/g,"_")}.xlsx`)}
+
+loadHasil();
+</script>
 </body>
 </html>
