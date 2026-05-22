@@ -245,5 +245,17 @@ export default async function handler(req, res) {
     return res.json({ ok: true });
   }
 
+  if (action === "run-cek" && req.method === "POST") {
+    // Panggil endpoint run-cek dengan ADMIN_SECRET sebagai autentikasi
+    const protocol = req.headers["x-forwarded-proto"] ?? "https";
+    const host     = req.headers["host"];
+    const runRes   = await fetch(`${protocol}://${host}/api/run-cek`, {
+      method: "GET",
+      headers: { "x-admin-secret": process.env.ADMIN_SECRET ?? "" },
+    });
+    const data = await runRes.json();
+    return res.status(runRes.status).json(data);
+  }
+
   return res.status(400).json({ error: "Action tidak dikenal" });
 }

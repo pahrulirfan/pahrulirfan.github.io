@@ -3,10 +3,14 @@ name: Monitoring OJS Cron
 on:
   schedule:
     - cron: '0 */2 * * *'  # setiap 2 jam
+  workflow_dispatch:        # bisa trigger manual dari GitHub Actions UI
 
 jobs:
   trigger-monitoring:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger pengecekan jurnal
-        run: curl -s https://ojsmonitor.vercel.app/api/hasil > /dev/null
+      - name: Jalankan pengecekan jurnal
+        run: |
+          curl -s -X GET \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            https://ojsmonitor.vercel.app/api/run-cek
