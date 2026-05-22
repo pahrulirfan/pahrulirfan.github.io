@@ -51,7 +51,7 @@ async function cekSatuJurnal(jurnal) {
     const response = await fetch(url, {
       method: "GET",
       redirect: "follow",
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(12000),
     });
     const text = await response.text();
     if (response.status === 200 && text.length < 100) {
