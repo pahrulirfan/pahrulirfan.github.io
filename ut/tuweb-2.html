@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUWEB 2 - Pemrograman Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu" aria-label="Buka menu materi">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" :class="{ active: isMobileMenuOpen }" @click="toggleMobileMenu"></div>
+
+        <!-- Header -->
+        <header>
+            <h1>TUWEB 2 - Pemrograman Web</h1>
+            <p>Aktivitas Belajar 7 sampai 11</p>
+        </header>
+
+        <div class="container">
+            <!-- Sidebar -->
+            <nav class="sidebar" :class="{ active: isMobileMenuOpen }">
+                <h3>Daftar Materi</h3>
+                <ul>
+                    <li v-for="menu in menus" :key="menu.id">
+                        <a
+                            :href="'#' + menu.id"
+                            :class="{ active: activeSection === menu.id }"
+                            @click="goToSection(menu.id)"
+                        >
+                            {{ menu.label }}
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Konten Utama -->
+            <main class="content" v-pre>
+                <section id="aktivitas-7">
+                    <h2>Aktivitas Belajar 7 <span class="badge badge-new">Vue.js</span></h2>
+                    <h3>Data Binding dan Pengolahannya (2): Computed Properties, Methods</h3>
+
+                    <p>Bayangkan daftar nilai mahasiswa di spreadsheet. Ada kolom nilai tugas, UTS, dan UAS. Ketika satu nilai berubah, kolom nilai akhir ikut berubah otomatis. Di Vue, pola seperti ini cocok dibuat dengan <strong>computed properties</strong>, sedangkan aksi seperti menambah data, menghapus data, atau memproses tombol lebih cocok dibuat dengan <strong>methods</strong>.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu menggunakan computed properties untuk menghasilkan data turunan.</li>
+                            <li>Mahasiswa mampu menggunakan methods untuk menjalankan aksi atau proses tertentu.</li>
+                            <li>Mahasiswa mampu membedakan kapan memakai computed dan kapan memakai methods.</li>
+                        </ul>
+                    </div>
+
+                    <h3>A. Computed Properties</h3>
+                    <p><strong>Computed properties</strong> adalah properti yang nilainya dihitung dari data lain. Vue akan menyimpan hasilnya sementara atau melakukan <em>caching</em>. Artinya, computed hanya dihitung ulang jika data yang dipakai di dalamnya berubah.</p>
+
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Aspek</th>
+                                <th>Computed</th>
+                                <th>Methods</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Cara dipanggil di template</td>
+                                <td><code>{{ namaComputed }}</code></td>
+                                <td><code>{{ namaMethod() }}</code></td>
+                            </tr>
+                            <tr>
+                                <td>Eksekusi ulang</td>
+                                <td>Hanya saat data sumber berubah</td>
+                                <td>Setiap kali dipanggil saat render</td>
+                            </tr>
+                            <tr>
+                                <td>Cocok untuk</td>
+                                <td>Nilai turunan seperti total, rata-rata, status</td>
+                                <td>Aksi seperti klik tombol, tambah data, reset form</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh Kode: Kalkulator Nilai Akhir</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Computed dan Methods&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Kalkulator Nilai Akhir&lt;/h1&gt;
+
+        &lt;label&gt;Tugas:
+            &lt;input type="number" v-model.number="tugas"&gt;
+        &lt;/label&gt;
+        &lt;br&gt;
+
+        &lt;label&gt;UTS:
+            &lt;input type="number" v-model.number="uts"&gt;
+        &lt;/label&gt;
+        &lt;br&gt;
+
+        &lt;label&gt;UAS:
+            &lt;input type="number" v-model.number="uas"&gt;
+        &lt;/label&gt;
+
+        &lt;p&gt;Nilai Akhir: {{ nilaiAkhir }}&lt;/p&gt;
+        &lt;p&gt;Grade: {{ grade }}&lt;/p&gt;
+        &lt;button @click="resetNilai"&gt;Reset&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    tugas: 80,
+                    uts: 75,
+                    uas: 90
+                };
+            },
+            computed: {
+                nilaiAkhir() {
+                    return (this.tugas * 0.3) + (this.uts * 0.3) + (this.uas * 0.4);
+                },
+                grade() {
+                    if (this.nilaiAkhir >= 85) return 'A';
+                    if (this.nilaiAkhir >= 75) return 'B';
+                    if (this.nilaiAkhir >= 65) return 'C';
+                    return 'D';
+                }
+            },
+            methods: {
+                resetNilai() {
+                    this.tugas = 0;
+                    this.uts = 0;
+                    this.uas = 0;
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Tips:</strong> Jika nilai yang ditampilkan adalah hasil olahan dari data lain, gunakan computed. Jika yang dibutuhkan adalah aksi karena klik, submit, atau input pengguna, gunakan methods.
+                    </div>
+
+                    <h3>B. Contoh Kasus Konversi</h3>
+                    <p>Computed juga cocok untuk konversi satuan, misalnya mengubah menit ke jam atau rupiah ke format teks. Pengguna cukup mengubah satu input, lalu hasil turunannya ikut berubah.</p>
+
+                    <pre><code>computed: {
+    jamKuliah() {
+        return Math.floor(this.totalMenit / 60);
+    },
+    sisaMenit() {
+        return this.totalMenit % 60;
+    },
+    durasiLengkap() {
+        return `${this.jamKuliah} jam ${this.sisaMenit} menit`;
+    }
+}</code></pre>
+
+                    <div class="warning-box">
+                        <strong>Kesalahan umum:</strong> Jangan mengubah data utama dari dalam computed. Computed sebaiknya hanya menghitung dan mengembalikan nilai.
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Buat halaman Vue 3 untuk menghitung total pembayaran UKT sederhana. Input terdiri dari biaya UKT, potongan beasiswa, dan biaya administrasi. Tampilkan total bayar dengan computed, lalu buat tombol reset menggunakan methods.</p>
+                </section>
+
+                <section id="aktivitas-8">
+                    <h2>Aktivitas Belajar 8 <span class="badge badge-new">Vue.js</span></h2>
+                    <h3>Watcher</h3>
+
+                    <p>Watcher dapat diibaratkan seperti petugas laboratorium yang mengamati perubahan suhu. Ketika suhu berubah melewati batas tertentu, petugas melakukan tindakan. Di Vue, <strong>watcher</strong> dipakai untuk mengamati perubahan data, lalu menjalankan proses lanjutan.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu menjelaskan fungsi watcher dalam Vue.</li>
+                            <li>Mahasiswa mampu menggunakan <code>watch</code> dan <code>watchEffect</code>.</li>
+                            <li>Mahasiswa mampu membedakan kebutuhan watcher dan computed.</li>
+                        </ul>
+                    </div>
+
+                    <h3>A. Konsep Watcher</h3>
+                    <p>Watcher digunakan ketika perubahan data harus memicu efek tertentu, misalnya validasi input, menyimpan data ke browser, memanggil API, atau menampilkan peringatan. Berbeda dengan computed yang menghasilkan nilai, watcher lebih tepat untuk menjalankan efek samping.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Kebutuhan</th>
+                                <th>Pilihan</th>
+                                <th>Alasan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Menghitung total nilai</td>
+                                <td>Computed</td>
+                                <td>Hasilnya ditampilkan sebagai data turunan</td>
+                            </tr>
+                            <tr>
+                                <td>Menyimpan perubahan form</td>
+                                <td>Watcher</td>
+                                <td>Ada efek samping setelah data berubah</td>
+                            </tr>
+                            <tr>
+                                <td>Mengambil data setelah keyword berubah</td>
+                                <td>Watcher</td>
+                                <td>Perubahan data memicu proses lain</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh Kode: Watch Input Pencarian</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Watcher Vue&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Pencarian Mata Kuliah&lt;/h1&gt;
+        &lt;input v-model="keyword" placeholder="Ketik nama mata kuliah"&gt;
+        &lt;p&gt;Status: {{ status }}&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    keyword: '',
+                    status: 'Belum ada pencarian'
+                };
+            },
+            watch: {
+                keyword(newValue, oldValue) {
+                    if (newValue.length === 0) {
+                        this.status = 'Belum ada pencarian';
+                    } else if (newValue.length &lt; 3) {
+                        this.status = 'Ketik minimal 3 huruf';
+                    } else {
+                        this.status = `Mencari data untuk: ${newValue}`;
+                    }
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <h3>B. Opsi deep dan immediate</h3>
+                    <p>Jika data yang diamati berbentuk objek atau array, gunakan opsi <code>deep</code> agar perubahan di dalam objek ikut diamati. Gunakan <code>immediate</code> jika watcher perlu langsung berjalan saat halaman pertama kali dibuka.</p>
+
+                    <pre><code>watch: {
+    mahasiswa: {
+        handler(newValue) {
+            console.log('Data mahasiswa berubah:', newValue);
+        },
+        deep: true,
+        immediate: true
+    }
+}</code></pre>
+
+                    <h3>C. watchEffect</h3>
+                    <p><code>watchEffect</code> biasanya dipakai pada Composition API. Ia otomatis melacak data yang digunakan di dalam fungsinya. Untuk tahap awal, mahasiswa cukup memahami bahwa <code>watch</code> lebih eksplisit, sedangkan <code>watchEffect</code> lebih otomatis.</p>
+
+                    <pre><code>const { createApp, ref, watchEffect } = Vue;
+
+createApp({
+    setup() {
+        const nama = ref('Budi');
+        const prodi = ref('Informatika');
+
+        watchEffect(() =&gt; {
+            console.log(`Mahasiswa: ${nama.value}, Prodi: ${prodi.value}`);
+        });
+
+        return { nama, prodi };
+    }
+}).mount('#app');</code></pre>
+
+                    <div class="warning-box">
+                        <strong>Catatan:</strong> Jangan memakai watcher hanya untuk menghitung nilai yang langsung ditampilkan. Untuk kebutuhan itu, computed lebih sederhana dan lebih mudah dibaca.
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Buat form pendaftaran praktikum dengan input nama dan NIM. Gunakan watcher untuk menampilkan pesan validasi: NIM harus minimal 8 karakter dan nama tidak boleh kosong.</p>
+                </section>
+
+                <section id="aktivitas-9">
+                    <h2>Aktivitas Belajar 9 <span class="badge badge-important">Praktikum</span></h2>
+                    <h3>Praktikum Unit 2: Vue.js</h3>
+
+                    <p>Pada praktikum ini, mahasiswa membuat aplikasi kecil yang utuh: <strong>To-Do List</strong>. Aplikasi ini cocok untuk memahami alur Vue karena melibatkan input, array, event, computed, dan tampilan kondisional dalam satu halaman.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu membuat aplikasi Vue 3 menggunakan CDN.</li>
+                            <li>Mahasiswa mampu menambah, menghapus, dan mengubah status item pada array.</li>
+                            <li>Mahasiswa mampu menghitung sisa tugas menggunakan computed.</li>
+                        </ul>
+                    </div>
+
+                    <h3>A. Fitur Praktikum</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fitur</th>
+                                <th>Konsep Vue</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tambah tugas</td>
+                                <td><code>v-model</code>, <code>@submit.prevent</code></td>
+                                <td>Mengambil teks dari input lalu menambahkannya ke array</td>
+                            </tr>
+                            <tr>
+                                <td>Tandai selesai</td>
+                                <td><code>v-model</code> pada checkbox</td>
+                                <td>Mengubah properti <code>selesai</code></td>
+                            </tr>
+                            <tr>
+                                <td>Hapus tugas</td>
+                                <td><code>@click</code>, <code>splice</code></td>
+                                <td>Menghapus item berdasarkan index</td>
+                            </tr>
+                            <tr>
+                                <td>Hitung sisa tugas</td>
+                                <td><code>computed</code></td>
+                                <td>Menghitung item yang belum selesai</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Kode Lengkap Praktikum</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;To-Do List Vue&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;To-Do List Praktikum&lt;/h1&gt;
+
+        &lt;form @submit.prevent="tambahTugas"&gt;
+            &lt;input v-model="tugasBaru" placeholder="Contoh: Kerjakan laporan praktikum"&gt;
+            &lt;button type="submit"&gt;Tambah&lt;/button&gt;
+        &lt;/form&gt;
+
+        &lt;p&gt;Sisa tugas: {{ sisaTugas }}&lt;/p&gt;
+
+        &lt;p v-if="daftarTugas.length === 0"&gt;Belum ada tugas.&lt;/p&gt;
+
+        &lt;ul&gt;
+            &lt;li v-for="(tugas, index) in daftarTugas" :key="tugas.id"&gt;
+                &lt;label&gt;
+                    &lt;input type="checkbox" v-model="tugas.selesai"&gt;
+                    &lt;span&gt;{{ tugas.nama }}&lt;/span&gt;
+                &lt;/label&gt;
+                &lt;button @click="hapusTugas(index)"&gt;Hapus&lt;/button&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    tugasBaru: '',
+                    daftarTugas: [
+                        { id: 1, nama: 'Membaca materi computed', selesai: false },
+                        { id: 2, nama: 'Mencoba contoh watcher', selesai: true }
+                    ]
+                };
+            },
+            computed: {
+                sisaTugas() {
+                    return this.daftarTugas.filter((tugas) =&gt; !tugas.selesai).length;
+                }
+            },
+            methods: {
+                tambahTugas() {
+                    const nama = this.tugasBaru.trim();
+
+                    if (nama === '') {
+                        alert('Nama tugas tidak boleh kosong');
+                        return;
+                    }
+
+                    this.daftarTugas.push({
+                        id: Date.now(),
+                        nama: nama,
+                        selesai: false
+                    });
+
+                    this.tugasBaru = '';
+                },
+                hapusTugas(index) {
+                    this.daftarTugas.splice(index, 1);
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Alur kerja:</strong> Buat file <code>praktikum-vue-todo.html</code>, salin kode, buka di browser, lalu uji tambah, centang selesai, dan hapus tugas.
+                    </div>
+
+                    <h3>B. Pengembangan Lanjutan</h3>
+                    <p>Setelah fitur dasar berjalan, mahasiswa dapat menambahkan filter tampilan: semua tugas, belum selesai, dan selesai. Fitur ini akan diperdalam pada Aktivitas Belajar 11.</p>
+
+                    <h3>Latihan</h3>
+                    <p>Kembangkan aplikasi To-Do List agar setiap tugas memiliki kategori, misalnya Kuliah, Praktikum, atau Pribadi. Tampilkan kategori tersebut di samping nama tugas.</p>
+                </section>
+
+                <section id="aktivitas-10">
+                    <h2>Aktivitas Belajar 10 <span class="badge">JavaScript</span></h2>
+                    <h3>Array, Filter, dan Event Handling (1): Array</h3>
+
+                    <p>Array dapat dibayangkan seperti daftar hadir kelas. Setiap baris menyimpan satu data, dan daftar tersebut bisa ditambah, dikurangi, atau diubah. Di Vue, array sering dipakai untuk menampilkan daftar mahasiswa, daftar tugas, daftar produk, atau daftar mata kuliah.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu menampilkan array menggunakan <code>v-for</code>.</li>
+                            <li>Mahasiswa mampu menggunakan method mutasi array seperti <code>push</code>, <code>pop</code>, dan <code>splice</code>.</li>
+                            <li>Mahasiswa mampu menggunakan <code>:key</code> saat melakukan looping data.</li>
+                        </ul>
+                    </div>
+
+                    <h3>A. Menampilkan Array dengan v-for</h3>
+                    <p><code>v-for</code> digunakan untuk mengulang elemen HTML berdasarkan isi array. Jika array berisi lima mahasiswa, Vue akan membuat lima baris tampilan.</p>
+
+                    <pre><code>&lt;ul&gt;
+    &lt;li v-for="(nama, index) in mahasiswa" :key="index"&gt;
+        {{ index + 1 }}. {{ nama }}
+    &lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+                    <h3>B. Looping Array Objek</h3>
+                    <p>Dalam aplikasi nyata, data biasanya berbentuk objek. Satu mahasiswa tidak hanya punya nama, tetapi juga NIM, prodi, dan nilai.</p>
+
+                    <h4>Contoh Kode: Daftar Mahasiswa</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Array di Vue&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Daftar Mahasiswa&lt;/h1&gt;
+
+        &lt;button @click="tambahMahasiswa"&gt;Tambah Mahasiswa&lt;/button&gt;
+        &lt;button @click="hapusTerakhir"&gt;Hapus Terakhir&lt;/button&gt;
+
+        &lt;table border="1"&gt;
+            &lt;thead&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;No&lt;/th&gt;
+                    &lt;th&gt;NIM&lt;/th&gt;
+                    &lt;th&gt;Nama&lt;/th&gt;
+                    &lt;th&gt;Nilai&lt;/th&gt;
+                    &lt;th&gt;Aksi&lt;/th&gt;
+                &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+                &lt;tr v-for="(mhs, index) in mahasiswa" :key="mhs.nim"&gt;
+                    &lt;td&gt;{{ index + 1 }}&lt;/td&gt;
+                    &lt;td&gt;{{ mhs.nim }}&lt;/td&gt;
+                    &lt;td&gt;{{ mhs.nama }}&lt;/td&gt;
+                    &lt;td&gt;{{ mhs.nilai }}&lt;/td&gt;
+                    &lt;td&gt;&lt;button @click="hapusMahasiswa(index)"&gt;Hapus&lt;/button&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/tbody&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    mahasiswa: [
+                        { nim: 'F1D001', nama: 'Andi', nilai: 82 },
+                        { nim: 'F1D002', nama: 'Siti', nilai: 90 },
+                        { nim: 'F1D003', nama: 'Raka', nilai: 76 }
+                    ]
+                };
+            },
+            methods: {
+                tambahMahasiswa() {
+                    this.mahasiswa.push({
+                        nim: 'F1D' + String(Date.now()).slice(-3),
+                        nama: 'Mahasiswa Baru',
+                        nilai: 80
+                    });
+                },
+                hapusTerakhir() {
+                    this.mahasiswa.pop();
+                },
+                hapusMahasiswa(index) {
+                    this.mahasiswa.splice(index, 1);
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <h3>C. Mengapa :key Penting?</h3>
+                    <p><code>:key</code> membantu Vue mengenali identitas setiap item. Jika daftar berubah, Vue bisa memperbarui elemen yang tepat. Untuk data objek, gunakan id atau NIM yang unik, bukan index, jika tersedia.</p>
+
+                    <div class="warning-box">
+                        <strong>Catatan:</strong> Index boleh dipakai sebagai key untuk contoh sederhana, tetapi untuk data yang bisa dihapus, diurutkan, atau difilter, gunakan key unik seperti <code>id</code> atau <code>nim</code>.
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Buat aplikasi daftar mata kuliah. Data minimal berisi kode, nama mata kuliah, dan jumlah SKS. Tampilkan dalam tabel, lalu buat tombol untuk menambah satu data dan menghapus data berdasarkan baris.</p>
+                </section>
+
+                <section id="aktivitas-11">
+                    <h2>Aktivitas Belajar 11 <span class="badge">JavaScript</span></h2>
+                    <h3>Array, Filter, dan Event Handling (2): Filter, Event Handling</h3>
+
+                    <p>Setelah data bisa ditampilkan, kebutuhan berikutnya adalah mencari, menyaring, dan merespons tindakan pengguna. Misalnya dosen ingin mencari mahasiswa berdasarkan nama, menampilkan hanya mahasiswa yang lulus, atau menjalankan proses saat tombol diklik.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu membuat fitur pencarian data menggunakan computed.</li>
+                            <li>Mahasiswa mampu menggunakan event handling dengan <code>v-on</code> atau <code>@</code>.</li>
+                            <li>Mahasiswa mampu menggunakan event modifier seperti <code>.prevent</code>, <code>.stop</code>, dan <code>.enter</code>.</li>
+                        </ul>
+                    </div>
+
+                    <h3>A. Filter Data dengan Computed</h3>
+                    <p>Filter data sebaiknya dibuat dengan computed karena hasilnya adalah data turunan dari array asli dan kata kunci pencarian. Array asli tetap utuh, sedangkan tampilan menggunakan array hasil filter.</p>
+
+                    <h4>Contoh Kode: Pencarian dan Filter Mahasiswa</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Filter dan Event Vue&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Data Nilai Mahasiswa&lt;/h1&gt;
+
+        &lt;input
+            v-model="keyword"
+            @keyup.enter="catatPencarian"
+            placeholder="Cari nama mahasiswa"
+        &gt;
+
+        &lt;select v-model="statusFilter"&gt;
+            &lt;option value="semua"&gt;Semua&lt;/option&gt;
+            &lt;option value="lulus"&gt;Lulus&lt;/option&gt;
+            &lt;option value="tidak-lulus"&gt;Tidak Lulus&lt;/option&gt;
+        &lt;/select&gt;
+
+        &lt;p&gt;Jumlah data tampil: {{ mahasiswaTampil.length }}&lt;/p&gt;
+
+        &lt;ul&gt;
+            &lt;li v-for="mhs in mahasiswaTampil" :key="mhs.nim"&gt;
+                {{ mhs.nama }} - {{ mhs.nilai }}
+                &lt;button @click.stop="pilihMahasiswa(mhs)"&gt;Pilih&lt;/button&gt;
+            &lt;/li&gt;
+        &lt;/ul&gt;
+
+        &lt;p v-if="pesan"&gt;{{ pesan }}&lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    keyword: '',
+                    statusFilter: 'semua',
+                    pesan: '',
+                    mahasiswa: [
+                        { nim: 'F1D001', nama: 'Andi', nilai: 82 },
+                        { nim: 'F1D002', nama: 'Siti', nilai: 90 },
+                        { nim: 'F1D003', nama: 'Raka', nilai: 58 },
+                        { nim: 'F1D004', nama: 'Maya', nilai: 70 }
+                    ]
+                };
+            },
+            computed: {
+                mahasiswaTampil() {
+                    return this.mahasiswa.filter((mhs) =&gt; {
+                        const cocokNama = mhs.nama
+                            .toLowerCase()
+                            .includes(this.keyword.toLowerCase());
+
+                        const lulus = mhs.nilai &gt;= 60;
+                        const cocokStatus =
+                            this.statusFilter === 'semua' ||
+                            (this.statusFilter === 'lulus' &amp;&amp; lulus) ||
+                            (this.statusFilter === 'tidak-lulus' &amp;&amp; !lulus);
+
+                        return cocokNama &amp;&amp; cocokStatus;
+                    });
+                }
+            },
+            methods: {
+                pilihMahasiswa(mhs) {
+                    this.pesan = `Mahasiswa dipilih: ${mhs.nama}`;
+                },
+                catatPencarian() {
+                    this.pesan = `Pencarian dijalankan untuk: ${this.keyword}`;
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <h3>B. Event Handling</h3>
+                    <p>Event handling adalah cara Vue merespons tindakan pengguna. Bentuk panjangnya adalah <code>v-on:click</code>, sedangkan bentuk singkatnya adalah <code>@click</code>.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Contoh</th>
+                                <th>Fungsi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>@click</code></td>
+                                <td><code>&lt;button @click="simpan"&gt;</code></td>
+                                <td>Menjalankan method saat tombol diklik</td>
+                            </tr>
+                            <tr>
+                                <td><code>@input</code></td>
+                                <td><code>&lt;input @input="ubahKeyword"&gt;</code></td>
+                                <td>Merespons perubahan input</td>
+                            </tr>
+                            <tr>
+                                <td><code>@submit.prevent</code></td>
+                                <td><code>&lt;form @submit.prevent="kirim"&gt;</code></td>
+                                <td>Mencegah reload halaman saat form dikirim</td>
+                            </tr>
+                            <tr>
+                                <td><code>@keyup.enter</code></td>
+                                <td><code>&lt;input @keyup.enter="cari"&gt;</code></td>
+                                <td>Menjalankan method saat tombol Enter ditekan</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>C. Modifier prevent, stop, dan enter</h3>
+                    <p><code>.prevent</code> mencegah perilaku bawaan browser, <code>.stop</code> menghentikan event agar tidak naik ke elemen induk, dan <code>.enter</code> membatasi event keyboard hanya saat tombol Enter ditekan.</p>
+
+                    <pre><code>&lt;form @submit.prevent="simpanData"&gt;
+    &lt;input v-model="nama" @keyup.enter="simpanData"&gt;
+    &lt;button type="submit"&gt;Simpan&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;div @click="pilihKartu"&gt;
+    &lt;button @click.stop="hapusData"&gt;Hapus&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Tips:</strong> Untuk filter, jangan menghapus data asli. Simpan data asli di array utama, lalu tampilkan hasil filter dari computed.
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Kembangkan aplikasi daftar mata kuliah dari Aktivitas Belajar 10. Tambahkan input pencarian nama mata kuliah, filter jumlah SKS, dan tombol detail. Gunakan computed untuk hasil filter dan event handling untuk tombol detail.</p>
+                </section>
+
+                <section id="cpmk">
+                    <h2>Capaian Pembelajaran <span class="badge badge-important">CPMK</span></h2>
+                    <div class="info-box">
+                        <strong>Setelah menyelesaikan TUWEB 2, mahasiswa diharapkan mampu:</strong>
+                        <ul>
+                            <li>Mengolah data reaktif Vue menggunakan computed, methods, dan watcher.</li>
+                            <li>Membangun aplikasi sederhana berbasis Vue 3 CDN tanpa build tool.</li>
+                            <li>Menampilkan dan mengelola data array menggunakan <code>v-for</code>, <code>:key</code>, dan method mutasi array.</li>
+                            <li>Menerapkan filter data dan event handling pada kasus pencarian, form, dan aksi pengguna.</li>
+                        </ul>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Pemrograman Web</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isMobileMenuOpen: false,
+                    activeSection: 'aktivitas-7',
+                    activities: [
+                        {
+                            id: 'aktivitas-7',
+                            number: 7,
+                            title: 'Aktivitas Belajar 7',
+                            topic: 'Data Binding dan Pengolahannya (2): Computed Properties, Methods',
+                            badge: 'Vue.js',
+                            badgeClass: 'badge-new'
+                        },
+                        {
+                            id: 'aktivitas-8',
+                            number: 8,
+                            title: 'Aktivitas Belajar 8',
+                            topic: 'Watcher',
+                            badge: 'Vue.js',
+                            badgeClass: 'badge-new'
+                        },
+                        {
+                            id: 'aktivitas-9',
+                            number: 9,
+                            title: 'Aktivitas Belajar 9',
+                            topic: 'Praktikum Unit 2: Vue.js',
+                            badge: 'Praktikum',
+                            badgeClass: 'badge-important'
+                        },
+                        {
+                            id: 'aktivitas-10',
+                            number: 10,
+                            title: 'Aktivitas Belajar 10',
+                            topic: 'Array, Filter, dan Event Handling (1): Array',
+                            badge: 'JavaScript',
+                            badgeClass: ''
+                        },
+                        {
+                            id: 'aktivitas-11',
+                            number: 11,
+                            title: 'Aktivitas Belajar 11',
+                            topic: 'Array, Filter, dan Event Handling (2): Filter, Event Handling',
+                            badge: 'JavaScript',
+                            badgeClass: ''
+                        }
+                    ]
+                };
+            },
+            computed: {
+                menus() {
+                    return this.activities.map((activity) => ({
+                        id: activity.id,
+                        label: `${activity.number}. ${activity.topic}`
+                    }));
+                }
+            },
+            mounted() {
+                window.addEventListener('scroll', this.updateActiveSection);
+                this.updateActiveSection();
+            },
+            beforeUnmount() {
+                window.removeEventListener('scroll', this.updateActiveSection);
+            },
+            methods: {
+                toggleMobileMenu() {
+                    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+                },
+                goToSection(sectionId) {
+                    this.activeSection = sectionId;
+
+                    if (window.innerWidth <= 768 && this.isMobileMenuOpen) {
+                        this.isMobileMenuOpen = false;
+                    }
+                },
+                updateActiveSection() {
+                    const sections = document.querySelectorAll('section');
+                    let current = this.activeSection;
+
+                    sections.forEach((section) => {
+                        if (window.pageYOffset >= section.offsetTop - 150) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+
+                    this.activeSection = current;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
