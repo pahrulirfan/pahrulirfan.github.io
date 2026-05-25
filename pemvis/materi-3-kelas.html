@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Mengajar — PySide6 Pertemuan 4 & 5</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+    <style>
+        /* Override anti-copy dari style-2.css */
+        .code-block pre,
+        .code-block code,
+        .table-code,
+        .inline-code {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            pointer-events: auto !important;
+        }
+        .code-block::after { display: none !important; }
+        .code-block::before { display: none !important; }
+
+        /* Badge khusus panduan dosen */
+        .teacher-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        .timing-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .challenge-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            color: white;
+        }
+        .challenge-box h3 { color: white; margin-bottom: 12px; }
+        .challenge-box ol { margin-left: 20px; }
+        .challenge-box li { margin-bottom: 8px; }
+
+        .teacher-note {
+            background: #fff8e1;
+            border-left: 4px solid #f39c12;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .teacher-note strong { color: #e67e22; font-style: normal; }
+
+        .scenario-box {
+            background: #e8f5e9;
+            border: 2px dashed #27ae60;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .scenario-box h4 { color: #27ae60; margin-bottom: 10px; }
+
+        .bug-box {
+            background: #fdeaea;
+            border: 2px dashed #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .bug-box h4 { color: #e74c3c; margin-bottom: 10px; }
+
+        .section-tag {
+            font-size: 0.8rem;
+            background: #ecf0f1;
+            color: #7f8c8d;
+            padding: 3px 10px;
+            border-radius: 10px;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+        .copy-note {
+            background: #e8f4fd;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #2980b9;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+
+        /* Tombol Copy Code */
+        .code-header {
+            position: relative;
+        }
+        .btn-copy {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.12);
+            color: #ccc;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .btn-copy:hover {
+            background: rgba(255,255,255,0.22);
+            color: white;
+        }
+        .btn-copy.copied {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Panduan Dosen</h2>
+                <p>PySide6 — Pertemuan 4 & 5</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Persiapan & Pembuka</div>
+                    <a href="#pembuka" class="nav-link active"><span class="nav-number">0</span>Strategi Pembuka</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Pertemuan 4 — QMainWindow</div>
+                    <a href="#p4-s1" class="nav-link"><span class="nav-number">1</span>QWidget vs QMainWindow</a>
+                    <a href="#p4-s2" class="nav-link"><span class="nav-number">2</span>Struktur QMainWindow</a>
+                    <a href="#p4-s3" class="nav-link"><span class="nav-number">3</span>QAction</a>
+                    <a href="#p4-s4" class="nav-link"><span class="nav-number">4</span>Icon pada Action</a>
+                    <a href="#p4-s5" class="nav-link"><span class="nav-number">5</span>Dialog Bawaan</a>
+                    <a href="#p4-s6" class="nav-link"><span class="nav-number">6</span>Custom Dialog</a>
+                    <a href="#p4-s7" class="nav-link"><span class="nav-number">7</span>Operasi File</a>
+                    <a href="#p4-proyek" class="nav-link"><span class="nav-number">★</span>Mini Proyek P4</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Pertemuan 5 — Widget & QSS</div>
+                    <a href="#p5-s1" class="nav-link"><span class="nav-number">8</span>Widget Data Display</a>
+                    <a href="#p5-s2" class="nav-link"><span class="nav-number">9</span>QSS Dasar</a>
+                    <a href="#p5-s3" class="nav-link"><span class="nav-number">10</span>Selector & Property</a>
+                    <a href="#p5-s4" class="nav-link"><span class="nav-number">11</span>Pseudo-states</a>
+                    <a href="#p5-s5" class="nav-link"><span class="nav-number">12</span>Load QSS dari File</a>
+                    <a href="#p5-s6" class="nav-link"><span class="nav-number">13</span>Tema Light/Dark</a>
+                    <a href="#p5-proyek" class="nav-link"><span class="nav-number">★</span>Mini Proyek P5</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Panduan Mengajar PySide6 <span class="teacher-badge">🎓 Untuk Dosen</span></h1>
+                <p class="subtitle">Skenario kelas interaktif — Pertemuan 4 (QMainWindow) & Pertemuan 5 (Widget & QSS)</p>
+            </header>
+
+            <!-- SECTION 0: PEMBUKA -->
+            <section class="section" id="pembuka">
+                <h2>0. Strategi Pembuka Kelas <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Catatan Dosen:</strong> Jangan langsung buka slide atau materi. Mulai dengan pertanyaan atau demo visual dulu. Ini membangun rasa ingin tahu sebelum masuk ke teori.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>🎬 Skenario Pembuka — "Tunjukkan Dulu Hasilnya"</h4>
+                    <p>Buka dua jendela terminal. Jalankan dua kode berikut secara bergantian di depan kelas, lalu tanya: <em>"Mana yang lebih enak dipakai sebagai aplikasi nyata?"</em></p>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">demo_jelek.py — jalankan ini dulu</span>
+                        <span class="code-badge">Demo Pembuka</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QPushButton
+
+class AppJelek(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Aplikasi Saya")
+        layout = QVBoxLayout(self)
+        layout.addWidget(QLabel("Ini aplikasi saya"))
+        layout.addWidget(QPushButton("Tombol 1"))
+        layout.addWidget(QPushButton("Tombol 2"))
+
+app = QApplication(sys.argv)
+w = AppJelek()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">demo_bagus.py — jalankan ini setelahnya</span>
+                        <span class="code-badge">Demo Pembuka</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit, QStyle
+)
+from PySide6.QtGui import QAction, QKeySequence
+
+class AppBagus(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Text Editor Pro")
+        self.setGeometry(100, 100, 700, 500)
+        self.setCentralWidget(QTextEdit())
+
+        style = self.style()
+        file_menu = self.menuBar().addMenu("&File")
+
+        new_act = QAction("New", self)
+        new_act.setIcon(style.standardIcon(QStyle.SP_FileIcon))
+        new_act.setShortcut(QKeySequence.New)
+        file_menu.addAction(new_act)
+
+        open_act = QAction("Open", self)
+        open_act.setIcon(style.standardIcon(QStyle.SP_DialogOpenButton))
+        open_act.setShortcut(QKeySequence.Open)
+        file_menu.addAction(open_act)
+
+        toolbar = self.addToolBar("File")
+        toolbar.addAction(new_act)
+        toolbar.addAction(open_act)
+
+        self.statusBar().showMessage("Ready — Selamat datang!")
+
+app = QApplication(sys.argv)
+w = AppBagus()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Poin yang Diharapkan Muncul dari Diskusi</div>
+                    <ul>
+                        <li>Aplikasi kedua punya menu bar, toolbar, status bar — terlihat "profesional"</li>
+                        <li>Ada shortcut keyboard (Ctrl+N, Ctrl+O)</li>
+                        <li>Ada icon pada tombol toolbar</li>
+                        <li>Ini semua bisa dibuat dengan QMainWindow</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S1 -->
+            <section class="section" id="p4-s1">
+                <h2>1. QWidget vs QMainWindow <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Setelah demo pembuka, jelaskan perbedaan konseptual. Gunakan analogi: QWidget itu seperti kertas kosong, QMainWindow itu seperti template dokumen Word yang sudah ada toolbar, menu, dan status bar-nya.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>💬 Pertanyaan Pemantik</h4>
+                    <p>Tanya ke kelas: <em>"Kalau kalian mau bikin aplikasi Notepad, kira-kira pakai QWidget atau QMainWindow? Kenapa?"</em> — Biarkan 2-3 mahasiswa menjawab sebelum lanjut.</p>
+                </div>
+
+                <h3>Live Coding — Tunjukkan Perbedaan Langsung</h3>
+                <p>Ketik kode ini pelan-pelan di depan kelas. Sengaja <strong>jangan</strong> tambahkan <code>setCentralWidget()</code> dulu, lalu tanya kenapa konten tidak muncul.</p>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">live_coding_1.py — ketik pelan-pelan</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Belajar QMainWindow")
+        self.setGeometry(100, 100, 500, 350)
+
+        # SENGAJA DIKOMENTARI DULU — tanya ke mahasiswa kenapa label tidak muncul
+        # central = QWidget()
+        # self.setCentralWidget(central)
+        # layout = QVBoxLayout(central)
+        # layout.addWidget(QLabel("Halo dari QMainWindow!"))
+
+        self.statusBar().showMessage("Status bar otomatis tersedia!")
+
+app = QApplication(sys.argv)
+w = MainWindow()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="bug-box">
+                    <h4>🐛 Bug #1 — Lupa setCentralWidget()</h4>
+                    <p>Jalankan kode di atas. Window muncul tapi kosong. Tanya: <em>"Kenapa label tidak muncul? Apa yang kurang?"</em> Setelah mahasiswa menjawab, uncomment bagian yang dikomentari dan jalankan lagi.</p>
+                </div>
+
+                <h3>Bug Sengaja Kedua — Lupa <code>self</code></h3>
+                <p>Setelah bug pertama diperbaiki, tunjukkan variasi bug berikut. Kode ini <strong>tidak error</strong> saat dijalankan, tapi label tetap tidak muncul — ini yang bikin bingung.</p>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">live_coding_1b.py — bug self</span>
+                        <span class="code-badge">Bug Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Bug: Lupa self")
+        self.setGeometry(100, 100, 500, 350)
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        # BUG: tidak pakai self — label jadi variabel lokal
+        # Setelah __init__ selesai, label langsung dihapus garbage collector
+        label = QLabel("Kenapa saya tidak muncul?")
+        layout.addWidget(label)
+
+        # Coba bandingkan dengan ini (uncomment salah satu):
+        # self.label = QLabel("Sekarang saya muncul!")
+        # layout.addWidget(self.label)
+
+        self.statusBar().showMessage("Coba perhatikan labelnya...")
+
+app = QApplication(sys.argv)
+w = MainWindow()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="bug-box">
+                    <h4>🐛 Bug #2 — Variabel Lokal vs Atribut Instance</h4>
+                    <p>Jalankan kode di atas. Label <strong>mungkin muncul sebentar lalu hilang</strong>, atau tidak muncul sama sekali tergantung versi Qt. Tidak ada error message — ini yang bikin mahasiswa bingung.</p>
+                    <p style="margin-top:8px;">Tanya ke kelas: <em>"Kode tidak error, tapi label tidak muncul. Kira-kira kenapa?"</em></p>
+                    <p style="margin-top:8px;">Jawaban: variabel <code>label</code> tanpa <code>self</code> hanya hidup selama <code>__init__</code> berjalan. Begitu method selesai, Python garbage collector bisa menghapusnya karena tidak ada referensi yang menyimpannya. Solusinya: pakai <code>self.label</code> agar objek tetap hidup selama window hidup.</p>
+                    <p style="margin-top:8px;"><strong>Catatan:</strong> Untuk widget yang sudah di-<code>addWidget()</code> ke layout, Qt biasanya menjaga referensinya — tapi kebiasaan pakai <code>self</code> tetap penting untuk atribut yang perlu diakses dari method lain.</p>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">📌 Memahami <code>self</code> di Python & PySide6</div>
+
+                    <p style="margin-bottom:12px;">
+                        <code>self</code> adalah referensi ke <strong>objek itu sendiri</strong>. Ketika kamu menulis <code>self.label</code>, kamu menyimpan <code>label</code> sebagai <em>atribut instance</em> — artinya objek itu "mengingat" label tersebut selama objek masih hidup.
+                    </p>
+
+                    <p style="margin-bottom:16px;">
+                        Tanpa <code>self</code>, variabel hanya hidup di dalam method tempat ia dibuat. Begitu method selesai dieksekusi, variabel itu hilang.
+                    </p>
+
+                    <h4 style="color:#2980b9; margin-bottom:8px;">Analogi Sederhana</h4>
+                    <p style="margin-bottom:16px;">
+                        Bayangkan kelas sebagai <strong>formulir</strong>. <code>self.nama</code> itu seperti mengisi kolom "Nama" di formulir — tersimpan permanen. Sedangkan variabel lokal seperti catatan di kertas coret-coretan — dibuang setelah selesai dipakai.
+                    </p>
+
+                    <h4 style="color:#2980b9; margin-bottom:8px;">Aturan Praktis</h4>
+                    <div class="table-container" style="margin-bottom:16px;">
+                        <table>
+                            <thead><tr><th>Situasi</th><th>Pakai self?</th><th>Alasan</th></tr></thead>
+                            <tbody>
+                                <tr>
+                                    <td>Widget yang diakses dari method lain<br><small style="color:#888">contoh: <code>self.text_edit.clear()</code> di slot</small></td>
+                                    <td>✅ Wajib</td>
+                                    <td>Perlu referensi dari luar <code>__init__</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Data/state yang perlu diingat<br><small style="color:#888">contoh: <code>self.current_file</code>, <code>self.is_modified</code></small></td>
+                                    <td>✅ Wajib</td>
+                                    <td>Nilai harus bertahan antar pemanggilan method</td>
+                                </tr>
+                                <tr>
+                                    <td>Widget yang hanya ditambah ke layout, tidak diakses lagi<br><small style="color:#888">contoh: <code>layout.addWidget(QLabel("Judul"))</code></small></td>
+                                    <td>⚠️ Disarankan</td>
+                                    <td>Qt biasanya menjaga referensinya lewat parent, tapi lebih aman pakai <code>self</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Variabel bantu sementara<br><small style="color:#888">contoh: <code>layout = QVBoxLayout(central)</code></small></td>
+                                    <td>❌ Tidak perlu</td>
+                                    <td>Hanya dipakai sekali, tidak perlu diingat</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h4 style="color:#2980b9; margin-bottom:8px;">Contoh Perbandingan Langsung</h4>
+                    <p class="copy-note" style="margin-bottom:5px;">✅ Kode ini bisa di-copy langsung</p>
+                    <div class="code-container" style="margin-bottom:16px;">
+                        <div class="code-header">
+                            <span class="code-title">self_comparison.py</span>
+                            <span class="code-badge">Perbandingan</span>
+                        </div>
+                        <div class="code-block">
+                            <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton
+
+class ContohSelf(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Contoh self")
+        self.setGeometry(100, 100, 400, 300)
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        # ✅ PAKAI self — bisa diakses dari method lain
+        self.counter_label = QLabel("Klik: 0")
+        self.count = 0
+
+        # ⚠️ TANPA self — hanya untuk widget statis yang tidak perlu diubah
+        judul = QLabel("Contoh Counter")
+        judul.setStyleSheet("font-weight: bold; font-size: 16px;")
+
+        btn = QPushButton("Tambah")
+        btn.clicked.connect(self.tambah)  # btn tidak perlu self karena tidak diakses lagi
+
+        layout.addWidget(judul)
+        layout.addWidget(self.counter_label)
+        layout.addWidget(btn)
+
+    def tambah(self):
+        # Method ini butuh self.count dan self.counter_label
+        # Kalau tidak pakai self di __init__, baris ini akan error!
+        self.count += 1
+        self.counter_label.setText(f"Klik: {self.count}")
+
+app = QApplication(sys.argv)
+w = ContohSelf()
+w.show()
+sys.exit(app.exec())</code></pre>
+                        </div>
+                    </div>
+
+                    <h4 style="color:#2980b9; margin-bottom:8px;">Apa yang Terjadi Tanpa <code>self</code>?</h4>
+                    <p class="copy-note" style="margin-bottom:5px;">✅ Kode ini bisa di-copy langsung</p>
+                    <div class="code-container">
+                        <div class="code-header">
+                            <span class="code-title">tanpa_self_error.py — ini akan error</span>
+                            <span class="code-badge">Bug Demo</span>
+                        </div>
+                        <div class="code-block">
+                            <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QPushButton
+
+class TanpaSelf(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tanpa self — akan error")
+        self.setGeometry(100, 100, 400, 300)
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        # ❌ TANPA self — counter_label hanya ada di __init__
+        counter_label = QLabel("Klik: 0")
+        count = 0
+
+        btn = QPushButton("Tambah")
+        btn.clicked.connect(self.tambah)
+
+        layout.addWidget(counter_label)
+        layout.addWidget(btn)
+
+    def tambah(self):
+        # ❌ ERROR: self tidak punya atribut counter_label dan count
+        # AttributeError: 'TanpaSelf' object has no attribute 'counter_label'
+        self.count += 1
+        self.counter_label.setText(f"Klik: {self.count}")
+
+app = QApplication(sys.argv)
+w = TanpaSelf()
+w.show()
+sys.exit(app.exec())</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="teacher-note" style="margin-top:14px;">
+                        <strong>Tips Mengajar:</strong> Jalankan <code>tanpa_self_error.py</code>, klik tombolnya, dan tunjukkan <code>AttributeError</code> yang muncul di terminal. Lalu jalankan <code>self_comparison.py</code> dan tunjukkan bedanya. Mahasiswa langsung paham kenapa <code>self</code> penting.
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #1 <span class="timing-badge">⏱ 5 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan label dengan teks nama mereka sendiri</li>
+                        <li>Ubah teks status bar menjadi "Halo, [nama]!"</li>
+                        <li>Ubah ukuran window menjadi 600x400</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman sebelah:</strong></p>
+                    <ol>
+                        <li>Kenapa <code>self.setGeometry(100, 100, 600, 400)</code> — angka 100, 100 itu artinya apa?</li>
+                        <li>Kalau <code>statusBar()</code> sudah built-in, kenapa QWidget tidak punya fitur ini?</li>
+                    </ol>
+                    <p style="margin-top:10px; font-size:0.9rem; opacity:0.85;">💡 Boleh tanya AI, tapi harus bisa jelaskan jawabannya dengan kata-kata sendiri.</p>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S2 -->
+            <section class="section" id="p4-s2">
+                <h2>2. Struktur QMainWindow <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Bangun kode ini secara bertahap — jangan langsung tempel semua. Mulai dari central widget, lalu tambah menu bar, lalu toolbar, lalu status bar, lalu dock. Setiap tambahan, jalankan dan tunjukkan perubahannya.
+                </div>
+
+                <h3>Tahap 1 — Central Widget dulu</h3>
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">tahap1_central.py</span>
+                        <span class="code-badge">Bertahap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Text Editor — Tahap 1")
+        self.setGeometry(100, 100, 700, 500)
+
+        # Tahap 1: Central widget
+        self.text_edit = QTextEdit()
+        self.text_edit.setPlaceholderText("Ketik di sini...")
+        self.setCentralWidget(self.text_edit)
+
+app = QApplication(sys.argv)
+w = MainWindow()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <h3>Tahap 2 — Tambah Menu Bar</h3>
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">tahap2_menubar.py — tambahkan method ini</span>
+                        <span class="code-badge">Bertahap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>    # Tambahkan di __init__ setelah setCentralWidget:
+    # self.setup_menu()
+
+    def setup_menu(self):
+        menu_bar = self.menuBar()
+
+        file_menu = menu_bar.addMenu("&File")
+        file_menu.addAction("New")
+        file_menu.addAction("Open")
+        file_menu.addAction("Save")
+        file_menu.addSeparator()
+        file_menu.addAction("Exit")
+
+        edit_menu = menu_bar.addMenu("&Edit")
+        edit_menu.addAction("Undo")
+        edit_menu.addAction("Redo")</code></pre>
+                    </div>
+                </div>
+
+                <h3>Tahap 3 — Tambah Toolbar & Status Bar</h3>
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">tahap3_toolbar_statusbar.py</span>
+                        <span class="code-badge">Bertahap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>    def setup_toolbar(self):
+        toolbar = self.addToolBar("File")
+        toolbar.addAction("New")
+        toolbar.addAction("Open")
+        toolbar.addAction("Save")
+
+    def setup_statusbar(self):
+        self.statusBar().showMessage("Ready")
+        # Widget permanen di kanan status bar
+        from PySide6.QtWidgets import QLabel
+        self.pos_label = QLabel("Ln 1, Col 1")
+        self.statusBar().addPermanentWidget(self.pos_label)</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #2 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan</strong> (pair programming — satu ketik, satu navigasi):</p>
+                    <ol>
+                        <li>Tambahkan menu <strong>View</strong> dengan item "Zoom In" dan "Zoom Out"</li>
+                        <li>Tambahkan menu <strong>Help</strong> dengan item "About"</li>
+                        <li>Tambahkan toolbar kedua bernama "Edit" dengan action Cut, Copy, Paste</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke pasangan:</strong></p>
+                    <ol>
+                        <li>Kenapa toolbar "Edit" dibuat terpisah dari toolbar "File", bukan digabung?</li>
+                        <li>Apa bedanya <code>addSeparator()</code> di menu vs di toolbar secara visual?</li>
+                        <li>Kalau user drag toolbar ke posisi lain, apakah itu fitur bawaan Qt atau perlu kode tambahan?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S3 -->
+            <section class="section" id="p4-s3">
+                <h2>3. QAction <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Tunjukkan masalah dulu — buat action "Save" di menu dan toolbar secara terpisah (dua kali). Lalu tanya: "Kalau ada 10 action, kita harus tulis 20 kali?" Dari sini mahasiswa akan paham kenapa QAction ada.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>🔑 Konsep Kunci yang Harus Dipahami</h4>
+                    <p>QAction = satu definisi, bisa dipasang di menu DAN toolbar DAN shortcut sekaligus. Ubah satu, semua berubah.</p>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qaction_demo.py — live coding bertahap</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit, QMessageBox
+from PySide6.QtGui import QAction, QKeySequence
+
+class TextEditor(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("QAction Demo")
+        self.setGeometry(100, 100, 700, 500)
+        self.text_edit = QTextEdit()
+        self.setCentralWidget(self.text_edit)
+
+        self.create_actions()
+        self.create_menus()
+        self.create_toolbars()
+        self.statusBar().showMessage("Ready")
+
+    def create_actions(self):
+        # New
+        self.new_action = QAction("&New", self)
+        self.new_action.setShortcut(QKeySequence.New)
+        self.new_action.setStatusTip("Buat dokumen baru")
+        self.new_action.triggered.connect(self.new_doc)
+
+        # Save
+        self.save_action = QAction("&Save", self)
+        self.save_action.setShortcut(QKeySequence.Save)
+        self.save_action.setStatusTip("Simpan dokumen")
+        self.save_action.triggered.connect(self.save_doc)
+
+        # Word Wrap — checkable action
+        self.wrap_action = QAction("&Word Wrap", self)
+        self.wrap_action.setCheckable(True)
+        self.wrap_action.setChecked(True)
+        self.wrap_action.triggered.connect(self.toggle_wrap)
+
+    def create_menus(self):
+        file_menu = self.menuBar().addMenu("&File")
+        file_menu.addAction(self.new_action)   # pakai action yang sama
+        file_menu.addAction(self.save_action)
+
+        view_menu = self.menuBar().addMenu("&View")
+        view_menu.addAction(self.wrap_action)
+
+    def create_toolbars(self):
+        toolbar = self.addToolBar("File")
+        toolbar.addAction(self.new_action)     # action yang sama lagi
+        toolbar.addAction(self.save_action)
+
+    def new_doc(self):
+        self.text_edit.clear()
+        self.statusBar().showMessage("Dokumen baru dibuat", 3000)
+
+    def save_doc(self):
+        self.statusBar().showMessage("Dokumen disimpan", 3000)
+
+    def toggle_wrap(self, checked):
+        if checked:
+            self.text_edit.setLineWrapMode(QTextEdit.WidgetWidth)
+        else:
+            self.text_edit.setLineWrapMode(QTextEdit.NoWrap)
+
+app = QApplication(sys.argv)
+w = TextEditor()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="bug-box">
+                    <h4>🐛 Bug Sengaja untuk Diskusi</h4>
+                    <p>Setelah kode jalan, coba <strong>disable</strong> save_action dari console atau tambahkan baris ini di <code>__init__</code>:</p>
+                    <pre style="background:#2d2d2d; color:#f8f8f2; padding:10px; border-radius:6px; margin-top:8px;">self.save_action.setEnabled(False)</pre>
+                    <p style="margin-top:8px;">Tanya: <em>"Apa yang terjadi di menu DAN toolbar sekaligus?"</em> — Ini menunjukkan kekuatan QAction: satu perubahan, efek di mana-mana.</p>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #3 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan action <strong>Exit</strong> dengan shortcut Ctrl+Q yang memanggil <code>self.close()</code></li>
+                        <li>Tambahkan action <strong>About</strong> yang menampilkan <code>QMessageBox.about()</code></li>
+                        <li>Pasang kedua action itu di menu yang sesuai</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa kita buat action dulu di <code>create_actions()</code>, baru dipasang di <code>create_menus()</code> dan <code>create_toolbars()</code>? Kenapa tidak langsung tulis di menu saja?</li>
+                        <li>Coba hapus <code>self.</code> dari salah satu action (jadi variabel lokal). Apa yang terjadi? Kenapa?</li>
+                        <li>Apa bedanya <code>triggered</code> dengan <code>clicked</code> pada QPushButton?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S4 -->
+            <section class="section" id="p4-s4">
+                <h2>4. Icon pada Action <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Bagian ini cepat. Tunjukkan cara pakai standard icon bawaan Qt, lalu biarkan mahasiswa eksplorasi sendiri icon apa saja yang tersedia.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">icon_demo.py — tambahkan ke create_actions()</span>
+                        <span class="code-badge">Snippet</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>from PySide6.QtWidgets import QStyle
+
+# Di dalam create_actions(), tambahkan:
+style = self.style()
+
+self.new_action.setIcon(style.standardIcon(QStyle.SP_FileIcon))
+self.save_action.setIcon(style.standardIcon(QStyle.SP_DialogSaveButton))
+
+# Coba juga icon-icon ini:
+# QStyle.SP_DialogOpenButton   — icon open
+# QStyle.SP_TrashIcon          — icon hapus
+# QStyle.SP_MessageBoxInformation  — icon info
+# QStyle.SP_MessageBoxWarning  — icon warning
+# QStyle.SP_ArrowBack          — icon back
+# QStyle.SP_ArrowForward       — icon forward</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #4 — Eksplorasi Icon <span class="timing-badge">⏱ 5 menit</span></h3>
+                    <p><strong>Kerjakan:</strong> Coba minimal 5 icon berbeda dari daftar <code>QStyle.SP_*</code> dan pasang ke toolbar.</p>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa Qt menyediakan standard icon seperti ini? Apa keuntungannya dibanding pakai file gambar sendiri?</li>
+                        <li>Kalau aplikasi dijalankan di Windows vs macOS, apakah icon-nya sama? Coba cari tahu.</li>
+                    </ol>
+                    <p style="margin-top:8px; font-size:0.9rem; opacity:0.85;">💡 Boleh tanya AI untuk cari daftar lengkap <code>QStyle.SP_*</code>, tapi jelaskan ke teman kenapa kamu pilih icon yang kamu pilih.</p>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S5 -->
+            <section class="section" id="p4-s5">
+                <h2>5. Dialog Bawaan <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Demo satu per satu, jalankan langsung. Fokus pada QMessageBox.question() karena punya return value yang perlu dicek — ini sering membingungkan mahasiswa.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">dialog_demo.py — demo semua dialog bawaan</span>
+                        <span class="code-badge">Live Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton,
+    QLabel, QMessageBox, QFileDialog, QInputDialog
+)
+
+class DialogDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Dialog Demo")
+        self.setGeometry(100, 100, 350, 450)
+        layout = QVBoxLayout(self)
+
+        self.result = QLabel("Hasil dialog muncul di sini")
+        self.result.setStyleSheet("background:#f0f0f0; padding:10px; border-radius:5px;")
+        self.result.setWordWrap(True)
+        layout.addWidget(self.result)
+
+        for label, fn in [
+            ("Information", self.show_info),
+            ("Warning", self.show_warning),
+            ("Critical", self.show_critical),
+            ("Question (Yes/No)", self.show_question),
+            ("Open File", self.open_file),
+            ("Save File", self.save_file),
+            ("Input Text", self.input_text),
+            ("Input Integer", self.input_int),
+            ("Select Item", self.select_item),
+        ]:
+            btn = QPushButton(label)
+            btn.clicked.connect(fn)
+            layout.addWidget(btn)
+
+    def show_info(self):
+        QMessageBox.information(self, "Info", "Operasi berhasil!")
+        self.result.setText("Information dialog ditutup")
+
+    def show_warning(self):
+        QMessageBox.warning(self, "Peringatan", "Hati-hati dengan aksi ini!")
+        self.result.setText("Warning dialog ditutup")
+
+    def show_critical(self):
+        QMessageBox.critical(self, "Error", "Terjadi kesalahan kritis!")
+        self.result.setText("Critical dialog ditutup")
+
+    def show_question(self):
+        reply = QMessageBox.question(
+            self, "Konfirmasi", "Apakah Anda yakin?",
+            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+            QMessageBox.No
+        )
+        if reply == QMessageBox.Yes:
+            self.result.setText("Anda pilih: YES")
+        elif reply == QMessageBox.No:
+            self.result.setText("Anda pilih: NO")
+        else:
+            self.result.setText("Anda pilih: CANCEL")
+
+    def open_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Buka File", "",
+            "Text Files (*.txt);;Python Files (*.py);;All Files (*)"
+        )
+        self.result.setText(f"File: {path}" if path else "Dibatalkan")
+
+    def save_file(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Simpan File", "dokumen.txt",
+            "Text Files (*.txt);;All Files (*)"
+        )
+        self.result.setText(f"Simpan ke: {path}" if path else "Dibatalkan")
+
+    def input_text(self):
+        text, ok = QInputDialog.getText(self, "Input", "Masukkan nama:")
+        self.result.setText(f"Nama: {text}" if ok and text else "Dibatalkan")
+
+    def input_int(self):
+        val, ok = QInputDialog.getInt(self, "Input", "Masukkan umur:", 20, 1, 120)
+        self.result.setText(f"Umur: {val}" if ok else "Dibatalkan")
+
+    def select_item(self):
+        items = ["Python", "Java", "C++", "JavaScript", "Go"]
+        item, ok = QInputDialog.getItem(self, "Pilih", "Bahasa favorit:", items, 0, False)
+        self.result.setText(f"Pilihan: {item}" if ok else "Dibatalkan")
+
+app = QApplication(sys.argv)
+w = DialogDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #5 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Buat tombol "Hapus Data" yang menampilkan QMessageBox.question() sebelum benar-benar menghapus</li>
+                        <li>Jika user pilih Yes, tampilkan "Data dihapus!" di label</li>
+                        <li>Jika No atau Cancel, tampilkan "Penghapusan dibatalkan"</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa <code>QMessageBox.question()</code> mengembalikan nilai, sedangkan <code>QMessageBox.information()</code> tidak perlu dicek return value-nya?</li>
+                        <li>Apa yang terjadi kalau kita tidak cek return value dari <code>question()</code> — apakah data tetap terhapus?</li>
+                        <li>Kapan sebaiknya kita pakai dialog konfirmasi, dan kapan tidak perlu?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S6 -->
+            <section class="section" id="p4-s6">
+                <h2>6. Custom Dialog <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Tunjukkan perbedaan <code>exec()</code> vs <code>show()</code> secara visual. Buat dua tombol — satu buka modal, satu buka non-modal. Mahasiswa langsung lihat bedanya.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">custom_dialog.py — form input mahasiswa</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QDialog, QDialogButtonBox, QPushButton, QLabel,
+    QLineEdit, QComboBox, QSpinBox, QFormLayout, QTextEdit
+)
+
+class MahasiswaDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Input Data Mahasiswa")
+        self.setMinimumWidth(320)
+        layout = QVBoxLayout(self)
+
+        form = QFormLayout()
+        self.nim = QLineEdit()
+        self.nim.setPlaceholderText("Contoh: 12345678")
+        self.nama = QLineEdit()
+        self.nama.setPlaceholderText("Nama lengkap")
+        self.jurusan = QComboBox()
+        self.jurusan.addItems(["Teknik Informatika", "Sistem Informasi", "Teknik Komputer"])
+        self.semester = QSpinBox()
+        self.semester.setRange(1, 14)
+
+        form.addRow("NIM:", self.nim)
+        form.addRow("Nama:", self.nama)
+        form.addRow("Jurusan:", self.jurusan)
+        form.addRow("Semester:", self.semester)
+        layout.addLayout(form)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.validate)
+        buttons.rejected.connect(self.reject)
+        layout.addWidget(buttons)
+
+    def validate(self):
+        if not self.nim.text().strip():
+            self.nim.setStyleSheet("border: 2px solid red;")
+            self.nim.setFocus()
+            return
+        if not self.nama.text().strip():
+            self.nama.setStyleSheet("border: 2px solid red;")
+            self.nama.setFocus()
+            return
+        self.accept()
+
+    def get_data(self):
+        return {
+            'nim': self.nim.text().strip(),
+            'nama': self.nama.text().strip(),
+            'jurusan': self.jurusan.currentText(),
+            'semester': self.semester.value()
+        }
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Custom Dialog Demo")
+        self.setGeometry(100, 100, 500, 400)
+        self.students = []
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        btn = QPushButton("Tambah Mahasiswa")
+        btn.clicked.connect(self.tambah)
+        layout.addWidget(btn)
+
+        self.display = QTextEdit()
+        self.display.setReadOnly(True)
+        layout.addWidget(self.display)
+
+    def tambah(self):
+        dialog = MahasiswaDialog(self)
+        if dialog.exec() == QDialog.Accepted:
+            data = dialog.get_data()
+            self.students.append(data)
+            teks = ""
+            for i, s in enumerate(self.students, 1):
+                teks += f"{i}. {s['nama']} ({s['nim']}) — {s['jurusan']} Sem {s['semester']}\n"
+            self.display.setText(teks)
+            self.statusBar().showMessage(f"{data['nama']} ditambahkan", 3000)
+
+app = QApplication(sys.argv)
+w = MainWindow()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #6 <span class="timing-badge">⏱ 10 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan field <strong>Email</strong> ke MahasiswaDialog</li>
+                        <li>Validasi: email harus mengandung karakter "@"</li>
+                        <li>Tampilkan email di display area</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa validasi dilakukan di method <code>validate()</code> dan bukan langsung di <code>__init__</code>?</li>
+                        <li>Apa bedanya <code>dialog.exec()</code> vs <code>dialog.show()</code>? Coba ganti dan lihat apa yang berubah.</li>
+                        <li>Kenapa kita perlu method <code>get_data()</code> terpisah, bukan langsung akses <code>dialog.nim.text()</code> dari MainWindow?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P4-S7 -->
+            <section class="section" id="p4-s7">
+                <h2>7. Operasi File <span class="timing-badge">⏱ 25 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Mulai dari yang paling sederhana — open file saja dulu. Jalankan, tunjukkan hasilnya. Baru tambah save. Baru tambah fitur modified tracking. Jangan langsung tempel kode lengkap.
+                </div>
+
+                <h3>Langkah 1 — Open File Saja Dulu</h3>
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">file_step1_open.py</span>
+                        <span class="code-badge">Bertahap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit, QFileDialog, QLabel
+
+class OpenDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Open File Demo")
+        self.setGeometry(100, 100, 500, 400)
+        layout = QVBoxLayout(self)
+
+        self.info = QLabel("Belum ada file dibuka")
+        self.text = QTextEdit()
+        btn = QPushButton("Open File")
+        btn.clicked.connect(self.open_file)
+
+        layout.addWidget(self.info)
+        layout.addWidget(btn)
+        layout.addWidget(self.text)
+
+    def open_file(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Buka File", "",
+            "Text Files (*.txt);;Python Files (*.py);;All Files (*)"
+        )
+        if path:
+            with open(path, 'r', encoding='utf-8') as f:
+                self.text.setText(f.read())
+            self.info.setText(f"File: {path}")
+
+app = QApplication(sys.argv)
+w = OpenDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <h3>Langkah 2 — Tambah Save + Modified Tracking</h3>
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">file_step2_complete.py — editor lengkap</span>
+                        <span class="code-badge">Lengkap</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys, os
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QTextEdit,
+    QFileDialog, QMessageBox, QStyle
+)
+from PySide6.QtGui import QAction, QKeySequence
+
+class Editor(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.current_file = None
+        self.is_modified = False
+
+        self.text = QTextEdit()
+        self.setCentralWidget(self.text)
+        self.text.textChanged.connect(self.on_changed)
+
+        self.setup_actions()
+        self.setup_menu()
+        self.setup_toolbar()
+        self.update_title()
+        self.statusBar().showMessage("Ready")
+
+    def setup_actions(self):
+        s = self.style()
+        self.act_new = QAction("&New", self)
+        self.act_new.setIcon(s.standardIcon(QStyle.SP_FileIcon))
+        self.act_new.setShortcut(QKeySequence.New)
+        self.act_new.triggered.connect(self.new_file)
+
+        self.act_open = QAction("&Open", self)
+        self.act_open.setIcon(s.standardIcon(QStyle.SP_DialogOpenButton))
+        self.act_open.setShortcut(QKeySequence.Open)
+        self.act_open.triggered.connect(self.open_file)
+
+        self.act_save = QAction("&Save", self)
+        self.act_save.setIcon(s.standardIcon(QStyle.SP_DialogSaveButton))
+        self.act_save.setShortcut(QKeySequence.Save)
+        self.act_save.triggered.connect(self.save_file)
+
+        self.act_saveas = QAction("Save &As", self)
+        self.act_saveas.setShortcut(QKeySequence.SaveAs)
+        self.act_saveas.triggered.connect(self.save_as)
+
+    def setup_menu(self):
+        m = self.menuBar().addMenu("&File")
+        m.addAction(self.act_new)
+        m.addAction(self.act_open)
+        m.addSeparator()
+        m.addAction(self.act_save)
+        m.addAction(self.act_saveas)
+
+    def setup_toolbar(self):
+        tb = self.addToolBar("File")
+        tb.addAction(self.act_new)
+        tb.addAction(self.act_open)
+        tb.addAction(self.act_save)
+
+    def new_file(self):
+        if self.maybe_save():
+            self.text.clear()
+            self.current_file = None
+            self.is_modified = False
+            self.update_title()
+
+    def open_file(self):
+        if self.maybe_save():
+            path, _ = QFileDialog.getOpenFileName(
+                self, "Buka File", "",
+                "Text Files (*.txt);;Python Files (*.py);;All Files (*)"
+            )
+            if path:
+                try:
+                    with open(path, 'r', encoding='utf-8') as f:
+                        self.text.setPlainText(f.read())
+                    self.current_file = path
+                    self.is_modified = False
+                    self.update_title()
+                    self.statusBar().showMessage(f"Dibuka: {path}", 3000)
+                except Exception as e:
+                    QMessageBox.critical(self, "Error", str(e))
+
+    def save_file(self):
+        if self.current_file:
+            self._write(self.current_file)
+        else:
+            self.save_as()
+
+    def save_as(self):
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Simpan File",
+            self.current_file or "untitled.txt",
+            "Text Files (*.txt);;All Files (*)"
+        )
+        if path:
+            self._write(path)
+
+    def _write(self, path):
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                f.write(self.text.toPlainText())
+            self.current_file = path
+            self.is_modified = False
+            self.update_title()
+            self.statusBar().showMessage(f"Disimpan: {path}", 3000)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+
+    def maybe_save(self):
+        if not self.is_modified:
+            return True
+        reply = QMessageBox.question(
+            self, "Perubahan Belum Disimpan",
+            "Simpan perubahan sebelum melanjutkan?",
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+            QMessageBox.Save
+        )
+        if reply == QMessageBox.Save:
+            self.save_file()
+            return not self.is_modified
+        return reply == QMessageBox.Discard
+
+    def on_changed(self):
+        self.is_modified = True
+        self.update_title()
+
+    def update_title(self):
+        name = os.path.basename(self.current_file) if self.current_file else "Untitled"
+        mark = " *" if self.is_modified else ""
+        self.setWindowTitle(f"{name}{mark} — Text Editor")
+
+    def closeEvent(self, event):
+        event.accept() if self.maybe_save() else event.ignore()
+
+app = QApplication(sys.argv)
+w = Editor()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #7 <span class="timing-badge">⏱ 10 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan action <strong>Recent Files</strong> di menu File (submenu dengan 3 item dummy)</li>
+                        <li>Tambahkan counter di status bar: tampilkan jumlah karakter saat ini</li>
+                        <li>Hint: connect <code>text.textChanged</code> ke method yang update status bar</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa kita pakai <code>is_modified = True</code> di <code>on_changed()</code>, bukan langsung cek <code>text.document().isModified()</code>?</li>
+                        <li>Apa fungsi <code>maybe_save()</code> — kenapa tidak langsung panggil <code>save_file()</code> saja?</li>
+                        <li>Kenapa <code>closeEvent</code> perlu di-override? Apa yang terjadi kalau tidak di-override?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- MINI PROYEK P4 -->
+            <section class="section" id="p4-proyek">
+                <h2>★ Mini Proyek Akhir Pertemuan 4 <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Ini dikerjakan individual atau berpasangan. Tidak harus sempurna — yang penting jalan. Di akhir, minta 2-3 mahasiswa demo hasil mereka.
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🏆 Proyek: "Aplikasi Catatan Sederhana"</h3>
+                    <p>Buat aplikasi QMainWindow dengan fitur berikut:</p>
+                    <ol>
+                        <li><strong>Menu File:</strong> New, Open, Save, Exit (dengan shortcut)</li>
+                        <li><strong>Toolbar:</strong> New, Open, Save (dengan icon)</li>
+                        <li><strong>Central Widget:</strong> QTextEdit untuk menulis catatan</li>
+                        <li><strong>Status Bar:</strong> Tampilkan nama file yang sedang dibuka</li>
+                        <li><strong>Bonus:</strong> Konfirmasi sebelum exit jika ada perubahan yang belum disimpan</li>
+                    </ol>
+                    <p style="margin-top:12px; font-size:0.9rem; opacity:0.85;">
+                        💡 Boleh pakai kode dari latihan sebelumnya sebagai dasar.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ===== PERTEMUAN 5 ===== -->
+            <section class="section" id="p5-s1">
+                <h2>8. Widget Data Display <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Tunjukkan QListWidget dulu karena paling sederhana. Lalu QTableWidget. Fokus pada operasi CRUD dasar — tambah, hapus, pilih item.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">list_table_demo.py — QListWidget + QTableWidget</span>
+                        <span class="code-badge">Live Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
+    QListWidget, QTableWidget, QTableWidgetItem,
+    QPushButton, QLineEdit, QLabel
+)
+from PySide6.QtCore import Qt
+
+class DataDemo(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Widget Data Display")
+        self.setGeometry(100, 100, 800, 500)
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        main_layout = QHBoxLayout(central)
+
+        # === KIRI: QListWidget ===
+        left = QVBoxLayout()
+        left.addWidget(QLabel("<b>QListWidget</b>"))
+
+        self.list_w = QListWidget()
+        self.list_w.addItems(["Python", "Java", "C++", "JavaScript"])
+        self.list_w.itemClicked.connect(
+            lambda item: self.statusBar().showMessage(f"Dipilih: {item.text()}")
+        )
+        left.addWidget(self.list_w)
+
+        inp = QLineEdit()
+        inp.setPlaceholderText("Tambah item...")
+        add_btn = QPushButton("Tambah")
+        add_btn.clicked.connect(lambda: (
+            self.list_w.addItem(inp.text()) if inp.text() else None,
+            inp.clear()
+        ))
+        del_btn = QPushButton("Hapus Terpilih")
+        del_btn.clicked.connect(lambda: self.list_w.takeItem(self.list_w.currentRow()))
+
+        left.addWidget(inp)
+        left.addWidget(add_btn)
+        left.addWidget(del_btn)
+
+        # === KANAN: QTableWidget ===
+        right = QVBoxLayout()
+        right.addWidget(QLabel("<b>QTableWidget</b>"))
+
+        self.table = QTableWidget(4, 3)
+        self.table.setHorizontalHeaderLabels(["Nama", "Jurusan", "Nilai"])
+        data = [
+            ("Andi", "Informatika", "85"),
+            ("Budi", "Sistem Info", "90"),
+            ("Citra", "Informatika", "78"),
+            ("Dina", "Tek. Komputer", "92"),
+        ]
+        for row, (nama, jur, nilai) in enumerate(data):
+            self.table.setItem(row, 0, QTableWidgetItem(nama))
+            self.table.setItem(row, 1, QTableWidgetItem(jur))
+            item = QTableWidgetItem(nilai)
+            item.setTextAlignment(Qt.AlignCenter)
+            self.table.setItem(row, 2, item)
+
+        self.table.horizontalHeader().setStretchLastSection(True)
+        right.addWidget(self.table)
+
+        sort_btn = QPushButton("Sort by Nama")
+        sort_btn.clicked.connect(lambda: self.table.sortItems(0))
+        right.addWidget(sort_btn)
+
+        main_layout.addLayout(left)
+        main_layout.addLayout(right)
+        self.statusBar().showMessage("Klik item untuk memilih")
+
+app = QApplication(sys.argv)
+w = DataDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #8 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan tombol "Tambah Baris" di QTableWidget yang menambah baris kosong baru</li>
+                        <li>Tambahkan tombol "Hapus Baris" yang menghapus baris yang sedang dipilih</li>
+                        <li>Hint: <code>table.insertRow(table.rowCount())</code> dan <code>table.removeRow(table.currentRow())</code></li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Apa bedanya <code>QListWidget</code> dan <code>QTableWidget</code> — kapan kamu pilih yang mana?</li>
+                        <li>Kenapa <code>item.setTextAlignment(Qt.AlignCenter)</code> harus dipanggil pada <code>QTableWidgetItem</code>, bukan pada <code>QTableWidget</code>?</li>
+                        <li>Kalau data di tabel ini ingin disimpan ke file, kira-kira format apa yang paling cocok dan kenapa?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P5-S2 -->
+            <section class="section" id="p5-s2">
+                <h2>9. QSS Dasar <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Mulai dengan aplikasi yang tampak default/jelek. Lalu tambahkan QSS satu property per satu — background dulu, lalu border, lalu border-radius, dst. Mahasiswa akan langsung lihat efeknya real-time.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>💡 Analogi untuk Mahasiswa</h4>
+                    <p>QSS itu seperti CSS di web. Kalau kalian pernah bikin website, konsepnya sama persis — selector, property, value. Bedanya ini untuk widget desktop, bukan elemen HTML.</p>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">qss_live.py — tambah QSS satu per satu</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QLineEdit
+
+class QSSDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("QSS Demo")
+        self.setGeometry(100, 100, 400, 300)
+        layout = QVBoxLayout(self)
+
+        self.label = QLabel("Judul Aplikasi")
+        self.input = QLineEdit()
+        self.input.setPlaceholderText("Ketik sesuatu...")
+        self.btn1 = QPushButton("Tombol Primary")
+        self.btn2 = QPushButton("Tombol Danger")
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.input)
+        layout.addWidget(self.btn1)
+        layout.addWidget(self.btn2)
+
+        # Tambahkan QSS di sini — mulai dari yang sederhana
+        # Coba satu per satu, jalankan setiap kali tambah property baru
+
+        self.setStyleSheet("""
+            QWidget {
+                background-color: #f5f6fa;
+                font-family: Segoe UI, Arial;
+                font-size: 14px;
+            }
+        """)
+
+        self.label.setStyleSheet("""
+            QLabel {
+                font-size: 20px;
+                font-weight: bold;
+                color: #2c3e50;
+                padding: 10px;
+            }
+        """)
+
+        self.input.setStyleSheet("""
+            QLineEdit {
+                border: 2px solid #bdc3c7;
+                border-radius: 6px;
+                padding: 8px 12px;
+                background: white;
+            }
+            QLineEdit:focus {
+                border-color: #3498db;
+            }
+        """)
+
+        self.btn1.setStyleSheet("""
+            QPushButton {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover { background-color: #2980b9; }
+            QPushButton:pressed { background-color: #1f6fa8; }
+        """)
+
+        self.btn2.setStyleSheet("""
+            QPushButton {
+                background-color: #e74c3c;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                padding: 10px 20px;
+            }
+            QPushButton:hover { background-color: #c0392b; }
+        """)
+
+app = QApplication(sys.argv)
+w = QSSDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #9 — Styling Competition <span class="timing-badge">⏱ 10 menit</span></h3>
+                    <p><strong>Kerjakan:</strong> Buat tampilan tombol dan input yang paling keren dalam 10 menit. Gunakan warna, border-radius, dan font sesuka hati.</p>
+                    <p style="margin-top:12px;"><strong>Setelah selesai, setiap orang jelaskan:</strong></p>
+                    <ol>
+                        <li>Satu property QSS yang kamu pakai — apa artinya dan kenapa kamu pilih nilai itu?</li>
+                        <li>Kenapa QSS ditulis di Python sebagai string, bukan di file terpisah? Apa kelebihan dan kekurangannya?</li>
+                    </ol>
+                    <p style="margin-top:8px; font-size:0.9rem; opacity:0.85;">Di akhir, vote tampilan terbaik — tapi yang menang harus bisa jelaskan semua QSS yang dia tulis 😄</p>
+                </div>
+            </section>
+
+            <!-- SECTION P5-S3 -->
+            <section class="section" id="p5-s3">
+                <h2>10. Selector & Property <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Fokus pada selector objectName (#) karena paling sering dipakai. Tunjukkan bagaimana dua tombol yang sama bisa punya style berbeda hanya dengan objectName.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">selector_demo.py</span>
+                        <span class="code-badge">Live Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel
+
+class SelectorDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Selector Demo")
+        self.setGeometry(100, 100, 350, 300)
+        layout = QVBoxLayout(self)
+
+        layout.addWidget(QLabel("Contoh selector berdasarkan objectName:"))
+
+        # Tombol dengan objectName berbeda
+        for name, obj_name in [
+            ("Primary", "primaryBtn"),
+            ("Success", "successBtn"),
+            ("Danger", "dangerBtn"),
+        ]:
+            btn = QPushButton(name)
+            btn.setObjectName(obj_name)
+            layout.addWidget(btn)
+
+        disabled_btn = QPushButton("Disabled")
+        disabled_btn.setEnabled(False)
+        layout.addWidget(disabled_btn)
+
+        # QSS dengan selector objectName
+        self.setStyleSheet("""
+            QWidget { background: #f0f0f0; font-size: 14px; }
+
+            QPushButton {
+                padding: 10px 20px;
+                border-radius: 6px;
+                border: none;
+                font-weight: bold;
+                color: white;
+            }
+
+            QPushButton#primaryBtn { background-color: #3498db; }
+            QPushButton#primaryBtn:hover { background-color: #2980b9; }
+
+            QPushButton#successBtn { background-color: #27ae60; }
+            QPushButton#successBtn:hover { background-color: #219a52; }
+
+            QPushButton#dangerBtn { background-color: #e74c3c; }
+            QPushButton#dangerBtn:hover { background-color: #c0392b; }
+
+            QPushButton:disabled { background-color: #bdc3c7; color: #7f8c8d; }
+        """)
+
+app = QApplication(sys.argv)
+w = SelectorDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #10 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan tombol keempat dengan objectName "warningBtn" berwarna oranye (#f39c12)</li>
+                        <li>Buat QLabel dengan objectName "titleLabel" yang punya font-size 18px dan warna biru tua</li>
+                        <li>Gunakan selector descendant: buat semua QPushButton di dalam QWidget tertentu punya padding lebih besar</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa kita pakai <code>#objectName</code> bukan langsung styling semua <code>QPushButton</code>? Kapan masing-masing lebih tepat dipakai?</li>
+                        <li>Kalau ada dua rule QSS yang konflik untuk widget yang sama, mana yang menang? Coba buktikan.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P5-S4 -->
+            <section class="section" id="p5-s4">
+                <h2>11. Pseudo-states <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Demo visual langsung — jalankan kode, hover tombol, klik, centang checkbox. Mahasiswa langsung lihat efeknya. Tanya: "Pseudo-state apa yang paling sering kalian lihat di aplikasi sehari-hari?"
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">pseudo_demo.py</span>
+                        <span class="code-badge">Live Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QCheckBox, QLineEdit, QListWidget
+)
+
+class PseudoDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Pseudo-states Demo")
+        self.setGeometry(100, 100, 400, 380)
+        layout = QVBoxLayout(self)
+
+        layout.addWidget(QPushButton("Hover & Press Me"))
+        layout.addWidget(QCheckBox("Centang saya"))
+        inp = QLineEdit()
+        inp.setPlaceholderText("Klik untuk fokus...")
+        layout.addWidget(inp)
+        lw = QListWidget()
+        lw.addItems(["Item 1", "Item 2", "Item 3", "Item 4"])
+        layout.addWidget(lw)
+
+        self.setStyleSheet("""
+            QWidget { background: #fff; font-size: 14px; padding: 5px; }
+
+            QPushButton {
+                background: #3498db; color: white;
+                border: none; border-radius: 6px; padding: 10px;
+            }
+            QPushButton:hover {
+                background: #2980b9;
+                border: 2px solid #1a6fa8;
+            }
+            QPushButton:pressed {
+                background: #1f6fa8;
+                padding-top: 12px;
+            }
+
+            QCheckBox { spacing: 8px; }
+            QCheckBox::indicator {
+                width: 18px; height: 18px;
+                border: 2px solid #bdc3c7; border-radius: 3px;
+            }
+            QCheckBox::indicator:checked {
+                background: #27ae60; border-color: #27ae60;
+            }
+            QCheckBox::indicator:hover { border-color: #3498db; }
+
+            QLineEdit {
+                border: 2px solid #bdc3c7; border-radius: 6px; padding: 8px;
+            }
+            QLineEdit:focus {
+                border-color: #3498db; background: #eaf4fd;
+            }
+
+            QListWidget::item { padding: 8px; }
+            QListWidget::item:selected {
+                background: #3498db; color: white; border-radius: 4px;
+            }
+            QListWidget::item:hover { background: #d6eaf8; }
+        """)
+
+app = QApplication(sys.argv)
+w = PseudoDemo()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #11 <span class="timing-badge">⏱ 8 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan QRadioButton dan beri style pada state <code>:checked</code></li>
+                        <li>Buat tombol yang punya efek "glow" (border berwarna) saat <code>:focus</code></li>
+                        <li>Buat QListWidget dengan warna alternating rows menggunakan <code>::item:alternate</code></li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Apa bedanya pseudo-state <code>:hover</code> dan <code>:focus</code>? Bisa aktif bersamaan tidak?</li>
+                        <li>Kenapa <code>:pressed</code> perlu dibuat lebih gelap dari <code>:hover</code>? Ini prinsip desain apa?</li>
+                        <li>Kalau kamu pakai aplikasi sehari-hari (VS Code, Spotify, dll), pseudo-state mana yang paling sering kamu "rasakan" tanpa sadar?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- SECTION P5-S5 -->
+            <section class="section" id="p5-s5">
+                <h2>12. Load QSS dari File <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Tunjukkan masalah dulu — kalau QSS ditulis inline di Python, kode jadi panjang dan susah dikelola. Lalu tunjukkan solusinya: pisahkan ke file .qss.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">style.qss — buat file ini dulu</span>
+                        <span class="code-badge">File QSS</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>/* style.qss */
+
+QWidget {
+    background-color: #f5f6fa;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+QPushButton {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+}
+QPushButton:hover { background-color: #2980b9; }
+QPushButton:pressed { background-color: #1f6fa8; }
+QPushButton:disabled { background-color: #bdc3c7; }
+
+QLineEdit, QTextEdit {
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background: white;
+}
+QLineEdit:focus, QTextEdit:focus { border-color: #3498db; }
+
+QTableWidget { border: 1px solid #ddd; gridline-color: #ecf0f1; }
+QTableWidget::item:selected { background-color: #3498db; color: white; }
+QHeaderView::section {
+    background-color: #2c3e50; color: white;
+    padding: 8px; border: none;
+}</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">load_qss.py — cara load file QSS</span>
+                        <span class="code-badge">Python</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import QApplication, QMainWindow, QTextEdit
+
+def load_stylesheet(path):
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"File QSS tidak ditemukan: {path}")
+        return ""
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("App dengan QSS File")
+        self.setGeometry(100, 100, 600, 400)
+        self.setCentralWidget(QTextEdit())
+        self.statusBar().showMessage("Ready")
+
+app = QApplication(sys.argv)
+
+# Load dan terapkan ke seluruh aplikasi
+app.setStyleSheet(load_stylesheet("style.qss"))
+
+w = MainWindow()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION P5-S6 -->
+            <section class="section" id="p5-s6">
+                <h2>13. Tema Light/Dark <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Ini bagian yang paling "wow" untuk mahasiswa. Tunjukkan toggle tema dulu hasilnya, baru jelaskan cara kerjanya. Konsepnya sederhana: ganti stylesheet = ganti tema.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">theme_toggle.py — light/dark mode</span>
+                        <span class="code-badge">Live Demo</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QTextEdit
+)
+from PySide6.QtGui import QAction
+
+LIGHT = """
+    QMainWindow, QWidget { background-color: #f5f6fa; color: #2c3e50; }
+    QTextEdit { background: white; color: #2c3e50; border: 1px solid #ddd; border-radius: 6px; padding: 8px; }
+    QPushButton { background-color: #3498db; color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: bold; }
+    QPushButton:hover { background-color: #2980b9; }
+    QLabel { color: #2c3e50; font-size: 14px; }
+    QMenuBar { background: #2c3e50; color: white; }
+    QMenuBar::item:selected { background: #3498db; }
+    QStatusBar { background: #ecf0f1; color: #7f8c8d; }
+"""
+
+DARK = """
+    QMainWindow, QWidget { background-color: #1a1a2e; color: #e0e0e0; }
+    QTextEdit { background: #16213e; color: #e0e0e0; border: 1px solid #0f3460; border-radius: 6px; padding: 8px; }
+    QPushButton { background-color: #0f3460; color: #e0e0e0; border: 1px solid #e94560; border-radius: 6px; padding: 8px 16px; font-weight: bold; }
+    QPushButton:hover { background-color: #e94560; color: white; }
+    QLabel { color: #e0e0e0; font-size: 14px; }
+    QMenuBar { background: #16213e; color: #e0e0e0; }
+    QMenuBar::item:selected { background: #0f3460; }
+    QStatusBar { background: #16213e; color: #7f8c8d; }
+"""
+
+class ThemeApp(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Light/Dark Theme Demo")
+        self.setGeometry(100, 100, 600, 450)
+        self.is_dark = False
+
+        central = QWidget()
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+
+        self.theme_label = QLabel("Tema Aktif: Light Mode ☀️")
+        self.theme_label.setStyleSheet("font-size: 16px; font-weight: bold; padding: 10px;")
+        self.text = QTextEdit()
+        self.text.setPlaceholderText("Ketik sesuatu...")
+        self.toggle_btn = QPushButton("🌙 Switch to Dark Mode")
+        self.toggle_btn.clicked.connect(self.toggle)
+
+        layout.addWidget(self.theme_label)
+        layout.addWidget(self.text)
+        layout.addWidget(self.toggle_btn)
+
+        # Shortcut keyboard untuk toggle
+        act = QAction("Toggle Theme", self)
+        act.setShortcut("Ctrl+Shift+T")
+        act.triggered.connect(self.toggle)
+        self.menuBar().addMenu("&View").addAction(act)
+
+        self.statusBar().showMessage("Light Mode aktif")
+        self.apply()
+
+    def toggle(self):
+        self.is_dark = not self.is_dark
+        self.apply()
+
+    def apply(self):
+        if self.is_dark:
+            QApplication.instance().setStyleSheet(DARK)
+            self.theme_label.setText("Tema Aktif: Dark Mode 🌙")
+            self.toggle_btn.setText("☀️ Switch to Light Mode")
+            self.statusBar().showMessage("Dark Mode aktif")
+        else:
+            QApplication.instance().setStyleSheet(LIGHT)
+            self.theme_label.setText("Tema Aktif: Light Mode ☀️")
+            self.toggle_btn.setText("🌙 Switch to Dark Mode")
+            self.statusBar().showMessage("Light Mode aktif")
+
+app = QApplication(sys.argv)
+w = ThemeApp()
+w.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🎯 Mini Challenge #12 <span class="timing-badge">⏱ 10 menit</span></h3>
+                    <p><strong>Kerjakan:</strong></p>
+                    <ol>
+                        <li>Tambahkan tema ketiga: <strong>"Solarized"</strong> (background #fdf6e3, teks #657b83)</li>
+                        <li>Buat tombol cycle: Light → Dark → Solarized → Light → ...</li>
+                        <li>Simpan preferensi tema ke file <code>config.txt</code> agar tersimpan saat app ditutup</li>
+                    </ol>
+                    <p style="margin-top:12px;"><strong>Jelaskan ke teman:</strong></p>
+                    <ol>
+                        <li>Kenapa kita pakai <code>QApplication.instance().setStyleSheet()</code> bukan <code>self.setStyleSheet()</code>? Apa bedanya scope-nya?</li>
+                        <li>Kalau tema disimpan di konstanta string di Python vs di file <code>.qss</code> terpisah — mana yang lebih mudah dikelola untuk proyek besar? Kenapa?</li>
+                        <li>Aplikasi mana yang kamu tahu punya fitur dark mode? Kira-kira mereka implementasinya mirip cara ini atau berbeda?</li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- MINI PROYEK P5 -->
+            <section class="section" id="p5-proyek">
+                <h2>★ Mini Proyek Akhir Pertemuan 5 <span class="timing-badge">⏱ 25 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Mengajar:</strong> Ini proyek penutup yang menggabungkan semua materi. Bisa dikerjakan berpasangan. Minta mahasiswa presentasi singkat (2 menit) di akhir.
+                </div>
+
+                <div class="challenge-box">
+                    <h3>🏆 Proyek: "Student Manager App"</h3>
+                    <p>Buat aplikasi QMainWindow yang menggabungkan semua yang sudah dipelajari:</p>
+                    <ol>
+                        <li><strong>QTableWidget</strong> untuk menampilkan daftar mahasiswa (Nama, NIM, Nilai)</li>
+                        <li><strong>Custom Dialog</strong> untuk input data mahasiswa baru</li>
+                        <li><strong>QSS</strong> untuk styling yang menarik (minimal 5 property berbeda)</li>
+                        <li><strong>Tombol</strong> Tambah, Hapus, dan Sort by Nama</li>
+                        <li><strong>Status Bar</strong> yang menampilkan jumlah mahasiswa</li>
+                        <li><strong>Bonus:</strong> Fitur toggle Light/Dark mode</li>
+                        <li><strong>Bonus:</strong> Export data ke file .txt</li>
+                    </ol>
+                    <p style="margin-top:12px; font-size:0.9rem; opacity:0.85;">
+                        💡 Ini bisa dijadikan dasar untuk tugas atau UAS.
+                    </p>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Checklist Penilaian Mini Proyek</div>
+                    <div class="table-container">
+                        <table>
+                            <thead><tr><th>Kriteria</th><th>Poin</th></tr></thead>
+                            <tbody>
+                                <tr><td>QMainWindow dengan menu dan toolbar</td><td>20</td></tr>
+                                <tr><td>QTableWidget menampilkan data</td><td>20</td></tr>
+                                <tr><td>Custom Dialog untuk input</td><td>20</td></tr>
+                                <tr><td>QSS styling yang konsisten</td><td>20</td></tr>
+                                <tr><td>Fungsionalitas tambah/hapus</td><td>20</td></tr>
+                                <tr><td>Bonus: Dark mode / Export file</td><td>+10</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        // Tambahkan tombol copy ke setiap code-header
+        document.querySelectorAll('.code-container').forEach(container => {
+            const header = container.querySelector('.code-header');
+            const pre    = container.querySelector('.code-block pre');
+            if (!header || !pre) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-copy';
+            btn.textContent = '⎘ Copy';
+            header.appendChild(btn);
+
+            btn.addEventListener('click', () => {
+                // Ambil teks mentah dari pre, bersihkan tag HTML
+                const tmp = document.createElement('div');
+                tmp.innerHTML = pre.innerHTML;
+                const code = tmp.textContent || tmp.innerText || '';
+
+                navigator.clipboard.writeText(code.trim()).then(() => {
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '⎘ Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    // Fallback untuk browser lama
+                    const ta = document.createElement('textarea');
+                    ta.value = code.trim();
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '⎘ Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

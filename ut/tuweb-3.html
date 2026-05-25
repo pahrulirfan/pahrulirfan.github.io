@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUWEB 3 - Pemrograman Web</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu" aria-label="Buka menu materi">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" :class="{ active: isMobileMenuOpen }" @click="toggleMobileMenu"></div>
+
+        <!-- Header -->
+        <header>
+            <h1>TUWEB 3 - Pemrograman Web</h1>
+            <p>Aktivitas Belajar 12 sampai 15</p>
+        </header>
+
+        <div class="container">
+            <!-- Sidebar -->
+            <nav class="sidebar" :class="{ active: isMobileMenuOpen }">
+                <h3>Daftar Materi</h3>
+                <ul>
+                    <li v-for="menu in menus" :key="menu.id">
+                        <a
+                            :href="'#' + menu.id"
+                            :class="{ active: activeSection === menu.id }"
+                            @click="goToSection(menu.id)"
+                        >
+                            {{ menu.label }}
+                        </a>
+                    </li>
+                </ul>
+
+                <h3>Navigasi TUWEB</h3>
+                <ul>
+                    <li v-for="link in tuwebLinks" :key="link.href">
+                        <a :href="link.href">{{ link.label }}</a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Konten Utama -->
+            <main class="content">
+                <section v-for="activity in activities" :id="activity.id" :key="activity.id">
+                    <h2>{{ activity.title }} <span class="badge" :class="activity.badgeClass">{{ activity.badge }}</span></h2>
+                    <h3>{{ activity.topic }}</h3>
+                    <div class="info-box">
+                        <strong>Status:</strong> Materi untuk aktivitas ini akan ditambahkan pada tahap berikutnya.
+                    </div>
+                </section>
+
+                <section id="cpmk">
+                    <h2>Capaian Pembelajaran <span class="badge badge-important">CPMK</span></h2>
+                    <div class="info-box">
+                        <strong>Catatan:</strong> Bagian capaian pembelajaran akan dilengkapi setelah struktur materi final ditentukan.
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Pemrograman Web</p>
+        </footer>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    isMobileMenuOpen: false,
+                    activeSection: 'aktivitas-12',
+                    activities: [
+                        {
+                            id: 'aktivitas-12',
+                            number: 12,
+                            title: 'Aktivitas Belajar 12',
+                            topic: 'Component, Canvas, dan Animasi (1): Components',
+                            badge: 'Vue.js',
+                            badgeClass: 'badge-new'
+                        },
+                        {
+                            id: 'aktivitas-13',
+                            number: 13,
+                            title: 'Aktivitas Belajar 13',
+                            topic: 'Component, Canvas, dan Animasi (2): Canvas, Animasi',
+                            badge: 'Canvas',
+                            badgeClass: ''
+                        },
+                        {
+                            id: 'aktivitas-14',
+                            number: 14,
+                            title: 'Aktivitas Belajar 14',
+                            topic: 'Database dan Praktikum Unit 3 (1): Database',
+                            badge: 'Database',
+                            badgeClass: 'badge-new'
+                        },
+                        {
+                            id: 'aktivitas-15',
+                            number: 15,
+                            title: 'Aktivitas Belajar 15',
+                            topic: 'Database dan Praktikum Unit 3 (2): Praktikum Unit 3',
+                            badge: 'Praktikum',
+                            badgeClass: 'badge-important'
+                        }
+                    ]
+                };
+            },
+            computed: {
+                menus() {
+                    return this.activities.map((activity) => ({
+                        id: activity.id,
+                        label: `${activity.number}. ${activity.topic}`
+                    }));
+                }
+            },
+            mounted() {
+                window.addEventListener('scroll', this.updateActiveSection);
+                this.updateActiveSection();
+            },
+            beforeUnmount() {
+                window.removeEventListener('scroll', this.updateActiveSection);
+            },
+            methods: {
+                toggleMobileMenu() {
+                    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+                },
+                goToSection(sectionId) {
+                    this.activeSection = sectionId;
+
+                    if (window.innerWidth <= 768 && this.isMobileMenuOpen) {
+                        this.isMobileMenuOpen = false;
+                    }
+                },
+                updateActiveSection() {
+                    const sections = document.querySelectorAll('section');
+                    let current = this.activeSection;
+
+                    sections.forEach((section) => {
+                        if (window.pageYOffset >= section.offsetTop - 150) {
+                            current = section.getAttribute('id');
+                        }
+                    });
+
+                    this.activeSection = current;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

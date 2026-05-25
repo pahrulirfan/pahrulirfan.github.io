@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Mengajar - REST API di PySide6</title>
+    <link rel="stylesheet" href="assets/css/style-2.css">
+    <style>
+        .code-block pre,
+        .code-block code,
+        .table-code,
+        .inline-code {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            pointer-events: auto !important;
+        }
+        .code-block::after,
+        .code-block::before {
+            display: none !important;
+        }
+        .teacher-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        .timing-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .teacher-note {
+            background: #fff8e1;
+            border-left: 4px solid #f39c12;
+            border-radius: 0 8px 8px 0;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        .teacher-note strong {
+            color: #e67e22;
+            font-style: normal;
+        }
+        .scenario-box {
+            background: #e8f5e9;
+            border: 2px dashed #27ae60;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .scenario-box h4 {
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        .challenge-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            color: white;
+        }
+        .challenge-box h3,
+        .challenge-box h4 {
+            color: white;
+            margin-bottom: 12px;
+        }
+        .challenge-box ol,
+        .challenge-box ul {
+            margin-left: 20px;
+        }
+        .challenge-box li {
+            margin-bottom: 8px;
+        }
+        .bug-box {
+            background: #fdeaea;
+            border: 2px dashed #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .bug-box h4 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        .copy-note {
+            background: #e8f4fd;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            color: #2980b9;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+        .btn-copy {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.12);
+            color: #ccc;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .btn-copy:hover {
+            background: rgba(255,255,255,0.22);
+            color: white;
+        }
+        .btn-copy.copied {
+            background: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+        .code-header {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰ Menu</button>
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>📋 Panduan Dosen</h2>
+                <p>Threading & REST API - Pertemuan 5</p>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Threading</div>
+                    <a href="#thread-pembuka" class="nav-link active"><span class="nav-number">0</span>Strategi Masuk Kelas</a>
+                    <a href="#thread-demo" class="nav-link"><span class="nav-number">1</span>Demo UI Freeze</a>
+                    <a href="#thread-solusi" class="nav-link"><span class="nav-number">2</span>Solusi: QThread</a>
+                    <a href="#thread-diskusi" class="nav-link"><span class="nav-number">3</span>Poin Diskusi Threading</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">REST API</div>
+                    <a href="#pembuka" class="nav-link"><span class="nav-number">4</span>Strategi REST API</a>
+                    <a href="#konsep" class="nav-link"><span class="nav-number">5</span>Menjelaskan REST API</a>
+                    <a href="#cli" class="nav-link"><span class="nav-number">6</span>Dari CLI ke JSON</a>
+                    <a href="#pyside-satu" class="nav-link"><span class="nav-number">7</span>Dari Print ke PySide</a>
+                    <a href="#pyside-banyak" class="nav-link"><span class="nav-number">8</span>Menampilkan Banyak Data</a>
+                    <a href="#diskusi" class="nav-link"><span class="nav-number">9</span>Poin Diskusi REST API</a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Hands-on</div>
+                    <a href="#latihan-cepat" class="nav-link"><span class="nav-number">10</span>Hands-on Cepat</a>
+                    <a href="#latihan-lanjutan" class="nav-link"><span class="nav-number">11</span>Hands-on Lanjutan</a>
+                    <a href="#penutup" class="nav-link"><span class="nav-number">12</span>Penutup Kelas</a>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="page-header">
+                <h1>Panduan Mengajar Threading & REST API <span class="teacher-badge">Untuk Dosen</span></h1>
+                <p class="subtitle">Pertemuan 5: membangun pemahaman UI freeze, solusi QThread, lalu mengintegrasikan REST API ke aplikasi PySide6</p>
+            </header>
+
+            <!-- ============================================================ -->
+            <!-- BAGIAN 1: THREADING -->
+            <!-- ============================================================ -->
+
+            <section class="section" id="thread-pembuka">
+                <h2>0. Strategi Masuk Kelas — Threading <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Catatan Dosen:</strong> Jangan mulai dari definisi thread. Mulai dari pengalaman yang sudah pernah mahasiswa rasakan: aplikasi yang "not responding" atau loading bar yang macet. Dari situ arahkan ke pertanyaan: kenapa itu bisa terjadi, dan bagaimana cara mencegahnya?
+                </div>
+
+                <div class="scenario-box">
+                    <h4>Skenario Pembuka</h4>
+                    <p>Tulis pertanyaan ini di papan: <em>"Pernahkah kalian klik tombol di aplikasi, lalu aplikasinya diam dan tidak bisa diklik sama sekali selama beberapa detik?"</em></p>
+                    <p style="margin-top: 8px;">Setelah mahasiswa menjawab, lanjutkan: <em>"Itu namanya UI freeze. Hari ini kita akan tahu kenapa itu terjadi dan cara memperbaikinya."</em></p>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Alur Mengajar Threading yang Disarankan</div>
+                    <ol>
+                        <li>Tunjukkan <code>bad.py</code> — biarkan mahasiswa merasakan freeze sendiri.</li>
+                        <li>Tanya: "Kenapa tombol lain tidak bisa diklik? Kenapa data tidak muncul satu per satu?"</li>
+                        <li>Jelaskan konsep main thread dan kenapa ia tidak boleh diblokir.</li>
+                        <li>Tunjukkan <code>compare.py</code> — dua tab, biarkan mahasiswa membandingkan langsung.</li>
+                        <li>Baru jelaskan kode <code>good.py</code> — QThread, Signal, run().</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="section" id="thread-demo">
+                <h2>1. Demo UI Freeze — bad.py <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Strategi:</strong> Jalankan <code>bad.py</code> di depan kelas. Jangan jelaskan dulu — biarkan mahasiswa mengamati sendiri. Setelah klik "Mulai Proses", minta mereka klik tombol counter. Reaksi mereka saat counter tidak bertambah adalah momen pengajaran terbaik.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">bad.py</span>
+                        <span class="code-badge">BAD — Jalankan Dulu</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import time
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget
+)
+
+class FreezeDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("UI Freeze Demo")
+        layout = QVBoxLayout(self)
+
+        self.status = QLabel("Status: menunggu...")
+        layout.addWidget(self.status)
+
+        self.list_widget = QListWidget()
+        layout.addWidget(self.list_widget)
+
+        btn_proses = QPushButton("Mulai Proses")
+        btn_proses.clicked.connect(self.proses_berat)
+        layout.addWidget(btn_proses)
+
+        # Tombol ini TIDAK bisa diklik saat proses_berat() berjalan
+        self.counter = 0
+        self.btn_test = QPushButton("Klik saya! (0)")
+        self.btn_test.clicked.connect(self.tambah_counter)
+        layout.addWidget(self.btn_test)
+
+    def tambah_counter(self):
+        self.counter += 1
+        self.btn_test.setText(f"Klik saya! ({self.counter})")
+
+    def proses_berat(self):
+        self.list_widget.clear()
+        self.status.setText("Status: memproses...")
+        # Loop ini memblokir main thread — UI freeze total
+        # Data tidak muncul satu per satu, melainkan sekaligus di akhir
+        for item in ["Data A", "Data B", "Data C", "Data D", "Data E"]:
+            time.sleep(1)
+            self.list_widget.addItem(item)
+        self.status.setText("Status: selesai")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    w = FreezeDemo()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="scenario-box">
+                    <h4>Pertanyaan Pemantik Setelah Demo</h4>
+                    <ol style="margin: 8px 0 0; padding-left: 20px; line-height: 2;">
+                        <li><em>"Kenapa counter tidak bertambah saat proses berjalan?"</em></li>
+                        <li><em>"Kenapa data tidak muncul satu per satu padahal kode sudah memanggil addItem() di setiap iterasi?"</em></li>
+                        <li><em>"Apa yang sebenarnya sedang dilakukan main thread selama 5 detik itu?"</em></li>
+                    </ol>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Penjelasan yang Perlu Disampaikan</div>
+                    <p>Qt menggambar ulang UI dan memproses event (klik, ketik) melalui <strong>event loop</strong> yang berjalan di main thread. Selama <code>proses_berat()</code> berjalan, main thread sibuk — event loop tidak bisa berjalan, sehingga:</p>
+                    <ul style="margin-top: 8px;">
+                        <li>Klik tombol tidak diproses (counter tidak bertambah)</li>
+                        <li>Perubahan widget tidak di-render (data tidak muncul bertahap)</li>
+                        <li>Semua perubahan baru tampil sekaligus setelah fungsi selesai</li>
+                    </ul>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Istilah</th>
+                                <th>Penjelasan untuk Kelas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">Main Thread</span></td>
+                                <td>Thread utama tempat UI berjalan. Menggambar widget dan memproses klik user.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Event Loop</span></td>
+                                <td>Mesin di dalam Qt yang terus berjalan menunggu dan memproses event. Berhenti jika main thread diblokir.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">UI Freeze</span></td>
+                                <td>Kondisi saat main thread diblokir oleh proses berat sehingga event loop tidak bisa berjalan.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Worker Thread</span></td>
+                                <td>Thread tambahan untuk menjalankan proses berat di latar belakang agar main thread tetap bebas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="section" id="thread-solusi">
+                <h2>2. Solusi: QThread + Signal — good.py & compare.py <span class="timing-badge">⏱ 25 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Strategi:</strong> Sebelum menjelaskan kode, jalankan <code>compare.py</code> dulu. Biarkan mahasiswa sendiri yang merasakan perbedaannya di dua tab. Setelah mereka yakin ada perbedaan, baru buka kode dan jelaskan mengapa.
+                </div>
+
+                <h3>Langkah 1 — Jalankan compare.py Dulu</h3>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">compare.py</span>
+                        <span class="code-badge">Demo Interaktif</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import time
+from PySide6.QtCore import QThread, Signal
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget, QTabWidget
+)
+
+class WorkerThread(QThread):
+    item_ready = Signal(str)
+    finished   = Signal()
+
+    def run(self):
+        for item in ["Data A", "Data B", "Data C", "Data D", "Data E"]:
+            time.sleep(1)
+            self.item_ready.emit(item)
+        self.finished.emit()
+
+class TabMasalah(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        self.status = QLabel("Status: menunggu...")
+        layout.addWidget(self.status)
+        self.list_widget = QListWidget()
+        layout.addWidget(self.list_widget)
+        btn_proses = QPushButton("Mulai Proses")
+        btn_proses.clicked.connect(self.proses_berat)
+        layout.addWidget(btn_proses)
+        self.counter = 0
+        self.btn_test = QPushButton("Klik saya! (0)")
+        self.btn_test.clicked.connect(self.tambah_counter)
+        layout.addWidget(self.btn_test)
+
+    def tambah_counter(self):
+        self.counter += 1
+        self.btn_test.setText(f"Klik saya! ({self.counter})")
+
+    def proses_berat(self):
+        self.list_widget.clear()
+        self.status.setText("Status: memproses...")
+        for item in ["Data A", "Data B", "Data C", "Data D", "Data E"]:
+            time.sleep(1)
+            self.list_widget.addItem(item)
+        self.status.setText("Status: selesai")
+
+class TabSolusi(QWidget):
+    def __init__(self):
+        super().__init__()
+        layout = QVBoxLayout(self)
+        layout.setSpacing(8)
+        self.status = QLabel("Status: menunggu...")
+        layout.addWidget(self.status)
+        self.list_widget = QListWidget()
+        layout.addWidget(self.list_widget)
+        self.btn_proses = QPushButton("Mulai Proses")
+        self.btn_proses.clicked.connect(self.mulai_proses)
+        layout.addWidget(self.btn_proses)
+        self.counter = 0
+        self.btn_test = QPushButton("Klik saya! (0)")
+        self.btn_test.clicked.connect(self.tambah_counter)
+        layout.addWidget(self.btn_test)
+        self.worker = None
+
+    def tambah_counter(self):
+        self.counter += 1
+        self.btn_test.setText(f"Klik saya! ({self.counter})")
+
+    def mulai_proses(self):
+        self.list_widget.clear()
+        self.status.setText("Status: memproses...")
+        self.btn_proses.setEnabled(False)
+        self.worker = WorkerThread()
+        self.worker.item_ready.connect(self.list_widget.addItem)
+        self.worker.finished.connect(self.proses_selesai)
+        self.worker.start()
+
+    def proses_selesai(self):
+        self.status.setText("Status: selesai")
+        self.btn_proses.setEnabled(True)
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Thread Demo")
+        self.setFixedSize(380, 380)
+        tabs = QTabWidget()
+        tabs.addTab(TabMasalah(), "Tanpa Thread (freeze)")
+        tabs.addTab(TabSolusi(),  "Dengan QThread (ok)")
+        self.setCentralWidget(tabs)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    w = MainWindow()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="scenario-box">
+                    <h4>Instruksi untuk Mahasiswa saat Demo compare.py</h4>
+                    <ol style="margin: 8px 0 0; padding-left: 20px; line-height: 2;">
+                        <li>Buka tab <strong>"Tanpa Thread"</strong> → klik Mulai Proses → klik counter berkali-kali → amati</li>
+                        <li>Pindah ke tab <strong>"Dengan QThread"</strong> → klik Mulai Proses → klik counter berkali-kali → amati</li>
+                        <li>Tanya: <em>"Apa perbedaan yang kalian rasakan?"</em></li>
+                    </ol>
+                </div>
+
+                <h3>Langkah 2 — Jelaskan Kode good.py</h3>
+
+                <div class="teacher-note">
+                    <strong>Cara Menjelaskan:</strong> Bandingkan <code>bad.py</code> dan <code>good.py</code> baris per baris. Tekankan bahwa struktur widget-nya identik — yang berbeda hanya <em>di mana</em> proses berat diletakkan dan bagaimana hasilnya dikirim balik ke UI.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">good.py</span>
+                        <span class="code-badge">GOOD — Jelaskan Baris per Baris</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import time
+from PySide6.QtCore import QThread, Signal
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QListWidget
+)
+
+class WorkerThread(QThread):
+    # Signal: satu-satunya cara aman kirim data dari worker ke main thread
+    item_ready = Signal(str)
+    finished   = Signal()
+
+    def run(self):
+        # run() dieksekusi di thread terpisah — main thread tetap bebas
+        for item in ["Data A", "Data B", "Data C", "Data D", "Data E"]:
+            time.sleep(1)
+            self.item_ready.emit(item)   # kirim item ke UI
+        self.finished.emit()
+
+class GoodDemo(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("No Freeze Demo")
+        layout = QVBoxLayout(self)
+        self.status = QLabel("Status: menunggu...")
+        layout.addWidget(self.status)
+        self.list_widget = QListWidget()
+        layout.addWidget(self.list_widget)
+        self.btn_start = QPushButton("Mulai Proses")
+        self.btn_start.clicked.connect(self.mulai_proses)
+        layout.addWidget(self.btn_start)
+        self.counter = 0
+        self.btn_test = QPushButton("Klik saya! (0)")
+        self.btn_test.clicked.connect(self.tambah_counter)
+        layout.addWidget(self.btn_test)
+        self.worker = None
+
+    def tambah_counter(self):
+        self.counter += 1
+        self.btn_test.setText(f"Klik saya! ({self.counter})")
+
+    def mulai_proses(self):
+        self.list_widget.clear()
+        self.status.setText("Status: memproses...")
+        self.btn_start.setEnabled(False)
+        # Buat worker, hubungkan signal, lalu start
+        self.worker = WorkerThread()
+        self.worker.item_ready.connect(self.tambah_item)
+        self.worker.finished.connect(self.proses_selesai)
+        self.worker.start()
+
+    def tambah_item(self, item):
+        self.list_widget.addItem(item)
+
+    def proses_selesai(self):
+        self.status.setText("Status: selesai")
+        self.btn_start.setEnabled(True)
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    w = GoodDemo()
+    w.show()
+    sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Tiga Poin Wajib yang Harus Dipahami Mahasiswa</div>
+                    <ol>
+                        <li><strong>Proses berat masuk ke <code>run()</code></strong> — method ini dieksekusi di thread terpisah, bukan di main thread.</li>
+                        <li><strong>Komunikasi via Signal</strong> — worker tidak boleh langsung mengubah widget. Kirim data lewat <code>emit()</code>, Qt yang mengurus pengirimannya ke main thread secara aman.</li>
+                        <li><strong>Simpan referensi worker</strong> — <code>self.worker = WorkerThread()</code> wajib pakai <code>self</code> agar tidak di-garbage collect sebelum selesai.</li>
+                    </ol>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>bad.py</th>
+                                <th>good.py</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>time.sleep()</code> langsung di slot tombol</td>
+                                <td>Proses berat di dalam <code>WorkerThread.run()</code></td>
+                            </tr>
+                            <tr>
+                                <td>Tidak ada thread — semua di main thread</td>
+                                <td><code>WorkerThread</code> mewarisi <code>QThread</code></td>
+                            </tr>
+                            <tr>
+                                <td>UI freeze, counter tidak bisa diklik</td>
+                                <td>UI responsif, counter tetap berjalan</td>
+                            </tr>
+                            <tr>
+                                <td>Data muncul sekaligus di akhir</td>
+                                <td>Data muncul satu per satu via <code>Signal</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>Mini Tantangan Saat Live Coding</h3>
+                    <ol>
+                        <li>Minta mahasiswa tambahkan satu signal baru: <code>progress = Signal(int)</code> yang mengirim nomor urut item (1, 2, 3...).</li>
+                        <li>Tampilkan progress di label status: <em>"Memproses item 3 dari 5..."</em></li>
+                        <li>Bonus: nonaktifkan tombol counter saat proses berjalan, aktifkan kembali saat selesai.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="section" id="thread-diskusi">
+                <h2>3. Poin Diskusi Threading <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Topik</th>
+                                <th>Yang Perlu Ditegaskan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">Kenapa tidak update UI langsung dari run()?</span></td>
+                                <td>Qt tidak thread-safe untuk operasi UI. Update widget dari thread lain bisa menyebabkan crash atau perilaku tidak terduga.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Kenapa self.worker, bukan worker saja?</span></td>
+                                <td>Variabel lokal akan di-garbage collect setelah fungsi selesai. Thread yang masih berjalan akan crash. Simpan sebagai atribut instance.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Kapan perlu thread?</span></td>
+                                <td>Setiap kali ada operasi yang butuh waktu: network request, baca file besar, kalkulasi berat. Aturan: jika lebih dari ~100ms, pindah ke thread.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Signal vs langsung panggil method</span></td>
+                                <td>Signal aman lintas thread karena Qt mengantri pesan dan mengeksekusinya di thread yang tepat melalui event loop.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="teacher-note">
+                    <strong>Kalimat yang bagus untuk ditekankan:</strong> "Aturan satu kalimat untuk threading di PySide6: proses berat di thread lain, update UI selalu di main thread lewat Signal."
+                </div>
+
+                <div class="bug-box">
+                    <h4>Bug Umum yang Sering Dibuat Mahasiswa</h4>
+                    <ul style="margin: 8px 0 0; padding-left: 20px; line-height: 2;">
+                        <li>Langsung memanggil <code>self.list_widget.addItem()</code> dari dalam <code>run()</code> — harusnya lewat Signal.</li>
+                        <li>Tidak menyimpan worker sebagai <code>self.worker</code> — thread berhenti tiba-tiba.</li>
+                        <li>Membuat thread baru setiap klik tanpa mengecek apakah thread sebelumnya masih berjalan — bisa tumpang tindih.</li>
+                    </ul>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Transisi ke REST API</div>
+                    <p>Setelah mahasiswa paham threading, sampaikan: <em>"Sekarang kita akan pakai konsep yang sama untuk mengambil data dari internet. Network request adalah salah satu proses berat yang paling sering menyebabkan UI freeze — dan itulah yang akan kita pelajari selanjutnya."</em></p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- BAGIAN 2: REST API -->
+            <!-- ============================================================ -->
+
+            <section class="section" id="pembuka">
+                <h2>4. Strategi Masuk — REST API <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Catatan Dosen:</strong> Jangan mulai dari definisi REST API. Mulai dari kebutuhan nyata: "Kalau aplikasi desktop mau ambil data berita, cuaca, atau daftar mahasiswa dari internet, caranya bagaimana?" Hubungkan juga dengan threading yang baru dipelajari: network request adalah contoh nyata proses berat yang harus dijalankan di thread terpisah.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>Skenario Pembuka</h4>
+                    <p>Tulis pertanyaan ini di papan: <em>"Kalau Python bisa ambil data dari server, kenapa hasilnya jangan berhenti di terminal?"</em> Dari sini arahkan bahwa output program seharusnya bisa dipindahkan ke GUI.</p>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Alur Mengajar yang Disarankan</div>
+                    <ol>
+                        <li>Tunjukkan request sederhana ke server.</li>
+                        <li>Tunjukkan hasil JSON di terminal.</li>
+                        <li>Tanya: "Apakah user akhir mau membaca data di CLI?"</li>
+                        <li>Pindahkan output ke widget PySide.</li>
+                        <li>Naikkan level dari <code>/posts/1</code> ke <code>/posts</code>.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="section" id="konsep">
+                <h2>5. Menjelaskan REST API <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Cara Menjelaskan:</strong> Pakai analogi restoran. Client adalah pembeli, server adalah dapur, endpoint adalah meja layanan, dan JSON adalah isi pesanan yang dikirim balik.
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Istilah</th>
+                                <th>Bahasa Sederhana untuk Kelas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">Client</span></td>
+                                <td>Aplikasi kita yang meminta data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Server</span></td>
+                                <td>Tempat data disimpan dan dilayani</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Endpoint</span></td>
+                                <td>Alamat data, misalnya <code>/posts</code> atau <code>/users</code></td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">GET</span></td>
+                                <td>Minta atau mengambil data</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">JSON</span></td>
+                                <td>Format data yang mudah dibaca program</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Kalimat Ringkas untuk Disampaikan</div>
+                    <p>REST API adalah cara aplikasi kita berbicara dengan server menggunakan HTTP. Untuk materi awal, cukup tekankan bahwa <code>GET</code> dipakai untuk mengambil data, lalu data itu kita olah dan tampilkan ke antarmuka.</p>
+                </div>
+            </section>
+
+            <section class="section" id="cli">
+                <h2>6. Demo Awal - Dari CLI ke JSON <span class="timing-badge">⏱ 15 menit</span></h2>
+
+                <p>Mulai dari contoh paling sederhana. Tujuannya bukan berhenti di sini, tetapi memberi fondasi bahwa server benar-benar mengembalikan data.</p>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">requests_cli_1.py</span>
+                        <span class="code-badge">Demo Awal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import requests
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+# GET - ambil satu data medicine
+response = requests.get(f"{BASE_URL}/medicines/1")
+result = response.json()
+medicine = result["data"]  # data ada di dalam key 'data'
+
+print(medicine["name"])</code></pre>
+                    </div>
+                </div>
+
+                <div class="teacher-note">
+                    <strong>Tekankan ke Mahasiswa:</strong> <code>response.json()</code> di sini menghasilkan <strong>dictionary</strong> dengan key <code>success</code>, <code>message</code>, dan <code>data</code>. Data medicine-nya ada di dalam <code>result["data"]</code>.
+                </div>
+
+                <div class="scenario-box">
+                    <h4>Pertanyaan Pemantik</h4>
+                    <p>Tanya ke kelas: <em>"Bagus, datanya sudah berhasil diambil. Tapi kalau ini aplikasi desktop sungguhan, masa judulnya hanya dicetak ke terminal?"</em></p>
+                </div>
+            </section>
+
+            <section class="section" id="pyside-satu">
+                <h2>7. Dosen Mengarahkan: Dari <code>print()</code> ke PySide6 <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Strategi:</strong> Pada tahap ini, jangan langsung pakai tabel. Cukup pakai <code>QLabel</code> atau <code>QTextEdit</code> agar mahasiswa melihat perpindahan konsep dari output terminal ke output GUI.
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">api_satu_medicine_gui.py</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QTextEdit
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class MedicineViewer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Viewer Satu Medicine")
+        self.resize(500, 300)
+
+        layout = QVBoxLayout(self)
+
+        self.output = QTextEdit()
+        self.output.setReadOnly(True)
+
+        self.btn_load = QPushButton("Ambil Medicine 1")
+        self.btn_load.clicked.connect(self.load_medicine)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.output)
+
+    def load_medicine(self):
+        response = requests.get(f"{BASE_URL}/medicines/1")
+        result = response.json()
+        medicine = result["data"]  # data ada di dalam key 'data'
+
+        teks = (
+            f"ID: {medicine['id']}\n"
+            f"Name: {medicine['name']}\n"
+            f"Brand: {medicine['brand']}\n\n"
+            f"Manufacturer:\n{medicine['manufacturer']}"
+        )
+        self.output.setPlainText(teks)
+
+app = QApplication(sys.argv)
+window = MedicineViewer()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Poin Mengajar yang Harus Ditekankan</div>
+                    <ul>
+                        <li>Data tetap diambil dengan <code>requests.get()</code>.</li>
+                        <li>Perbedaannya hanya di output: bukan <code>print()</code>, tetapi <code>setPlainText()</code>.</li>
+                        <li>Response API ini membungkus data di dalam key <code>"data"</code> — mahasiswa harus paham cara mengaksesnya.</li>
+                        <li>Mahasiswa harus paham bahwa API dan GUI adalah dua lapisan yang berbeda.</li>
+                    </ul>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>Mini Tantangan Saat Live Coding</h3>
+                    <ol>
+                        <li>Minta mahasiswa ganti endpoint ke <code>/medicines/2</code>.</li>
+                        <li>Minta mereka tampilkan hanya nama medicine di widget.</li>
+                        <li>Minta mereka tambahkan label "Data berhasil dimuat".</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="section" id="pyside-banyak">
+                <h2>8. Naik Level - Menampilkan Data Lebih dari Satu <span class="timing-badge">⏱ 25 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Inilah bagian penting:</strong> setelah mahasiswa melihat satu objek, arahkan ke endpoint <code>/medicines</code>. Jelaskan bahwa sekarang <code>response.json()["data"]</code> menghasilkan <strong>list berisi banyak dictionary</strong>.
+                </div>
+
+                <div class="bug-box">
+                    <h4>Bug Sengaja yang Bagus untuk Didiskusikan</h4>
+                    <p>Kalau mahasiswa menulis <code>medicines["name"]</code> setelah memakai endpoint <code>/medicines</code>, akan error. Gunakan ini untuk menjelaskan perbedaan objek tunggal dan list data, serta pentingnya mengakses key <code>"data"</code> terlebih dahulu.</p>
+                </div>
+
+                <p class="copy-note">✅ Kode ini bisa di-copy langsung</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">api_banyak_medicine_gui.py</span>
+                        <span class="code-badge">Live Coding</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class MedicinesViewer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Daftar Medicines")
+        self.resize(600, 400)
+
+        layout = QVBoxLayout(self)
+
+        self.list_widget = QListWidget()
+
+        self.btn_load = QPushButton("Ambil Semua Medicines")
+        self.btn_load.clicked.connect(self.load_medicines)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.list_widget)
+
+    def load_medicines(self):
+        self.list_widget.clear()
+
+        response = requests.get(f"{BASE_URL}/medicines")
+        result = response.json()
+        medicines = result["data"]  # data ada di dalam key 'data'
+
+        for medicine in medicines:
+            self.list_widget.addItem(f"{medicine['id']}. {medicine['name']} - {medicine['brand']}")
+
+app = QApplication(sys.argv)
+window = MedicinesViewer()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Poin Konseptual Utama</div>
+                    <ul>
+                        <li><code>/medicines/1</code> menghasilkan satu dictionary di dalam <code>result["data"]</code>.</li>
+                        <li><code>/medicines</code> menghasilkan list of dictionary di dalam <code>result["data"]</code>.</li>
+                        <li>Kalau datanya banyak, maka harus di-loop.</li>
+                        <li>Widget yang cocok: <code>QListWidget</code>, <code>QTableWidget</code>, atau <code>QTextEdit</code>.</li>
+                    </ul>
+                </div>
+
+                <h3>Versi Pengembangan untuk Mahasiswa</h3>
+                <p>Setelah contoh di atas berhasil, minta mahasiswa mengembangkan tampilannya. Misalnya tampilkan 10 data pertama saja dan gabungkan nama dengan brand.</p>
+
+                <p class="copy-note">✅ Contoh pengembangan</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">api_banyak_medicine_ringkas.py</span>
+                        <span class="code-badge">Tugas Kelas</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>def load_medicines(self):
+    self.list_widget.clear()
+
+    response = requests.get(f"{BASE_URL}/medicines")
+    result = response.json()
+    medicines = result["data"]
+
+    for medicine in medicines[:10]:
+        self.list_widget.addItem(
+            f"{medicine['id']}. {medicine['name']} | {medicine['brand']} | {medicine['manufacturer']}"
+        )</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="diskusi">
+                <h2>9. Poin Diskusi REST API di Kelas <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Topik</th>
+                                <th>Yang Perlu Ditegaskan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="table-code">response.status_code</span></td>
+                                <td>Request tidak cukup hanya "berhasil jalan", tetapi harus dicek statusnya.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">response.json()</span></td>
+                                <td>Hasil bisa berupa dictionary atau list, tergantung endpoint.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">Looping data</span></td>
+                                <td>Kalau datanya banyak, jangan akses seperti satu objek.</td>
+                            </tr>
+                            <tr>
+                                <td><span class="table-code">GUI output</span></td>
+                                <td>Tujuan akhir aplikasi desktop adalah menampilkan data ke antarmuka, bukan ke terminal.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="teacher-note">
+                    <strong>Kalimat yang bagus untuk ditekankan:</strong> REST API bukan materi yang berdiri sendiri. Nilainya terasa saat mahasiswa bisa mengambil data dari internet lalu menampilkannya ke aplikasi yang mereka bangun.
+                </div>
+            </section>
+
+            <section class="section" id="latihan-cepat">
+                <h2>10. Hands-on Cepat untuk Dicoba Langsung <span class="timing-badge">⏱ 20 menit</span></h2>
+
+                <div class="challenge-box">
+                    <h3>Hands-on 1 - Ganti Endpoint</h3>
+                    <ol>
+                        <li>Ubah dari <code>/medicines</code> ke <code>/medicines/1</code>.</li>
+                        <li>Tampilkan nama dan brand medicine pada <code>QListWidget</code>.</li>
+                        <li>Bonus: tampilkan manufacturer di belakang nama.</li>
+                    </ol>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban Hands-on 1</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">handson_1_medicines.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class MedicinesViewer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Daftar Medicines")
+        self.resize(500, 400)
+
+        layout = QVBoxLayout(self)
+        self.list_widget = QListWidget()
+        self.btn_load = QPushButton("Ambil Data Medicines")
+        self.btn_load.clicked.connect(self.load_medicines)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.list_widget)
+
+    def load_medicines(self):
+        self.list_widget.clear()
+        response = requests.get(f"{BASE_URL}/medicines")
+        result = response.json()
+        medicines = result["data"]
+
+        for medicine in medicines:
+            self.list_widget.addItem(f"{medicine['name']} - {medicine['brand']} ({medicine['manufacturer']})")
+
+app = QApplication(sys.argv)
+window = MedicinesViewer()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>Hands-on 2 - Cari Medicine Berdasarkan ID</h3>
+                    <ol>
+                        <li>Tambahkan <code>QLineEdit</code> untuk input ID.</li>
+                        <li>Saat tombol diklik, ambil endpoint <code>/medicines/{id}</code>.</li>
+                        <li>Tampilkan nama, brand, dan manufacturer ke <code>QTextEdit</code>.</li>
+                    </ol>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban Hands-on 2</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">handson_2_cari_medicine.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton,
+    QTextEdit, QLineEdit, QLabel
+)
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class CariMedicine(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Cari Medicine Berdasarkan ID")
+        self.resize(500, 350)
+
+        layout = QVBoxLayout(self)
+
+        self.label = QLabel("Masukkan ID Medicine:")
+        self.input_id = QLineEdit()
+        self.input_id.setPlaceholderText("Contoh: 1")
+        self.btn_cari = QPushButton("Cari Medicine")
+        self.output = QTextEdit()
+        self.output.setReadOnly(True)
+
+        self.btn_cari.clicked.connect(self.load_medicine)
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.input_id)
+        layout.addWidget(self.btn_cari)
+        layout.addWidget(self.output)
+
+    def load_medicine(self):
+        medicine_id = self.input_id.text().strip()
+
+        if not medicine_id:
+            self.output.setPlainText("ID medicine belum diisi.")
+            return
+
+        response = requests.get(f"{BASE_URL}/medicines/{medicine_id}")
+        result = response.json()
+        medicine = result["data"]
+
+        teks = f"Name: {medicine['name']}\nBrand: {medicine['brand']}\nManufacturer: {medicine['manufacturer']}"
+        self.output.setPlainText(teks)
+
+app = QApplication(sys.argv)
+window = CariMedicine()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <div class="challenge-box">
+                    <h3>Hands-on 3 - Tampilkan 5 Medicine Pertama</h3>
+                    <ol>
+                        <li>Panggil endpoint <code>/medicines</code>.</li>
+                        <li>Loop hanya <code>medicines[:5]</code>.</li>
+                        <li>Tampilkan nomor dan nama ke list widget.</li>
+                    </ol>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban Hands-on 3</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">handson_3_lima_medicine.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class LimaMedicine(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("5 Medicine Pertama")
+        self.resize(500, 350)
+
+        layout = QVBoxLayout(self)
+        self.list_widget = QListWidget()
+        self.btn_load = QPushButton("Ambil 5 Medicine")
+        self.btn_load.clicked.connect(self.load_medicines)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.list_widget)
+
+    def load_medicines(self):
+        self.list_widget.clear()
+        response = requests.get(f"{BASE_URL}/medicines")
+        result = response.json()
+        medicines = result["data"]
+
+        for medicine in medicines[:5]:
+            self.list_widget.addItem(f"{medicine['id']}. {medicine['name']}")
+
+app = QApplication(sys.argv)
+window = LimaMedicine()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+            </section>
+
+            <section class="section" id="latihan-lanjutan">
+                <h2>11. Hands-on Lanjutan <span class="timing-badge">⏱ 25 menit</span></h2>
+
+                <div class="teacher-note">
+                    <strong>Strategi:</strong> Hands-on lanjutan sebaiknya dikerjakan berpasangan. Fokusnya bukan tampilan bagus dulu, tetapi struktur logika: ambil data, parse, loop, tampilkan.
+                </div>
+
+                <div class="info-box concept">
+                    <div class="info-box-title">Daftar Tugas yang Cocok untuk Kelas</div>
+                    <ol>
+                        <li>Buat viewer medicines dengan endpoint <code>/medicines</code>, lalu tampilkan <code>name</code> dan <code>brand</code>.</li>
+                        <li>Buat tampilan tabel medicine memakai <code>QTableWidget</code> dengan kolom Nama, Brand, Manufacturer.</li>
+                        <li>Tambahkan tombol <code>Refresh</code> untuk mengambil ulang data.</li>
+                        <li>Tambahkan validasi jika input ID kosong.</li>
+                        <li>Tampilkan pesan gagal jika endpoint salah atau koneksi bermasalah.</li>
+                    </ol>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban tugas 1 - viewer medicines</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">lanjutan_1_medicines.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QListWidget
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class MedicinesViewer(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Medicines Viewer")
+        self.resize(650, 400)
+
+        layout = QVBoxLayout(self)
+        self.list_widget = QListWidget()
+        self.btn_load = QPushButton("Ambil Medicines")
+        self.btn_load.clicked.connect(self.load_medicines)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.list_widget)
+
+    def load_medicines(self):
+        self.list_widget.clear()
+        response = requests.get(f"{BASE_URL}/medicines")
+        result = response.json()
+        medicines = result["data"]
+
+        for medicine in medicines[:15]:
+            self.list_widget.addItem(f"{medicine['name']} - {medicine['brand']}")
+
+app = QApplication(sys.argv)
+window = MedicinesViewer()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban tugas 2 - tabel medicines</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">lanjutan_2_tabel_medicines.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>import sys
+import requests
+from PySide6.QtWidgets import (
+    QApplication, QWidget, QVBoxLayout, QPushButton,
+    QTableWidget, QTableWidgetItem
+)
+
+BASE_URL = "https://api.pahrul.my.id/api"
+
+class MedicineTable(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tabel Medicines")
+        self.resize(700, 400)
+
+        layout = QVBoxLayout(self)
+        self.btn_load = QPushButton("Load Medicines")
+        self.table = QTableWidget()
+        self.table.setColumnCount(3)
+        self.table.setHorizontalHeaderLabels(["Nama", "Brand", "Manufacturer"])
+
+        self.btn_load.clicked.connect(self.load_medicines)
+
+        layout.addWidget(self.btn_load)
+        layout.addWidget(self.table)
+
+    def load_medicines(self):
+        response = requests.get(f"{BASE_URL}/medicines")
+        result = response.json()
+        medicines = result["data"]
+
+        self.table.setRowCount(len(medicines))
+
+        for row, medicine in enumerate(medicines):
+            self.table.setItem(row, 0, QTableWidgetItem(medicine["name"]))
+            self.table.setItem(row, 1, QTableWidgetItem(medicine["brand"]))
+            self.table.setItem(row, 2, QTableWidgetItem(medicine["manufacturer"]))
+
+app = QApplication(sys.argv)
+window = MedicineTable()
+window.show()
+sys.exit(app.exec())</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban tugas 3 - tombol refresh</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">lanjutan_3_refresh.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>self.btn_refresh = QPushButton("Refresh")
+self.btn_refresh.clicked.connect(self.load_medicines)
+layout.addWidget(self.btn_refresh)</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban tugas 4 - validasi input ID</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">lanjutan_4_validasi_id.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>medicine_id = self.input_id.text().strip()
+
+if not medicine_id:
+    self.output.setPlainText("ID tidak boleh kosong.")
+    return
+
+if not medicine_id.isdigit():
+    self.output.setPlainText("ID harus berupa angka.")
+    return</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Contoh jawaban tugas 5 - pesan error</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">lanjutan_5_pesan_error.py</span>
+                        <span class="code-badge">Jawaban</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>try:
+    response = requests.get(f"{BASE_URL}/medicines", timeout=10)
+    response.raise_for_status()
+    result = response.json()
+    medicines = result["data"]
+
+    self.list_widget.clear()
+    for medicine in medicines[:10]:
+        self.list_widget.addItem(medicine["name"])
+except requests.exceptions.ConnectionError:
+    self.list_widget.addItem("Koneksi ke server gagal.")
+except requests.exceptions.Timeout:
+    self.list_widget.addItem("Request timeout.")
+except requests.exceptions.HTTPError as e:
+    self.list_widget.addItem(f"HTTP error: {e}")
+except Exception as e:
+    self.list_widget.addItem(f"Error lain: {e}")</code></pre>
+                    </div>
+                </div>
+
+                <p class="copy-note">✅ Contoh error handling sederhana</p>
+                <div class="code-container">
+                    <div class="code-header">
+                        <span class="code-title">error_handling_sederhana.py</span>
+                        <span class="code-badge">Best Practice Awal</span>
+                    </div>
+                    <div class="code-block">
+                        <pre><code>def load_medicines(self):
+    self.list_widget.clear()
+
+    try:
+        response = requests.get(f"{BASE_URL}/medicines", timeout=10)
+        response.raise_for_status()
+        result = response.json()
+        medicines = result["data"]
+
+        for medicine in medicines[:10]:
+            self.list_widget.addItem(medicine["name"])
+    except Exception as e:
+        self.list_widget.addItem(f"Terjadi error: {e}")</code></pre>
+                    </div>
+                </div>
+
+                <div class="bug-box">
+                    <h4>Catatan Penting untuk Dosen</h4>
+                    <p>Untuk pengantar REST API, request langsung di method tombol masih bisa diterima. Tetapi beri catatan bahwa pada aplikasi yang lebih serius, request sebaiknya dipindah ke thread agar UI tidak freeze.</p>
+                </div>
+            </section>
+
+            <section class="section" id="penutup">
+                <h2>12. Penutup Kelas <span class="timing-badge">⏱ 10 menit</span></h2>
+
+                <div class="scenario-box">
+                    <h4>Penutup yang Disarankan</h4>
+                    <p>Minta 2-3 mahasiswa mendemokan hasil GUI mereka. Pilih yang berbeda: satu yang menampilkan satu medicine, satu yang menampilkan list medicines, dan satu yang memakai tabel dengan <code>QTableWidget</code>.</p>
+                </div>
+
+                <div class="info-box success">
+                    <div class="info-box-title">Kalimat Penutup untuk Mahasiswa</div>
+                    <p>Hari ini kalian belajar dua hal yang saling berkaitan: pertama, kenapa UI bisa freeze dan bagaimana QThread menyelesaikannya. Kedua, bagaimana mengambil data dari internet dan menampilkannya ke aplikasi desktop. Keduanya akan digabungkan di materi berikutnya — network request yang berjalan di thread terpisah agar UI tetap responsif.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.endsWith('.html')) return;
+                e.preventDefault();
+                const target = document.querySelector(href);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                if (window.innerWidth <= 992) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+
+        document.querySelectorAll('.code-container').forEach(container => {
+            const header = container.querySelector('.code-header');
+            const pre = container.querySelector('.code-block pre');
+            if (!header || !pre) return;
+
+            const btn = document.createElement('button');
+            btn.className = 'btn-copy';
+            btn.textContent = '⎘ Copy';
+            header.appendChild(btn);
+
+            btn.addEventListener('click', () => {
+                const tmp = document.createElement('div');
+                tmp.innerHTML = pre.innerHTML;
+                const code = tmp.textContent || tmp.innerText || '';
+
+                navigator.clipboard.writeText(code.trim()).then(() => {
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '⎘ Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                }).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = code.trim();
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    btn.textContent = '✓ Copied!';
+                    btn.classList.add('copied');
+                    setTimeout(() => {
+                        btn.textContent = '⎘ Copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
