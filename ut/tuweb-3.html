@@ -5,6 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TUWEB 3 - Pemrograman Web</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .sidebar-submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .sidebar-submenu.open {
+            max-height: 800px;
+        }
+        .sidebar-submenu li a {
+            display: block;
+            padding: 5px 10px 5px 22px;
+            font-size: 0.8em;
+            color: #666;
+            text-decoration: none;
+            border-left: 2px solid #e0e0e0;
+            margin-left: 10px;
+            line-height: 1.4;
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .sidebar-submenu li a:hover {
+            color: #667eea;
+            border-left-color: #667eea;
+        }
+        .sidebar-submenu li a.active {
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 600;
+            background: rgba(102, 126, 234, 0.07);
+            border-radius: 0 4px 4px 0;
+        }
+        .sidebar-parent-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sidebar-parent-link .arrow {
+            font-size: 0.7em;
+            transition: transform 0.3s;
+            opacity: 0.5;
+        }
+        .sidebar-parent-link.parent-active .arrow {
+            transform: rotate(90deg);
+            opacity: 1;
+        }
+        .sidebar-tuweb {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -32,38 +86,1466 @@
                     <li v-for="menu in menus" :key="menu.id">
                         <a
                             :href="'#' + menu.id"
-                            :class="{ active: activeSection === menu.id }"
+                            :class="['sidebar-parent-link', { active: activeSection === menu.id, 'parent-active': isParentActive(menu) }]"
                             @click="goToSection(menu.id)"
                         >
                             {{ menu.label }}
+                            <span v-if="menu.children" class="arrow">&#9654;</span>
                         </a>
-                    </li>
-                </ul>
-
-                <h3>Navigasi TUWEB</h3>
-                <ul>
-                    <li v-for="link in tuwebLinks" :key="link.href">
-                        <a :href="link.href">{{ link.label }}</a>
+                        <ul v-if="menu.children" class="sidebar-submenu" :class="{ open: isParentActive(menu) }">
+                            <li v-for="child in menu.children" :key="child.id">
+                                <a
+                                    :href="'#' + child.id"
+                                    :class="{ active: activeSection === child.id }"
+                                    @click.stop="goToSection(child.id)"
+                                >
+                                    {{ child.label }}
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 </ul>
             </nav>
 
             <!-- Konten Utama -->
-            <main class="content">
-                <section v-for="activity in activities" :id="activity.id" :key="activity.id">
-                    <h2>{{ activity.title }} <span class="badge" :class="activity.badgeClass">{{ activity.badge }}</span></h2>
-                    <h3>{{ activity.topic }}</h3>
+            <main class="content" v-pre>
+
+                <!-- ============================================================ -->
+                <!-- AKTIVITAS 12: COMPONENTS                                     -->
+                <!-- ============================================================ -->
+                <section id="aktivitas-12">
+                    <h2>Aktivitas Belajar 12 <span class="badge badge-new">Vue.js</span></h2>
+                    <h3>Component, Canvas, dan Animasi (1): Components</h3>
+
+                    <p>Bayangkan membangun rumah dari LEGO. Setiap balok LEGO bisa dipakai berulang kali di tempat yang berbeda, memiliki bentuk tersendiri, dan bisa dirakit bersama balok lain. Itulah konsep <strong>component</strong> di Vue. Component adalah potongan antarmuka (UI) yang berdiri sendiri, bisa dipakai ulang, dan bisa digabung untuk membentuk halaman yang lebih kompleks.</p>
+
                     <div class="info-box">
-                        <strong>Status:</strong> Materi untuk aktivitas ini akan ditambahkan pada tahap berikutnya.
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu menjelaskan konsep dan manfaat component di Vue.</li>
+                            <li>Mahasiswa mampu membuat dan mendaftarkan global component.</li>
+                            <li>Mahasiswa mampu menggunakan props untuk mengirim data dari parent ke child.</li>
+                            <li>Mahasiswa mampu menggunakan emits untuk komunikasi dari child ke parent.</li>
+                            <li>Mahasiswa mampu menggunakan slots untuk konten dinamis.</li>
+                        </ul>
                     </div>
+
+                    <h3 id="ab12-a">A. Mengapa Butuh Component?</h3>
+                    <p>Tanpa component, jika ingin menampilkan 10 kartu mahasiswa, kode HTML-nya harus ditulis 10 kali. Jika ada perubahan desain kartu, 10 tempat harus diubah satu per satu. Dengan component, kartu ditulis sekali lalu dipakai berulang kali — cukup ubah di satu tempat, semua kartu ikut berubah.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tanpa Component</th>
+                                <th>Dengan Component</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Kode HTML diulang untuk setiap item</td>
+                                <td>Kode ditulis sekali, dipakai berulang</td>
+                            </tr>
+                            <tr>
+                                <td>Sulit dirawat jika ada perubahan tampilan</td>
+                                <td>Cukup ubah di satu tempat</td>
+                            </tr>
+                            <tr>
+                                <td>File HTML sangat panjang</td>
+                                <td>Kode lebih pendek dan terstruktur</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 id="ab12-b">B. Cara Membuat Component (via CDN)</h3>
+                    <p>Di Vue 3 via CDN, component didaftarkan menggunakan <code>app.component()</code> setelah aplikasi dibuat namun <strong>sebelum</strong> <code>app.mount()</code>. Template component bisa ditulis sebagai string di dalam properti <code>template</code>.</p>
+
+                    <pre><code>const app = createApp({ /* opsi root */ });
+
+// Daftarkan component sebelum mount
+app.component('nama-component', {
+    template: `&lt;p&gt;Halo dari component!&lt;/p&gt;`,
+    data() { return { /* data lokal */ }; },
+    props: [],
+    emits: [],
+    methods: {}
+});
+
+app.mount('#app'); // mount setelah semua component didaftarkan</code></pre>
+
+                    <div class="warning-box">
+                        <strong>Aturan Penamaan:</strong> Nama component menggunakan format <strong>kebab-case</strong> (huruf kecil, dipisah tanda hubung), contoh: <code>kartu-mahasiswa</code>. Di HTML, digunakan sebagai tag: <code>&lt;kartu-mahasiswa&gt;&lt;/kartu-mahasiswa&gt;</code>.
+                    </div>
+
+                    <h3 id="ab12-c">C. Props: Mengirim Data dari Parent ke Child</h3>
+                    <p><strong>Props</strong> (properties) adalah cara parent mengirim data ke component anak. Analoginya seperti mengisi formulir — parent mengisi data, component menerima dan menampilkannya. Data mengalir satu arah: parent → child.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Di Parent (HTML)</th>
+                                <th>Di Component (JS)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>:nama="mahasiswa.nama"</code></td>
+                                <td><code>props: ['nama']</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>:nilai="mahasiswa.nilai"</code></td>
+                                <td><code>props: ['nilai']</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 id="ab12-d">D. Emits: Component Kirim Sinyal ke Parent</h3>
+                    <p>Jika props adalah cara parent memberi data ke child, maka <strong>emits</strong> adalah cara child memberi tahu parent bahwa sesuatu telah terjadi. Contoh: tombol hapus di dalam kartu menggunakan emit untuk memberi tahu parent bahwa item tersebut ingin dihapus.</p>
+
+                    <pre><code>// Di dalam template component
+&lt;button @click="$emit('hapus')"&gt;Hapus&lt;/button&gt;
+
+// Di component, deklarasikan emit yang mungkin terjadi
+emits: ['hapus'],
+
+// Di parent, tangkap event tersebut
+&lt;kartu-mahasiswa @hapus="hapusMahasiswa(mhs.nim)"&gt;&lt;/kartu-mahasiswa&gt;</code></pre>
+
+                    <h3 id="ab12-e">E. Slots: Konten Dinamis di Dalam Component</h3>
+                    <p><strong>Slot</strong> digunakan ketika ingin menempatkan konten HTML bebas di dalam component. Slot ibarat "lubang" yang bisa diisi oleh parent dengan konten apapun.</p>
+
+                    <pre><code>// Definisi component dengan slot
+app.component('kartu-panel', {
+    template: `
+        &lt;div class="panel"&gt;
+            &lt;h3&gt;{{ judul }}&lt;/h3&gt;
+            &lt;slot&gt;Konten default jika slot tidak diisi.&lt;/slot&gt;
+        &lt;/div&gt;
+    `,
+    props: ['judul']
+});
+
+// Pemakaian di parent — konten di antara tag adalah isi slot
+&lt;kartu-panel judul="Profil"&gt;
+    &lt;p&gt;Ini konten yang dimasukkan dari parent.&lt;/p&gt;
+&lt;/kartu-panel&gt;</code></pre>
+
+                    <h3 id="ab12-f">F. Lifecycle Hooks</h3>
+                    <p>Setiap component melewati tahap kehidupan: dibuat, dipasang ke halaman, diperbarui, lalu dilepas. Vue menyediakan hook untuk menjalankan kode di setiap tahap tersebut.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hook</th>
+                                <th>Kapan Dipanggil</th>
+                                <th>Kegunaan Umum</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>mounted()</code></td>
+                                <td>Setelah component terpasang ke DOM</td>
+                                <td>Memuat data dari API, akses elemen DOM</td>
+                            </tr>
+                            <tr>
+                                <td><code>updated()</code></td>
+                                <td>Setelah data berubah dan DOM diperbarui</td>
+                                <td>Sinkronisasi library pihak ketiga</td>
+                            </tr>
+                            <tr>
+                                <td><code>beforeUnmount()</code></td>
+                                <td>Sebelum component dihapus dari DOM</td>
+                                <td>Membersihkan event listener, timer</td>
+                            </tr>
+                            <tr>
+                                <td><code>created()</code></td>
+                                <td>Setelah instance dibuat, sebelum mount</td>
+                                <td>Inisialisasi data awal</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 id="ab12-praktik">Praktik Langsung: Kartu Mahasiswa Component</h3>
+                    <p>Salin kode berikut ke dalam file baru, simpan sebagai <code>komponen-mahasiswa.html</code>, lalu buka di browser. Coba tambah dan hapus data mahasiswa untuk melihat component bekerja.</p>
+
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Vue Components&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; margin-bottom: 20px; }
+        .daftar-kartu { display: flex; flex-wrap: wrap; gap: 16px; }
+        .kartu {
+            background: white; border: 1px solid #ddd; border-radius: 10px;
+            padding: 20px; min-width: 200px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .kartu-nama { font-size: 1.1em; font-weight: bold; color: #2c3e50; margin-bottom: 8px; }
+        .kartu-info { color: #666; font-size: 0.9em; margin: 4px 0; }
+        .badge-status {
+            display: inline-block; padding: 3px 10px;
+            border-radius: 12px; font-size: 0.8em; margin-top: 10px;
+        }
+        .aktif { background: #d4edda; color: #155724; }
+        .nonaktif { background: #f8d7da; color: #721c24; }
+        .btn-hapus {
+            display: block; width: 100%; margin-top: 12px;
+            padding: 8px; border: none; border-radius: 6px;
+            background: #e74c3c; color: white; cursor: pointer;
+        }
+        .btn-hapus:hover { background: #c0392b; }
+        .form-tambah {
+            background: white; padding: 20px; border-radius: 10px;
+            margin-bottom: 24px; border: 1px solid #ddd; max-width: 500px;
+        }
+        .form-tambah input, .form-tambah select {
+            width: 100%; padding: 8px; margin: 6px 0 12px 0;
+            border: 1px solid #ccc; border-radius: 6px;
+        }
+        .btn-tambah {
+            padding: 10px 20px; background: #3498db; color: white;
+            border: none; border-radius: 6px; cursor: pointer;
+        }
+        label { font-size: 0.9em; color: #555; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Manajemen Mahasiswa&lt;/h1&gt;
+
+        &lt;!-- Form Tambah Mahasiswa (di root / parent) --&gt;
+        &lt;div class="form-tambah"&gt;
+            &lt;h3&gt;Tambah Mahasiswa Baru&lt;/h3&gt;
+            &lt;label&gt;Nama:&lt;/label&gt;
+            &lt;input v-model="formNama" placeholder="Masukkan nama"&gt;
+
+            &lt;label&gt;NIM:&lt;/label&gt;
+            &lt;input v-model="formNim" placeholder="Masukkan NIM"&gt;
+
+            &lt;label&gt;Program Studi:&lt;/label&gt;
+            &lt;select v-model="formProdi"&gt;
+                &lt;option value="Informatika"&gt;Informatika&lt;/option&gt;
+                &lt;option value="Sistem Informasi"&gt;Sistem Informasi&lt;/option&gt;
+                &lt;option value="Teknik Elektro"&gt;Teknik Elektro&lt;/option&gt;
+            &lt;/select&gt;
+
+            &lt;button class="btn-tambah" @click="tambahMahasiswa"&gt;+ Tambah&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;p&gt;Total mahasiswa aktif: &lt;strong&gt;{{ jumlahAktif }}&lt;/strong&gt;&lt;/p&gt;
+
+        &lt;!-- Menggunakan component kartu-mahasiswa --&gt;
+        &lt;div class="daftar-kartu"&gt;
+            &lt;kartu-mahasiswa
+                v-for="mhs in daftarMahasiswa"
+                :key="mhs.nim"
+                :nim="mhs.nim"
+                :nama="mhs.nama"
+                :prodi="mhs.prodi"
+                :aktif="mhs.aktif"
+                @hapus="hapusMahasiswa(mhs.nim)"
+                @toggle-status="toggleStatus(mhs.nim)"
+            &gt;&lt;/kartu-mahasiswa&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    formNama: '',
+                    formNim: '',
+                    formProdi: 'Informatika',
+                    daftarMahasiswa: [
+                        { nim: 'A001', nama: 'Andi Pratama', prodi: 'Informatika', aktif: true },
+                        { nim: 'A002', nama: 'Budi Santoso', prodi: 'Sistem Informasi', aktif: false },
+                        { nim: 'A003', nama: 'Citra Dewi', prodi: 'Informatika', aktif: true }
+                    ]
+                };
+            },
+            computed: {
+                jumlahAktif() {
+                    return this.daftarMahasiswa.filter(m => m.aktif).length;
+                }
+            },
+            methods: {
+                tambahMahasiswa() {
+                    if (!this.formNama || !this.formNim) {
+                        alert('Nama dan NIM wajib diisi!');
+                        return;
+                    }
+                    this.daftarMahasiswa.push({
+                        nim: this.formNim,
+                        nama: this.formNama,
+                        prodi: this.formProdi,
+                        aktif: true
+                    });
+                    this.formNama = '';
+                    this.formNim = '';
+                },
+                hapusMahasiswa(nim) {
+                    if (confirm('Hapus mahasiswa ini?')) {
+                        this.daftarMahasiswa = this.daftarMahasiswa.filter(m => m.nim !== nim);
+                    }
+                },
+                toggleStatus(nim) {
+                    const mhs = this.daftarMahasiswa.find(m => m.nim === nim);
+                    if (mhs) mhs.aktif = !mhs.aktif;
+                }
+            }
+        });
+
+        // Daftarkan component sebelum mount
+        app.component('kartu-mahasiswa', {
+            props: ['nim', 'nama', 'prodi', 'aktif'],
+            emits: ['hapus', 'toggle-status'],
+            template: `
+                &lt;div class="kartu"&gt;
+                    &lt;p class="kartu-nama"&gt;{{ nama }}&lt;/p&gt;
+                    &lt;p class="kartu-info"&gt;NIM: {{ nim }}&lt;/p&gt;
+                    &lt;p class="kartu-info"&gt;Prodi: {{ prodi }}&lt;/p&gt;
+                    &lt;span class="badge-status" :class="aktif ? 'aktif' : 'nonaktif'"&gt;
+                        {{ aktif ? 'Aktif' : 'Non-Aktif' }}
+                    &lt;/span&gt;
+                    &lt;button class="btn-hapus" @click="$emit('toggle-status')"&gt;
+                        {{ aktif ? 'Non-Aktifkan' : 'Aktifkan' }}
+                    &lt;/button&gt;
+                    &lt;button class="btn-hapus" @click="$emit('hapus')"&gt;Hapus&lt;/button&gt;
+                &lt;/div&gt;
+            `
+        });
+
+        app.mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Yang perlu diperhatikan:</strong>
+                        <ul>
+                            <li>Component <code>kartu-mahasiswa</code> didaftarkan <em>sebelum</em> <code>app.mount('#app')</code>.</li>
+                            <li>Props diterima sebagai array string: <code>props: ['nim', 'nama', ...]</code>.</li>
+                            <li>Emit dideklarasikan di <code>emits: [...]</code> dan dipicu dengan <code>$emit('nama-event')</code>.</li>
+                            <li>Di parent, event ditangkap dengan <code>@nama-event="methodHandler"</code>.</li>
+                        </ul>
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Buat component <code>kartu-produk</code> yang menerima props: <code>nama</code>, <code>harga</code>, <code>stok</code>. Tampilkan status "Tersedia" (hijau) jika stok lebih dari 0 dan "Habis" (merah) jika stok sama dengan 0. Tambahkan tombol "Beli" yang memancarkan emit <code>beli</code> ke parent, dan di parent kurangi stok sebesar 1 setiap kali emit diterima.</p>
                 </section>
 
-                <section id="cpmk">
-                    <h2>Capaian Pembelajaran <span class="badge badge-important">CPMK</span></h2>
+
+                <!-- ============================================================ -->
+                <!-- AKTIVITAS 13: CANVAS & ANIMASI                               -->
+                <!-- ============================================================ -->
+                <section id="aktivitas-13">
+                    <h2>Aktivitas Belajar 13 <span class="badge">Canvas</span></h2>
+                    <h3>Component, Canvas, dan Animasi (2): Canvas, Animasi</h3>
+
+                    <p>Selama ini kita menampilkan konten berbasis teks: paragraf, tabel, tombol. HTML Canvas membuka pintu ke tampilan yang lebih visual: grafik, animasi, hingga game sederhana. Canvas ibarat papan gambar kosong di halaman web — JavaScript-lah yang memegang kuasnya dan menggambar apa yang kita minta.</p>
+
                     <div class="info-box">
-                        <strong>Catatan:</strong> Bagian capaian pembelajaran akan dilengkapi setelah struktur materi final ditentukan.
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu membuat elemen canvas dan mengakses konteksnya.</li>
+                            <li>Mahasiswa mampu menggambar bentuk dasar (kotak, lingkaran, teks) di canvas.</li>
+                            <li>Mahasiswa mampu membuat animasi menggunakan <code>requestAnimationFrame</code>.</li>
+                            <li>Mahasiswa mampu mengintegrasikan canvas ke dalam Vue menggunakan <code>ref</code>.</li>
+                        </ul>
                     </div>
+
+                    <h3 id="ab13-a">A. Dasar HTML5 Canvas</h3>
+                    <p>Elemen <code>&lt;canvas&gt;</code> adalah wadah gambar. Ukurannya ditentukan oleh atribut <code>width</code> dan <code>height</code> dalam piksel. Untuk menggambar, kita ambil <strong>konteks 2D</strong>-nya melalui JavaScript.</p>
+
+                    <pre><code>&lt;!-- Di HTML --&gt;
+&lt;canvas id="papan" width="400" height="200"&gt;&lt;/canvas&gt;
+
+&lt;!-- Di JavaScript --&gt;
+const canvas = document.getElementById('papan');
+const ctx = canvas.getContext('2d'); // ambil konteks 2D</code></pre>
+
+                    <h3 id="ab13-b">B. Menggambar Bentuk Dasar</h3>
+                    <p>Setelah mendapat konteks (<code>ctx</code>), kita bisa menggambar berbagai bentuk menggunakan method yang tersedia.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Bentuk</th>
+                                <th>Method</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Persegi panjang</td>
+                                <td><code>fillRect(x, y, lebar, tinggi)</code></td>
+                                <td><code>ctx.fillRect(10, 10, 100, 50)</code></td>
+                            </tr>
+                            <tr>
+                                <td>Lingkaran</td>
+                                <td><code>arc(x, y, radius, mulai, akhir)</code></td>
+                                <td><code>ctx.arc(50, 50, 30, 0, Math.PI * 2)</code></td>
+                            </tr>
+                            <tr>
+                                <td>Garis</td>
+                                <td><code>moveTo(x,y)</code> + <code>lineTo(x,y)</code></td>
+                                <td><code>ctx.moveTo(0,0); ctx.lineTo(100,100)</code></td>
+                            </tr>
+                            <tr>
+                                <td>Teks</td>
+                                <td><code>fillText(teks, x, y)</code></td>
+                                <td><code>ctx.fillText('Halo', 50, 50)</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box">
+                        <strong>Cara menggambar lingkaran:</strong> Canvas tidak punya method <code>circle()</code>. Lingkaran dibuat dengan <code>arc()</code>:
+                        <ul>
+                            <li><code>ctx.beginPath()</code> — mulai jalur baru</li>
+                            <li><code>ctx.arc(x, y, radius, 0, Math.PI * 2)</code> — gambar lingkaran penuh (0 sampai 2π radian)</li>
+                            <li><code>ctx.fillStyle = 'warna'</code> — pilih warna</li>
+                            <li><code>ctx.fill()</code> — isi dengan warna</li>
+                        </ul>
+                    </div>
+
+                    <h3 id="ab13-c">C. Animasi dengan requestAnimationFrame</h3>
+                    <p><strong>requestAnimationFrame</strong> adalah cara browser menjalankan animasi yang mulus dan hemat baterai. Cara kerjanya: fungsi animasi memanggil dirinya sendiri terus-menerus, sekitar 60 kali per detik. Setiap pemanggilan menghapus kanvas lalu menggambar ulang dengan posisi baru.</p>
+
+                    <pre><code>function animasi() {
+    // 1. Hapus kanvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Perbarui posisi
+    x += dx;
+    y += dy;
+
+    // 3. Gambar ulang di posisi baru
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'biru';
+    ctx.fill();
+
+    // 4. Panggil diri sendiri untuk frame berikutnya
+    requestAnimationFrame(animasi);
+}
+
+animasi(); // mulai animasi</code></pre>
+
+                    <h3 id="ab13-d">D. Integrasi Canvas dengan Vue menggunakan ref</h3>
+                    <p>Di Vue, kita tidak menggunakan <code>document.getElementById()</code> untuk mengakses elemen DOM. Sebagai gantinya, kita pakai <strong>ref</strong>. Tambahkan atribut <code>ref="namaRef"</code> di HTML, lalu akses elemen tersebut di JavaScript melalui <code>this.$refs.namaRef</code> di dalam <code>mounted()</code>.</p>
+
+                    <pre><code>&lt;!-- Di template --&gt;
+&lt;canvas ref="papanku" width="400" height="200"&gt;&lt;/canvas&gt;
+
+&lt;!-- Di script Vue --&gt;
+mounted() {
+    // Canvas sudah ada di DOM saat mounted() dipanggil
+    const canvas = this.$refs.papanku;
+    const ctx = canvas.getContext('2d');
+    // mulai menggambar...
+}</code></pre>
+
+                    <h3 id="ab13-praktik">Praktik Langsung: Animasi Bola Memantul dengan Vue</h3>
+                    <p>Salin kode berikut ke <code>canvas-animasi.html</code> dan buka di browser. Coba ubah warna dan kecepatan menggunakan kontrol yang tersedia — data Vue mengontrol canvas secara langsung.</p>
+
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Canvas dan Animasi Vue&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; }
+        .kontrol {
+            background: white; padding: 16px; border-radius: 8px;
+            margin-bottom: 16px; display: flex; gap: 20px;
+            align-items: center; flex-wrap: wrap; border: 1px solid #ddd;
+        }
+        label { font-size: 0.9em; color: #555; }
+        canvas {
+            display: block; border: 2px solid #bdc3c7;
+            border-radius: 8px; background: #ecf0f1;
+        }
+        .tombol {
+            padding: 10px 20px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 1em; color: white;
+        }
+        .mulai { background: #27ae60; }
+        .berhenti { background: #e74c3c; }
+        .info-box { margin-top: 12px; font-size: 0.9em; color: #666; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Animasi Bola Memantul&lt;/h1&gt;
+
+        &lt;div class="kontrol"&gt;
+            &lt;div&gt;
+                &lt;label&gt;Warna Bola:&lt;/label&gt;&lt;br&gt;
+                &lt;input type="color" v-model="warna" @input="gambarDiam"&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;label&gt;Kecepatan: {{ kecepatan }}&lt;/label&gt;&lt;br&gt;
+                &lt;input type="range" min="1" max="8" v-model.number="kecepatan"&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;label&gt;Radius: {{ radius }}&lt;/label&gt;&lt;br&gt;
+                &lt;input type="range" min="10" max="60" v-model.number="radius" @input="gambarDiam"&gt;
+            &lt;/div&gt;
+            &lt;div&gt;
+                &lt;button class="tombol" :class="berjalan ? 'berhenti' : 'mulai'" @click="toggleAnimasi"&gt;
+                    {{ berjalan ? '■ Berhenti' : '▶ Mulai Animasi' }}
+                &lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;canvas ref="kanvas" width="600" height="300"&gt;&lt;/canvas&gt;
+
+        &lt;p class="info-box"&gt;
+            Posisi X: {{ Math.round(bola.x) }} | Posisi Y: {{ Math.round(bola.y) }}
+        &lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    warna: '#3498db',
+                    kecepatan: 3,
+                    radius: 25,
+                    berjalan: false,
+                    animasiId: null,
+                    bola: { x: 100, y: 100, dx: 1, dy: 1 }
+                };
+            },
+            mounted() {
+                // Canvas siap digunakan setelah mounted
+                this.gambarDiam();
+            },
+            beforeUnmount() {
+                // Selalu hentikan animasi saat component dihapus
+                cancelAnimationFrame(this.animasiId);
+            },
+            methods: {
+                getCtx() {
+                    return this.$refs.kanvas.getContext('2d');
+                },
+                gambarDiam() {
+                    if (this.berjalan) return;
+                    const canvas = this.$refs.kanvas;
+                    const ctx = this.getCtx();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    this.gambarBola(ctx);
+                },
+                gambarBola(ctx) {
+                    ctx.beginPath();
+                    ctx.arc(this.bola.x, this.bola.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = this.warna;
+                    ctx.fill();
+                    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                },
+                toggleAnimasi() {
+                    if (this.berjalan) {
+                        this.berjalan = false;
+                        cancelAnimationFrame(this.animasiId);
+                    } else {
+                        this.berjalan = true;
+                        this.jalankanAnimasi();
+                    }
+                },
+                jalankanAnimasi() {
+                    const canvas = this.$refs.kanvas;
+                    const ctx = this.getCtx();
+                    const b = this.bola;
+                    const r = this.radius;
+
+                    // Hapus frame sebelumnya
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Perbarui posisi
+                    b.x += b.dx * this.kecepatan;
+                    b.y += b.dy * this.kecepatan;
+
+                    // Pantulan di dinding
+                    if (b.x + r &gt;= canvas.width || b.x - r &lt;= 0) b.dx *= -1;
+                    if (b.y + r &gt;= canvas.height || b.y - r &lt;= 0) b.dy *= -1;
+
+                    // Gambar bola di posisi baru
+                    this.gambarBola(ctx);
+
+                    // Lanjut ke frame berikutnya
+                    if (this.berjalan) {
+                        this.animasiId = requestAnimationFrame(this.jalankanAnimasi.bind(this));
+                    }
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Poin Penting Animasi:</strong>
+                        <ul>
+                            <li><code>clearRect(0, 0, lebar, tinggi)</code> — selalu hapus kanvas di awal setiap frame, kalau tidak gambar lama tetap terlihat.</li>
+                            <li><code>cancelAnimationFrame(id)</code> — simpan ID yang dikembalikan <code>requestAnimationFrame</code> agar bisa dihentikan.</li>
+                            <li><code>this.$refs.kanvas</code> hanya tersedia setelah <code>mounted()</code> — jangan akses di <code>created()</code>.</li>
+                            <li>Pantulan dicek dengan membandingkan posisi bola dengan batas kanvas.</li>
+                        </ul>
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Modifikasi kode di atas: tambahkan dua bola sekaligus (simpan dalam array), masing-masing dengan warna dan kecepatan yang berbeda. Gunakan <code>v-for</code> untuk membuat kontrol warna untuk tiap bola, dan perbarui loop animasi agar menggambar semua bola di array setiap frame.</p>
                 </section>
+
+
+                <!-- ============================================================ -->
+                <!-- AKTIVITAS 14: DATABASE                                        -->
+                <!-- ============================================================ -->
+                <section id="aktivitas-14">
+                    <h2>Aktivitas Belajar 14 <span class="badge badge-new">Database</span></h2>
+                    <h3>Database dan Praktikum Unit 3 (1): Database</h3>
+
+                    <p>Sejauh ini data disimpan langsung di dalam kode Vue. Ketika halaman di-refresh, semua data kembali ke awal. Untuk aplikasi nyata, data harus disimpan di tempat yang permanen. Di situlah peran <strong>database</strong>: penyimpanan terstruktur yang bertahan meski browser ditutup, data bisa dicari, diurutkan, dan difilter dengan efisien.</p>
+
+                    <div class="info-box">
+                        <strong>Tujuan Pembelajaran:</strong>
+                        <ul>
+                            <li>Mahasiswa mampu menjelaskan konsep database relasional.</li>
+                            <li>Mahasiswa mampu menulis perintah SQL dasar (SELECT, INSERT, UPDATE, DELETE).</li>
+                            <li>Mahasiswa mampu menjelaskan bagaimana aplikasi web berkomunikasi dengan database.</li>
+                            <li>Mahasiswa mampu menggunakan <code>fetch()</code> untuk mengambil data JSON dan menampilkannya di Vue.</li>
+                        </ul>
+                    </div>
+
+                    <h3 id="ab14-a">A. Apa itu Database Relasional?</h3>
+                    <p>Database relasional menyimpan data dalam bentuk <strong>tabel</strong>, mirip spreadsheet. Setiap tabel punya kolom (nama, tipe data) dan baris (isi data). Beberapa tabel bisa saling terhubung lewat <strong>foreign key</strong>.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Istilah DB</th>
+                                <th>Analogi Spreadsheet</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Database</td>
+                                <td>File Excel (.xlsx)</td>
+                                <td>Wadah semua tabel</td>
+                            </tr>
+                            <tr>
+                                <td>Tabel</td>
+                                <td>Sheet (lembar kerja)</td>
+                                <td>Kumpulan data sejenis</td>
+                            </tr>
+                            <tr>
+                                <td>Kolom (Field)</td>
+                                <td>Baris pertama (header)</td>
+                                <td>Nama dan tipe atribut data</td>
+                            </tr>
+                            <tr>
+                                <td>Baris (Record)</td>
+                                <td>Baris isi data</td>
+                                <td>Satu entri data</td>
+                            </tr>
+                            <tr>
+                                <td>Primary Key</td>
+                                <td>Kolom ID unik</td>
+                                <td>Pengenal unik setiap baris</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh Tabel: mahasiswa</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>id (PK)</th>
+                                <th>nim</th>
+                                <th>nama</th>
+                                <th>prodi</th>
+                                <th>semester</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>A001</td><td>Andi Pratama</td><td>Informatika</td><td>5</td></tr>
+                            <tr><td>2</td><td>A002</td><td>Budi Santoso</td><td>SI</td><td>3</td></tr>
+                            <tr><td>3</td><td>A003</td><td>Citra Dewi</td><td>Informatika</td><td>7</td></tr>
+                        </tbody>
+                    </table>
+
+                    <h3 id="ab14-b">B. SQL Dasar</h3>
+                    <p><strong>SQL</strong> (Structured Query Language) adalah bahasa yang digunakan untuk berkomunikasi dengan database. Ada 4 operasi utama yang sering disebut <strong>CRUD</strong>.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Operasi</th>
+                                <th>SQL</th>
+                                <th>Arti</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Create</td>
+                                <td><code>INSERT INTO</code></td>
+                                <td>Tambah data baru</td>
+                            </tr>
+                            <tr>
+                                <td>Read</td>
+                                <td><code>SELECT</code></td>
+                                <td>Ambil / baca data</td>
+                            </tr>
+                            <tr>
+                                <td>Update</td>
+                                <td><code>UPDATE</code></td>
+                                <td>Perbarui data yang ada</td>
+                            </tr>
+                            <tr>
+                                <td>Delete</td>
+                                <td><code>DELETE FROM</code></td>
+                                <td>Hapus data</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh Perintah SQL</h4>
+                    <pre><code>-- Ambil semua mahasiswa
+SELECT * FROM mahasiswa;
+
+-- Ambil mahasiswa dari prodi tertentu, diurutkan nama
+SELECT nim, nama, semester
+FROM mahasiswa
+WHERE prodi = 'Informatika'
+ORDER BY nama ASC;
+
+-- Tambah mahasiswa baru
+INSERT INTO mahasiswa (nim, nama, prodi, semester)
+VALUES ('A004', 'Dian Rahayu', 'Informatika', 1);
+
+-- Perbarui semester mahasiswa dengan id = 1
+UPDATE mahasiswa
+SET semester = 6
+WHERE id = 1;
+
+-- Hapus mahasiswa dengan nim tertentu
+DELETE FROM mahasiswa
+WHERE nim = 'A002';</code></pre>
+
+                    <div class="warning-box">
+                        <strong>Selalu gunakan WHERE saat UPDATE dan DELETE!</strong> Tanpa <code>WHERE</code>, perintah <code>UPDATE</code> akan mengubah semua baris dan <code>DELETE</code> akan menghapus seluruh isi tabel. Ini adalah kesalahan fatal yang sering terjadi.
+                    </div>
+
+                    <h3 id="ab14-c">C. Arsitektur Web dengan Database</h3>
+                    <p>Vue (frontend) tidak bisa terhubung langsung ke database. Harus ada lapisan <strong>backend</strong> di antaranya. Arsitektur umumnya adalah:</p>
+
+                    <pre><code>Browser (Vue.js)
+     |
+     | HTTP Request (fetch / axios)
+     v
+Backend Server (PHP / Node.js / Python)
+     |
+     | SQL Query
+     v
+Database (MySQL / PostgreSQL / SQLite)
+     |
+     | Data (JSON)
+     v
+Backend Server
+     |
+     | HTTP Response (JSON)
+     v
+Browser (Vue.js) -- tampilkan data</code></pre>
+
+                    <p>Untuk mata kuliah ini, kita mensimulasikan backend dengan file <strong>JSON</strong> lokal. Data JSON berperan sebagai "database" yang dibaca oleh Vue menggunakan <code>fetch()</code>.</p>
+
+                    <h3 id="ab14-d">D. Fetch API: Mengambil Data dari File JSON</h3>
+                    <p><code>fetch()</code> adalah fungsi JavaScript bawaan untuk mengambil data dari URL atau file. Hasilnya berupa <strong>Promise</strong>, sehingga kita gunakan <code>.then()</code> atau <code>async/await</code> untuk menunggu datanya.</p>
+
+                    <pre><code>// Cara 1: Menggunakan .then() (Promise chaining)
+fetch('data/mahasiswa.json')
+    .then(response => response.json())   // ubah respons ke objek JS
+    .then(data => {
+        this.daftarMahasiswa = data;     // simpan ke data Vue
+    })
+    .catch(error => {
+        console.error('Gagal memuat data:', error);
+    });
+
+// Cara 2: Menggunakan async/await (lebih mudah dibaca)
+async mounted() {
+    try {
+        const response = await fetch('data/mahasiswa.json');
+        const data = await response.json();
+        this.daftarMahasiswa = data;
+    } catch (error) {
+        console.error('Gagal memuat data:', error);
+    }
+}</code></pre>
+
+                    <h3 id="ab14-praktik">Praktik Langsung: Daftar Bahan Ajar dari JSON</h3>
+                    <p>Buat dua file berikut dalam satu folder yang sama. Untuk menjalankan, <strong>tidak bisa dibuka langsung dengan klik dua kali</strong> — harus menggunakan VS Code Live Server atau server lokal seperti XAMPP, karena <code>fetch()</code> perlu server HTTP.</p>
+
+                    <h4>File: data/bahan-ajar.json</h4>
+                    <pre><code>[
+    {
+        "kode": "MSIM4101",
+        "judul": "Pengantar Sistem Informasi",
+        "kategori": "Wajib",
+        "harga": 35000,
+        "stok": 15,
+        "safety": 5
+    },
+    {
+        "kode": "MSIM4209",
+        "judul": "Pemrograman Web",
+        "kategori": "Wajib",
+        "harga": 42000,
+        "stok": 3,
+        "safety": 5
+    },
+    {
+        "kode": "MSIM4301",
+        "judul": "Basis Data",
+        "kategori": "Wajib",
+        "harga": 38000,
+        "stok": 0,
+        "safety": 5
+    },
+    {
+        "kode": "MSIM4401",
+        "judul": "Jaringan Komputer",
+        "kategori": "Pilihan",
+        "harga": 30000,
+        "stok": 20,
+        "safety": 5
+    }
+]</code></pre>
+
+                    <h4>File: index.html</h4>
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Daftar Bahan Ajar&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; }
+        .filter-area { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filter-area input, .filter-area select {
+            padding: 8px 12px; border: 1px solid #ddd;
+            border-radius: 6px; font-size: 0.9em;
+        }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th { background: #2c3e50; color: white; padding: 12px; text-align: left; }
+        td { padding: 10px 12px; border-bottom: 1px solid #eee; }
+        tr:hover td { background: #f8f9fa; }
+        .aman { background: #d4edda; color: #155724; padding: 3px 8px; border-radius: 10px; font-size: 0.85em; }
+        .menipis { background: #fff3cd; color: #856404; padding: 3px 8px; border-radius: 10px; font-size: 0.85em; }
+        .kosong { background: #f8d7da; color: #721c24; padding: 3px 8px; border-radius: 10px; font-size: 0.85em; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Stok Bahan Ajar&lt;/h1&gt;
+
+        &lt;!-- Loading state --&gt;
+        &lt;p v-if="sedangMemuat" class="loading"&gt;Memuat data...&lt;/p&gt;
+
+        &lt;div v-else&gt;
+            &lt;!-- Filter --&gt;
+            &lt;div class="filter-area"&gt;
+                &lt;input v-model="cari" placeholder="Cari judul atau kode..."&gt;
+                &lt;select v-model="filterKategori"&gt;
+                    &lt;option value=""&gt;Semua Kategori&lt;/option&gt;
+                    &lt;option value="Wajib"&gt;Wajib&lt;/option&gt;
+                    &lt;option value="Pilihan"&gt;Pilihan&lt;/option&gt;
+                &lt;/select&gt;
+                &lt;button @click="resetFilter"&gt;Reset Filter&lt;/button&gt;
+            &lt;/div&gt;
+
+            &lt;p&gt;Menampilkan {{ hasilFilter.length }} dari {{ bahanAjar.length }} buku&lt;/p&gt;
+
+            &lt;!-- Tabel --&gt;
+            &lt;table&gt;
+                &lt;thead&gt;
+                    &lt;tr&gt;
+                        &lt;th&gt;Kode&lt;/th&gt;
+                        &lt;th&gt;Judul&lt;/th&gt;
+                        &lt;th&gt;Kategori&lt;/th&gt;
+                        &lt;th&gt;Harga&lt;/th&gt;
+                        &lt;th&gt;Stok&lt;/th&gt;
+                        &lt;th&gt;Status&lt;/th&gt;
+                    &lt;/tr&gt;
+                &lt;/thead&gt;
+                &lt;tbody&gt;
+                    &lt;tr v-for="buku in hasilFilter" :key="buku.kode"&gt;
+                        &lt;td&gt;{{ buku.kode }}&lt;/td&gt;
+                        &lt;td&gt;{{ buku.judul }}&lt;/td&gt;
+                        &lt;td&gt;{{ buku.kategori }}&lt;/td&gt;
+                        &lt;td&gt;{{ formatHarga(buku.harga) }}&lt;/td&gt;
+                        &lt;td&gt;{{ buku.stok }} buah&lt;/td&gt;
+                        &lt;td&gt;
+                            &lt;span :class="kelasStatus(buku)"&gt;{{ statusStok(buku) }}&lt;/span&gt;
+                        &lt;/td&gt;
+                    &lt;/tr&gt;
+                    &lt;tr v-if="hasilFilter.length === 0"&gt;
+                        &lt;td colspan="6" style="text-align:center; color:#999;"&gt;
+                            Tidak ada data yang sesuai filter.
+                        &lt;/td&gt;
+                    &lt;/tr&gt;
+                &lt;/tbody&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    bahanAjar: [],
+                    sedangMemuat: true,
+                    cari: '',
+                    filterKategori: ''
+                };
+            },
+            computed: {
+                hasilFilter() {
+                    return this.bahanAjar.filter(buku => {
+                        const cocokCari = buku.judul.toLowerCase().includes(this.cari.toLowerCase())
+                            || buku.kode.toLowerCase().includes(this.cari.toLowerCase());
+                        const cocokKategori = this.filterKategori === '' || buku.kategori === this.filterKategori;
+                        return cocokCari && cocokKategori;
+                    });
+                }
+            },
+            async mounted() {
+                try {
+                    const response = await fetch('data/bahan-ajar.json');
+                    this.bahanAjar = await response.json();
+                } catch (error) {
+                    alert('Gagal memuat data. Pastikan dijalankan melalui server lokal.');
+                    console.error(error);
+                } finally {
+                    this.sedangMemuat = false;
+                }
+            },
+            methods: {
+                formatHarga(angka) {
+                    return 'Rp ' + angka.toLocaleString('id-ID');
+                },
+                statusStok(buku) {
+                    if (buku.stok === 0) return 'Kosong';
+                    if (buku.stok &lt; buku.safety) return 'Menipis';
+                    return 'Aman';
+                },
+                kelasStatus(buku) {
+                    if (buku.stok === 0) return 'kosong';
+                    if (buku.stok &lt; buku.safety) return 'menipis';
+                    return 'aman';
+                },
+                resetFilter() {
+                    this.cari = '';
+                    this.filterKategori = '';
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Cara Menjalankan:</strong>
+                        <ol>
+                            <li>Buat folder <code>latihan-db/</code> dan di dalamnya buat subfolder <code>data/</code>.</li>
+                            <li>Simpan JSON di <code>latihan-db/data/bahan-ajar.json</code>.</li>
+                            <li>Simpan HTML di <code>latihan-db/index.html</code>.</li>
+                            <li>Buka folder di VS Code, klik kanan <code>index.html</code> → <strong>Open with Live Server</strong>.</li>
+                        </ol>
+                        <p>Tanpa Live Server, <code>fetch()</code> akan gagal karena browser memblokir akses file lokal secara langsung (kebijakan keamanan CORS).</p>
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Tambahkan fitur filter khusus pada contoh di atas: tambahkan checkbox "Hanya tampilkan stok kosong" yang ketika dicentang, <code>hasilFilter</code> hanya menampilkan buku dengan stok 0. Gunakan watcher pada checkbox tersebut untuk mereset <code>cari</code> otomatis saat filter aktif.</p>
+                </section>
+
+
+                <!-- ============================================================ -->
+                <!-- AKTIVITAS 15: PRAKTIKUM UNIT 3                               -->
+                <!-- ============================================================ -->
+                <section id="aktivitas-15">
+                    <h2>Aktivitas Belajar 15 <span class="badge badge-important">Praktikum</span></h2>
+                    <h3>Database dan Praktikum Unit 3 (2): Panduan Pengerjaan Tugas Praktik 3</h3>
+
+                    <p>Tugas Praktik 3 mengajak mahasiswa membangun aplikasi web nyata: sistem pemesanan Bahan Ajar Universitas Terbuka. Semua konsep yang sudah dipelajari sejak Aktivitas Belajar 5 hingga 14 diterapkan sekaligus di sini. Bagian ini memandu langkah demi langkah cara mengerjakan tugas tersebut.</p>
+
+                    <div class="info-box">
+                        <strong>Gambaran Aplikasi yang Dibangun:</strong>
+                        <ul>
+                            <li><strong>Halaman Stok:</strong> Tampilkan, filter, sort, tambah, edit, dan hapus data bahan ajar.</li>
+                            <li><strong>Halaman Tracking DO:</strong> Cari dan lacak status Delivery Order berdasarkan nomor DO atau NIM.</li>
+                            <li><strong>Halaman Order:</strong> Form pemesanan bahan ajar baru dengan auto-generate nomor DO.</li>
+                        </ul>
+                    </div>
+
+                    <h3 id="ab15-a">A. Memahami Struktur Proyek</h3>
+                    <p>Proyek ini menggunakan Vue 3 via CDN tanpa build tool. Template komponen disimpan sebagai file HTML terpisah yang dimuat menggunakan <code>fetch()</code>, kemudian setiap komponen terdaftar sebagai global component.</p>
+
+                    <pre><code>tugas3-vue-ut/
+├── index.html              ← Halaman utama, root Vue app
+├── assets/
+│   └── css/
+│       └── style.css       ← Semua CSS di sini
+├── data/
+│   └── dataBahanAjar.json  ← Data stok bahan ajar
+├── js/
+│   ├── app.js              ← Inisialisasi Vue app, routing tab
+│   └── components/
+│       ├── stock-table.js  ← Logika komponen stok
+│       ├── do-tracking.js  ← Logika komponen tracking
+│       ├── order-form.js   ← Logika komponen order
+│       ├── status-badge.js ← Komponen badge status kecil (reusable)
+│       └── app-modal.js    ← Komponen modal konfirmasi
+└── templates/
+    ├── stock-table.html    ← Template HTML komponen stok
+    ├── do-tracking.html    ← Template HTML komponen tracking
+    ├── order-form.html     ← Template HTML komponen order
+    ├── status-badge.html   ← Template badge
+    └── app-modal.html      ← Template modal</code></pre>
+
+                    <h3 id="ab15-b">B. Langkah 1 — Siapkan Data JSON</h3>
+                    <p>File <code>data/dataBahanAjar.json</code> adalah sumber data utama. Buat dengan struktur berikut. Tambahkan minimal 8-10 entri dengan berbagai kombinasi upbjj, kategori, dan stok.</p>
+
+                    <pre><code>[
+    {
+        "kode": "MSIM4101",
+        "judul": "Pengantar Sistem Informasi",
+        "kategori": "Wajib",
+        "upbjj": "UT Mataram",
+        "lokasiRak": "A-01",
+        "harga": 35000,
+        "qty": 15,
+        "safety": 5,
+        "catatanHTML": "&lt;p&gt;Stok normal, tidak ada tindakan khusus.&lt;/p&gt;"
+    },
+    {
+        "kode": "MSIM4209",
+        "judul": "Pemrograman Web",
+        "kategori": "Wajib",
+        "upbjj": "UT Mataram",
+        "lokasiRak": "A-03",
+        "harga": 42000,
+        "qty": 3,
+        "safety": 5,
+        "catatanHTML": "&lt;p&gt;Stok &lt;strong&gt;menipis&lt;/strong&gt;, segera lakukan reorder.&lt;/p&gt;"
+    }
+]</code></pre>
+
+                    <h3 id="ab15-c">C. Langkah 2 — Buat index.html dan Routing Tab</h3>
+                    <p>Routing di tugas ini bukan menggunakan Vue Router, cukup state <code>tab</code> di root component. Nilai tab menentukan komponen mana yang ditampilkan menggunakan <code>v-if</code> atau <code>v-show</code>.</p>
+
+                    <pre><code>&lt;!-- index.html --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Pemesanan Bahan Ajar UT&lt;/title&gt;
+    &lt;link rel="stylesheet" href="assets/css/style.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;!-- Navigasi Tab --&gt;
+        &lt;nav class="tab-nav"&gt;
+            &lt;button @click="tab = 'stok'" :class="{ aktif: tab === 'stok' }"&gt;Stok Bahan Ajar&lt;/button&gt;
+            &lt;button @click="tab = 'tracking'" :class="{ aktif: tab === 'tracking' }"&gt;Tracking DO&lt;/button&gt;
+            &lt;button @click="tab = 'order'" :class="{ aktif: tab === 'order' }"&gt;Order Baru&lt;/button&gt;
+        &lt;/nav&gt;
+
+        &lt;!-- Konten Tab --&gt;
+        &lt;ba-stock-table v-if="tab === 'stok'"&gt;&lt;/ba-stock-table&gt;
+        &lt;do-tracking v-if="tab === 'tracking'"&gt;&lt;/do-tracking&gt;
+        &lt;order-form v-if="tab === 'order'"&gt;&lt;/order-form&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script src="js/components/status-badge.js"&gt;&lt;/script&gt;
+    &lt;script src="js/components/app-modal.js"&gt;&lt;/script&gt;
+    &lt;script src="js/components/stock-table.js"&gt;&lt;/script&gt;
+    &lt;script src="js/components/do-tracking.js"&gt;&lt;/script&gt;
+    &lt;script src="js/components/order-form.js"&gt;&lt;/script&gt;
+    &lt;script src="js/app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <pre><code>// js/app.js
+const { createApp } = Vue;
+
+const app = createApp({
+    data() {
+        return {
+            tab: 'stok'   // tab aktif saat pertama kali dibuka
+        };
+    }
+});
+
+// Komponen sudah didaftarkan di masing-masing file komponen
+app.mount('#app');</code></pre>
+
+                    <h3 id="ab15-d">D. Langkah 3 — Komponen Status Badge (Reusable)</h3>
+                    <p>Mulai dari komponen terkecil dulu. <code>status-badge</code> hanya bertanggung jawab menampilkan badge warna sesuai status stok. Ini dipakai ulang di tabel stok.</p>
+
+                    <pre><code>// js/components/status-badge.js
+// Komponen ini didaftarkan di sini, dipakai oleh komponen lain
+// Pastikan file ini dimuat SEBELUM komponen yang memakainya di index.html
+
+// (Registrasi dilakukan setelah app dibuat di app.js — lihat catatan di bawah)
+// Cara termudah: simpan definisi, daftarkan di app.js setelah createApp
+
+window.StatusBadgeComponent = {
+    props: ['qty', 'safety'],
+    computed: {
+        status() {
+            if (this.qty === 0) return { label: 'Kosong', kelas: 'badge-kosong' };
+            if (this.qty &lt; this.safety) return { label: 'Menipis', kelas: 'badge-menipis' };
+            return { label: 'Aman', kelas: 'badge-aman' };
+        }
+    },
+    template: `&lt;span :class="['badge-status', status.kelas]"&gt;{{ status.label }}&lt;/span&gt;`
+};</code></pre>
+
+                    <h3 id="ab15-e">E. Langkah 4 — Komponen Stock Table</h3>
+                    <p>Ini komponen terbesar. Uraikan fiturnya satu per satu — jangan coba buat semua sekaligus.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fitur</th>
+                                <th>Vue Concept</th>
+                                <th>Prioritas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Tampilkan tabel data</td>
+                                <td><code>v-for</code>, <code>fetch()</code></td>
+                                <td>Pertama</td>
+                            </tr>
+                            <tr>
+                                <td>Format harga & stok</td>
+                                <td><code>methods</code> / computed</td>
+                                <td>Kedua</td>
+                            </tr>
+                            <tr>
+                                <td>Filter UT-Daerah → Kategori</td>
+                                <td><code>computed</code>, dependent options, <code>watch</code></td>
+                                <td>Ketiga</td>
+                            </tr>
+                            <tr>
+                                <td>Filter qty &lt; safety / qty = 0</td>
+                                <td><code>computed</code></td>
+                                <td>Ketiga</td>
+                            </tr>
+                            <tr>
+                                <td>Sort berdasarkan kolom</td>
+                                <td><code>computed</code> + <code>.sort()</code></td>
+                                <td>Keempat</td>
+                            </tr>
+                            <tr>
+                                <td>Edit data baris</td>
+                                <td><code>v-model</code>, conditional edit mode</td>
+                                <td>Keempat</td>
+                            </tr>
+                            <tr>
+                                <td>Tambah dan hapus baris</td>
+                                <td><code>methods</code>, <code>v-model</code>, modal</td>
+                                <td>Kelima</td>
+                            </tr>
+                            <tr>
+                                <td>Tooltip catatanHTML saat hover</td>
+                                <td><code>v-html</code>, CSS tooltip</td>
+                                <td>Keenam</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Kerangka stock-table.js</h4>
+                    <pre><code>// js/components/stock-table.js
+window.StockTableComponent = {
+    data() {
+        return {
+            semuaData: [],          // data asli dari JSON
+            filterUpbjj: '',        // filter UT-Daerah
+            filterKategori: '',     // filter kategori (dependent)
+            filterMenipis: false,   // checkbox stok menipis
+            filterKosong: false,    // checkbox stok kosong
+            sortField: 'judul',     // field untuk sort
+            sortAsc: true,          // arah sort
+            modeEdit: null,         // nim yang sedang diedit (null = tidak ada)
+            formBaru: { kode: '', judul: '', kategori: '', upbjj: '', lokasiRak: '', harga: 0, qty: 0, safety: 5 }
+        };
+    },
+    computed: {
+        // Daftar UPBJJ unik untuk dropdown
+        daftarUpbjj() {
+            return [...new Set(this.semuaData.map(b => b.upbjj))];
+        },
+        // Kategori yang muncul sesuai UPBJJ yang dipilih (dependent options)
+        daftarKategori() {
+            const sumber = this.filterUpbjj
+                ? this.semuaData.filter(b => b.upbjj === this.filterUpbjj)
+                : this.semuaData;
+            return [...new Set(sumber.map(b => b.kategori))];
+        },
+        // Data setelah semua filter dan sort diterapkan
+        dataTermpilkan() {
+            let hasil = [...this.semuaData];
+
+            if (this.filterUpbjj) hasil = hasil.filter(b => b.upbjj === this.filterUpbjj);
+            if (this.filterKategori) hasil = hasil.filter(b => b.kategori === this.filterKategori);
+            if (this.filterMenipis) hasil = hasil.filter(b => b.qty &lt; b.safety && b.qty &gt; 0);
+            if (this.filterKosong) hasil = hasil.filter(b => b.qty === 0);
+
+            hasil.sort((a, b) => {
+                const va = a[this.sortField];
+                const vb = b[this.sortField];
+                if (va &lt; vb) return this.sortAsc ? -1 : 1;
+                if (va &gt; vb) return this.sortAsc ? 1 : -1;
+                return 0;
+            });
+
+            return hasil;
+        }
+    },
+    watch: {
+        // Watcher 1: Saat UPBJJ berubah, reset kategori
+        filterUpbjj(nilaiLama, nilaiBaru) {
+            this.filterKategori = '';
+        },
+        // Watcher 2: Log perubahan filter untuk debugging / audit
+        filterMenipis(val) {
+            console.log('Filter menipis:', val ? 'aktif' : 'nonaktif');
+        }
+    },
+    async mounted() {
+        const res = await fetch('data/dataBahanAjar.json');
+        this.semuaData = await res.json();
+    },
+    methods: {
+        formatHarga(angka) {
+            return 'Rp ' + Number(angka).toLocaleString('id-ID');
+        },
+        aturSort(field) {
+            if (this.sortField === field) {
+                this.sortAsc = !this.sortAsc;  // toggle arah
+            } else {
+                this.sortField = field;
+                this.sortAsc = true;
+            }
+        },
+        mulaiEdit(kode) {
+            this.modeEdit = kode;
+        },
+        simpanEdit(buku) {
+            // Data sudah terikat v-model langsung ke objek di array
+            this.modeEdit = null;
+        },
+        hapusBuku(kode) {
+            if (confirm('Hapus buku ' + kode + '?')) {
+                this.semuaData = this.semuaData.filter(b => b.kode !== kode);
+            }
+        },
+        tambahBuku() {
+            if (!this.formBaru.kode || !this.formBaru.judul) {
+                alert('Kode dan judul wajib diisi!');
+                return;
+            }
+            this.semuaData.push({ ...this.formBaru });
+            // Reset form
+            this.formBaru = { kode: '', judul: '', kategori: '', upbjj: '', lokasiRak: '', harga: 0, qty: 0, safety: 5 };
+        },
+        resetFilter() {
+            this.filterUpbjj = '';
+            this.filterKategori = '';
+            this.filterMenipis = false;
+            this.filterKosong = false;
+        }
+    },
+    template: `#tpl-stock`  // atau inline template string
+};</code></pre>
+
+                    <h3 id="ab15-f">F. Langkah 5 — Komponen Tracking DO</h3>
+                    <p>Komponen ini mengelola daftar Delivery Order. Perhatikan fitur keyboard shortcut yang diminta soal.</p>
+
+                    <pre><code>// js/components/do-tracking.js
+window.DoTrackingComponent = {
+    data() {
+        return {
+            daftarDO: [],       // data semua DO
+            kataCari: '',       // input pencarian
+            hasilCari: null,    // DO yang ditemukan (null = belum cari)
+            formDO: {
+                nim: '',
+                nama: '',
+                ekspedisi: 'JNE Regular',
+                paketDipilih: null,
+                tanggalKirim: ''
+            }
+        };
+    },
+    computed: {
+        nomorDOBaru() {
+            const tahun = new Date().getFullYear();
+            const urutan = String(this.daftarDO.length + 1).padStart(3, '0');
+            return `DO${tahun}-${urutan}`;
+        }
+    },
+    methods: {
+        cariDO() {
+            const kata = this.kataCari.toLowerCase();
+            this.hasilCari = this.daftarDO.find(do_ =>
+                do_.nomorDO.toLowerCase().includes(kata) ||
+                do_.nim.toLowerCase().includes(kata)
+            ) || null;
+        },
+        resetCari() {
+            this.kataCari = '';
+            this.hasilCari = null;
+        },
+        handleKeydown(event) {
+            if (event.key === 'Enter') this.cariDO();
+            if (event.key === 'Escape') this.resetCari();
+        },
+        formatTanggal(tanggal) {
+            return new Date(tanggal).toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'long', year: 'numeric'
+            });
+        },
+        tambahProgress(nomorDO, keterangan) {
+            const do_ = this.daftarDO.find(d => d.nomorDO === nomorDO);
+            if (do_) {
+                do_.progress.push({
+                    waktu: new Date().toLocaleString('id-ID'),
+                    keterangan: keterangan
+                });
+            }
+        }
+    },
+    template: `#tpl-tracking`
+};</code></pre>
+
+                    <h3 id="ab15-g">G. Langkah 6 — Daftarkan Semua Komponen di app.js</h3>
+                    <pre><code>// js/app.js — versi final
+const { createApp } = Vue;
+
+const app = createApp({
+    data() {
+        return { tab: 'stok' };
+    }
+});
+
+// Daftarkan semua komponen sebelum mount
+app.component('ba-stock-table', window.StockTableComponent);
+app.component('do-tracking', window.DoTrackingComponent);
+app.component('order-form', window.OrderFormComponent);
+app.component('status-badge', window.StatusBadgeComponent);
+app.component('app-modal', window.AppModalComponent);
+
+app.mount('#app');</code></pre>
+
+                    <h3 id="ab15-h">H. Tips Pengerjaan dan Penilaian</h3>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Komponen Nilai</th>
+                                <th>Poin</th>
+                                <th>Yang Harus Ada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Arsitektur dan Struktur Proyek</td>
+                                <td>20</td>
+                                <td>Folder sesuai spesifikasi, komponen terpisah, penamaan kebab-case</td>
+                            </tr>
+                            <tr>
+                                <td>Data Binding, Directive, Array, Filter</td>
+                                <td>10</td>
+                                <td><code>v-model</code>, <code>v-for</code>, <code>v-bind</code>, format Rp, satuan "buah"</td>
+                            </tr>
+                            <tr>
+                                <td>Conditional Rendering</td>
+                                <td>7</td>
+                                <td><code>v-if</code>/<code>v-else</code> untuk status badge, mode edit, loading state</td>
+                            </tr>
+                            <tr>
+                                <td>Computed Property / Methods</td>
+                                <td>10</td>
+                                <td><code>dataTermpilkan</code>, <code>nomorDOBaru</code>, <code>daftarUpbjj</code></td>
+                            </tr>
+                            <tr>
+                                <td>Watchers (minimal 2)</td>
+                                <td>10</td>
+                                <td>Watch <code>filterUpbjj</code> untuk reset kategori, watch <code>paketDipilih</code> untuk isi total harga</td>
+                            </tr>
+                            <tr>
+                                <td>Form, Validasi, Event Mouse &amp; Keyboard</td>
+                                <td>20</td>
+                                <td>Validasi form, Enter → submit, Esc → reset, <code>@keydown</code></td>
+                            </tr>
+                            <tr>
+                                <td>Kreativitas UI/UX</td>
+                                <td>8</td>
+                                <td>Warna status, ikon, tooltip, layout rapi</td>
+                            </tr>
+                            <tr>
+                                <td>Penjelasan Video</td>
+                                <td>15</td>
+                                <td>Jelaskan setiap indikator, tunjukkan fitur berjalan, maks 15 menit</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="warning-box">
+                        <strong>Perhatian Khusus — Watchers:</strong> Minimal 2 watcher wajib ada. Ide watcher yang relevan:
+                        <ul>
+                            <li><code>watch: { filterUpbjj() { this.filterKategori = ''; } }</code> — reset kategori saat UPBJJ berubah.</li>
+                            <li><code>watch: { 'formDO.paketDipilih'(paket) { this.formDO.totalHarga = paket ? paket.harga : 0; } }</code> — isi total harga otomatis saat paket dipilih.</li>
+                            <li><code>watch: { kataCari(val) { if (!val) this.hasilCari = null; } }</code> — reset hasil saat input dikosongkan.</li>
+                        </ul>
+                    </div>
+
+                    <div class="success-box">
+                        <strong>Tips Video Penjelasan (15 menit maks):</strong>
+                        <ul>
+                            <li><strong>1-2 menit:</strong> Perkenalan diri, gambaran singkat aplikasi, struktur folder.</li>
+                            <li><strong>3-5 menit:</strong> Demo fitur stok — filter, sort, edit, tambah, hapus, tooltip.</li>
+                            <li><strong>5-7 menit:</strong> Demo tracking DO — pencarian, keyboard shortcut, tambah progress.</li>
+                            <li><strong>7-9 menit:</strong> Demo form order — validasi, auto-nomor DO, detail paket.</li>
+                            <li><strong>9-13 menit:</strong> Penjelasan kode: tunjukkan computed, watcher, emit, dan props masing-masing komponen.</li>
+                            <li><strong>13-15 menit:</strong> Kesimpulan, alasan pemilihan fitur Vue yang digunakan.</li>
+                        </ul>
+                    </div>
+
+                    <h3>Latihan Persiapan</h3>
+                    <p>Sebelum mengerjakan tugas lengkap, buat proyek mini: aplikasi stok buku sederhana dengan 1 tabel, 1 filter, 1 computed property untuk total nilai stok, dan 1 watcher untuk mereset filter. Ini memastikan semua konsep dasar sudah berjalan sebelum masuk ke tugas yang lebih kompleks.</p>
+                </section>
+
             </main>
         </div>
 
@@ -84,45 +1566,59 @@
                     activities: [
                         {
                             id: 'aktivitas-12',
-                            number: 12,
-                            title: 'Aktivitas Belajar 12',
-                            topic: 'Component, Canvas, dan Animasi (1): Components',
-                            badge: 'Vue.js',
-                            badgeClass: 'badge-new'
+                            label: '12. Components',
+                            children: [
+                                { id: 'ab12-a', label: 'A. Mengapa Component?' },
+                                { id: 'ab12-b', label: 'B. Cara Membuat Component' },
+                                { id: 'ab12-c', label: 'C. Props' },
+                                { id: 'ab12-d', label: 'D. Emits' },
+                                { id: 'ab12-e', label: 'E. Slots' },
+                                { id: 'ab12-f', label: 'F. Lifecycle Hooks' },
+                                { id: 'ab12-praktik', label: 'Praktik: Kartu Mahasiswa' }
+                            ]
                         },
                         {
                             id: 'aktivitas-13',
-                            number: 13,
-                            title: 'Aktivitas Belajar 13',
-                            topic: 'Component, Canvas, dan Animasi (2): Canvas, Animasi',
-                            badge: 'Canvas',
-                            badgeClass: ''
+                            label: '13. Canvas & Animasi',
+                            children: [
+                                { id: 'ab13-a', label: 'A. Dasar HTML5 Canvas' },
+                                { id: 'ab13-b', label: 'B. Bentuk Dasar' },
+                                { id: 'ab13-c', label: 'C. requestAnimationFrame' },
+                                { id: 'ab13-d', label: 'D. Canvas + Vue (ref)' },
+                                { id: 'ab13-praktik', label: 'Praktik: Animasi Bola' }
+                            ]
                         },
                         {
                             id: 'aktivitas-14',
-                            number: 14,
-                            title: 'Aktivitas Belajar 14',
-                            topic: 'Database dan Praktikum Unit 3 (1): Database',
-                            badge: 'Database',
-                            badgeClass: 'badge-new'
+                            label: '14. Database',
+                            children: [
+                                { id: 'ab14-a', label: 'A. Database Relasional' },
+                                { id: 'ab14-b', label: 'B. SQL Dasar' },
+                                { id: 'ab14-c', label: 'C. Arsitektur Web' },
+                                { id: 'ab14-d', label: 'D. Fetch API' },
+                                { id: 'ab14-praktik', label: 'Praktik: Bahan Ajar JSON' }
+                            ]
                         },
                         {
                             id: 'aktivitas-15',
-                            number: 15,
-                            title: 'Aktivitas Belajar 15',
-                            topic: 'Database dan Praktikum Unit 3 (2): Praktikum Unit 3',
-                            badge: 'Praktikum',
-                            badgeClass: 'badge-important'
-                        }
+                            label: '15. Praktikum Unit 3',
+                            children: [
+                                { id: 'ab15-a', label: 'A. Struktur Proyek' },
+                                { id: 'ab15-b', label: 'B. Siapkan Data JSON' },
+                                { id: 'ab15-c', label: 'C. Routing Tab' },
+                                { id: 'ab15-d', label: 'D. Status Badge' },
+                                { id: 'ab15-e', label: 'E. Stock Table' },
+                                { id: 'ab15-f', label: 'F. Tracking DO' },
+                                { id: 'ab15-g', label: 'G. Daftarkan Komponen' },
+                                { id: 'ab15-h', label: 'H. Tips & Penilaian' }
+                            ]
+                        },
                     ]
                 };
             },
             computed: {
                 menus() {
-                    return this.activities.map((activity) => ({
-                        id: activity.id,
-                        label: `${activity.number}. ${activity.topic}`
-                    }));
+                    return this.activities;
                 }
             },
             mounted() {
@@ -138,18 +1634,24 @@
                 },
                 goToSection(sectionId) {
                     this.activeSection = sectionId;
-
                     if (window.innerWidth <= 768 && this.isMobileMenuOpen) {
                         this.isMobileMenuOpen = false;
                     }
                 },
+                isParentActive(menu) {
+                    if (this.activeSection === menu.id) return true;
+                    if (menu.children) {
+                        return menu.children.some(c => c.id === this.activeSection);
+                    }
+                    return false;
+                },
                 updateActiveSection() {
-                    const sections = document.querySelectorAll('section');
+                    const elements = document.querySelectorAll('section[id], h3[id]');
                     let current = this.activeSection;
 
-                    sections.forEach((section) => {
-                        if (window.pageYOffset >= section.offsetTop - 150) {
-                            current = section.getAttribute('id');
+                    elements.forEach((el) => {
+                        if (window.pageYOffset >= el.offsetTop - 160) {
+                            current = el.getAttribute('id');
                         }
                     });
 
