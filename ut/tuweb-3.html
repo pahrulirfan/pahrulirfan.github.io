@@ -124,9 +124,82 @@
                         <ul>
                             <li>Mahasiswa mampu menjelaskan konsep dan manfaat component di Vue.</li>
                             <li>Mahasiswa mampu membuat dan mendaftarkan global component.</li>
+                            <li>Mahasiswa mampu menerapkan konsep one root element pada template component.</li>
                             <li>Mahasiswa mampu menggunakan props untuk mengirim data dari parent ke child.</li>
                             <li>Mahasiswa mampu menggunakan emits untuk komunikasi dari child ke parent.</li>
                             <li>Mahasiswa mampu menggunakan slots untuk konten dinamis.</li>
+                            <li>Mahasiswa mampu menggunakan computed dan watch di dalam component.</li>
+                            <li>Mahasiswa mampu membuat custom directive menggunakan <code>app.directive()</code>.</li>
+                        </ul>
+                    </div>
+
+                    <h3 id="ab12-starter">Template Starter Vue CDN</h3>
+                    <p>Sebelum memulai, siapkan file HTML berikut sebagai kerangka dasar. Semua contoh kode pada Aktivitas Belajar 12 ini cukup disalin ke dalam bagian yang sudah ditandai komentar — tidak perlu mengubah struktur lainnya.</p>
+
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Latihan Vue Component&lt;/title&gt;
+    &lt;style&gt;
+        /* ==============================
+           SALIN CSS DI SINI
+        ============================== */
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;!-- ==============================
+             SALIN HTML TEMPLATE DI SINI
+        ============================== --&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    /* ==============================
+                       SALIN data() DI SINI
+                    ============================== */
+                };
+            },
+            computed: {
+                /* ==============================
+                   SALIN computed DI SINI
+                ============================== */
+            },
+            methods: {
+                /* ==============================
+                   SALIN methods DI SINI
+                ============================== */
+            }
+        });
+
+        /* ==============================
+           SALIN app.component() DI SINI
+           (sebelum app.mount)
+        ============================== */
+
+        /* ==============================
+           SALIN app.directive() DI SINI
+           (sebelum app.mount)
+        ============================== */
+
+        app.mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Cara menggunakan template ini:</strong>
+                        <ul>
+                            <li>Simpan sebagai file <code>.html</code> baru, misalnya <code>latihan-component.html</code>.</li>
+                            <li>Setiap contoh kode di materi ini sudah dibagi per bagian (HTML, CSS, JS). Salin masing-masing ke area komentar yang sesuai.</li>
+                            <li><code>app.component()</code> dan <code>app.directive()</code> <strong>wajib ditulis sebelum</strong> <code>app.mount('#app')</code>.</li>
                         </ul>
                     </div>
 
@@ -174,6 +247,32 @@ app.mount('#app'); // mount setelah semua component didaftarkan</code></pre>
 
                     <div class="warning-box">
                         <strong>Aturan Penamaan:</strong> Nama component menggunakan format <strong>kebab-case</strong> (huruf kecil, dipisah tanda hubung), contoh: <code>kartu-mahasiswa</code>. Di HTML, digunakan sebagai tag: <code>&lt;kartu-mahasiswa&gt;&lt;/kartu-mahasiswa&gt;</code>.
+                    </div>
+
+                    <h3 id="ab12-b2">One Root Element pada Template</h3>
+                    <p>Template component harus memiliki <strong>satu elemen root</strong> yang membungkus seluruh konten. Ini adalah aturan dasar penulisan template Vue.</p>
+
+                    <pre><code>// BENAR: satu elemen &lt;div&gt; sebagai root yang membungkus semua
+app.component('kartu-info', {
+    props: ['judul', 'isi'],
+    template: `
+        &lt;div&gt;
+            &lt;h3&gt;{{ judul }}&lt;/h3&gt;
+            &lt;p&gt;{{ isi }}&lt;/p&gt;
+        &lt;/div&gt;
+    `
+});
+
+// SALAH: dua elemen root sejajar — menyebabkan error di Vue via CDN
+app.component('kartu-info', {
+    template: `
+        &lt;h3&gt;{{ judul }}&lt;/h3&gt;
+        &lt;p&gt;{{ isi }}&lt;/p&gt;
+    `
+});</code></pre>
+
+                    <div class="info-box">
+                        <strong>Catatan Vue 3:</strong> Di Vue 3 Single File Component (<code>.vue</code>), multiple root elements (fragment) diperbolehkan. Namun saat menggunakan <strong>template string via CDN</strong> seperti pada mata kuliah ini, satu root element tetap wajib.
                     </div>
 
                     <h3 id="ab12-c">C. Props: Mengirim Data dari Parent ke Child</h3>
@@ -263,6 +362,139 @@ app.component('kartu-panel', {
                             </tr>
                         </tbody>
                     </table>
+
+                    <h3 id="ab12-g">G. Computed dan Watch di dalam Component</h3>
+                    <p>Component dapat memiliki <code>computed</code> dan <code>watch</code> sendiri, terpisah dari root app. Ini membuat logika reaktif terisolasi di dalam component yang bersangkutan.</p>
+
+                    <pre><code>app.component('kartu-nilai', {
+    props: ['nama', 'nilai'],
+    computed: {
+        predikat() {
+            if (this.nilai >= 85) return 'A';
+            if (this.nilai >= 70) return 'B';
+            if (this.nilai >= 60) return 'C';
+            return 'D';
+        },
+        statusLulus() {
+            return this.nilai >= 60 ? 'Lulus' : 'Tidak Lulus';
+        }
+    },
+    watch: {
+        nilai(nilaiBaru, nilaiLama) {
+            if (nilaiBaru < 60 && nilaiLama >= 60) {
+                console.log(this.nama + ' berubah menjadi tidak lulus');
+            }
+        }
+    },
+    template: `
+        &lt;div class="kartu"&gt;
+            &lt;p&gt;&lt;strong&gt;{{ nama }}&lt;/strong&gt;&lt;/p&gt;
+            &lt;p&gt;Nilai: {{ nilai }} — Predikat: {{ predikat }}&lt;/p&gt;
+            &lt;p&gt;Status: {{ statusLulus }}&lt;/p&gt;
+        &lt;/div&gt;
+    `
+});</code></pre>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Opsi</th>
+                                <th>Fungsi dalam Component</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>data()</code></td>
+                                <td>State lokal component, tidak dibagi ke luar</td>
+                            </tr>
+                            <tr>
+                                <td><code>computed</code></td>
+                                <td>Nilai turunan dari props atau data lokal component</td>
+                            </tr>
+                            <tr>
+                                <td><code>watch</code></td>
+                                <td>Memantau perubahan props atau data lokal component</td>
+                            </tr>
+                            <tr>
+                                <td><code>methods</code></td>
+                                <td>Fungsi yang dipanggil dari template component</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 id="ab12-h">H. Custom Directive</h3>
+                    <p>Selain directive bawaan Vue (<code>v-model</code>, <code>v-if</code>, <code>v-for</code>), kita bisa membuat <strong>custom directive</strong> sendiri menggunakan <code>app.directive()</code>. Custom directive berguna untuk memanipulasi DOM secara langsung pada elemen HTML yang sudah ada.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Hook Directive</th>
+                                <th>Kapan Dipanggil</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>mounted(el)</code></td>
+                                <td>Saat elemen pertama kali terpasang ke DOM</td>
+                            </tr>
+                            <tr>
+                                <td><code>updated(el, binding)</code></td>
+                                <td>Setiap kali nilai binding berubah</td>
+                            </tr>
+                            <tr>
+                                <td><code>unmounted(el)</code></td>
+                                <td>Saat elemen dilepas dari DOM</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh 1: v-focus — Otomatis Fokus Input</h4>
+                    <pre><code>// Daftarkan sebelum app.mount()
+app.directive('focus', {
+    mounted(el) {
+        el.focus();
+    }
+});
+
+// Penggunaan di HTML
+&lt;input v-focus placeholder="Kursor otomatis ada di sini"&gt;</code></pre>
+
+                    <h4>Contoh 2: v-uppercase — Format Teks Menjadi Huruf Kapital</h4>
+                    <pre><code>app.directive('uppercase', {
+    mounted(el) {
+        el.style.textTransform = 'uppercase';
+    },
+    updated(el) {
+        el.style.textTransform = 'uppercase';
+    }
+});
+
+// Penggunaan
+&lt;p v-uppercase&gt;{{ nama }}&lt;/p&gt;
+&lt;input v-model="judul" v-uppercase&gt;</code></pre>
+
+                    <h4>Contoh 3: Custom Directive dengan Nilai (Binding)</h4>
+                    <pre><code>// v-warna="'red'" — ubah warna teks sesuai nilai yang diberikan
+app.directive('warna', {
+    mounted(el, binding) {
+        el.style.color = binding.value;
+    },
+    updated(el, binding) {
+        el.style.color = binding.value;
+    }
+});
+
+// Penggunaan
+&lt;p v-warna="'red'"&gt;Teks berwarna merah&lt;/p&gt;
+&lt;p v-warna="warnaAktif"&gt;Warna diambil dari data Vue&lt;/p&gt;</code></pre>
+
+                    <div class="info-box">
+                        <strong>Perbedaan Component vs Custom Directive:</strong>
+                        <ul>
+                            <li><strong>Component</strong>: membuat elemen HTML baru yang bisa dipakai ulang, memiliki template, data, dan logika sendiri.</li>
+                            <li><strong>Custom Directive</strong>: menambahkan perilaku baru pada elemen HTML yang sudah ada, terutama untuk manipulasi DOM langsung.</li>
+                        </ul>
+                    </div>
 
                     <h3 id="ab12-praktik">Praktik Langsung: Kartu Mahasiswa Component</h3>
                     <p>Salin kode berikut ke dalam file baru, simpan sebagai <code>komponen-mahasiswa.html</code>, lalu buka di browser. Coba tambah dan hapus data mahasiswa untuk melihat component bekerja.</p>
@@ -451,9 +683,12 @@ app.component('kartu-panel', {
                         <strong>Tujuan Pembelajaran:</strong>
                         <ul>
                             <li>Mahasiswa mampu membuat elemen canvas dan mengakses konteksnya.</li>
-                            <li>Mahasiswa mampu menggambar bentuk dasar (kotak, lingkaran, teks) di canvas.</li>
+                            <li>Mahasiswa mampu menggambar bentuk dasar menggunakan fungsi <code>rect</code>, <code>line</code>, dan <code>arc</code>.</li>
                             <li>Mahasiswa mampu membuat animasi menggunakan <code>requestAnimationFrame</code>.</li>
                             <li>Mahasiswa mampu mengintegrasikan canvas ke dalam Vue menggunakan <code>ref</code>.</li>
+                            <li>Mahasiswa mampu mendefinisikan animasi CSS menggunakan <code>@keyframes</code>.</li>
+                            <li>Mahasiswa mampu menggunakan property-property class animasi CSS.</li>
+                            <li>Mahasiswa mampu mengontrol animasi CSS dari Vue menggunakan <code>:class</code> binding.</li>
                         </ul>
                     </div>
 
@@ -548,6 +783,197 @@ mounted() {
     const ctx = canvas.getContext('2d');
     // mulai menggambar...
 }</code></pre>
+
+                    <h3 id="ab13-e">E. Animasi CSS dengan @keyframes</h3>
+                    <p>Selain animasi JavaScript dengan <code>requestAnimationFrame</code>, web juga mendukung <strong>animasi CSS</strong>. Animasi CSS menggunakan aturan <code>@keyframes</code> untuk mendefinisikan tahapan animasi, lalu property <code>animation</code> untuk menerapkannya ke elemen. Animasi CSS lebih ringan karena dijalankan langsung oleh browser tanpa campur tangan JavaScript setiap frame-nya.</p>
+
+                    <h4>Syntax @keyframes</h4>
+                    <pre><code>/* Cara 1: from → to (awal ke akhir) */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Cara 2: persentase — kontrol lebih detail setiap tahap */
+@keyframes bounce {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-30px); }
+    100% { transform: translateY(0); }
+}
+
+/* Cara 3: multi-tahap dengan perubahan warna */
+@keyframes warna-berubah {
+    0%   { background-color: #e74c3c; }
+    33%  { background-color: #f39c12; }
+    66%  { background-color: #27ae60; }
+    100% { background-color: #e74c3c; }
+}</code></pre>
+
+                    <h4>Property-Property Class Animasi CSS</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Fungsi</th>
+                                <th>Contoh Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>animation-name</code></td>
+                                <td>Nama @keyframes yang digunakan</td>
+                                <td><code>fadeIn</code>, <code>bounce</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-duration</code></td>
+                                <td>Durasi satu siklus animasi</td>
+                                <td><code>1s</code>, <code>500ms</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-timing-function</code></td>
+                                <td>Percepatan / perlambatan animasi</td>
+                                <td><code>ease</code>, <code>linear</code>, <code>ease-in-out</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-iteration-count</code></td>
+                                <td>Jumlah pengulangan</td>
+                                <td><code>1</code>, <code>3</code>, <code>infinite</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-direction</code></td>
+                                <td>Arah pemutaran ulang</td>
+                                <td><code>normal</code>, <code>reverse</code>, <code>alternate</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-delay</code></td>
+                                <td>Jeda sebelum animasi dimulai</td>
+                                <td><code>0s</code>, <code>0.5s</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>animation-fill-mode</code></td>
+                                <td>Keadaan elemen sebelum/sesudah animasi</td>
+                                <td><code>none</code>, <code>forwards</code>, <code>backwards</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="info-box">
+                        <strong>Shorthand — tulis semua dalam satu baris:</strong><br>
+                        <code>animation: nama durasi timing delay iterasi arah fill-mode;</code><br><br>
+                        Contoh:<br>
+                        <code>animation: bounce 0.8s ease-in-out 0s infinite alternate;</code>
+                    </div>
+
+                    <h4>Mengontrol Animasi CSS dengan Vue (:class binding)</h4>
+                    <p>Vue dapat mengaktifkan dan menghentikan animasi CSS dengan menambah atau menghapus class menggunakan <code>:class</code> binding. Class yang memiliki property <code>animation</code> akan langsung berjalan saat ditambahkan ke elemen.</p>
+
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Animasi CSS + Vue&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .kotak {
+            width: 100px; height: 100px;
+            background: #3498db; border-radius: 8px; margin: 30px auto;
+        }
+
+        @keyframes putar {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+        @keyframes lompat {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-60px); }
+        }
+        @keyframes denyut {
+            0%, 100% { transform: scale(1); }
+            50%       { transform: scale(1.5); }
+        }
+        @keyframes geser {
+            0%   { transform: translateX(0); }
+            50%  { transform: translateX(150px); }
+            100% { transform: translateX(0); }
+        }
+
+        .anim-putar  { animation: putar  1s linear infinite; }
+        .anim-lompat { animation: lompat 0.8s ease-in-out infinite; }
+        .anim-denyut { animation: denyut 0.6s ease-in-out infinite; }
+        .anim-geser  { animation: geser  1.2s ease-in-out infinite; }
+
+        .tombol-grup { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .tombol-grup button {
+            padding: 8px 16px; border: none; border-radius: 6px;
+            cursor: pointer; background: #3498db; color: white;
+        }
+        .tombol-grup button.aktif { background: #2c3e50; }
+        .tombol-grup button:hover { opacity: 0.85; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h2 style="text-align:center"&gt;Kontrol Animasi CSS dengan Vue&lt;/h2&gt;
+
+        &lt;div class="tombol-grup"&gt;
+            &lt;button
+                v-for="pilihan in daftarAnimasi"
+                :key="pilihan.nilai"
+                :class="{ aktif: animasi === pilihan.nilai }"
+                @click="animasi = pilihan.nilai"
+            &gt;
+                {{ pilihan.label }}
+            &lt;/button&gt;
+            &lt;button @click="animasi = ''"&gt;Stop&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- :class menambahkan class animasi sesuai pilihan --&gt;
+        &lt;div
+            class="kotak"
+            :class="kelasAktif"
+        &gt;&lt;/div&gt;
+
+        &lt;p style="text-align:center"&gt;
+            Animasi aktif: &lt;strong&gt;{{ animasi || 'tidak ada' }}&lt;/strong&gt;
+        &lt;/p&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    animasi: '',
+                    daftarAnimasi: [
+                        { nilai: 'putar',  label: 'Putar' },
+                        { nilai: 'lompat', label: 'Lompat' },
+                        { nilai: 'denyut', label: 'Denyut' },
+                        { nilai: 'geser',  label: 'Geser' }
+                    ]
+                };
+            },
+            computed: {
+                kelasAktif() {
+                    return this.animasi ? 'anim-' + this.animasi : '';
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="success-box">
+                        <strong>Perbedaan Animasi CSS vs requestAnimationFrame:</strong>
+                        <ul>
+                            <li><strong>CSS @keyframes</strong>: dijalankan langsung oleh browser, performa lebih baik untuk animasi visual sederhana (fade, slide, rotate, scale). Lebih mudah ditulis dan dikontrol.</li>
+                            <li><strong>requestAnimationFrame</strong>: dikendalikan JavaScript, cocok untuk animasi kompleks yang bergantung pada logika dan perhitungan (seperti fisika bola memantul di canvas).</li>
+                        </ul>
+                    </div>
+
+                    <h3>Latihan</h3>
+                    <p>Buat halaman dengan tiga kotak berbeda warna. Setiap kotak punya animasi @keyframes yang unik (contoh: fade, geser, putar). Gunakan Vue untuk membuat tombol "Mulai Semua" dan "Stop Semua" yang mengontrol semua animasi sekaligus menggunakan satu data boolean <code>berjalan</code> dan :class binding pada masing-masing kotak.</p>
 
                     <h3 id="ab13-praktik">Praktik Langsung: Animasi Bola Memantul dengan Vue</h3>
                     <p>Salin kode berikut ke <code>canvas-animasi.html</code> dan buka di browser. Coba ubah warna dan kecepatan menggunakan kontrol yang tersedia — data Vue mengontrol canvas secara langsung.</p>
@@ -721,9 +1147,11 @@ mounted() {
                         <strong>Tujuan Pembelajaran:</strong>
                         <ul>
                             <li>Mahasiswa mampu menjelaskan konsep database relasional.</li>
+                            <li>Mahasiswa mampu membuat database dan tabel menggunakan perintah <code>CREATE TABLE</code>.</li>
                             <li>Mahasiswa mampu menulis perintah SQL dasar (SELECT, INSERT, UPDATE, DELETE).</li>
-                            <li>Mahasiswa mampu menjelaskan bagaimana aplikasi web berkomunikasi dengan database.</li>
+                            <li>Mahasiswa mampu menjelaskan bagaimana aplikasi web berkomunikasi dengan database melalui HTTP Request.</li>
                             <li>Mahasiswa mampu menggunakan <code>fetch()</code> untuk mengambil data JSON dan menampilkannya di Vue.</li>
+                            <li>Mahasiswa mampu menggunakan Axios untuk melakukan HTTP Request GET, POST, PUT, dan DELETE.</li>
                         </ul>
                     </div>
 
@@ -786,7 +1214,79 @@ mounted() {
                     </table>
 
                     <h3 id="ab14-b">B. SQL Dasar</h3>
-                    <p><strong>SQL</strong> (Structured Query Language) adalah bahasa yang digunakan untuk berkomunikasi dengan database. Ada 4 operasi utama yang sering disebut <strong>CRUD</strong>.</p>
+                    <p><strong>SQL</strong> (Structured Query Language) adalah bahasa yang digunakan untuk berkomunikasi dengan database. SQL mencakup perintah untuk membuat struktur database hingga memanipulasi isinya.</p>
+
+                    <h4>Membuat Database dan Tabel</h4>
+                    <p>Langkah pertama sebelum menyimpan data adalah membuat database dan mendefinisikan struktur tabelnya menggunakan perintah <code>CREATE</code>.</p>
+
+                    <pre><code>-- Membuat database baru
+CREATE DATABASE kampus;
+
+-- Menggunakan database tersebut
+USE kampus;
+
+-- Membuat tabel mahasiswa
+CREATE TABLE mahasiswa (
+    id       INT          PRIMARY KEY AUTO_INCREMENT,
+    nim      VARCHAR(10)  NOT NULL UNIQUE,
+    nama     VARCHAR(100) NOT NULL,
+    prodi    VARCHAR(50),
+    semester INT          DEFAULT 1
+);
+
+-- Membuat tabel nilai (berelasi dengan tabel mahasiswa)
+CREATE TABLE nilai (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    mahasiswa_id INT,
+    mata_kuliah  VARCHAR(100),
+    skor         DECIMAL(5,2),
+    FOREIGN KEY (mahasiswa_id) REFERENCES mahasiswa(id)
+);</code></pre>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipe Data SQL</th>
+                                <th>Kegunaan</th>
+                                <th>Contoh Kolom</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>INT</code></td>
+                                <td>Bilangan bulat</td>
+                                <td>id, semester, stok</td>
+                            </tr>
+                            <tr>
+                                <td><code>VARCHAR(n)</code></td>
+                                <td>Teks dengan panjang maksimum n karakter</td>
+                                <td>nim, nama, email</td>
+                            </tr>
+                            <tr>
+                                <td><code>TEXT</code></td>
+                                <td>Teks panjang tanpa batas</td>
+                                <td>deskripsi, catatan</td>
+                            </tr>
+                            <tr>
+                                <td><code>DECIMAL(p,s)</code></td>
+                                <td>Bilangan desimal (p digit, s di belakang koma)</td>
+                                <td>nilai, harga</td>
+                            </tr>
+                            <tr>
+                                <td><code>DATE</code></td>
+                                <td>Tanggal format YYYY-MM-DD</td>
+                                <td>tanggal_lahir, created_at</td>
+                            </tr>
+                            <tr>
+                                <td><code>BOOLEAN</code></td>
+                                <td>True / False</td>
+                                <td>aktif, sudah_bayar</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Operasi CRUD</h4>
+                    <p>Setelah tabel dibuat, ada 4 operasi utama untuk memanipulasi data yang sering disebut <strong>CRUD</strong>.</p>
 
                     <table>
                         <thead>
@@ -893,6 +1393,285 @@ async mounted() {
         console.error('Gagal memuat data:', error);
     }
 }</code></pre>
+
+                    <h3 id="ab14-e">E. HTTP Request dengan Axios</h3>
+                    <p><strong>Axios</strong> adalah library JavaScript populer untuk melakukan HTTP Request. Dibanding <code>fetch()</code> bawaan browser, Axios memiliki sintaks lebih ringkas, penanganan error lebih informatif, dan respons JSON sudah otomatis di-parse tanpa perlu memanggil <code>.json()</code> secara manual.</p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>fetch()</th>
+                                <th>Axios</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Parse JSON</td>
+                                <td>Manual — perlu <code>.json()</code></td>
+                                <td>Otomatis — langsung di <code>res.data</code></td>
+                            </tr>
+                            <tr>
+                                <td>Error handling</td>
+                                <td>Error HTTP (404, 500) tidak masuk <code>catch</code></td>
+                                <td>Semua error HTTP masuk <code>catch</code> otomatis</td>
+                            </tr>
+                            <tr>
+                                <td>Kirim JSON</td>
+                                <td>Perlu <code>JSON.stringify()</code> + header manual</td>
+                                <td>Otomatis — cukup berikan objek JS</td>
+                            </tr>
+                            <tr>
+                                <td>Instalasi</td>
+                                <td>Bawaan browser, tidak perlu instalasi</td>
+                                <td>Perlu CDN atau npm</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Instalasi Axios via CDN</h4>
+                    <pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"&gt;&lt;/script&gt;</code></pre>
+
+                    <h4>Metode HTTP dengan Axios</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Fungsi</th>
+                                <th>Contoh</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>axios.get(url)</code></td>
+                                <td>Mengambil data</td>
+                                <td>Tampilkan daftar mahasiswa</td>
+                            </tr>
+                            <tr>
+                                <td><code>axios.post(url, data)</code></td>
+                                <td>Mengirim data baru</td>
+                                <td>Tambah mahasiswa baru</td>
+                            </tr>
+                            <tr>
+                                <td><code>axios.put(url, data)</code></td>
+                                <td>Memperbarui data (keseluruhan)</td>
+                                <td>Update semua field mahasiswa</td>
+                            </tr>
+                            <tr>
+                                <td><code>axios.patch(url, data)</code></td>
+                                <td>Memperbarui sebagian data</td>
+                                <td>Update hanya semester saja</td>
+                            </tr>
+                            <tr>
+                                <td><code>axios.delete(url)</code></td>
+                                <td>Menghapus data</td>
+                                <td>Hapus mahasiswa berdasarkan id</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h4>Contoh Penggunaan Axios</h4>
+                    <pre><code>// GET — mengambil data
+// Cara 1: .then()
+axios.get('https://jsonplaceholder.typicode.com/users')
+    .then(res => {
+        console.log(res.data); // data sudah berupa array/objek JS
+    })
+    .catch(err => {
+        console.error('Error:', err.message);
+    });
+
+// Cara 2: async/await (lebih mudah dibaca)
+async mounted() {
+    try {
+        const res = await axios.get('https://jsonplaceholder.typicode.com/users');
+        this.daftarUser = res.data;
+    } catch (err) {
+        console.error('Gagal mengambil data:', err.message);
+    }
+}
+
+// POST — mengirim data baru
+async tambahData() {
+    try {
+        const res = await axios.post('https://jsonplaceholder.typicode.com/posts', {
+            title: 'Judul Baru',
+            body: 'Isi konten',
+            userId: 1
+        });
+        console.log('Data tersimpan:', res.data);
+    } catch (err) {
+        console.error('Gagal menyimpan:', err.message);
+    }
+}
+
+// PUT — update data
+async updateData(id) {
+    const res = await axios.put(`https://jsonplaceholder.typicode.com/posts/${id}`, {
+        title: 'Judul Diperbarui',
+        body: 'Isi diperbarui',
+        userId: 1
+    });
+    console.log('Data diperbarui:', res.data);
+}
+
+// DELETE — hapus data
+async hapusData(id) {
+    await axios.delete(`https://jsonplaceholder.typicode.com/posts/${id}`);
+    console.log('Data berhasil dihapus');
+}</code></pre>
+
+                    <h4>Contoh Lengkap Axios dalam Vue</h4>
+                    <p>Contoh berikut menggunakan API publik <strong>JSONPlaceholder</strong> — layanan API gratis untuk latihan yang selalu tersedia tanpa perlu mendaftar.</p>
+
+                    <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Axios + Vue&lt;/title&gt;
+    &lt;style&gt;
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        h1 { color: #2c3e50; }
+        .form-area {
+            background: white; padding: 16px; border-radius: 8px;
+            margin-bottom: 20px; border: 1px solid #ddd; max-width: 500px;
+        }
+        .form-area input {
+            width: 100%; padding: 8px; margin: 6px 0 12px;
+            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+        }
+        .btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; color: white; }
+        .btn-simpan { background: #27ae60; }
+        .btn-hapus  { background: #e74c3c; font-size: 0.8em; padding: 4px 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        th { background: #2c3e50; color: white; padding: 10px; text-align: left; }
+        td { padding: 8px 10px; border-bottom: 1px solid #eee; }
+        .loading { color: #999; font-style: italic; }
+        .status { padding: 8px; border-radius: 6px; margin-bottom: 12px; }
+        .status.sukses { background: #d4edda; color: #155724; }
+        .status.error  { background: #f8d7da; color: #721c24; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="app"&gt;
+        &lt;h1&gt;Manajemen Post (Axios Demo)&lt;/h1&gt;
+
+        &lt;!-- Status notifikasi --&gt;
+        &lt;div v-if="pesan" :class="['status', berhasil ? 'sukses' : 'error']"&gt;
+            {{ pesan }}
+        &lt;/div&gt;
+
+        &lt;!-- Form tambah post --&gt;
+        &lt;div class="form-area"&gt;
+            &lt;h3&gt;Tambah Post Baru&lt;/h3&gt;
+            &lt;label&gt;Judul:&lt;/label&gt;
+            &lt;input v-model="formJudul" placeholder="Masukkan judul"&gt;
+            &lt;label&gt;Isi:&lt;/label&gt;
+            &lt;input v-model="formIsi" placeholder="Masukkan isi"&gt;
+            &lt;button class="btn btn-simpan" @click="tambahPost" :disabled="sedangProses"&gt;
+                {{ sedangProses ? 'Menyimpan...' : 'Simpan' }}
+            &lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;!-- Tabel data --&gt;
+        &lt;p v-if="sedangMuat" class="loading"&gt;Memuat data dari API...&lt;/p&gt;
+
+        &lt;table v-else&gt;
+            &lt;thead&gt;
+                &lt;tr&gt;
+                    &lt;th&gt;ID&lt;/th&gt;
+                    &lt;th&gt;Judul&lt;/th&gt;
+                    &lt;th&gt;Aksi&lt;/th&gt;
+                &lt;/tr&gt;
+            &lt;/thead&gt;
+            &lt;tbody&gt;
+                &lt;tr v-for="post in daftarPost" :key="post.id"&gt;
+                    &lt;td&gt;{{ post.id }}&lt;/td&gt;
+                    &lt;td&gt;{{ post.title }}&lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;button class="btn btn-hapus" @click="hapusPost(post.id)"&gt;Hapus&lt;/button&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/tbody&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"&gt;&lt;/script&gt;
+    &lt;script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        const { createApp } = Vue;
+        const API = 'https://jsonplaceholder.typicode.com/posts';
+
+        createApp({
+            data() {
+                return {
+                    daftarPost: [],
+                    formJudul: '',
+                    formIsi: '',
+                    sedangMuat: true,
+                    sedangProses: false,
+                    pesan: '',
+                    berhasil: true
+                };
+            },
+            async mounted() {
+                try {
+                    // GET: ambil 10 post pertama
+                    const res = await axios.get(API + '?_limit=10');
+                    this.daftarPost = res.data;
+                } catch (err) {
+                    this.tampilPesan('Gagal memuat data: ' + err.message, false);
+                } finally {
+                    this.sedangMuat = false;
+                }
+            },
+            methods: {
+                async tambahPost() {
+                    if (!this.formJudul) { alert('Judul wajib diisi!'); return; }
+                    this.sedangProses = true;
+                    try {
+                        // POST: kirim data baru ke API
+                        const res = await axios.post(API, {
+                            title: this.formJudul,
+                            body: this.formIsi,
+                            userId: 1
+                        });
+                        // JSONPlaceholder mengembalikan objek dengan id baru
+                        this.daftarPost.unshift(res.data);
+                        this.formJudul = '';
+                        this.formIsi = '';
+                        this.tampilPesan('Post berhasil ditambahkan (id: ' + res.data.id + ')');
+                    } catch (err) {
+                        this.tampilPesan('Gagal menyimpan: ' + err.message, false);
+                    } finally {
+                        this.sedangProses = false;
+                    }
+                },
+                async hapusPost(id) {
+                    if (!confirm('Hapus post #' + id + '?')) return;
+                    try {
+                        // DELETE: hapus data berdasarkan id
+                        await axios.delete(API + '/' + id);
+                        this.daftarPost = this.daftarPost.filter(p => p.id !== id);
+                        this.tampilPesan('Post #' + id + ' berhasil dihapus');
+                    } catch (err) {
+                        this.tampilPesan('Gagal menghapus: ' + err.message, false);
+                    }
+                },
+                tampilPesan(teks, sukses = true) {
+                    this.pesan = teks;
+                    this.berhasil = sukses;
+                    setTimeout(() => { this.pesan = ''; }, 3000);
+                }
+            }
+        }).mount('#app');
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                    <div class="info-box">
+                        <strong>Catatan JSONPlaceholder:</strong> API ini bersifat simulasi — data yang di-POST atau di-DELETE tidak benar-benar tersimpan di server. Respons yang dikembalikan adalah data palsu untuk keperluan latihan. Untuk produksi, ganti URL dengan endpoint backend nyata.
+                    </div>
 
                     <h3 id="ab14-praktik">Praktik Langsung: Daftar Bahan Ajar dari JSON</h3>
                     <p>Buat dua file berikut dalam satu folder yang sama. Untuk menjalankan, <strong>tidak bisa dibuka langsung dengan klik dua kali</strong> — harus menggunakan VS Code Live Server atau server lokal seperti XAMPP, karena <code>fetch()</code> perlu server HTTP.</p>
@@ -1092,7 +1871,7 @@ async mounted() {
                     <h2>Aktivitas Belajar 15 <span class="badge badge-important">Praktikum</span></h2>
                     <h3>Database dan Praktikum Unit 3 (2): Panduan Pengerjaan Tugas Praktik 3</h3>
 
-                    <p>Tugas Praktik 3 mengajak mahasiswa membangun aplikasi web nyata: sistem pemesanan Bahan Ajar Universitas Terbuka. Semua konsep yang sudah dipelajari sejak Aktivitas Belajar 5 hingga 14 diterapkan sekaligus di sini. Bagian ini memandu langkah demi langkah cara mengerjakan tugas tersebut.</p>
+                    <p>Tugas Praktik 3 mengajak mahasiswa membangun aplikasi web nyata: sistem pemesanan Bahan Ajar Universitas Terbuka. Semua konsep yang sudah dipelajari sejak Aktivitas Belajar 9 hingga 14 diterapkan sekaligus di sini — termasuk Vue component, data, methods, computed property, animasi, dan event handler. Bagian ini memandu langkah demi langkah cara mengerjakan tugas tersebut.</p>
 
                     <div class="info-box">
                         <strong>Gambaran Aplikasi yang Dibangun:</strong>
@@ -1100,6 +1879,7 @@ async mounted() {
                             <li><strong>Halaman Stok:</strong> Tampilkan, filter, sort, tambah, edit, dan hapus data bahan ajar.</li>
                             <li><strong>Halaman Tracking DO:</strong> Cari dan lacak status Delivery Order berdasarkan nomor DO atau NIM.</li>
                             <li><strong>Halaman Order:</strong> Form pemesanan bahan ajar baru dengan auto-generate nomor DO.</li>
+                            <li><strong>Animasi:</strong> Loading spinner, fade-in konten, dan efek visual pada badge status stok.</li>
                         </ul>
                     </div>
 
@@ -1467,6 +2247,109 @@ app.component('app-modal', window.AppModalComponent);
 
 app.mount('#app');</code></pre>
 
+                    <h3 id="ab15-i">I. Langkah 7 — Menambahkan Animasi CSS pada Proyek</h3>
+                    <p>Animasi merupakan salah satu komponen wajib pada Tugas Praktik 3. Tambahkan kode CSS berikut ke dalam <code>assets/css/style.css</code>, lalu terapkan class-class animasinya di template HTML masing-masing komponen.</p>
+
+                    <h4>1. Loading Spinner — saat data sedang dimuat</h4>
+                    <pre><code>/* assets/css/style.css */
+
+@keyframes putar-spinner {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+.spinner {
+    width: 40px; height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: putar-spinner 0.8s linear infinite;
+    margin: 40px auto;
+}
+
+/* Penggunaan di template komponen */
+/* &lt;div v-if="sedangMemuat" class="spinner"&gt;&lt;/div&gt; */</code></pre>
+
+                    <h4>2. Fade-In — saat konten muncul setelah data dimuat</h4>
+                    <pre><code>@keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.konten-muncul {
+    animation: fade-in 0.4s ease-out;
+}
+
+/* Penggunaan: tambahkan class ke elemen v-else setelah loading */
+/* &lt;div v-else class="konten-muncul"&gt; ... &lt;/div&gt; */</code></pre>
+
+                    <h4>3. Pulse — peringatan stok menipis pada badge status</h4>
+                    <pre><code>@keyframes denyut-peringatan {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.6); }
+    50%       { box-shadow: 0 0 0 6px rgba(255, 193, 7, 0); }
+}
+
+.badge-menipis {
+    animation: denyut-peringatan 1.5s ease-in-out infinite;
+}
+
+/* badge-aman dan badge-kosong tidak perlu animasi */
+.badge-aman   { /* static, tidak ada animasi */ }
+.badge-kosong { /* static */ }</code></pre>
+
+                    <h4>4. Slide-In — tab berpindah saat navigasi</h4>
+                    <pre><code>@keyframes geser-masuk {
+    from { opacity: 0; transform: translateX(-16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.tab-konten {
+    animation: geser-masuk 0.3s ease-out;
+}
+
+/* Tambahkan class ini ke setiap section tab di index.html */
+/* &lt;ba-stock-table v-if="tab === 'stok'" class="tab-konten"&gt; */</code></pre>
+
+                    <h4>Menerapkan Animasi di Komponen Vue</h4>
+                    <p>Contoh penerapan lengkap pada <code>stock-table.js</code> — menggabungkan spinner saat loading dan fade-in saat data siap:</p>
+
+                    <pre><code>// Di dalam template stock-table
+// (bagian yang menangani loading state)
+
+`&lt;div&gt;
+    &lt;!-- Spinner muncul saat data belum dimuat --&gt;
+    &lt;div v-if="sedangMemuat" class="spinner"&gt;&lt;/div&gt;
+
+    &lt;!-- Konten muncul dengan animasi fade-in setelah data siap --&gt;
+    &lt;div v-else class="konten-muncul"&gt;
+        &lt;div class="filter-area"&gt;
+            &lt;!-- filter controls... --&gt;
+        &lt;/div&gt;
+        &lt;table&gt;
+            &lt;tbody&gt;
+                &lt;tr v-for="buku in dataTermpilkan" :key="buku.kode"&gt;
+                    &lt;td&gt;{{ buku.judul }}&lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;!-- Status badge — pulse otomatis via CSS jika class badge-menipis --&gt;
+                        &lt;status-badge :qty="buku.qty" :safety="buku.safety"&gt;&lt;/status-badge&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/tbody&gt;
+        &lt;/table&gt;
+    &lt;/div&gt;
+&lt;/div&gt;`</code></pre>
+
+                    <div class="info-box">
+                        <strong>Ringkasan Animasi yang Wajib Ada di Proyek:</strong>
+                        <ul>
+                            <li><strong>Loading Spinner</strong> — tampil saat <code>sedangMemuat = true</code>, hilang saat data selesai dimuat.</li>
+                            <li><strong>Fade-In</strong> — konten utama muncul halus setelah data siap.</li>
+                            <li><strong>Badge Pulse</strong> — badge "Menipis" berdenyut sebagai peringatan visual stok kritis.</li>
+                            <li><strong>Tab Slide-In</strong> — setiap perpindahan tab menampilkan konten dengan animasi geser.</li>
+                        </ul>
+                        Keempat animasi ini menggunakan CSS <code>@keyframes</code> murni, sesuai materi Aktivitas Belajar 13.
+                    </div>
+
                     <h3 id="ab15-h">H. Tips Pengerjaan dan Penilaian</h3>
 
                     <table>
@@ -1509,8 +2392,13 @@ app.mount('#app');</code></pre>
                                 <td>Validasi form, Enter → submit, Esc → reset, <code>@keydown</code></td>
                             </tr>
                             <tr>
-                                <td>Kreativitas UI/UX</td>
+                                <td>Animasi CSS (@keyframes)</td>
                                 <td>8</td>
+                                <td>Minimal 2 animasi: loading spinner + salah satu (fade-in, pulse badge, tab slide-in)</td>
+                            </tr>
+                            <tr>
+                                <td>Kreativitas UI/UX</td>
+                                <td>5</td>
                                 <td>Warna status, ikon, tooltip, layout rapi</td>
                             </tr>
                             <tr>
@@ -1568,12 +2456,16 @@ app.mount('#app');</code></pre>
                             id: 'aktivitas-12',
                             label: '12. Components',
                             children: [
+                                { id: 'ab12-starter', label: 'Template Starter' },
                                 { id: 'ab12-a', label: 'A. Mengapa Component?' },
                                 { id: 'ab12-b', label: 'B. Cara Membuat Component' },
+                                { id: 'ab12-b2', label: 'One Root Element' },
                                 { id: 'ab12-c', label: 'C. Props' },
                                 { id: 'ab12-d', label: 'D. Emits' },
                                 { id: 'ab12-e', label: 'E. Slots' },
                                 { id: 'ab12-f', label: 'F. Lifecycle Hooks' },
+                                { id: 'ab12-g', label: 'G. Computed & Watch' },
+                                { id: 'ab12-h', label: 'H. Custom Directive' },
                                 { id: 'ab12-praktik', label: 'Praktik: Kartu Mahasiswa' }
                             ]
                         },
@@ -1585,6 +2477,7 @@ app.mount('#app');</code></pre>
                                 { id: 'ab13-b', label: 'B. Bentuk Dasar' },
                                 { id: 'ab13-c', label: 'C. requestAnimationFrame' },
                                 { id: 'ab13-d', label: 'D. Canvas + Vue (ref)' },
+                                { id: 'ab13-e', label: 'E. CSS @keyframes' },
                                 { id: 'ab13-praktik', label: 'Praktik: Animasi Bola' }
                             ]
                         },
@@ -1596,6 +2489,7 @@ app.mount('#app');</code></pre>
                                 { id: 'ab14-b', label: 'B. SQL Dasar' },
                                 { id: 'ab14-c', label: 'C. Arsitektur Web' },
                                 { id: 'ab14-d', label: 'D. Fetch API' },
+                                { id: 'ab14-e', label: 'E. Axios HTTP Request' },
                                 { id: 'ab14-praktik', label: 'Praktik: Bahan Ajar JSON' }
                             ]
                         },
@@ -1610,6 +2504,7 @@ app.mount('#app');</code></pre>
                                 { id: 'ab15-e', label: 'E. Stock Table' },
                                 { id: 'ab15-f', label: 'F. Tracking DO' },
                                 { id: 'ab15-g', label: 'G. Daftarkan Komponen' },
+                                { id: 'ab15-i', label: 'I. Animasi CSS' },
                                 { id: 'ab15-h', label: 'H. Tips & Penilaian' }
                             ]
                         },
