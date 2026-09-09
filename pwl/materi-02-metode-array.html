@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 2: Metode Array & Destrukturisasi - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header { background: #2f7a3a !important; }
+        .sidebar h3 { color: #68a063 !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #68a063 !important; }
+        .sidebar ul li a.active { background-color: #3c873a !important; }
+        section h2 { border-bottom: 3px solid #3c873a !important; }
+        th { background: linear-gradient(135deg, #3c873a 0%, #215732 100%) !important; }
+        .badge { background: #3c873a !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #68a063 !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 260px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #3c873a; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #215732; margin-bottom: 15px; }
+        .interactive-demo input, .interactive-demo select {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin: 5px; font-size: 1em;
+        }
+        .interactive-demo button {
+            padding: 8px 20px; background: #3c873a; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #215732; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #68a063; }
+        .terminal .out { color: #8a8f98; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 2: Metode Array & Destrukturisasi</h1>
+        <p>Sub-CPMK 1 (bagian 2) &mdash; Minggu 2 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#array-methods" class="active">1. Mengolah Data JSON</a></li>
+                <li><a href="#destructuring">2. Destrukturisasi & Spread</a></li>
+                <li><a href="#koding">3. Praktik</a></li>
+                <li><a href="#cpmk">4. Capaian Pembelajaran</a></li>
+            </ul>
+            <!-- <h3>Link Terkait</h3>
+            <ul>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-01-lingkungan-kerja-javascript.html">&larr; Pertemuan 1</a></li>
+                <li><a href="materi-03-modul-asinkron.html">Pertemuan 3 &rarr;</a></li>
+                <li><a href="index.html">Silabus</a></li>
+            </ul> -->
+        </nav>
+
+        <main class="content">
+
+
+
+            <!-- Section 1 -->
+            <section id="array-methods">
+                <h2>1. Mengolah Data JSON dengan Metode Array <span class="badge badge-important">Indikator 1.5</span></h2>
+
+                <p>Ini adalah <strong>inti Pertemuan 2</strong>. Di Laravel kalian mungkin sudah memakai Collection (<code>-&gt;filter()</code>, <code>-&gt;map()</code>, <code>-&gt;sum()</code>). JavaScript punya kemampuan yang sama, tetapi <strong>bawaan bahasanya</strong> &mdash; tanpa pustaka apa pun.</p>
+                <p>Keterampilan yang dilatih di sini akan terpakai setiap hari sampai akhir semester: mengubah baris dari basis data menjadi tanggapan API, dan mengubah JSON dari API menjadi tampilan.</p>
+
+                <div class="info-box">
+                    <strong>Praktikkan sambil membaca &mdash; buat proyek baru <code>latihan-materi-2</code>.</strong> Sama seperti <code>latihan-js</code> di Pertemuan 1, kita mulai dengan satu proyek npm kosong yang dipakai untuk <strong>seluruh</strong> materi Pertemuan 2 (Section 1 dan 2). Proyek Pertemuan 1 tidak dilanjutkan &mdash; ini folder baru.
+                    <div class="terminal"><span class="prompt">$</span> mkdir latihan-materi-2
+<span class="prompt">$</span> cd latihan-materi-2
+<span class="prompt">$</span> npm init -y</div>
+                    Lalu buka <code>package.json</code> dan tambahkan <code>"type": "module"</code> (sudah dibahas di Pertemuan 1). Setiap subbagian di bawah punya kotak <em>&ldquo;Coba di <code>latihan-materi-2</code>&rdquo;</em>: buat berkas <code>.js</code> yang disebutkan, ketik ulang kodenya (jangan salin-tempel), lalu jalankan <code>node namafile.js</code> dan cocokkan hasilnya.
+                </div>
+
+                <h3>Data Contoh</h3>
+                <p>Seluruh contoh di Section 1 memakai data yang sama &mdash; anggap saja hasil <code>SELECT</code> dari basis data. Simpan sekali di <code>data.js</code> supaya bisa dipakai ulang oleh berkas latihan lain:</p>
+
+                <pre><code><span class="comment">// data.js</span>
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">mahasiswa</span> = [
+    { <span class="variable">nim</span>: <span class="string">"F1D021001"</span>, <span class="variable">nama</span>: <span class="string">"Andi"</span>,  <span class="variable">ipk</span>: <span class="number">3.75</span>, <span class="variable">semester</span>: <span class="number">6</span>, <span class="variable">aktif</span>: <span class="keyword">true</span>  },
+    { <span class="variable">nim</span>: <span class="string">"F1D021002"</span>, <span class="variable">nama</span>: <span class="string">"Budi"</span>,  <span class="variable">ipk</span>: <span class="number">3.20</span>, <span class="variable">semester</span>: <span class="number">6</span>, <span class="variable">aktif</span>: <span class="keyword">true</span>  },
+    { <span class="variable">nim</span>: <span class="string">"F1D021003"</span>, <span class="variable">nama</span>: <span class="string">"Citra"</span>, <span class="variable">ipk</span>: <span class="number">3.90</span>, <span class="variable">semester</span>: <span class="number">6</span>, <span class="variable">aktif</span>: <span class="keyword">false</span> },
+    { <span class="variable">nim</span>: <span class="string">"F1D021004"</span>, <span class="variable">nama</span>: <span class="string">"Dewi"</span>,  <span class="variable">ipk</span>: <span class="number">3.55</span>, <span class="variable">semester</span>: <span class="number">4</span>, <span class="variable">aktif</span>: <span class="keyword">true</span>  },
+    { <span class="variable">nim</span>: <span class="string">"F1D021005"</span>, <span class="variable">nama</span>: <span class="string">"Eko"</span>,   <span class="variable">ipk</span>: <span class="number">2.85</span>, <span class="variable">semester</span>: <span class="number">4</span>, <span class="variable">aktif</span>: <span class="keyword">true</span>  }
+];</code></pre>
+                <div class="flow-note">Kata <code>export</code> di depan <code>const</code> membuat <code>mahasiswa</code> bisa diambil berkas lain dengan <code>import { mahasiswa } from './data.js'</code>. Cara kerja modul dibahas tuntas di Pertemuan 3 &mdash; untuk sekarang, cukup ikuti polanya.</div>
+
+                <h3>Ringkasan Metode yang Wajib Dikuasai</h3>
+                <table>
+                    <tr>
+                        <th>Metode</th>
+                        <th>Mengembalikan</th>
+                        <th>Dipakai untuk</th>
+                    </tr>
+                    <tr>
+                        <td><code>map()</code></td>
+                        <td>Array baru, panjang <strong>sama</strong></td>
+                        <td>Mengubah bentuk setiap elemen</td>
+                    </tr>
+                    <tr>
+                        <td><code>filter()</code></td>
+                        <td>Array baru, panjang <strong>&le;</strong> asal</td>
+                        <td>Menyaring elemen sesuai syarat</td>
+                    </tr>
+                    <tr>
+                        <td><code>reduce()</code></td>
+                        <td><strong>Satu nilai</strong> apa saja</td>
+                        <td>Meringkas: total, rata-rata, pengelompokan</td>
+                    </tr>
+                    <tr>
+                        <td><code>find()</code></td>
+                        <td>Elemen pertama yang cocok, atau <code>undefined</code></td>
+                        <td>Mencari satu data</td>
+                    </tr>
+                    <tr>
+                        <td><code>some()</code></td>
+                        <td><code>true</code> / <code>false</code></td>
+                        <td>Apakah <strong>ada minimal satu</strong> yang cocok?</td>
+                    </tr>
+                    <tr>
+                        <td><code>every()</code></td>
+                        <td><code>true</code> / <code>false</code></td>
+                        <td>Apakah <strong>semua</strong> cocok?</td>
+                    </tr>
+                    <tr>
+                        <td><code>sort()</code></td>
+                        <td>Array terurut (<strong>mengubah aslinya!</strong>)</td>
+                        <td>Mengurutkan</td>
+                    </tr>
+                </table>
+
+                <h3>1.1 map() &mdash; Mengubah Bentuk</h3>
+                <p><code>map()</code> menjalankan fungsi yang kalian berikan <strong>satu kali untuk setiap elemen</strong>, lalu mengumpulkan nilai yang dikembalikan fungsi itu ke dalam array baru. Fungsi tersebut menerima tiga argumen &mdash; <code>(elemen, indeks, arrayAsli)</code> &mdash; tetapi hampir selalu hanya argumen pertama yang dipakai.</p>
+                <pre><code><span class="comment">// Ambil nama saja</span>
+<span class="keyword">const</span> <span class="variable">namaSaja</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>);
+<span class="comment">// ["Andi", "Budi", "Citra", "Dewi", "Eko"]</span>
+
+<span class="comment">// Memakai indeks (argumen kedua) untuk membuat nomor urut</span>
+<span class="keyword">const</span> <span class="variable">bernomor</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>((<span class="variable">m</span>, <span class="variable">i</span>) <span class="operator">=&gt;</span> <span class="string">`${i + 1}. ${m.nama}`</span>);
+<span class="comment">// ["1. Andi", "2. Budi", ...]</span>
+
+<span class="comment">// Ubah ke bentuk yang siap dikirim sebagai tanggapan API</span>
+<span class="keyword">const</span> <span class="variable">ringkas</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> ({
+    <span class="variable">id</span>: <span class="variable">m</span>.<span class="variable">nim</span>,
+    <span class="variable">label</span>: <span class="string">`${m.nama} (IPK ${m.ipk})`</span>,
+    <span class="variable">lulusSyarat</span>: <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.0</span>
+}));
+<span class="comment">// [{ id: "F1D021001", label: "Andi (IPK 3.75)", lulusSyarat: true }, ...]</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Tiga hal yang harus melekat soal <code>map()</code>:</strong>
+                    <ul>
+                        <li>Array hasil selalu <strong>baru</strong> dan jumlah elemennya <strong>sama persis</strong> dengan array asal. Kalau jumlahnya berubah, yang kalian butuhkan <code>filter()</code>, bukan <code>map()</code>.</li>
+                        <li>Array asal <strong>tidak berubah</strong> &mdash; <code>map</code> tidak memutasi.</li>
+                        <li>Untuk mengembalikan <em>object</em> dari arrow function, bungkus dengan kurung: <code>m =&gt; ({ ... })</code>. Tanpa kurung, <code>{ }</code> dikira badan fungsi (kesalahan dari Pertemuan 1).</li>
+                    </ul>
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>01-map.js</code>:
+                    <pre><code><span class="comment">// 01-map.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">namaSaja</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>);
+<span class="keyword">const</span> <span class="variable">ringkas</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> ({ <span class="variable">nama</span>: <span class="variable">m</span>.<span class="variable">nama</span>, <span class="variable">lulus</span>: <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.0</span> }));
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">namaSaja</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">ringkas</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'array asal utuh?'</span>, <span class="variable">mahasiswa</span>.<span class="variable">length</span> === <span class="number">5</span>);</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 01-map.js
+<span class="out">[ 'Andi', 'Budi', 'Citra', 'Dewi', 'Eko' ]
+[
+  { nama: 'Andi', lulus: true },
+  { nama: 'Budi', lulus: true },
+  { nama: 'Citra', lulus: true },
+  { nama: 'Dewi', lulus: true },
+  { nama: 'Eko', lulus: false }
+]
+array asal utuh? true</span></div>
+                </div>
+
+                <h3>1.2 filter() &mdash; Menyaring</h3>
+                <p>Fungsi yang diberikan ke <code>filter()</code> disebut <strong>predikat</strong> &mdash; ia harus mengembalikan nilai yang bisa dibaca sebagai benar/salah. Elemen yang predikatnya <strong>benar (truthy)</strong> ikut ke array hasil; yang salah dibuang. Panjang array hasil selalu <strong>&le;</strong> array asal.</p>
+                <pre><code><span class="keyword">const</span> <span class="variable">aktif</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span>);
+<span class="comment">// 4 mahasiswa (Citra tersaring keluar karena aktif: false)</span>
+
+<span class="comment">// Beberapa syarat sekaligus dengan && dan ||</span>
+<span class="keyword">const</span> <span class="variable">berprestasi</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span> <span class="operator">&amp;&amp;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.5</span>);
+<span class="comment">// Andi dan Dewi</span>
+
+<span class="comment">// filter yang mengembalikan array kosong BUKAN error — panjangnya 0</span>
+<span class="keyword">const</span> <span class="variable">ds</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;</span> <span class="number">4.0</span>);   <span class="comment">// []</span></code></pre>
+
+                <div class="info-box">
+                    <strong><code>map</code> vs <code>filter</code> &mdash; jangan tertukar:</strong> <code>map</code> menjawab <em>&ldquo;ubah tiap elemen jadi apa?&rdquo;</em> (jumlah tetap); <code>filter</code> menjawab <em>&ldquo;elemen mana yang disimpan?&rdquo;</em> (bentuk tetap, jumlah menyusut). Butuh keduanya? Rangkai: <code>.filter(...).map(...)</code> &mdash; lihat 1.5.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>02-filter.js</code>:
+                    <pre><code><span class="comment">// 02-filter.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">aktif</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span>);
+<span class="keyword">const</span> <span class="variable">berprestasi</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span> <span class="operator">&amp;&amp;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.5</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'aktif      :'</span>, <span class="variable">aktif</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'berprestasi:'</span>, <span class="variable">berprestasi</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>));</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 02-filter.js
+<span class="out">aktif      : [ 'Andi', 'Budi', 'Dewi', 'Eko' ]
+berprestasi: [ 'Andi', 'Dewi' ]</span></div>
+                </div>
+
+                <h3>1.3 reduce() &mdash; Meringkas Jadi Satu Nilai</h3>
+                <p><code>reduce()</code> adalah metode yang paling ditakuti mahasiswa, padahal polanya sederhana. Ia berjalan dari elemen pertama ke terakhir sambil membawa satu <strong>ember penampung</strong> (akumulator).</p>
+
+                <pre><code><span class="comment">//        akumulator, elemen         nilai awal ember</span>
+<span class="comment">//             ↓         ↓                    ↓</span>
+<span class="keyword">const</span> <span class="variable">totalIpk</span> = <span class="variable">mahasiswa</span>.<span class="function">reduce</span>((<span class="variable">total</span>, <span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">total</span> + <span class="variable">m</span>.<span class="variable">ipk</span>, <span class="number">0</span>);
+<span class="comment">// 17.25</span>
+
+<span class="keyword">const</span> <span class="variable">rataRata</span> = <span class="variable">totalIpk</span> / <span class="variable">mahasiswa</span>.<span class="variable">length</span>;
+<span class="comment">// 3.45</span></code></pre>
+
+                <p>Langkah demi langkah, supaya jelas apa yang terjadi:</p>
+                <table>
+                    <tr>
+                        <th>Putaran</th>
+                        <th><code>total</code> masuk</th>
+                        <th><code>m.ipk</code></th>
+                        <th><code>total</code> keluar</th>
+                    </tr>
+                    <tr><td>awal</td><td>&mdash;</td><td>&mdash;</td><td>0</td></tr>
+                    <tr><td>1 (Andi)</td><td>0</td><td>3.75</td><td>3.75</td></tr>
+                    <tr><td>2 (Budi)</td><td>3.75</td><td>3.20</td><td>6.95</td></tr>
+                    <tr><td>3 (Citra)</td><td>6.95</td><td>3.90</td><td>10.85</td></tr>
+                    <tr><td>4 (Dewi)</td><td>10.85</td><td>3.55</td><td>14.40</td></tr>
+                    <tr><td>5 (Eko)</td><td>14.40</td><td>2.85</td><td><strong>17.25</strong></td></tr>
+                </table>
+
+                <p>Ember penampung tidak harus angka. Ini pola <strong>pengelompokan</strong> yang akan sangat sering kalian pakai:</p>
+
+                <pre><code><span class="comment">// Kelompokkan mahasiswa per semester</span>
+<span class="keyword">const</span> <span class="variable">perSemester</span> = <span class="variable">mahasiswa</span>.<span class="function">reduce</span>((<span class="variable">hasil</span>, <span class="variable">m</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">kunci</span> = <span class="variable">m</span>.<span class="variable">semester</span>;
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">hasil</span>[<span class="variable">kunci</span>]) <span class="variable">hasil</span>[<span class="variable">kunci</span>] = [];
+    <span class="variable">hasil</span>[<span class="variable">kunci</span>].<span class="function">push</span>(<span class="variable">m</span>.<span class="variable">nama</span>);
+    <span class="keyword">return</span> <span class="variable">hasil</span>;
+}, {});
+
+<span class="comment">// { "4": ["Dewi", "Eko"], "6": ["Andi", "Budi", "Citra"] }</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Dua kesalahan klasik pada <code>reduce()</code>:</strong>
+                    <ul>
+                        <li><strong>Lupa nilai awal</strong> (argumen kedua). Tanpa itu, elemen pertama dipakai sebagai ember &mdash; dan hasilnya kacau saat ember seharusnya berupa object atau angka 0. Pada array kosong tanpa nilai awal, <code>reduce</code> bahkan <em>melempar</em> <code>TypeError</code>.</li>
+                        <li><strong>Lupa <code>return</code></strong> di dalam badan berkurung kurawal. Ember jadi <code>undefined</code> pada putaran berikutnya, lalu <code>undefined.push(...)</code> membuat program mati.</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <strong>Kapan pakai <code>reduce</code>?</strong> Setiap kali kalian ingin mengubah <em>banyak elemen</em> menjadi <em>satu hasil</em>: total, rata-rata, nilai maksimum, sebuah object pengelompokan, sebuah string gabungan, atau bahkan array baru yang bentuknya tidak sepadan 1:1 dengan asalnya. Kalau hasil akhirnya masih berupa array sepanjang asal &rarr; itu <code>map</code>. Kalau lebih pendek tapi elemennya tak berubah &rarr; itu <code>filter</code>.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>03-reduce.js</code>:
+                    <pre><code><span class="comment">// 03-reduce.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">totalIpk</span> = <span class="variable">mahasiswa</span>.<span class="function">reduce</span>((<span class="variable">total</span>, <span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">total</span> + <span class="variable">m</span>.<span class="variable">ipk</span>, <span class="number">0</span>);
+<span class="keyword">const</span> <span class="variable">rataRata</span> = <span class="variable">totalIpk</span> / <span class="variable">mahasiswa</span>.<span class="variable">length</span>;
+
+<span class="keyword">const</span> <span class="variable">perSemester</span> = <span class="variable">mahasiswa</span>.<span class="function">reduce</span>((<span class="variable">hasil</span>, <span class="variable">m</span>) <span class="operator">=&gt;</span> {
+    (<span class="variable">hasil</span>[<span class="variable">m</span>.<span class="variable">semester</span>] <span class="operator">??=</span> []).<span class="function">push</span>(<span class="variable">m</span>.<span class="variable">nama</span>);
+    <span class="keyword">return</span> <span class="variable">hasil</span>;
+}, {});
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'total IPK :'</span>, <span class="variable">totalIpk</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'rata-rata :'</span>, <span class="variable">rataRata</span>.<span class="function">toFixed</span>(<span class="number">2</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'per semester:'</span>, <span class="variable">perSemester</span>);</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 03-reduce.js
+<span class="out">total IPK : 17.25
+rata-rata : 3.45
+per semester: { '4': [ 'Dewi', 'Eko' ], '6': [ 'Andi', 'Budi', 'Citra' ] }</span></div>
+                    <div class="flow-note"><code>??=</code> (nullish assignment) mengisi <code>hasil[kunci]</code> dengan <code>[]</code> hanya kalau ia masih <code>undefined</code> &mdash; bentuk ringkas dari <code>if (!hasil[kunci]) hasil[kunci] = []</code>.</div>
+                </div>
+
+                <h3>1.4 find(), some(), every()</h3>
+                <pre><code><span class="comment">// find — satu data saja, atau undefined kalau tidak ketemu</span>
+<span class="keyword">const</span> <span class="variable">cari</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nim</span> === <span class="string">"F1D021003"</span>);
+<span class="comment">// { nim: "F1D021003", nama: "Citra", ... }</span>
+
+<span class="comment">// some — apakah ADA minimal satu?</span>
+<span class="keyword">const</span> <span class="variable">adaCumlaude</span> = <span class="variable">mahasiswa</span>.<span class="function">some</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.5</span>);   <span class="comment">// true</span>
+
+<span class="comment">// every — apakah SEMUA memenuhi?</span>
+<span class="keyword">const</span> <span class="variable">semuaLulus</span> = <span class="variable">mahasiswa</span>.<span class="function">every</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.0</span>);   <span class="comment">// false (Eko 2.85)</span>
+
+<span class="comment">// Pola pemeriksaan yang aman sebelum memakai hasil find:</span>
+<span class="keyword">if</span> (<span class="operator">!</span><span class="variable">cari</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">"Mahasiswa tidak ditemukan"</span>);   <span class="comment">// nanti → HTTP 404</span>
+}</code></pre>
+
+                <table>
+                    <tr><th>Metode</th><th>Pertanyaan yang dijawab</th><th>Hasil</th></tr>
+                    <tr><td><code>find</code></td><td>&ldquo;Mana <em>satu</em> elemen yang cocok?&rdquo;</td><td>elemen, atau <code>undefined</code></td></tr>
+                    <tr><td><code>findIndex</code></td><td>&ldquo;Di <em>posisi</em> ke berapa?&rdquo;</td><td>angka indeks, atau <code>-1</code></td></tr>
+                    <tr><td><code>some</code></td><td>&ldquo;<em>Ada</em> minimal satu yang cocok?&rdquo;</td><td><code>true</code> / <code>false</code></td></tr>
+                    <tr><td><code>every</code></td><td>&ldquo;<em>Semua</em> cocok?&rdquo;</td><td><code>true</code> / <code>false</code></td></tr>
+                    <tr><td><code>includes</code></td><td>&ldquo;Array ini <em>mengandung</em> nilai X?&rdquo; (nilai sederhana, bukan object)</td><td><code>true</code> / <code>false</code></td></tr>
+                </table>
+                <div class="flow-note">Pada array kosong: <code>some</code> selalu <code>false</code>, <code>every</code> selalu <code>true</code> (&ldquo;semua nol elemen memenuhi syarat&rdquo; &mdash; ini benar secara logika, tapi sering mengejutkan).</div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>04-find-some-every.js</code>:
+                    <pre><code><span class="comment">// 04-find-some-every.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">citra</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nim</span> === <span class="string">'F1D021003'</span>);
+<span class="keyword">const</span> <span class="variable">hantu</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nim</span> === <span class="string">'XXX'</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'ketemu   :'</span>, <span class="variable">citra</span>?.<span class="variable">nama</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'tak ada  :'</span>, <span class="variable">hantu</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'ada &gt;=3.5?'</span>, <span class="variable">mahasiswa</span>.<span class="function">some</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.5</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'semua &gt;=3?'</span>, <span class="variable">mahasiswa</span>.<span class="function">every</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span> <span class="operator">&gt;=</span> <span class="number">3.0</span>));</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 04-find-some-every.js
+<span class="out">ketemu   : Citra
+tak ada  : undefined
+ada &gt;=3.5? true
+semua &gt;=3? false</span></div>
+                </div>
+
+                <h3>1.5 Merangkai Metode (Chaining)</h3>
+                <p>Karena <code>map()</code> dan <code>filter()</code> mengembalikan array, hasilnya bisa langsung disambung ke metode berikutnya. Inilah <strong>rantai filter &ndash; map &ndash; reduce</strong> yang menjadi inti pertemuan ini.</p>
+
+                <pre><code><span class="comment">// "Berapa rata-rata IPK mahasiswa aktif semester 6?"</span>
+<span class="keyword">const</span> <span class="variable">aktifSemester6</span> = <span class="variable">mahasiswa</span>
+    .<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span> <span class="operator">&amp;&amp;</span> <span class="variable">m</span>.<span class="variable">semester</span> === <span class="number">6</span>)   <span class="comment">// saring dulu</span>
+    .<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">ipk</span>)                              <span class="comment">// ambil angkanya</span>
+    .<span class="function">reduce</span>((<span class="variable">a</span>, <span class="variable">b</span>) <span class="operator">=&gt;</span> <span class="variable">a</span> + <span class="variable">b</span>, <span class="number">0</span>) / <span class="number">2</span>;               <span class="comment">// jumlahkan, bagi</span>
+
+<span class="comment">// 3.475</span>
+
+<span class="comment">// Daftar nama, urut IPK tertinggi, hanya yang aktif</span>
+<span class="keyword">const</span> <span class="variable">peringkat</span> = <span class="variable">mahasiswa</span>
+    .<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span>)
+    .<span class="function">sort</span>((<span class="variable">a</span>, <span class="variable">b</span>) <span class="operator">=&gt;</span> <span class="variable">b</span>.<span class="variable">ipk</span> - <span class="variable">a</span>.<span class="variable">ipk</span>)          <span class="comment">// b - a = menurun</span>
+    .<span class="function">map</span>((<span class="variable">m</span>, <span class="variable">i</span>) <span class="operator">=&gt;</span> <span class="string">`${i + 1}. ${m.nama} — ${m.ipk}`</span>);
+
+<span class="comment">// ["1. Andi — 3.75", "2. Dewi — 3.55", "3. Budi — 3.2", "4. Eko — 2.85"]</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Awas <code>sort()</code>:</strong> metode ini <strong>mengubah array aslinya</strong> (berbeda dari <code>map</code>/<code>filter</code>). Kalau array asli tidak boleh berubah, salin dulu: <code>[...mahasiswa].sort(...)</code> atau pakai <code>mahasiswa.toSorted(...)</code> yang tersedia di Node.js modern.
+                </div>
+
+                <div class="info-box">
+                    <strong>Fungsi pembanding <code>sort((a, b) =&gt; ...)</code>:</strong> ia dipanggil berpasang-pasangan dan hanya melihat tanda hasilnya &mdash; <strong>negatif</strong> berarti <code>a</code> di depan <code>b</code>, <strong>positif</strong> berarti <code>b</code> di depan <code>a</code>, <strong>0</strong> berarti urutan tetap. Karena itu:
+                    <ul>
+                        <li>Angka menaik: <code>(a, b) =&gt; a - b</code></li>
+                        <li>Angka menurun: <code>(a, b) =&gt; b - a</code></li>
+                        <li>Teks: <code>(a, b) =&gt; a.nama.localeCompare(b.nama)</code></li>
+                    </ul>
+                    Tanpa fungsi pembanding, <code>sort()</code> mengurutkan sebagai <em>teks</em> &mdash; <code>[2, 10, 1]</code> jadi <code>[1, 10, 2]</code>.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>05-chaining.js</code> &mdash; menjawab satu pertanyaan nyata dengan satu rantai:
+                    <pre><code><span class="comment">// 05-chaining.js — "rata-rata IPK mahasiswa aktif semester 6?"</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">terpilih</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span> <span class="operator">&amp;&amp;</span> <span class="variable">m</span>.<span class="variable">semester</span> === <span class="number">6</span>);
+<span class="keyword">const</span> <span class="variable">rata</span> = <span class="variable">terpilih</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">m</span>.<span class="variable">ipk</span>, <span class="number">0</span>) / <span class="variable">terpilih</span>.<span class="variable">length</span>;
+
+<span class="keyword">const</span> <span class="variable">peringkat</span> = <span class="variable">mahasiswa</span>
+    .<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">aktif</span>)
+    .<span class="function">toSorted</span>((<span class="variable">a</span>, <span class="variable">b</span>) <span class="operator">=&gt;</span> <span class="variable">b</span>.<span class="variable">ipk</span> - <span class="variable">a</span>.<span class="variable">ipk</span>)
+    .<span class="function">map</span>((<span class="variable">m</span>, <span class="variable">i</span>) <span class="operator">=&gt;</span> <span class="string">`${i + 1}. ${m.nama} (${m.ipk})`</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'terpilih:'</span>, <span class="variable">terpilih</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'rata IPK:'</span>, <span class="variable">rata</span>.<span class="function">toFixed</span>(<span class="number">2</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">peringkat</span>);</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 05-chaining.js
+<span class="out">terpilih: [ 'Andi', 'Budi' ]
+rata IPK: 3.48
+[
+  '1. Andi (3.75)',
+  '2. Dewi (3.55)',
+  '3. Budi (3.2)',
+  '4. Eko (2.85)'
+]</span></div>
+                    <div class="flow-note">Dipakai <code>toSorted()</code> (bukan <code>sort()</code>) supaya array hasil <code>filter</code> tidak diurutkan di tempat &mdash; lebih aman sebagai kebiasaan.</div>
+                </div>
+
+                <h3>1.6 Data JSON Bersarang</h3>
+                <p>Data nyata jarang serata contoh di atas. Biasanya ada array di dalam object:</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">kelas</span> = [
+    {
+        <span class="variable">kode</span>: <span class="string">"MPK1300210"</span>,
+        <span class="variable">nama</span>: <span class="string">"Pemrograman Web Lanjut"</span>,
+        <span class="variable">peserta</span>: [
+            { <span class="variable">nama</span>: <span class="string">"Andi"</span>, <span class="variable">nilai</span>: <span class="number">85</span> },
+            { <span class="variable">nama</span>: <span class="string">"Budi"</span>, <span class="variable">nilai</span>: <span class="number">78</span> }
+        ]
+    },
+    {
+        <span class="variable">kode</span>: <span class="string">"MPK1300135"</span>,
+        <span class="variable">nama</span>: <span class="string">"DevOps"</span>,
+        <span class="variable">peserta</span>: [
+            { <span class="variable">nama</span>: <span class="string">"Citra"</span>, <span class="variable">nilai</span>: <span class="number">92</span> }
+        ]
+    }
+];
+
+<span class="comment">// flatMap: map + ratakan satu tingkat — semua peserta dari semua kelas</span>
+<span class="keyword">const</span> <span class="variable">semuaPeserta</span> = <span class="variable">kelas</span>.<span class="function">flatMap</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> <span class="variable">k</span>.<span class="variable">peserta</span>);
+<span class="comment">// 3 peserta dalam satu array datar</span>
+
+<span class="comment">// Ringkasan per kelas</span>
+<span class="keyword">const</span> <span class="variable">laporan</span> = <span class="variable">kelas</span>.<span class="function">map</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> ({
+    <span class="variable">kode</span>: <span class="variable">k</span>.<span class="variable">kode</span>,
+    <span class="variable">jumlah</span>: <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="variable">length</span>,
+    <span class="variable">rataRata</span>: <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">p</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">p</span>.<span class="variable">nilai</span>, <span class="number">0</span>) / <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="variable">length</span>
+}));
+
+<span class="comment">// [{ kode: "MPK1300210", jumlah: 2, rataRata: 81.5 },</span>
+<span class="comment">//  { kode: "MPK1300135", jumlah: 1, rataRata: 92 }]</span></code></pre>
+
+                <div class="info-box">
+                    <strong><code>flatMap</code> vs <code>map</code> + <code>flat</code>:</strong> <code>kelas.flatMap(k =&gt; k.peserta)</code> sama dengan <code>kelas.map(k =&gt; k.peserta).flat()</code> &mdash; <code>map</code> menghasilkan <em>array berisi array</em>, lalu <code>flat()</code> meratakannya satu tingkat. <code>flatMap</code> menggabung dua langkah itu dan sedikit lebih cepat.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Data bersarang ini berbeda dari <code>data.js</code>, jadi tulis langsung di berkas. Buat <code>06-bersarang.js</code>:
+                    <pre><code><span class="comment">// 06-bersarang.js</span>
+<span class="keyword">const</span> <span class="variable">kelas</span> = [
+    { <span class="variable">kode</span>: <span class="string">'PWL'</span>,   <span class="variable">peserta</span>: [{ <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">nilai</span>: <span class="number">85</span> }, { <span class="variable">nama</span>: <span class="string">'Budi'</span>, <span class="variable">nilai</span>: <span class="number">78</span> }] },
+    { <span class="variable">kode</span>: <span class="string">'DevOps'</span>, <span class="variable">peserta</span>: [{ <span class="variable">nama</span>: <span class="string">'Citra'</span>, <span class="variable">nilai</span>: <span class="number">92</span> }] }
+];
+
+<span class="keyword">const</span> <span class="variable">semuaPeserta</span> = <span class="variable">kelas</span>.<span class="function">flatMap</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> <span class="variable">k</span>.<span class="variable">peserta</span>);
+<span class="keyword">const</span> <span class="variable">laporan</span> = <span class="variable">kelas</span>.<span class="function">map</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> ({
+    <span class="variable">kode</span>: <span class="variable">k</span>.<span class="variable">kode</span>,
+    <span class="variable">jumlah</span>: <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="variable">length</span>,
+    <span class="variable">rataRata</span>: <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">p</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">p</span>.<span class="variable">nilai</span>, <span class="number">0</span>) / <span class="variable">k</span>.<span class="variable">peserta</span>.<span class="variable">length</span>
+}));
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">semuaPeserta</span>.<span class="function">map</span>(<span class="variable">p</span> <span class="operator">=&gt;</span> <span class="variable">p</span>.<span class="variable">nama</span>));
+<span class="variable">console</span>.<span class="function">table</span>(<span class="variable">laporan</span>);</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 06-bersarang.js
+<span class="out">[ 'Andi', 'Budi', 'Citra' ]
+┌─────────┬──────────┬────────┬──────────┐
+│ (index) │ kode     │ jumlah │ rataRata │
+├─────────┼──────────┼────────┼──────────┤
+│ 0       │ 'PWL'    │ 2      │ 81.5     │
+│ 1       │ 'DevOps' │ 1      │ 92       │
+└─────────┴──────────┴────────┴──────────┘</span></div>
+                    <div class="flow-note"><code>console.table()</code> menampilkan array of object sebagai tabel &mdash; berguna saat memeriksa hasil olahan data.</div>
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Rantai Metode Array</h5>
+                    <p>Data yang dipakai adalah lima mahasiswa di atas. Klik untuk melihat hasil tiap operasi.</p>
+                    <button onclick="demoArray('map')">map()</button>
+                    <button onclick="demoArray('filter')">filter()</button>
+                    <button onclick="demoArray('reduce')">reduce()</button>
+                    <button onclick="demoArray('group')">reduce() kelompok</button>
+                    <button onclick="demoArray('chain')">Rantai lengkap</button>
+                    <div class="console-output" id="demo2-out">Klik salah satu tombol di atas...</div>
+                </div>
+
+                <div class="success-box">
+                    <strong>Titik periksa Section 1:</strong> diberi satu berkas JSON, kalian bisa menjawab pertanyaan seperti "berapa rata-rata X untuk kelompok Y" hanya dengan merangkai <code>filter</code> &rarr; <code>map</code> &rarr; <code>reduce</code>, tanpa satu pun <code>for</code> manual. Di folder <code>latihan-materi-2</code> sudah ada berkas <code>01-map.js</code> s.d. <code>06-bersarang.js</code> yang jalan.
+                </div>
+            </section>
+
+
+
+            <!-- Section 2 -->
+            <section id="destructuring">
+                <h2>2. Destrukturisasi, Spread & Optional Chaining <span class="badge">Indikator 1.6</span></h2>
+
+                <p>Tiga sintaks ini membuat kode jadi jauh lebih pendek dan lebih aman. Ketiganya muncul di hampir setiap berkas kode JavaScript modern, jadi harus dikenali sampai reflek.</p>
+
+                <h3>2.1 Destrukturisasi Object</h3>
+                <p>Mengambil beberapa properti sekaligus, tanpa menulis nama objectnya berulang kali.</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">m</span> = { <span class="variable">nim</span>: <span class="string">"F1D021001"</span>, <span class="variable">nama</span>: <span class="string">"Andi"</span>, <span class="variable">ipk</span>: <span class="number">3.75</span> };
+
+<span class="comment">// Cara lama</span>
+<span class="keyword">const</span> <span class="variable">nama</span> = <span class="variable">m</span>.<span class="variable">nama</span>;
+<span class="keyword">const</span> <span class="variable">ipk</span> = <span class="variable">m</span>.<span class="variable">ipk</span>;
+
+<span class="comment">// Destrukturisasi</span>
+<span class="keyword">const</span> { <span class="variable">nama</span>, <span class="variable">ipk</span> } = <span class="variable">m</span>;
+
+<span class="comment">// Ganti nama variabel</span>
+<span class="keyword">const</span> { <span class="variable">nama</span>: <span class="variable">namaMahasiswa</span> } = <span class="variable">m</span>;
+
+<span class="comment">// Nilai bawaan kalau properti tidak ada</span>
+<span class="keyword">const</span> { <span class="variable">nama</span>, <span class="variable">jurusan</span> = <span class="string">"Teknik Informatika"</span> } = <span class="variable">m</span>;
+<span class="comment">// jurusan → "Teknik Informatika"</span>
+
+<span class="comment">// Bersarang</span>
+<span class="keyword">const</span> <span class="variable">data</span> = { <span class="variable">user</span>: { <span class="variable">profil</span>: { <span class="variable">kota</span>: <span class="string">"Mataram"</span> } } };
+<span class="keyword">const</span> { <span class="variable">user</span>: { <span class="variable">profil</span>: { <span class="variable">kota</span> } } } = <span class="variable">data</span>;
+<span class="comment">// kota → "Mataram"</span></code></pre>
+
+                <p>Yang paling sering dipakai: destrukturisasi <strong>langsung di parameter fungsi</strong>. Pola ini akan muncul terus di Express dan React.</p>
+
+                <pre><code><span class="comment">// Tanpa destrukturisasi</span>
+<span class="keyword">function</span> <span class="function">tampil</span>(<span class="variable">m</span>) {
+    <span class="keyword">return</span> <span class="string">`${m.nama} — ${m.ipk}`</span>;
+}
+
+<span class="comment">// Dengan destrukturisasi di parameter</span>
+<span class="keyword">function</span> <span class="function">tampil</span>({ <span class="variable">nama</span>, <span class="variable">ipk</span> }) {
+    <span class="keyword">return</span> <span class="string">`${nama} — ${ipk}`</span>;
+}
+
+<span class="comment">// Nanti di Express akan terlihat seperti ini:</span>
+<span class="comment">// app.post('/mahasiswa', (req, res) =&gt; {</span>
+<span class="comment">//     const { nama, nim, ipk } = req.body;   ← pola yang sama</span>
+<span class="comment">// });</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Salah satu jebakan:</strong> destrukturisasi properti yang <em>bersarang</em> (<code>const { user: { profil } } = data</code>) akan <strong>error</strong> kalau <code>user</code> ternyata <code>undefined</code>. Untuk data yang mungkin tak lengkap, beri nilai bawaan di setiap tingkat: <code>const { user: { profil } = {} } = data</code> &mdash; atau lebih aman, pakai optional chaining (2.5).
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>07-destr-object.js</code>:
+                    <pre><code><span class="comment">// 07-destr-object.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="comment">// destrukturisasi + rename + nilai bawaan sekaligus</span>
+<span class="keyword">const</span> { <span class="variable">nama</span>: <span class="variable">n</span>, <span class="variable">ipk</span>, <span class="variable">jurusan</span> = <span class="string">'Teknik Informatika'</span> } = <span class="variable">mahasiswa</span>[<span class="number">0</span>];
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">n</span>, <span class="variable">ipk</span>, <span class="variable">jurusan</span>);
+
+<span class="comment">// destrukturisasi di parameter fungsi</span>
+<span class="keyword">const</span> <span class="function">baris</span> = ({ <span class="variable">nim</span>, <span class="variable">nama</span> }) <span class="operator">=&gt;</span> <span class="string">`${nim} — ${nama}`</span>;
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="function">baris</span>));</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 07-destr-object.js
+<span class="out">Andi 3.75 Teknik Informatika
+[
+  'F1D021001 — Andi',
+  'F1D021002 — Budi',
+  'F1D021003 — Citra',
+  'F1D021004 — Dewi',
+  'F1D021005 — Eko'
+]</span></div>
+                </div>
+
+                <h3>2.2 Destrukturisasi Array</h3>
+                <pre><code><span class="keyword">const</span> <span class="variable">warna</span> = [<span class="string">"merah"</span>, <span class="string">"hijau"</span>, <span class="string">"biru"</span>];
+
+<span class="keyword">const</span> [<span class="variable">pertama</span>, <span class="variable">kedua</span>] = <span class="variable">warna</span>;          <span class="comment">// "merah", "hijau"</span>
+<span class="keyword">const</span> [, , <span class="variable">ketiga</span>] = <span class="variable">warna</span>;               <span class="comment">// lewati dua yang pertama</span>
+<span class="keyword">const</span> [<span class="variable">kepala</span>, ...<span class="variable">sisa</span>] = <span class="variable">warna</span>;         <span class="comment">// "merah", ["hijau","biru"]</span>
+
+<span class="comment">// Menukar nilai tanpa variabel bantu</span>
+<span class="keyword">let</span> <span class="variable">a</span> = <span class="number">1</span>, <span class="variable">b</span> = <span class="number">2</span>;
+[<span class="variable">a</span>, <span class="variable">b</span>] = [<span class="variable">b</span>, <span class="variable">a</span>];                         <span class="comment">// a=2, b=1</span></code></pre>
+
+                <h3>2.3 Spread (<code>...</code>)</h3>
+                <p>Tanda tiga titik <strong>menyalin isi</strong> array atau object ke tempat baru.</p>
+
+                <pre><code><span class="comment">// Menyalin dan menggabung array</span>
+<span class="keyword">const</span> <span class="variable">a</span> = [<span class="number">1</span>, <span class="number">2</span>];
+<span class="keyword">const</span> <span class="variable">b</span> = [<span class="number">3</span>, <span class="number">4</span>];
+<span class="keyword">const</span> <span class="variable">gabung</span> = [...<span class="variable">a</span>, ...<span class="variable">b</span>];              <span class="comment">// [1, 2, 3, 4]</span>
+<span class="keyword">const</span> <span class="variable">salinan</span> = [...<span class="variable">a</span>];                   <span class="comment">// salinan baru, bukan rujukan</span>
+
+<span class="comment">// Menyalin dan menimpa object — POLA PALING SERING DIPAKAI</span>
+<span class="keyword">const</span> <span class="variable">m</span> = { <span class="variable">nim</span>: <span class="string">"001"</span>, <span class="variable">nama</span>: <span class="string">"Andi"</span>, <span class="variable">ipk</span>: <span class="number">3.75</span> };
+
+<span class="keyword">const</span> <span class="variable">diperbarui</span> = { ...<span class="variable">m</span>, <span class="variable">ipk</span>: <span class="number">3.80</span> };
+<span class="comment">// { nim: "001", nama: "Andi", ipk: 3.80 } — m TIDAK berubah</span>
+
+<span class="keyword">const</span> <span class="variable">tanpaIpk</span> = (({ <span class="variable">ipk</span>, ...<span class="variable">sisa</span> }) <span class="operator">=&gt;</span> <span class="variable">sisa</span>)(<span class="variable">m</span>);
+<span class="comment">// { nim: "001", nama: "Andi" } — pola membuang satu field</span>
+<span class="comment">// (nanti dipakai untuk membuang password sebelum dikirim ke klien)</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Mengapa menyalin, bukan mengubah langsung?</strong> Mengubah data asli (mutasi) adalah sumber bug yang sangat sulit dilacak, terutama di React nanti &mdash; React memutuskan perlu tidaknya menggambar ulang dengan membandingkan object lama dan baru. Kalau kalian mengubah isinya di tempat, React menganggap tidak ada yang berubah. Biasakan membuat salinan sejak sekarang.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Spread hanya menyalin <em>satu tingkat</em> (shallow copy).</strong> <code>{ ...m }</code> membuat object luar yang baru, tetapi object atau array <em>di dalam</em> <code>m</code> masih dibagi (rujukan yang sama).
+                    <pre><code><span class="keyword">const</span> <span class="variable">asli</span> = { <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">nilai</span>: { <span class="variable">uts</span>: <span class="number">80</span> } };
+<span class="keyword">const</span> <span class="variable">salin</span> = { ...<span class="variable">asli</span> };
+<span class="variable">salin</span>.<span class="variable">nilai</span>.<span class="variable">uts</span> = <span class="number">0</span>;
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">asli</span>.<span class="variable">nilai</span>.<span class="variable">uts</span>);   <span class="comment">// 0  ← ikut berubah!</span></code></pre>
+                    Untuk menyalin tingkat dalam juga: <code>{ ...asli, nilai: { ...asli.nilai } }</code>, atau <code>structuredClone(asli)</code> untuk salinan penuh.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>08-spread.js</code>:
+                    <pre><code><span class="comment">// 08-spread.js</span>
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./data.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">andi</span> = <span class="variable">mahasiswa</span>[<span class="number">0</span>];
+
+<span class="comment">// menyalin + menimpa satu field (tanpa mengubah asli)</span>
+<span class="keyword">const</span> <span class="variable">naik</span> = { ...<span class="variable">andi</span>, <span class="variable">ipk</span>: <span class="number">3.90</span> };
+
+<span class="comment">// membuang satu field (mis. sebelum dikirim ke klien)</span>
+<span class="keyword">const</span> { <span class="variable">aktif</span>, ...<span class="variable">tanpaAktif</span> } = <span class="variable">andi</span>;
+
+<span class="comment">// menggabung dua array</span>
+<span class="keyword">const</span> <span class="variable">semuaNama</span> = [<span class="string">'(daftar)'</span>, ...<span class="variable">mahasiswa</span>.<span class="function">map</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>)];
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">naik</span>.<span class="variable">ipk</span>, <span class="string">'| asli:'</span>, <span class="variable">andi</span>.<span class="variable">ipk</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">tanpaAktif</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">semuaNama</span>);</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 08-spread.js
+<span class="out">3.9 | asli: 3.75
+{ nim: 'F1D021001', nama: 'Andi', ipk: 3.75, semester: 6 }
+[ '(daftar)', 'Andi', 'Budi', 'Citra', 'Dewi', 'Eko' ]</span></div>
+                </div>
+
+                <h3>2.4 Rest Parameter</h3>
+                <p>Kalau <strong>spread</strong> (2.3) <em>membongkar</em> array/object jadi elemen-elemen lepas, <strong>rest</strong> melakukan kebalikannya: <em>mengumpulkan</em> sisa nilai menjadi satu array. Tanda <code>...</code> sama, tetapi maknanya ditentukan posisi &mdash; di sisi kiri <code>=</code> atau di parameter fungsi berarti "kumpulkan".</p>
+                <pre><code><span class="comment">// Menampung argumen sebanyak apa pun</span>
+<span class="keyword">function</span> <span class="function">jumlahkan</span>(...<span class="variable">angka</span>) {
+    <span class="keyword">return</span> <span class="variable">angka</span>.<span class="function">reduce</span>((<span class="variable">a</span>, <span class="variable">b</span>) <span class="operator">=&gt;</span> <span class="variable">a</span> + <span class="variable">b</span>, <span class="number">0</span>);
+}
+<span class="function">jumlahkan</span>(<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);      <span class="comment">// 10</span>
+
+<span class="comment">// Parameter tetap + sisanya dikumpulkan</span>
+<span class="keyword">function</span> <span class="function">sapa</span>(<span class="variable">pembuka</span>, ...<span class="variable">nama</span>) {
+    <span class="keyword">return</span> <span class="string">`${pembuka} ${nama.join(', ')}`</span>;
+}
+<span class="function">sapa</span>(<span class="string">'Halo'</span>, <span class="string">'Andi'</span>, <span class="string">'Budi'</span>);   <span class="comment">// "Halo Andi, Budi"</span></code></pre>
+
+                <h3>2.5 Optional Chaining (<code>?.</code>) dan Nullish Coalescing (<code>??</code>)</h3>
+                <p>Data dari API atau basis data sering tidak lengkap. Dua operator ini mencegah aplikasi mati hanya karena satu field kosong.</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">user</span> = { <span class="variable">nama</span>: <span class="string">"Andi"</span> };   <span class="comment">// tidak punya .alamat</span>
+
+<span class="comment">// ❌ Aplikasi mati:</span>
+<span class="comment">// console.log(user.alamat.kota);</span>
+<span class="comment">//   TypeError: Cannot read properties of undefined</span>
+
+<span class="comment">// ✅ Aman:</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">user</span>.<span class="variable">alamat</span>?.<span class="variable">kota</span>);           <span class="comment">// undefined, tidak error</span>
+
+<span class="comment">// Rantai panjang pun aman</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">user</span>.<span class="variable">alamat</span>?.<span class="variable">kota</span>?.<span class="function">toUpperCase</span>());
+
+<span class="comment">// Juga bekerja untuk pemanggilan metode dan indeks array</span>
+<span class="variable">user</span>.<span class="function">simpan</span>?.();                          <span class="comment">// dipanggil hanya jika ada</span>
+<span class="variable">user</span>.<span class="variable">nilai</span>?.[<span class="number">0</span>];</code></pre>
+
+                <p><code>??</code> memberi nilai cadangan &mdash; tetapi <strong>hanya</strong> untuk <code>null</code> dan <code>undefined</code>. Ini bedanya dengan <code>||</code>, dan perbedaan ini sering menjadi bug:</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">jumlah</span> = <span class="number">0</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">jumlah</span> || <span class="number">10</span>);      <span class="comment">// 10 ❌ — 0 dianggap "kosong"</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">jumlah</span> ?? <span class="number">10</span>);      <span class="comment">// 0  ✅ — 0 adalah nilai sah</span>
+
+<span class="comment">// Gabungan yang paling sering dipakai:</span>
+<span class="keyword">const</span> <span class="variable">kota</span> = <span class="variable">user</span>.<span class="variable">alamat</span>?.<span class="variable">kota</span> ?? <span class="string">"Belum diisi"</span>;</code></pre>
+
+                <table>
+                    <tr>
+                        <th>Nilai</th>
+                        <th><code>x || "cadangan"</code></th>
+                        <th><code>x ?? "cadangan"</code></th>
+                    </tr>
+                    <tr><td><code>null</code></td><td>"cadangan"</td><td>"cadangan"</td></tr>
+                    <tr><td><code>undefined</code></td><td>"cadangan"</td><td>"cadangan"</td></tr>
+                    <tr><td><code>0</code></td><td>"cadangan" ⚠️</td><td><code>0</code></td></tr>
+                    <tr><td><code>""</code></td><td>"cadangan" ⚠️</td><td><code>""</code></td></tr>
+                    <tr><td><code>false</code></td><td>"cadangan" ⚠️</td><td><code>false</code></td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Aturan pakai:</strong> <code>?.</code> untuk <em>menelusuri</em> struktur yang mungkin tidak ada; <code>??</code> untuk <em>memberi nilai cadangan</em>. Keduanya sering berpasangan: <code>data?.profil?.kota ?? 'Belum diisi'</code>. Jangan pakai <code>?.</code> di mana-mana &mdash; kalau sebuah field <em>seharusnya</em> selalu ada, biarkan error muncul supaya bug ketahuan.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-materi-2</code>.</strong> Buat berkas <code>09-optional-chaining.js</code>:
+                    <pre><code><span class="comment">// 09-optional-chaining.js</span>
+<span class="keyword">const</span> <span class="variable">pesanan</span> = [
+    { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">pelanggan</span>: { <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">alamat</span>: { <span class="variable">kota</span>: <span class="string">'Mataram'</span> } }, <span class="variable">diskon</span>: <span class="number">0</span> },
+    { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">pelanggan</span>: { <span class="variable">nama</span>: <span class="string">'Budi'</span> } },
+    { <span class="variable">id</span>: <span class="number">3</span> }
+];
+
+<span class="keyword">for</span> (<span class="keyword">const</span> <span class="variable">p</span> <span class="keyword">of</span> <span class="variable">pesanan</span>) {
+    <span class="keyword">const</span> <span class="variable">kota</span> = <span class="variable">p</span>.<span class="variable">pelanggan</span>?.<span class="variable">alamat</span>?.<span class="variable">kota</span> ?? <span class="string">'(tidak ada)'</span>;
+    <span class="keyword">const</span> <span class="variable">diskon</span> = <span class="variable">p</span>.<span class="variable">diskon</span> ?? <span class="number">0</span>;
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`#${p.id}  ${p.pelanggan?.nama ?? '???'}  kota=${kota}  diskon=${diskon}`</span>);
+}</code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 09-optional-chaining.js
+<span class="out">#1  Andi  kota=Mataram  diskon=0
+#2  Budi  kota=(tidak ada)  diskon=0
+#3  ???  kota=(tidak ada)  diskon=0</span></div>
+                    <div class="flow-note">Coba ubah <code>p.diskon ?? 0</code> menjadi <code>p.diskon || 5</code>: baris #1 (diskon asli <code>0</code>) akan salah menampilkan <code>5</code>, karena <code>||</code> menganggap <code>0</code> sebagai "kosong". Inilah alasan memakai <code>??</code>.</div>
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Data Tidak Lengkap</h5>
+                    <button onclick="demoSafe('error')">Tanpa ?. (error)</button>
+                    <button onclick="demoSafe('safe')">Dengan ?.</button>
+                    <button onclick="demoSafe('nullish')">|| vs ??</button>
+                    <button onclick="demoSafe('spread')">Spread object</button>
+                    <div class="console-output" id="demo3-out">Klik salah satu tombol di atas...</div>
+                </div>
+            </section>
+
+
+
+            <!-- Section 3 -->
+            <section id="koding">
+                <h2>3. Praktik: Rekap KHS &amp; Perhitungan IPS <span class="badge badge-new">Latihan</span></h2>
+
+                <p>Bagian ini menyatukan semua yang sudah dibahas, dan mulai membangun bagian pertama dari <strong>sistem akademik sederhana</strong> yang akan kita kembangkan sepanjang semester ini &mdash; dari sekadar mengolah JSON di pertemuan ini, sampai jadi API dan antarmuka utuh di pertemuan-pertemuan berikutnya. Kita mulai dari satu berkas JSON &mdash; Kartu Hasil Studi (KHS) mentah &mdash; lalu mengubahnya menjadi rekap IPS <strong>hanya dengan rantai <code>filter</code> &ndash; <code>map</code> &ndash; <code>reduce</code></strong>.</p>
+
+                <div class="info-box">
+                    <strong>Praktik ini pakai proyek terpisah: <code>praktek-materi-2</code>.</strong> Folder <code>latihan-materi-2</code> tadi hanya untuk mencoba potongan kode; praktik yang dinilai dikerjakan di proyek sendiri &mdash; sama seperti <code>pwl-praktik</code> di Pertemuan 1. Simpan folder ini, karena akan dilanjutkan menjadi API di Pertemuan 4.
+                </div>
+
+                <h3>Langkah 0 &mdash; Buat Proyek Praktik</h3>
+                <div class="terminal"><span class="prompt">$</span> mkdir praktek-materi-2
+<span class="prompt">$</span> cd praktek-materi-2
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> mkdir data</div>
+                <p>Tambahkan <code>"type": "module"</code> di <code>package.json</code> agar bisa memakai <code>import</code>. Semua berkas di langkah berikut dibuat <strong>di dalam <code>praktek-materi-2</code></strong>.</p>
+
+                <h3>Langkah 1 &mdash; Siapkan Data</h3>
+                <p>Buat berkas <code>data/khs.json</code> di dalam <code>praktek-materi-2</code> &mdash; nilai satu mahasiswa untuk satu semester:</p>
+                <pre><code>[
+  { <span class="string">"id"</span>: <span class="number">1</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300210"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Pemrograman Web Lanjut"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"wajib"</span>, <span class="string">"sks"</span>: <span class="number">2</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"A"</span>, <span class="string">"status"</span>: <span class="string">"final"</span> },
+  { <span class="string">"id"</span>: <span class="number">2</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300135"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Operasi Pengembangan"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"wajib"</span>, <span class="string">"sks"</span>: <span class="number">3</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"B"</span>, <span class="string">"status"</span>: <span class="string">"final"</span> },
+  { <span class="string">"id"</span>: <span class="number">3</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300220"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Kecerdasan Buatan"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"pilihan"</span>, <span class="string">"sks"</span>: <span class="number">3</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"C"</span>, <span class="string">"status"</span>: <span class="string">"batal"</span> },
+  { <span class="string">"id"</span>: <span class="number">4</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300240"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Basis Data Lanjut"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"wajib"</span>, <span class="string">"sks"</span>: <span class="number">3</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"A"</span>, <span class="string">"status"</span>: <span class="string">"final"</span> },
+  { <span class="string">"id"</span>: <span class="number">5</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300250"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Interaksi Manusia Komputer"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"pilihan"</span>, <span class="string">"sks"</span>: <span class="number">2</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"B"</span>, <span class="string">"status"</span>: <span class="string">"final"</span> },
+  { <span class="string">"id"</span>: <span class="number">6</span>, <span class="string">"kode"</span>: <span class="string">"MPK1300210L"</span>, <span class="string">"mataKuliah"</span>: <span class="string">"Praktikum Pemrograman Web Lanjut"</span>,
+    <span class="string">"kategori"</span>: <span class="string">"wajib"</span>, <span class="string">"sks"</span>: <span class="number">1</span>, <span class="string">"nilaiHuruf"</span>: <span class="string">"A"</span>, <span class="string">"status"</span>: <span class="string">"final"</span> }
+]</code></pre>
+                <p style="font-size:0.85em;color:#777;">Baris #3 berstatus <code>"batal"</code> &mdash; anggap saja mata kuliah ini diinput dua kali oleh bagian akademik dan salah satunya perlu dibuang, sama seperti transaksi batal pada sistem pembayaran.</p>
+
+                <h3>Langkah 2 &mdash; Baca Berkas JSON</h3>
+                <pre><code><span class="comment">// rekap-ips.js</span>
+<span class="keyword">import</span> { <span class="variable">readFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
+
+<span class="keyword">const</span> <span class="variable">isi</span> = <span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'./data/khs.json'</span>, <span class="string">'utf-8'</span>);
+<span class="keyword">const</span> <span class="variable">khs</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Total baris: ${khs.length}`</span>);   <span class="comment">// 6</span></code></pre>
+
+                <div class="info-box">
+                    <strong><code>JSON.parse()</code> vs <code>JSON.stringify()</code></strong> &mdash; pasangan yang akan kalian pakai terus-menerus:
+                    <ul>
+                        <li><code>JSON.parse(teks)</code> &rarr; teks JSON menjadi object JavaScript</li>
+                        <li><code>JSON.stringify(obj)</code> &rarr; object JavaScript menjadi teks JSON</li>
+                        <li>Padanan PHP: <code>json_decode()</code> dan <code>json_encode()</code></li>
+                    </ul>
+                </div>
+
+                <h3>Langkah 3 &mdash; Saring Nilai yang Final</h3>
+                <pre><code><span class="keyword">const</span> <span class="variable">final</span> = <span class="variable">khs</span>.<span class="function">filter</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> <span class="variable">k</span>.<span class="variable">status</span> === <span class="string">'final'</span>);
+<span class="comment">// 5 baris — mata kuliah yang dibatalkan dibuang</span></code></pre>
+
+                <h3>Langkah 4 &mdash; Hitung Poin Tiap Baris</h3>
+                <p>Rumus IPS: <strong>poin = sks &times; bobot nilai huruf</strong>. Tambahkan field <code>poin</code> ke tiap baris dengan <code>map</code>.</p>
+                <pre><code><span class="keyword">const</span> <span class="variable">bobot</span> = { <span class="variable">A</span>: <span class="number">4</span>, <span class="variable">B</span>: <span class="number">3</span>, <span class="variable">C</span>: <span class="number">2</span>, <span class="variable">D</span>: <span class="number">1</span>, <span class="variable">E</span>: <span class="number">0</span> };
+
+<span class="keyword">const</span> <span class="variable">denganPoin</span> = <span class="variable">final</span>.<span class="function">map</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> ({ ...<span class="variable">k</span>, <span class="variable">poin</span>: <span class="variable">k</span>.<span class="variable">sks</span> * <span class="variable">bobot</span>[<span class="variable">k</span>.<span class="variable">nilaiHuruf</span>] }));
+<span class="comment">// baris pertama sekarang punya: poin: 8   (2 sks × bobot A 4)</span></code></pre>
+
+                <h3>Langkah 5 &mdash; Ringkas dengan reduce()</h3>
+                <p>Dua total ini sudah cukup untuk menghitung IPS:</p>
+                <pre><code><span class="keyword">const</span> <span class="variable">totalSks</span>  = <span class="variable">denganPoin</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">k</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">k</span>.<span class="variable">sks</span>, <span class="number">0</span>);   <span class="comment">// 11</span>
+<span class="keyword">const</span> <span class="variable">totalPoin</span> = <span class="variable">denganPoin</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">k</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">k</span>.<span class="variable">poin</span>, <span class="number">0</span>);   <span class="comment">// 39</span>
+<span class="keyword">const</span> <span class="variable">ips</span> = <span class="variable">totalPoin</span> / <span class="variable">totalSks</span>;                                  <span class="comment">// 3.545...</span></code></pre>
+
+                <h3>Langkah 6 &mdash; Program Utuh</h3>
+                <p>Gabungkan semuanya. Dibuat <strong>sesederhana mungkin</strong> &mdash; yang dinilai adalah kalian paham rantai <code>filter</code> &rarr; <code>map</code> &rarr; <code>reduce</code>-nya, bukan kerapian keluaran.</p>
+                <pre><code><span class="comment">// rekap-ips.js</span>
+<span class="keyword">import</span> { <span class="variable">readFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
+
+<span class="keyword">const</span> <span class="variable">bobot</span> = { <span class="variable">A</span>: <span class="number">4</span>, <span class="variable">B</span>: <span class="number">3</span>, <span class="variable">C</span>: <span class="number">2</span>, <span class="variable">D</span>: <span class="number">1</span>, <span class="variable">E</span>: <span class="number">0</span> };
+<span class="keyword">const</span> <span class="variable">khs</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'./data/khs.json'</span>, <span class="string">'utf-8'</span>));
+
+<span class="keyword">const</span> <span class="variable">final</span> = <span class="variable">khs</span>.<span class="function">filter</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> <span class="variable">k</span>.<span class="variable">status</span> === <span class="string">'final'</span>);
+
+<span class="keyword">const</span> <span class="variable">totalSks</span>  = <span class="variable">final</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">k</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">k</span>.<span class="variable">sks</span>, <span class="number">0</span>);
+<span class="keyword">const</span> <span class="variable">totalPoin</span> = <span class="variable">final</span>.<span class="function">reduce</span>((<span class="variable">s</span>, <span class="variable">k</span>) <span class="operator">=&gt;</span> <span class="variable">s</span> + <span class="variable">k</span>.<span class="variable">sks</span> * <span class="variable">bobot</span>[<span class="variable">k</span>.<span class="variable">nilaiHuruf</span>], <span class="number">0</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Mata kuliah final :'</span>, <span class="variable">final</span>.<span class="variable">length</span>, <span class="string">'dari'</span>, <span class="variable">khs</span>.<span class="variable">length</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Total SKS         :'</span>, <span class="variable">totalSks</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'IPS Semester      :'</span>, (<span class="variable">totalPoin</span> / <span class="variable">totalSks</span>).<span class="function">toFixed</span>(<span class="number">2</span>));</code></pre>
+
+                <p><strong>Hasil:</strong></p>
+                <div class="terminal"><span class="prompt">$</span> node rekap-ips.js
+<span class="out">Mata kuliah final : 5 dari 6
+Total SKS         : 11
+IPS Semester      : 3.55</span></div>
+
+                <h3>Langkah 7 &mdash; Menyederhanakan dengan Pustaka <span class="badge">opsional</span></h3>
+                <p>Operasi seperti "jumlahkan field X", "kelompokkan per Y", "urutkan per beberapa kunci" muncul terus-menerus. Pustaka <strong><a href="https://lodash.com" target="_blank">Lodash</a></strong> menyediakannya sebagai satu pemanggilan. Pasang seperti paket lain (pola dari Pertemuan 1):</p>
+                <div class="terminal"><span class="prompt">$</span> npm install lodash</div>
+
+                <p>Bandingkan &mdash; rekap per kategori yang di Langkah 5 butuh <code>reduce</code> bertingkat, di sini jadi dua baca:</p>
+                <pre><code><span class="keyword">import</span> <span class="variable">_</span> <span class="keyword">from</span> <span class="string">'lodash'</span>;
+
+<span class="keyword">const</span> <span class="variable">denganPoin</span> = <span class="variable">final</span>.<span class="function">map</span>(<span class="variable">k</span> <span class="operator">=&gt;</span> ({ ...<span class="variable">k</span>, <span class="variable">poin</span>: <span class="variable">k</span>.<span class="variable">sks</span> * <span class="variable">bobot</span>[<span class="variable">k</span>.<span class="variable">nilaiHuruf</span>] }));
+
+<span class="keyword">const</span> <span class="variable">ips</span>         = <span class="variable">_</span>.<span class="function">sumBy</span>(<span class="variable">denganPoin</span>, <span class="string">'poin'</span>) / <span class="variable">_</span>.<span class="function">sumBy</span>(<span class="variable">denganPoin</span>, <span class="string">'sks'</span>);
+<span class="keyword">const</span> <span class="variable">perKategori</span> = <span class="variable">_</span>.<span class="function">mapValues</span>(<span class="variable">_</span>.<span class="function">groupBy</span>(<span class="variable">denganPoin</span>, <span class="string">'kategori'</span>), <span class="variable">r</span> <span class="operator">=&gt;</span> <span class="variable">_</span>.<span class="function">sumBy</span>(<span class="variable">r</span>, <span class="string">'poin'</span>));
+<span class="keyword">const</span> <span class="variable">terbaik</span>     = <span class="variable">_</span>.<span class="function">maxBy</span>(<span class="variable">denganPoin</span>, <span class="string">'poin'</span>).<span class="variable">mataKuliah</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">ips</span>.<span class="function">toFixed</span>(<span class="number">2</span>), <span class="variable">perKategori</span>, <span class="variable">terbaik</span>);
+<span class="comment">// 3.55 { wajib: 33, pilihan: 6 } "Basis Data Lanjut"</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Sering kali pustaka pun tak perlu.</strong> Pengelompokan sekarang sudah bawaan JavaScript modern (Node 21+):
+                    <pre><code><span class="keyword">const</span> <span class="variable">perKategori</span> = <span class="variable">Object</span>.<span class="function">groupBy</span>(<span class="variable">denganPoin</span>, <span class="variable">k</span> <span class="operator">=&gt;</span> <span class="variable">k</span>.<span class="variable">kategori</span>);
+<span class="comment">// { wajib: [ ...5 baris... ], pilihan: [ ...2 baris... ] }</span></code></pre>
+                    Alternatif Lodash yang lebih modern &amp; ringan: <a href="https://es-toolkit.dev" target="_blank">es-toolkit</a> dan <a href="https://radash-docs.vercel.app" target="_blank">radash</a> (fungsi yang sama, ukuran jauh lebih kecil).
+                </div>
+
+                <div class="warning-box">
+                    <strong>Untuk penilaian Pertemuan 2, kerjakan versi <code>reduce</code> dulu (Langkah 6).</strong> Indikator 1.5 menguji apakah kalian <em>paham</em> cara kerja <code>map</code>/<code>filter</code>/<code>reduce</code>. Pustaka dipakai <em>setelah</em> paham &mdash; supaya saat membaca kode pustaka (atau kode buatan AI), kalian tahu apa yang sebenarnya terjadi di dalamnya.
+                </div>
+
+                <div class="info-box">
+                    <strong>&ldquo;Yang penting paham, sintaks nanti dibantu AI&rdquo; &mdash; sebagian besar benar.</strong> Yang perlu melekat bukan hafalan urutan tanda kurung, melainkan:
+                    <ul>
+                        <li><strong>Tahu transformasi apa yang dibutuhkan</strong> &mdash; "saring dulu, kelompokkan per kategori, jumlahkan poin, bagi dengan sks". Ini yang kalian ketik ke AI sebagai perintah.</li>
+                        <li><strong>Bisa membaca &amp; memverifikasi hasilnya</strong> &mdash; apakah <code>reduce</code> punya nilai awal? apakah <code>sort</code> mengubah array asli? apakah array kosong ditangani (ingat <code>[].reduce</code> tanpa nilai awal &rarr; error, <code>0/0</code> &rarr; <code>NaN</code>)? AI sering meleset di titik-titik ini.</li>
+                        <li><strong>Kenal kosakatanya</strong> &mdash; <code>map</code>, <code>filter</code>, <code>reduce</code>, <code>groupBy</code>, <code>flatMap</code>. Tanpa ini kalian tidak bisa menilai apakah jawaban AI sudah tepat atau berputar-putar.</li>
+                    </ul>
+                    Jadi latihan menulis rantai ini bukan supaya hafal, tapi supaya <em>fasih membaca</em> &mdash; keterampilan yang justru makin penting saat kode datang dari AI.
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Jalankan Rekap Ini di Browser</h5>
+                    <p>Data yang sama. Klik untuk melihat tiap tahap rantai <code>filter</code> &rarr; <code>map</code> &rarr; <code>reduce</code>.</p>
+                    <button onclick="demoLaporan(1)">1. Data mentah</button>
+                    <button onclick="demoLaporan(2)">2. filter final</button>
+                    <button onclick="demoLaporan(3)">3. map poin</button>
+                    <button onclick="demoLaporan(4)">4. reduce ringkasan</button>
+                    <button onclick="demoLaporan(5)">5. Rekap akhir</button>
+                    <div class="console-output" id="demo4-out">Klik tombol 1 untuk mulai...</div>
+                </div>
+
+                <h3>Latihan Mandiri</h3>
+                <p>Kerjakan di <code>praktek-materi-2</code>, kembangkan <code>rekap-ips.js</code> (atau buat berkas baru) untuk menjawab pertanyaan berikut. Semuanya bisa diselesaikan dengan metode yang sudah dibahas &mdash; tanpa perulangan <code>for</code> manual.</p>
+                <ol>
+                    <li>Berapa IPS jika <strong>hanya</strong> mata kuliah kategori "wajib" yang dihitung (abaikan "pilihan")?</li>
+                    <li>Mata kuliah apa saja yang nilainya <strong>di bawah B</strong> (C, D, atau E)? Tampilkan sebagai daftar nama. (petunjuk: <code>filter</code> lalu <code>map</code>)</li>
+                    <li>Apakah <strong>ada</strong> mata kuliah bernilai A dengan SKS lebih dari 2? (petunjuk: <code>some</code>)</li>
+                    <li>Apakah <strong>semua</strong> mata kuliah wajib lulus (nilai bukan D atau E)? (petunjuk: <code>every</code> setelah <code>filter</code> kategori)</li>
+                    <li>Buat rekap per <strong>kategori</strong> berupa object <code>{ wajib: { sks, poin, ips }, pilihan: { ... } }</code> dengan satu <code>reduce</code>.</li>
+                    <li>Bungkus pembacaan berkas dengan <code>try/catch</code> sehingga kalau <code>data/khs.json</code> tidak ada, program mencetak pesan yang jelas (mis. <code>"Berkas KHS tidak ditemukan di ./data/khs.json"</code>) lalu berhenti rapi &mdash; bukan menumpahkan <em>stack trace</em>.</li>
+                    <li>Tambahkan satu berkas <code>khs2.json</code> untuk mahasiswa kedua, lalu ubah program agar menerima <strong>nama berkas dari argumen</strong>: <code>node rekap-ips.js data/khs2.json</code> (petunjuk: <code>process.argv[2]</code> dari Pertemuan 1).</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Menuju Pertemuan 3:</strong> perhatikan kata <code>await</code> pada <code>readFile</code>. Membaca berkas adalah operasi <strong>asinkron</strong> &mdash; Node tidak berhenti menunggu, ia lanjut mengerjakan hal lain dan kembali saat berkasnya siap. Bagaimana persisnya itu bekerja, dan bagaimana menanganinya dengan benar, dibahas di <strong>Pertemuan 3: Modul dan Pemrograman Asinkron</strong> &mdash; di sana data KHS ini akan digabungkan dengan data dari layanan lain lewat <code>fetch</code>.
+                </div>
+            </section>
+
+            <!-- Section CPMK -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran (Pertemuan 2)</h2>
+
+                <p><a href="materi-01-lingkungan-kerja-javascript.html">Pertemuan 1</a> dan Pertemuan 2 bersama-sama membentuk <strong>Sub-CPMK 1</strong>: Mahasiswa mampu menyiapkan lingkungan kerja web modern (Node.js, package manager, Git, dan basis data lokal) serta menggunakan sintaks JavaScript modern untuk mengolah data array dan objek. <strong>[C2, C3]</strong></p>
+
+                <p>Pertemuan 2 melengkapi Sub-CPMK 1 dengan fokus pada <strong>pengolahan data</strong>:</p>
+
+                <table>
+                    <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
+                    <tr>
+                        <td>1.5</td>
+                        <td>Merangkai map, filter, reduce, find, some, every untuk mengolah data JSON bersarang menjadi ringkasan bermakna</td>
+                        <td>Section 1, 3</td>
+                    </tr>
+                    <tr>
+                        <td>1.6</td>
+                        <td>Menggunakan destrukturisasi, spread, dan optional chaining pada data tidak lengkap</td>
+                        <td>Section 2</td>
+                    </tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>Sub-CPMK 1 tercapai secara penuh</strong> setelah menyelesaikan Pertemuan 1 dan 2: lingkungan kerja siap, dan kalian bisa mengolah data JSON dengan sintaks JavaScript modern. Ini menjadi fondasi untuk <a href="materi-03-modul-asinkron.html">Pertemuan 3</a>, di mana data yang diolah datang secara asinkron.
+                </div>
+
+                <h3>Daftar Periksa Akhir Pertemuan</h3>
+                <div class="info-box">
+                    <ul>
+                        <li>Ada folder <code>latihan-materi-2</code> berisi <code>data.js</code> dan berkas latihan <code>01-map.js</code> s.d. <code>09-optional-chaining.js</code> yang semuanya jalan</li>
+                        <li>Bisa mengubah satu berkas JSON menjadi ringkasan dengan rantai <code>filter</code>-<code>map</code>-<code>reduce</code></li>
+                        <li>Bisa menjelaskan kapan memakai <code>map</code> vs <code>filter</code> vs <code>reduce</code>, dan <code>find</code> vs <code>some</code> vs <code>every</code></li>
+                        <li>Bisa memakai destrukturisasi, spread/rest, dan <code>?.</code> / <code>??</code> pada data yang tidak lengkap &mdash; dan tahu kenapa <code>??</code> berbeda dari <code>||</code></li>
+                        <li>Proyek <code>praktek-materi-2</code> berjalan: <code>node rekap-ips.js</code> mencetak rekap IPS yang benar</li>
+                        <li>Paham bahwa pustaka seperti Lodash / <code>Object.groupBy</code> hanya <em>mempersingkat</em> &mdash; bukan pengganti pemahaman <code>reduce</code></li>
+                    </ul>
+                </div>
+
+                <h3>&#128218; Referensi</h3>
+                <ul>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Working_with_objects" target="_blank">MDN &mdash; Array methods</a> [1]</li>
+                    <li><a href="https://fullstackopen.com/en/part1" target="_blank">Full Stack Open &mdash; Part 1</a> [16]</li>
+                    <li><a href="https://javascript.info/array-methods" target="_blank">javascript.info &mdash; Array methods</a></li>
+                    <li><a href="https://lodash.com/docs" target="_blank">Lodash</a>, <a href="https://es-toolkit.dev" target="_blank">es-toolkit</a> &mdash; pustaka manipulasi array/objek (Langkah 7)</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 2 &mdash; Pemrograman Web Lanjut &mdash; Metode Array & Destrukturisasi</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+const mahasiswaDemo = [
+            { nim: "F1D021001", nama: "Andi",  ipk: 3.75, semester: 6, aktif: true  },
+            { nim: "F1D021002", nama: "Budi",  ipk: 3.20, semester: 6, aktif: true  },
+            { nim: "F1D021003", nama: "Citra", ipk: 3.90, semester: 6, aktif: false },
+            { nim: "F1D021004", nama: "Dewi",  ipk: 3.55, semester: 4, aktif: true  },
+            { nim: "F1D021005", nama: "Eko",   ipk: 2.85, semester: 4, aktif: true  }
+        ];
+
+        const khsDemo = [
+            { id: 1, kode: "MPK1300210",  mataKuliah: "Pemrograman Web Lanjut",           kategori: "wajib",   sks: 2, nilaiHuruf: "A", status: "final" },
+            { id: 2, kode: "MPK1300135",  mataKuliah: "Operasi Pengembangan",              kategori: "wajib",   sks: 3, nilaiHuruf: "B", status: "final" },
+            { id: 3, kode: "MPK1300220",  mataKuliah: "Kecerdasan Buatan",                 kategori: "pilihan", sks: 3, nilaiHuruf: "C", status: "batal" },
+            { id: 4, kode: "MPK1300240",  mataKuliah: "Basis Data Lanjut",                 kategori: "wajib",   sks: 3, nilaiHuruf: "A", status: "final" },
+            { id: 5, kode: "MPK1300250",  mataKuliah: "Interaksi Manusia Komputer",        kategori: "pilihan", sks: 2, nilaiHuruf: "B", status: "final" },
+            { id: 6, kode: "MPK1300210L", mataKuliah: "Praktikum Pemrograman Web Lanjut",  kategori: "wajib",   sks: 1, nilaiHuruf: "A", status: "final" }
+        ];
+        const bobotNilai = { A: 4, B: 3, C: 2, D: 1, E: 0 };
+
+        const rupiah = (n) => n.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 });
+        const tulis = (id, teks) => { document.getElementById(id).textContent = teks; };
+
+        // ============================================
+        // DEMO — Metode array
+        // ============================================
+        function demoArray(mode) {
+            let out = '';
+            if (mode === 'map') {
+                out += 'mahasiswa.map(m => m.nama)\n→ ' + JSON.stringify(mahasiswaDemo.map(m => m.nama)) + '\n\n';
+                out += 'mahasiswa.map(m => ({ id: m.nim, label: `${m.nama} (IPK ${m.ipk})` }))\n→\n';
+                out += JSON.stringify(mahasiswaDemo.map(m => ({ id: m.nim, label: `${m.nama} (IPK ${m.ipk})` })), null, 2);
+            } else if (mode === 'filter') {
+                out += 'mahasiswa.filter(m => m.aktif)\n→ ' + JSON.stringify(mahasiswaDemo.filter(m => m.aktif).map(m => m.nama)) + '\n\n';
+                out += 'mahasiswa.filter(m => m.aktif && m.ipk >= 3.5)\n→ ' + JSON.stringify(mahasiswaDemo.filter(m => m.aktif && m.ipk >= 3.5).map(m => m.nama)) + '\n\n';
+                out += `Jumlah asal: ${mahasiswaDemo.length} → setelah filter: ${mahasiswaDemo.filter(m => m.aktif).length}`;
+            } else if (mode === 'reduce') {
+                let jalan = 0;
+                out += 'mahasiswa.reduce((total, m) => total + m.ipk, 0)\n\n';
+                out += 'Putaran   total masuk   m.ipk   total keluar\n';
+                out += '-----------------------------------------------\n';
+                out += 'awal      -             -       0\n';
+                mahasiswaDemo.forEach((m, i) => {
+                    const masuk = jalan;
+                    jalan += m.ipk;
+                    out += `${(i+1+' ('+m.nama+')').padEnd(10)}${String(masuk.toFixed(2)).padEnd(14)}${String(m.ipk.toFixed(2)).padEnd(8)}${jalan.toFixed(2)}\n`;
+                });
+                out += `\nTotal    : ${jalan.toFixed(2)}\nRata-rata: ${(jalan / mahasiswaDemo.length).toFixed(3)}`;
+            } else if (mode === 'group') {
+                const perSemester = mahasiswaDemo.reduce((h, m) => {
+                    if (!h[m.semester]) h[m.semester] = [];
+                    h[m.semester].push(m.nama);
+                    return h;
+                }, {});
+                out += 'Ember penampung tidak harus angka — bisa object:\n\n';
+                out += JSON.stringify(perSemester, null, 2);
+            } else {
+                const aktif6 = mahasiswaDemo.filter(m => m.aktif && m.semester === 6);
+                const rata = aktif6.map(m => m.ipk).reduce((a,b)=>a+b, 0) / aktif6.length;
+                out += 'mahasiswa\n  .filter(m => m.aktif && m.semester === 6)\n  .map(m => m.ipk)\n  .reduce((a,b) => a+b, 0) / n\n\n';
+                out += 'Tahap 1 (filter): ' + JSON.stringify(aktif6.map(m=>m.nama)) + '\n';
+                out += 'Tahap 2 (map)   : ' + JSON.stringify(aktif6.map(m=>m.ipk)) + '\n';
+                out += 'Tahap 3 (reduce): ' + aktif6.map(m=>m.ipk).reduce((a,b)=>a+b,0).toFixed(2) + '\n';
+                out += 'Rata-rata       : ' + rata.toFixed(3) + '\n\n';
+                out += 'Peringkat mahasiswa aktif:\n';
+                [...mahasiswaDemo].filter(m => m.aktif).sort((a,b)=>b.ipk-a.ipk)
+                    .forEach((m,i) => { out += `  ${i+1}. ${m.nama} — ${m.ipk}\n`; });
+            }
+            tulis('demo2-out', out);
+        }
+
+        // ============================================
+        // DEMO — Data tidak lengkap
+        // ============================================
+        function demoSafe(mode) {
+            const user = { nama: "Andi", nilai: 0, tag: "" };
+            let out = '';
+            if (mode === 'error') {
+                out += 'const user = { nama: "Andi" };   // tidak punya .alamat\n\n';
+                out += 'console.log(user.alamat.kota);\n\n';
+                try { console.log(user.alamat.kota); }
+                catch (e) { out += '❌ ' + e.name + ': ' + e.message + '\n\n→ Aplikasi berhenti hanya karena satu field kosong.'; }
+            } else if (mode === 'safe') {
+                out += 'user.alamat?.kota                 → ' + user.alamat?.kota + '\n';
+                out += 'user.alamat?.kota?.toUpperCase()  → ' + user.alamat?.kota?.toUpperCase() + '\n';
+                out += 'user.simpan?.()                   → ' + user.simpan?.() + '\n';
+                out += 'user.alamat?.kota ?? "Belum diisi" → "' + (user.alamat?.kota ?? "Belum diisi") + '"\n\n';
+                out += '✅ Tidak ada error. Nilainya undefined, dan itu bisa ditangani.';
+            } else if (mode === 'nullish') {
+                out += 'const nilai = 0;  const tag = "";\n\n';
+                out += 'Nilai       x || "cadangan"      x ?? "cadangan"\n';
+                out += '-------------------------------------------------\n';
+                out += `0           "${0 || "cadangan"}"  ⚠️        ${0 ?? "cadangan"}\n`;
+                out += `""          "${"" || "cadangan"}"  ⚠️        "${"" ?? "cadangan"}"\n`;
+                out += `false       "${false || "cadangan"}"  ⚠️        ${false ?? "cadangan"}\n`;
+                out += `null        "${null || "cadangan"}"           "${null ?? "cadangan"}"\n\n`;
+                out += '→ Pakai ?? kalau 0, "", dan false adalah nilai yang SAH.';
+            } else {
+                const m = { nim: "001", nama: "Andi", ipk: 3.75, password: "rahasia" };
+                const diperbarui = { ...m, ipk: 3.80 };
+                const { password, ...aman } = m;
+                out += 'const m = ' + JSON.stringify(m) + '\n\n';
+                out += 'const diperbarui = { ...m, ipk: 3.80 }\n→ ' + JSON.stringify(diperbarui) + '\n\n';
+                out += 'm asli TIDAK berubah:\n→ ' + JSON.stringify(m) + '\n\n';
+                out += 'const { password, ...aman } = m   // buang satu field\n→ ' + JSON.stringify(aman);
+            }
+            tulis('demo3-out', out);
+        }
+
+        // ============================================
+        // DEMO — Laporan bertahap
+        // ============================================
+        function demoLaporan(tahap) {
+            let out = '';
+            const final = khsDemo.filter(k => k.status === 'final');
+            const baris = final.map(k => ({ ...k, poin: k.sks * bobotNilai[k.nilaiHuruf] }));
+
+            if (tahap === 1) {
+                out += `Data mentah: ${khsDemo.length} baris\n\n`;
+                khsDemo.forEach(k => {
+                    out += `#${k.id}  ${k.kode.padEnd(13)} ${k.mataKuliah.padEnd(32)} ${k.kategori.padEnd(8)} sks:${k.sks}  ${k.nilaiHuruf}  ${k.status}\n`;
+                });
+            } else if (tahap === 2) {
+                out += `.filter(k => k.status === 'final')\n\n`;
+                out += `${khsDemo.length} baris → ${final.length} baris (1 mata kuliah dibatalkan dibuang)\n\n`;
+                final.forEach(k => { out += `#${k.id}  ${k.mataKuliah.padEnd(32)} ${k.status}\n`; });
+            } else if (tahap === 3) {
+                out += `.map(k => ({ ...k, poin: k.sks * bobotNilai[k.nilaiHuruf] }))\n\n`;
+                baris.forEach(k => {
+                    out += `#${k.id}  ${k.mataKuliah.padEnd(32)} ${k.sks} sks × ${k.nilaiHuruf}(${bobotNilai[k.nilaiHuruf]}) = ${String(k.poin).padStart(2)} poin\n`;
+                });
+            } else if (tahap === 4) {
+                const totalPoin = baris.reduce((s,k) => s + k.poin, 0);
+                const totalSks = baris.reduce((s,k) => s + k.sks, 0);
+                const perKategori = baris.reduce((h,k) => { h[k.kategori] = (h[k.kategori] ?? 0) + k.poin; return h; }, {});
+                out += 'reduce → satu nilai:\n';
+                out += `  totalPoin = ${totalPoin}\n  totalSks  = ${totalSks}\n  IPS       = ${(totalPoin/totalSks).toFixed(2)}\n\n`;
+                out += 'reduce → object (pengelompokan):\n';
+                out += '  perKategori = ' + JSON.stringify(perKategori);
+            } else {
+                const totalPoin = baris.reduce((s,k) => s + k.poin, 0);
+                const totalSks = baris.reduce((s,k) => s + k.sks, 0);
+                const perKategori = baris.reduce((h,k) => { h[k.kategori] = (h[k.kategori] ?? 0) + k.poin; return h; }, {});
+                out += '=== KARTU HASIL STUDI (KHS) ===\n';
+                out += `Mata kuliah final : ${baris.length} dari ${khsDemo.length}\n`;
+                out += `Total SKS         : ${totalSks}\n`;
+                out += `Total Poin        : ${totalPoin}\n`;
+                out += `IPS Semester      : ${(totalPoin/totalSks).toFixed(2)}\n\n`;
+                out += 'Poin per kategori:\n';
+                Object.entries(perKategori).sort((a,b) => b[1]-a[1]).forEach(([k,v]) => {
+                    out += `  ${k.padEnd(10)} ${String(v).padStart(3)} poin  (${((v/totalPoin)*100).toFixed(1)}%)\n`;
+                });
+            }
+            tulis('demo4-out', out);
+        }
+
+
+        // ============================================
+        // SECTION VISIBILITY
+        // ============================================
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('array-methods');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        // ============================================
+        // ANTI-COPY PROTECTION untuk elemen pre, code, terminal
+        // ============================================
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault();
+                        showCopyWarning();
+                        return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) existingModal.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
+                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
+                            <h3 style="color:#3c873a;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#3c873a;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+                setTimeout(function() {
+                    var m = document.getElementById('copy-warning-modal');
+                    if (m) m.remove();
+                }, 3000);
+            }
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+</body>
+</html>

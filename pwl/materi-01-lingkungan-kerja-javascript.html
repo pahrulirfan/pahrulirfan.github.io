@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 1: Lingkungan Kerja Web Modern - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header { background: #2f7a3a !important; }
+        .sidebar h3 { color: #68a063 !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #68a063 !important; }
+        .sidebar ul li a.active { background-color: #3c873a !important; }
+        section h2 { border-bottom: 3px solid #3c873a !important; }
+        th { background: linear-gradient(135deg, #3c873a 0%, #215732 100%) !important; }
+        .badge { background: #3c873a !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #68a063 !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 260px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #3c873a; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #215732; margin-bottom: 15px; }
+        .interactive-demo input, .interactive-demo select {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin: 5px; font-size: 1em;
+        }
+        .interactive-demo button {
+            padding: 8px 20px; background: #3c873a; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #215732; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #68a063; }
+        .terminal .out { color: #8a8f98; }
+
+        /* Diagram alur — dibangun dari CSS, bukan ASCII art */
+        .flow-diagram {
+            background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 16px; margin: 12px 0 20px; overflow-x: auto;
+        }
+        .flow-row {
+            display: flex; align-items: center; gap: 10px; margin: 6px 0; min-width: max-content;
+        }
+        .flow-box {
+            color: white; padding: 8px 14px; border-radius: 6px;
+            font-family: 'Consolas', monospace; font-size: 0.85em; font-weight: 600; white-space: nowrap;
+        }
+        .flow-client { background: #64748b; }
+        .flow-server { background: #3c873a; }
+        .flow-static { background: #94a3b8; }
+        .flow-db { background: #334155; }
+        .flow-arrow { color: #777; font-size: 0.78em; font-family: 'Consolas', monospace; white-space: nowrap; }
+        .flow-return .flow-arrow { color: #2f7a3a; font-weight: 600; }
+        .flow-note { font-size: 0.8em; color: #888; font-style: italic; margin: 2px 0 12px 4px; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 1: Lingkungan Kerja Web Modern</h1>
+        <p>Sub-CPMK 1 (bagian 1) &mdash; Minggu 1 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#arsitektur" class="active">1. Arsitektur Web Modern</a></li>
+                <li><a href="#padanan">2. Peta Padanan Laravel &rarr; JS</a></li>
+                <li><a href="#nodejs">3. Node.js, npm & package.json</a></li>
+                <li><a href="#js-vs-php">4. JavaScript vs PHP</a></li>
+                <li><a href="#mysql">5. MySQL Lokal</a></li>
+                <li><a href="#praktik">6. Praktik</a></li>
+                <li><a href="#cpmk">7. Capaian Pembelajaran</a></li>
+            </ul>
+            <!-- <h3>Link Terkait</h3> -->
+            <!-- <ul>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="index.html">&larr; Silabus</a></li>
+                <li><a href="materi-02-metode-array.html">Pertemuan 2 &rarr;</a></li>
+                <li><a href="https://nodejs.org/docs" target="_blank">Node.js Docs</a></li>
+            </ul> -->
+        </nav>
+
+        <main class="content">
+
+
+
+            <!-- Section 1 -->
+            <section id="arsitektur">
+                <h2>1. Arsitektur Aplikasi Web Modern <span class="badge">Indikator 1.1</span></h2>
+
+                <h3>Dari Mana Kita Berangkat?</h3>
+                <p>Di mata kuliah <strong>Pemrograman Web</strong>, kalian sudah membangun aplikasi web dengan PHP dan Laravel. Polanya kurang lebih begini: browser meminta sebuah alamat, server memproses, mengambil data dari database, menempelkannya ke template Blade, lalu <strong>mengirim HTML yang sudah jadi</strong> ke browser. Setiap kali ada perubahan data, halaman dimuat ulang.</p>
+                <p>Mata kuliah <strong>Pemrograman Web Lanjut</strong> melanjutkan dari titik itu. Yang berubah bukan tujuannya, tetapi <strong>cara aplikasi disusun</strong>: antarmuka dipisahkan dari server, dan keduanya berbicara lewat API.</p>
+
+                <div class="info-box">
+                    <strong>Analogi restoran:</strong>
+                    <ul>
+                        <li><strong>Server-rendered (Laravel/Blade)</strong> &mdash; kalian pesan makanan, dapur memasak, lalu piring lengkap diantar ke meja. Mau tambah sambal? Piring dibawa ke dapur lagi, ditata ulang, diantar lagi.</li>
+                        <li><strong>Antarmuka terpisah + API</strong> &mdash; dapur (API) hanya mengirim bahan mentah yang sudah dimasak, pelayan (antarmuka) yang menata di meja. Mau tambah sambal? Cukup minta sambal saja, piring tidak perlu dibawa bolak-balik.</li>
+                    </ul>
+                </div>
+
+                <h3>Dua Model Arsitektur</h3>
+                <table>
+                    <tr>
+                        <th>Aspek</th>
+                        <th>Server-Rendered (Laravel, PHP)</th>
+                        <th>Antarmuka Terpisah + API</th>
+                    </tr>
+                    <tr>
+                        <td>Yang dikirim server</td>
+                        <td>HTML jadi</td>
+                        <td>Data JSON</td>
+                    </tr>
+                    <tr>
+                        <td>Yang menyusun tampilan</td>
+                        <td>Server (Blade)</td>
+                        <td>Browser (React)</td>
+                    </tr>
+                    <tr>
+                        <td>Perubahan data</td>
+                        <td>Reload seluruh halaman</td>
+                        <td>Hanya bagian yang berubah</td>
+                    </tr>
+                    <tr>
+                        <td>Klien yang bisa dilayani</td>
+                        <td>Browser saja</td>
+                        <td>Browser, aplikasi mobile, aplikasi lain</td>
+                    </tr>
+                    <tr>
+                        <td>Jumlah proyek</td>
+                        <td>Satu proyek</td>
+                        <td>Dua proyek (backend & frontend)</td>
+                    </tr>
+                    <tr>
+                        <td>Kompleksitas awal</td>
+                        <td>Lebih sederhana</td>
+                        <td>Lebih rumit, tetapi lebih lentur</td>
+                    </tr>
+                </table>
+
+                <h3>Alur Permintaan pada Kedua Model</h3>
+
+                <p><strong>Model 1 &mdash; Server-rendered</strong> (yang sudah kalian kenal dari Laravel):</p>
+                <div class="flow-diagram">
+                    <div class="flow-row">
+                        <div class="flow-box flow-client">Browser</div>
+                        <div class="flow-arrow">GET /produk &rarr;</div>
+                        <div class="flow-box flow-server">Laravel</div>
+                        <div class="flow-arrow">query &rarr;</div>
+                        <div class="flow-box flow-db">MySQL</div>
+                    </div>
+                    <div class="flow-row flow-return">
+                        <div class="flow-box flow-client">Browser</div>
+                        <div class="flow-arrow">&larr; HTML jadi</div>
+                        <div class="flow-box flow-server">Laravel</div>
+                        <div class="flow-arrow">&larr; rows</div>
+                        <div class="flow-box flow-db">MySQL</div>
+                    </div>
+                </div>
+
+                <p><strong>Model 2 &mdash; Antarmuka terpisah + API</strong> (yang akan kita bangun sepanjang semester ini):</p>
+                <div class="flow-diagram">
+                    <div class="flow-row">
+                        <div class="flow-box flow-client">Browser</div>
+                        <div class="flow-arrow">GET / &rarr;</div>
+                        <div class="flow-box flow-static">Server statis</div>
+                    </div>
+                    <div class="flow-note">mengirim HTML kosong + berkas JavaScript</div>
+                    <div class="flow-row">
+                        <div class="flow-box flow-client">Browser</div>
+                        <div class="flow-arrow">GET /api/produk &rarr;</div>
+                        <div class="flow-box flow-server">API Node.js</div>
+                        <div class="flow-arrow">query &rarr;</div>
+                        <div class="flow-box flow-db">MySQL</div>
+                    </div>
+                    <div class="flow-row flow-return">
+                        <div class="flow-box flow-client">Browser</div>
+                        <div class="flow-arrow">&larr; JSON</div>
+                        <div class="flow-box flow-server">API Node.js</div>
+                        <div class="flow-arrow">&larr; rows</div>
+                        <div class="flow-box flow-db">MySQL</div>
+                    </div>
+                    <div class="flow-note">React menyusun tampilan dari JSON di dalam browser</div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>Jangan salah paham:</strong> arsitektur terpisah <em>bukan</em> berarti lebih baik dalam semua keadaan. Untuk situs company profile atau blog sederhana, Laravel dengan Blade justru lebih hemat waktu. Arsitektur terpisah dipilih ketika aplikasi perlu dilayani banyak jenis klien, tampilannya sangat interaktif, atau tim frontend dan backend bekerja terpisah.
+                </div>
+
+                <h3>Istilah yang Sering Muncul</h3>
+                <table>
+                    <tr>
+                        <th>Istilah</th>
+                        <th>Arti</th>
+                    </tr>
+                    <tr>
+                        <td><strong>SSR</strong> (Server-Side Rendering)</td>
+                        <td>HTML disusun di server, lalu dikirim. Ini yang dilakukan Blade.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CSR</strong> (Client-Side Rendering)</td>
+                        <td>HTML disusun di browser oleh JavaScript setelah data JSON diterima.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SPA</strong> (Single Page Application)</td>
+                        <td>Satu halaman HTML, isinya diganti-ganti oleh JavaScript tanpa reload.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>REST API</strong></td>
+                        <td>Kesepakatan cara klien meminta dan mengubah data lewat HTTP, jawabannya berupa JSON.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Endpoint</strong></td>
+                        <td>Satu alamat API, misalnya <code>GET /api/mahasiswa/12</code>.</td>
+                    </tr>
+                </table>
+
+                <h3>Peta Perjalanan Satu Semester</h3>
+                <p>Supaya tidak tersesat, ini gambaran besar apa yang akan kita bangun. Semua bermuara pada satu produk yang dikembangkan bertahap.</p>
+                <table>
+                    <tr>
+                        <th>Blok</th>
+                        <th>Yang dibangun</th>
+                        <th>Hasil akhir</th>
+                    </tr>
+                    <tr>
+                        <td>Minggu 1&ndash;3</td>
+                        <td>Fondasi JavaScript &amp; lingkungan kerja</td>
+                        <td>Bisa mengolah data dan menulis kode asinkron</td>
+                    </tr>
+                    <tr>
+                        <td>Minggu 4&ndash;7</td>
+                        <td>REST API + basis data lewat ORM</td>
+                        <td>API utuh yang bisa dipanggil siapa saja</td>
+                    </tr>
+                    <tr>
+                        <td>Minggu 9&ndash;10</td>
+                        <td>Autentikasi &amp; keamanan</td>
+                        <td>API yang aman dan sudah diuji</td>
+                    </tr>
+                    <tr>
+                        <td>Minggu 11&ndash;13</td>
+                        <td>Antarmuka React + pengujian otomatis</td>
+                        <td>Aplikasi utuh yang teruji</td>
+                    </tr>
+                    <tr>
+                        <td>Minggu 14&ndash;15</td>
+                        <td>Rilis &amp; audit kualitas</td>
+                        <td>Aplikasi yang bisa diakses publik</td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Studi kasus satu semester: Sistem Akademik Sederhana.</strong> Supaya materi tiap pertemuan tersambung, tidak berdiri sendiri-sendiri, seluruh contoh dan praktik di mata kuliah ini membangun <strong>satu aplikasi yang sama</strong> secara bertahap: sistem pengelolaan data mahasiswa, nilai, dan kelas.
+                    <ul>
+                        <li><strong>Pertemuan 1&ndash;2</strong> &mdash; mengolah data KHS (Kartu Hasil Studi) mentah dari berkas JSON</li>
+                        <li><strong>Pertemuan 3</strong> &mdash; data itu digabungkan dengan data direktori kampus lewat API</li>
+                        <li><strong>Pertemuan 4&ndash;7</strong> &mdash; data yang sama dilayani lewat REST API sungguhan, tersambung ke MySQL: entitas <code>Mahasiswa</code>, <code>Kelas</code>, <code>Pendaftaran</code>, dan <code>Nilai</code></li>
+                        <li><strong>Pertemuan 9&ndash;10</strong> &mdash; API itu diberi login dan diuji keamanannya</li>
+                        <li><strong>Pertemuan 11&ndash;12</strong> &mdash; dibangun antarmuka React yang memanggilnya</li>
+                        <li><strong>Pertemuan 13&ndash;15</strong> &mdash; diuji otomatis, lalu dirilis ke alamat publik</li>
+                    </ul>
+                    Nama mahasiswa contoh (Andi, Budi, Citra, Dewi, Eko) dan NIM berpola <code>F1D0210xx</code> yang muncul di sini akan terus kalian temui sampai pertemuan terakhir.
+                </div>
+
+                <div class="success-box">
+                    <strong>Poin penting Section 1:</strong> perbedaan mendasar bukan pada bahasanya, melainkan pada <strong>siapa yang menyusun HTML</strong> &mdash; server, atau browser. Kalau kalian bisa menjelaskan perbedaan ini dengan kalimat sendiri, indikator 1.1 sudah tercapai.
+                </div>
+            </section>
+
+
+
+            <!-- Section 2 -->
+            <section id="padanan">
+                <h2>2. Peta Padanan Laravel &rarr; JavaScript <span class="badge">Indikator 1.2</span></h2>
+
+                <p>Kabar baiknya: kalian tidak sedang belajar dari nol. Hampir semua konsep yang akan kita pakai <strong>sudah pernah kalian temui di Laravel</strong>, hanya berganti nama dan berganti perkakas. Tabel di bawah ini adalah peta penerjemahnya &mdash; simpan baik-baik, akan sering dipakai sampai akhir semester.</p>
+
+                <h3>Padanan Perkakas dan Konsep</h3>
+                <table>
+                    <tr>
+                        <th>Di Laravel / PHP</th>
+                        <th>Di Ekosistem JavaScript</th>
+                        <th>Keterangan</th>
+                    </tr>
+                    <tr>
+                        <td>PHP (runtime)</td>
+                        <td><strong>Node.js</strong></td>
+                        <td>Yang menjalankan kode di luar browser</td>
+                    </tr>
+                    <tr>
+                        <td>Composer</td>
+                        <td><strong>npm</strong></td>
+                        <td>Pengelola paket / pustaka</td>
+                    </tr>
+                    <tr>
+                        <td><code>composer.json</code></td>
+                        <td><code>package.json</code></td>
+                        <td>Daftar dependensi &amp; metadata proyek</td>
+                    </tr>
+                    <tr>
+                        <td><code>composer.lock</code></td>
+                        <td><code>package-lock.json</code></td>
+                        <td>Penguncian versi persis</td>
+                    </tr>
+                    <tr>
+                        <td><code>vendor/</code></td>
+                        <td><code>node_modules/</code></td>
+                        <td>Folder hasil unduhan pustaka, bisa dibuat ulang kapan saja</td>
+                    </tr>
+                    <tr>
+                        <td>Laravel (framework)</td>
+                        <td><strong>Express</strong></td>
+                        <td>Framework untuk membangun server &amp; API</td>
+                    </tr>
+                    <tr>
+                        <td><code>routes/web.php</code></td>
+                        <td><code>routes/*.js</code> (Express Router)</td>
+                        <td>Pendaftaran rute</td>
+                    </tr>
+                    <tr>
+                        <td>Controller</td>
+                        <td>Controller / handler function</td>
+                        <td>Konsepnya sama persis</td>
+                    </tr>
+                    <tr>
+                        <td>Middleware</td>
+                        <td>Middleware</td>
+                        <td>Nama dan konsepnya sama</td>
+                    </tr>
+                    <tr>
+                        <td>Eloquent ORM</td>
+                        <td><strong>Prisma</strong></td>
+                        <td>Penerjemah objek &harr; tabel</td>
+                    </tr>
+                    <tr>
+                        <td><code>php artisan migrate</code></td>
+                        <td><code>npx prisma migrate dev</code></td>
+                        <td>Menjalankan migrasi skema</td>
+                    </tr>
+                    <tr>
+                        <td>Seeder</td>
+                        <td><code>prisma/seed.js</code></td>
+                        <td>Pengisian data awal</td>
+                    </tr>
+                    <tr>
+                        <td>Blade template</td>
+                        <td><strong>React</strong> component (JSX)</td>
+                        <td>Bedanya: Blade jalan di server, React di browser</td>
+                    </tr>
+                    <tr>
+                        <td><code>.env</code></td>
+                        <td><code>.env</code></td>
+                        <td>Sama, dibaca dengan paket <code>dotenv</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>php artisan serve</code></td>
+                        <td><code>npm run dev</code></td>
+                        <td>Menjalankan server pengembangan</td>
+                    </tr>
+                    <tr>
+                        <td>PHPUnit</td>
+                        <td><strong>Vitest</strong> &amp; <strong>Playwright</strong></td>
+                        <td>Pengujian unit &amp; end-to-end</td>
+                    </tr>
+                    <tr>
+                        <td>MySQL</td>
+                        <td><strong>MySQL</strong> (driver <code>mysql2</code> / Prisma)</td>
+                        <td>Basis data sama; bedanya diakses tanpa Eloquent</td>
+                    </tr>
+                </table>
+
+                <h3>Perbedaan yang Benar-benar Penting</h3>
+                <p>Beberapa hal <strong>tidak punya padanan langsung</strong>. Justru di sinilah letak materi baru yang harus benar-benar dipahami:</p>
+
+                <table>
+                    <tr>
+                        <th>Perbedaan</th>
+                        <th>Di PHP</th>
+                        <th>Di JavaScript / Node.js</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Umur proses</strong></td>
+                        <td>Proses lahir dan mati untuk setiap request</td>
+                        <td>Satu proses hidup terus melayani banyak request</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Model eksekusi</strong></td>
+                        <td>Berurutan (blocking), satu request satu alur</td>
+                        <td>Satu utas + event loop, banyak pekerjaan menunggu bersamaan</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Variabel global</strong></td>
+                        <td>Bersih tiap request</td>
+                        <td>Bertahan &mdash; bisa jadi sumber bug kalau tidak hati-hati</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fungsi</strong></td>
+                        <td>Biasanya dipanggil langsung</td>
+                        <td>Fungsi adalah <em>nilai</em>: bisa disimpan, dioper, dikembalikan</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Operasi I/O</strong></td>
+                        <td>Menunggu sampai selesai</td>
+                        <td>Asinkron &mdash; hasilnya datang belakangan (Materi 2)</td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Cara memakai peta ini:</strong> setiap kali kalian bingung "ini yang di Laravel namanya apa ya?", buka kembali tabel di atas. Tetapi jangan berhenti di terjemahan &mdash; pahami juga <em>mengapa</em> perbedaannya ada. Tabel kedua adalah yang paling sering menjadi sumber kesalahan mahasiswa pada minggu-minggu awal.
+                </div>
+            </section>
+
+
+
+            <!-- Section 3 -->
+            <section id="nodejs">
+                <h2>3. Node.js, npm & package.json <span class="badge">Indikator 1.2 &amp; 1.3</span></h2>
+
+                <h3>Apa itu Node.js?</h3>
+                <p><strong>Node.js</strong> adalah program yang membuat JavaScript bisa dijalankan <strong>di luar browser</strong>. Mesin JavaScript milik Chrome (V8) diambil, lalu ditambahi kemampuan yang tidak dimiliki browser: membaca berkas, membuka koneksi jaringan, mengakses basis data, dan menjalankan server.</p>
+                <p>Posisinya persis seperti <code>php</code> di terminal kalian. Kalau PHP menjalankan <code>index.php</code>, Node.js menjalankan <code>index.js</code>.</p>
+
+                <div class="info-box">
+                    <strong>Fakta Node.js:</strong>
+                    <ul>
+                        <li>Dibuat oleh <strong>Ryan Dahl</strong> tahun 2009</li>
+                        <li>Memakai mesin <strong>V8</strong> buatan Google, mesin yang sama dengan Chrome</li>
+                        <li>Bersifat <strong>single-threaded</strong> tetapi <strong>non-blocking</strong> &mdash; ini kunci performanya</li>
+                        <li>Versi <strong>LTS</strong> (Long Term Support) adalah yang dipakai untuk produksi. Kita memakai <strong>Node.js 24 LTS</strong></li>
+                        <li>Dikelola oleh OpenJS Foundation, bukan satu perusahaan</li>
+                    </ul>
+                </div>
+
+                <h3>Memasang dan Memeriksa</h3>
+                <p>Unduh dari <a href="https://nodejs.org" target="_blank">nodejs.org</a>, pilih versi <strong>LTS</strong>. Setelah selesai, buka terminal dan pastikan keduanya terbaca:</p>
+
+                <div class="terminal"><span class="prompt">$</span> node -v
+<span class="out">v24.4.1</span>
+
+<span class="prompt">$</span> npm -v
+<span class="out">11.3.0</span></div>
+
+                <div class="warning-box">
+                    <strong>Kalau muncul <code>command not found</code>:</strong> Node.js belum masuk ke PATH. Tutup terminal, buka lagi. Kalau masih gagal, pasang ulang dan pastikan opsi "Add to PATH" tercentang saat instalasi di Windows.
+                </div>
+
+                <h3>Memulai Proyek Baru</h3>
+                <p>Alurnya sangat mirip <code>composer init</code>:</p>
+
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-js
+<span class="prompt">$</span> cd latihan-js
+<span class="prompt">$</span> npm init -y
+<span class="out">Wrote to .../latihan-js/package.json</span></div>
+
+                <p>Sampai di sini folder masih hanya berisi <code>package.json</code> &mdash; belum ada kode. Buat berkas <code>index.js</code> lalu isi dengan satu baris. Kalian bisa membuatnya lewat editor (VS Code: <em>New File</em>) atau dari terminal:</p>
+
+                <div class="terminal"><span class="comment"># macOS / Linux</span>
+<span class="prompt">$</span> touch index.js
+
+<span class="comment"># Windows (PowerShell)</span>
+<span class="prompt">$</span> ni index.js</div>
+
+                <p>Isi <code>index.js</code>:</p>
+                <pre><code><span class="comment">// index.js</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Halo dari Node.js!'</span>);</code></pre>
+
+                <p>Baru setelah berkasnya ada, jalankan dengan <code>node</code>:</p>
+                <div class="terminal"><span class="prompt">$</span> node index.js
+<span class="out">Halo dari Node.js!</span></div>
+
+                <div class="info-box">
+                    <strong>Alur proyek npm:</strong> <code>mkdir</code> membuat folder &rarr; <code>npm init -y</code> membuat <code>package.json</code> (KTP proyek) &rarr; buat berkas <code>.js</code> dan tulis kode &rarr; jalankan dengan <code>node namafile.js</code>. Tidak ada langkah lain yang wajib. Fokus pertemuan ini: memakai npm dan dasar JavaScript.
+                </div>
+
+                <h3>Objek <code>process</code>: Jendela ke Proses Node</h3>
+                <p>Ketika kalian menjalankan <code>node index.js</code>, Node membuat satu <strong>proses</strong> sistem operasi untuk menjalankan kode kalian. Di dalam kode, proses itu diwakili oleh satu objek global bernama <code>process</code> &mdash; selalu ada, tidak perlu di-<code>import</code>. Lewat <code>process</code>, program bisa mengetahui <em>di lingkungan seperti apa ia sedang berjalan</em> dan berinteraksi dengan dunia luar. Di PHP, informasi serupa tersebar di <code>$_SERVER</code>, <code>$_ENV</code>, <code>$argv</code>, <code>getenv()</code>, dan <code>php_sapi_name()</code>; Node menyatukannya di satu tempat.</p>
+
+                <table>
+                    <tr>
+                        <th>Anggota <code>process</code></th>
+                        <th>Isinya</th>
+                        <th>Contoh nilai</th>
+                    </tr>
+                    <tr>
+                        <td><code>process.version</code></td>
+                        <td>Versi Node yang sedang dipakai</td>
+                        <td><code>"v24.4.1"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.platform</code></td>
+                        <td>Sistem operasi</td>
+                        <td><code>"darwin"</code>, <code>"win32"</code>, <code>"linux"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.env</code></td>
+                        <td>Semua <em>environment variable</em> (object). Ini yang dibaca <code>dotenv</code> saat memuat <code>.env</code></td>
+                        <td><code>process.env.DATABASE_URL</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.argv</code></td>
+                        <td>Array argumen baris perintah. Indeks 0 = path node, 1 = path berkas, 2 dan seterusnya = argumen kalian</td>
+                        <td><code>["/usr/.../node", "/.../index.js", "--nama", "Andi"]</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.cwd()</code></td>
+                        <td>Folder tempat perintah <code>node</code> dijalankan (<em>current working directory</em>)</td>
+                        <td><code>"/Users/andi/latihan-js"</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.pid</code></td>
+                        <td>Nomor ID proses dari sistem operasi</td>
+                        <td><code>48213</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.uptime()</code></td>
+                        <td>Berapa detik proses sudah berjalan</td>
+                        <td><code>0.081</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.memoryUsage()</code></td>
+                        <td>Pemakaian memori proses (object, dalam byte)</td>
+                        <td><code>{ rss: 38 000 000, ... }</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.exit(kode)</code></td>
+                        <td>Menghentikan proses sekarang juga. <code>0</code> = sukses, selain 0 = gagal</td>
+                        <td><code>process.exit(1)</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.stdout</code> / <code>process.stdin</code></td>
+                        <td>Aliran keluaran &amp; masukan terminal. <code>console.log</code> sebenarnya menulis ke <code>process.stdout</code></td>
+                        <td><code>process.stdout.write("teks")</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>process.on('exit', fn)</code></td>
+                        <td>Memasang fungsi yang dijalankan tepat sebelum proses berhenti (untuk membersihkan sesuatu)</td>
+                        <td>&mdash;</td>
+                    </tr>
+                </table>
+
+                <p>Buat berkas <code>process-info.js</code> di <code>latihan-js</code> untuk melihat isinya sendiri:</p>
+                <pre><code><span class="comment">// process-info.js</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Versi Node :'</span>, <span class="variable">process</span>.<span class="variable">version</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Sistem OS  :'</span>, <span class="variable">process</span>.<span class="variable">platform</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Folder     :'</span>, <span class="variable">process</span>.<span class="function">cwd</span>());
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'PID        :'</span>, <span class="variable">process</span>.<span class="variable">pid</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Argumen    :'</span>, <span class="variable">process</span>.<span class="variable">argv</span>.<span class="function">slice</span>(<span class="number">2</span>));</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node process-info.js --nama Andi
+<span class="out">Versi Node : v24.4.1
+Sistem OS  : darwin
+Folder     : /Users/andi/latihan-js
+PID        : 48213
+Argumen    : [ '--nama', 'Andi' ]</span></div>
+
+                <div class="info-box">
+                    <strong>Kenapa perlu tahu ini sekarang?</strong> <code>process.env</code> adalah cara kita menyimpan konfigurasi rahasia (lihat <code>.env</code> di Section 5), <code>process.argv</code> dipakai membuat perkakas baris perintah, dan <code>process.exit()</code> menentukan sukses/gagalnya sebuah skrip &mdash; penting saat otomasi &amp; pengujian di pertemuan lanjut. Untuk sekarang cukup kenali bahwa <code>process</code> adalah "papan dashboard" proses Node kalian.
+                </div>
+
+                <h3>Memasang Paket</h3>
+                <p><strong>Paket</strong> (<em>package</em>) adalah kode siap pakai buatan orang lain yang kita ambil dari npm. Ini padanan <code>composer require</code>. Kita coba dengan <a href="https://www.npmjs.com/package/chalk" target="_blank">chalk</a> &mdash; paket kecil untuk memberi warna pada teks di terminal:</p>
+
+                <div class="terminal"><span class="prompt">$</span> npm install chalk
+<span class="out">added 1 package in 1s</span></div>
+
+                <p>Tiga hal berubah setelah perintah itu:</p>
+                <ul>
+                    <li><code>package.json</code> &mdash; muncul <code>"chalk"</code> di dalam <code>"dependencies"</code></li>
+                    <li><code>package-lock.json</code> &mdash; dibuat/diperbarui, mencatat versi persis yang terpasang</li>
+                    <li>folder <code>node_modules/</code> &mdash; berisi kode chalk yang sebenarnya, hasil unduhan</li>
+                </ul>
+
+                <p>Perintah npm lain yang sering dipakai:</p>
+                <div class="terminal"><span class="prompt">$</span> npm install chalk             <span class="out"># tambah paket ke dependencies</span>
+<span class="prompt">$</span> npm install -D vitest          <span class="out"># tambah ke devDependencies (hanya untuk pengembangan)</span>
+<span class="prompt">$</span> npm install                    <span class="out"># pasang semua paket yang tercatat di package.json</span>
+<span class="prompt">$</span> npm ci                         <span class="out"># pasang persis sesuai package-lock.json</span>
+<span class="prompt">$</span> npm uninstall chalk            <span class="out"># hapus paket</span>
+<span class="prompt">$</span> npm audit                      <span class="out"># periksa kerentanan keamanan paket</span></div>
+
+                <div class="info-box">
+                    Paket yang lebih besar seperti <strong>Express</strong> (kerangka server) baru kita pasang di <a href="materi-04-rest-api-dasar.html">Pertemuan 4</a>. Untuk sekarang cukup paket kecil seperti chalk supaya fokusnya di <em>cara memasang dan memakai</em> paket, bukan pada isi paketnya.
+                </div>
+
+                <h3>Membedah package.json</h3>
+                <p>Berkas ini adalah <strong>KTP proyek</strong>. Isinya menentukan bagaimana proyek dijalankan dan pustaka apa saja yang dibutuhkan. Setelah <code>npm init -y</code>, ditambah <code>"type": "module"</code> dan chalk tadi, isinya kira-kira begini:</p>
+
+                <pre><code>{
+  <span class="string">"name"</span>: <span class="string">"latihan-js"</span>,
+  <span class="string">"version"</span>: <span class="string">"1.0.0"</span>,
+  <span class="string">"type"</span>: <span class="string">"module"</span>,          <span class="comment">// pakai sintaks import/export modern</span>
+  <span class="string">"main"</span>: <span class="string">"index.js"</span>,
+  <span class="string">"scripts"</span>: {
+    <span class="string">"dev"</span>: <span class="string">"node --watch index.js"</span>,
+    <span class="string">"start"</span>: <span class="string">"node index.js"</span>
+  },
+  <span class="string">"dependencies"</span>: {
+    <span class="string">"chalk"</span>: <span class="string">"^5.3.0"</span>        <span class="comment">// paket yang tadi dipasang</span>
+  }
+}</code></pre>
+
+                <table>
+                    <tr>
+                        <th>Kunci</th>
+                        <th>Fungsi</th>
+                    </tr>
+                    <tr>
+                        <td><code>name</code>, <code>version</code></td>
+                        <td>Identitas proyek</td>
+                    </tr>
+                    <tr>
+                        <td><code>type</code></td>
+                        <td><code>"module"</code> = pakai <code>import/export</code>. Tanpa ini, Node memakai gaya lama <code>require()</code> (dibahas di Pertemuan 3)</td>
+                    </tr>
+                    <tr>
+                        <td><code>main</code></td>
+                        <td>Berkas utama proyek &mdash; titik masuk kalau proyek ini dipakai sebagai paket oleh proyek lain</td>
+                    </tr>
+                    <tr>
+                        <td><code>scripts</code></td>
+                        <td>Pintasan perintah (lihat penjelasan di bawah). Padanan <code>php artisan</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>dependencies</code></td>
+                        <td>Pustaka yang dibutuhkan aplikasi saat <strong>berjalan</strong></td>
+                    </tr>
+                    <tr>
+                        <td><code>devDependencies</code></td>
+                        <td>Pustaka yang hanya dibutuhkan saat <strong>mengembangkan</strong> (penguji, linter). Tidak ikut ke produksi &mdash; diisi lewat <code>npm install -D &lt;paket&gt;</code></td>
+                    </tr>
+                </table>
+
+                <h4>Lebih jauh soal <code>"scripts"</code></h4>
+                <p>Setiap entri di <code>scripts</code> berupa pasangan <code>"nama": "perintah yang dijalankan"</code>. Kalian memanggilnya dengan <code>npm run &lt;nama&gt;</code>, dan npm menjalankan perintah di sebelah kanannya seolah kalian mengetiknya sendiri di terminal.</p>
+
+                <pre><code><span class="string">"scripts"</span>: {
+  <span class="string">"dev"</span>:   <span class="string">"node --watch index.js"</span>,
+  <span class="string">"start"</span>: <span class="string">"node index.js"</span>,
+  <span class="string">"lint"</span>:  <span class="string">"eslint ."</span>
+}</code></pre>
+
+                <ul>
+                    <li><strong><code>npm run dev</code></strong> menjalankan <code>node --watch index.js</code>. Opsi <code>--watch</code> membuat Node <strong>menjalankan ulang berkas otomatis setiap kali kalian menyimpan perubahan</strong> &mdash; jadi tidak perlu berkali-kali menekan panah atas lalu Enter. Cocok saat sedang menulis kode (<em>dev</em> = mode pengembangan).</li>
+                    <li><strong>Nama skrip bebas.</strong> <code>"dev"</code> dan <code>"start"</code> hanya kesepakatan umum, bukan kata kunci. Kalau kalian menamainya <code>"jalan"</code>, memanggilnya jadi <code>npm run jalan</code>. Perintah di kanan tidak berubah artinya.</li>
+                    <li><strong>Dua nama diperlakukan khusus</strong> dan boleh dipanggil tanpa kata <code>run</code>: <code>npm start</code> (sama dengan <code>npm run start</code>) dan <code>npm test</code> (sama dengan <code>npm run test</code>). Semua nama lain wajib memakai <code>run</code> &mdash; <code>npm dev</code> saja akan gagal, harus <code>npm run dev</code>.</li>
+                    <li>Ketik <code>npm run</code> tanpa argumen untuk melihat daftar skrip yang tersedia. Kalau nama salah, npm menjawab <code>Missing script: "..."</code>.</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Padanan Laravel:</strong> <code>scripts</code> di npm itu seperti <code>composer.json</code> bagian <code>"scripts"</code>, dan menjalankannya (<code>npm run dev</code>) mirip <code>php artisan &lt;perintah&gt;</code> &mdash; sama-sama pintasan untuk perintah panjang yang sering diulang.
+                </div>
+
+                <h3>Semantic Versioning (semver)</h3>
+                <p>Versi paket ditulis tiga angka: <code>MAJOR.MINOR.PATCH</code>. Aturannya baku dan dipatuhi hampir semua paket npm.</p>
+
+                <table>
+                    <tr>
+                        <th>Bagian</th>
+                        <th>Contoh naik</th>
+                        <th>Artinya</th>
+                    </tr>
+                    <tr>
+                        <td><strong>MAJOR</strong></td>
+                        <td>4.18.2 &rarr; 5.0.0</td>
+                        <td>Ada perubahan yang <strong>merusak</strong> kode lama. Wajib baca panduan migrasi</td>
+                    </tr>
+                    <tr>
+                        <td><strong>MINOR</strong></td>
+                        <td>4.18.2 &rarr; 4.19.0</td>
+                        <td>Ada fitur baru, kode lama tetap jalan</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PATCH</strong></td>
+                        <td>4.18.2 &rarr; 4.18.3</td>
+                        <td>Perbaikan bug saja</td>
+                    </tr>
+                </table>
+
+                <p>Tanda di depan versi menentukan seberapa longgar npm boleh memperbarui:</p>
+
+                <table>
+                    <tr>
+                        <th>Penulisan</th>
+                        <th>Versi yang diterima</th>
+                        <th>Kapan dipakai</th>
+                    </tr>
+                    <tr>
+                        <td><code>^4.18.2</code></td>
+                        <td>&ge; 4.18.2 dan &lt; 5.0.0</td>
+                        <td>Default npm. Aman untuk sebagian besar kasus</td>
+                    </tr>
+                    <tr>
+                        <td><code>~4.18.2</code></td>
+                        <td>&ge; 4.18.2 dan &lt; 4.19.0</td>
+                        <td>Hanya mau perbaikan bug</td>
+                    </tr>
+                    <tr>
+                        <td><code>4.18.2</code></td>
+                        <td>Persis versi itu saja</td>
+                        <td>Kalau versi lain terbukti bermasalah</td>
+                    </tr>
+                </table>
+
+                <h3>Untuk Apa package-lock.json?</h3>
+                <p><code>package.json</code> menulis <code>^4.18.2</code> &mdash; itu <em>rentang</em>, bukan versi persis. Kalau teman kalian menjalankan <code>npm install</code> tiga bulan kemudian, dia bisa mendapat 4.21.0. Kode yang sama, pustaka berbeda, bug muncul di komputernya saja.</p>
+                <p><strong><code>package-lock.json</code> mencatat versi persis setiap paket beserta seluruh turunannya.</strong> Selama berkas ini ikut disalin, semua orang memasang pustaka yang identik. Jangan diedit tangan &mdash; npm yang mengurusnya.</p>
+
+                <div class="warning-box">
+                    <strong>Tiga jenis berkas, tiga perlakuan:</strong>
+                    <ul>
+                        <li><code>package.json</code> + <code>package-lock.json</code> &mdash; <strong>berkas inti proyek</strong>, selalu ikut ke mana pun proyek dibagikan</li>
+                        <li><code>node_modules/</code> &mdash; <strong>hasil unduhan</strong>, tidak perlu ikut dibagikan; cukup jalankan <code>npm install</code> untuk membuatnya kembali</li>
+                        <li><code>.env</code> &mdash; <strong>berisi rahasia</strong> (password, kunci API), jangan pernah dibagikan atau diunggah; sebagai gantinya bagikan <code>.env.example</code> yang hanya berisi nama variabelnya</li>
+                    </ul>
+                </div>
+
+                <div class="success-box">
+                    <strong>Titik periksa Section 3:</strong> di terminal kalian, <code>node -v</code> dan <code>npm -v</code> menampilkan versi; ada folder proyek berisi <code>package.json</code>; kalian bisa menjelaskan beda <code>dependencies</code> dan <code>devDependencies</code> serta guna <code>package-lock.json</code>.
+                </div>
+            </section>
+
+
+
+            <!-- Section 4 -->
+            <section id="js-vs-php">
+                <h2>4. JavaScript vs PHP: Yang Berbeda <span class="badge">Indikator 1.4</span></h2>
+
+                <p>Kalian sudah bisa memprogram. Percabangan, perulangan, array, fungsi &mdash; semua itu tidak perlu dipelajari ulang. Bagian ini hanya membahas <strong>hal yang berbeda</strong>, karena di situlah kesalahan biasanya muncul.</p>
+
+                <div class="info-box">
+                    <strong>Praktikkan sambil membaca &mdash; pakai proyek <code>latihan-js</code> dari Section 3.</strong> Setiap subbagian di bawah (4.1&ndash;4.5) punya kotak <em>&ldquo;Coba di <code>latihan-js</code>&rdquo;</em>. Pola kerjanya selalu sama:
+                    <ol>
+                        <li>Masuk ke folder proyek: <code>cd latihan-js</code></li>
+                        <li>Buat berkas <code>.js</code> baru &mdash; lewat editor (VS Code: <em>New File</em>) atau terminal: <code>touch nama.js</code> (macOS/Linux) atau <code>ni nama.js</code> (Windows PowerShell)</li>
+                        <li>Ketik kode contohnya (jangan copy paste &mdash; ketik ulang untuk memperkuat pemahaman)</li>
+                        <li>Jalankan: <code>node nama.js</code>, lalu cocokkan hasilnya dengan yang tertera</li>
+                    </ol>
+                    Semua berkas ini dikumpulkan di satu folder <code>latihan-js</code> supaya mudah dibuka lagi saat belajar untuk kuis.
+                </div>
+
+                <h3>Perbandingan Sintaks Dasar</h3>
+                <table>
+                    <tr>
+                        <th>Hal</th>
+                        <th>PHP</th>
+                        <th>JavaScript</th>
+                    </tr>
+                    <tr>
+                        <td>Deklarasi variabel</td>
+                        <td><code>$nama = "Andi";</code></td>
+                        <td><code>let nama = "Andi";</code></td>
+                    </tr>
+                    <tr>
+                        <td>Konstanta</td>
+                        <td><code>define('PI', 3.14);</code></td>
+                        <td><code>const PI = 3.14;</code></td>
+                    </tr>
+                    <tr>
+                        <td>Gabung string</td>
+                        <td><code>"Halo " . $nama</code></td>
+                        <td><code>`Halo ${nama}`</code></td>
+                    </tr>
+                    <tr>
+                        <td>Array</td>
+                        <td><code>[1, 2, 3]</code></td>
+                        <td><code>[1, 2, 3]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Array asosiatif</td>
+                        <td><code>['nama' =&gt; 'Andi']</code></td>
+                        <td><code>{ nama: 'Andi' }</code> (object)</td>
+                    </tr>
+                    <tr>
+                        <td>Ambil nilai</td>
+                        <td><code>$data['nama']</code></td>
+                        <td><code>data.nama</code> atau <code>data['nama']</code></td>
+                    </tr>
+                    <tr>
+                        <td>Cetak ke layar</td>
+                        <td><code>echo $nama;</code></td>
+                        <td><code>console.log(nama);</code></td>
+                    </tr>
+                    <tr>
+                        <td>Fungsi</td>
+                        <td><code>function f($a) { }</code></td>
+                        <td><code>function f(a) { }</code></td>
+                    </tr>
+                    <tr>
+                        <td>Null aman</td>
+                        <td><code>$a?-&gt;b</code></td>
+                        <td><code>a?.b</code></td>
+                    </tr>
+                    <tr>
+                        <td>Nilai cadangan</td>
+                        <td><code>$a ?? 'default'</code></td>
+                        <td><code>a ?? 'default'</code></td>
+                    </tr>
+                </table>
+
+                <h3>4.1 let, const, dan var</h3>
+                <p>JavaScript punya tiga cara membuat variabel. Pilihannya sederhana:</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">nama</span> = <span class="string">"Andi"</span>;      <span class="comment">// tidak akan di-assign ulang → PILIHAN UTAMA</span>
+<span class="keyword">let</span> <span class="variable">total</span> = <span class="number">0</span>;            <span class="comment">// nilainya akan berubah</span>
+<span class="keyword">var</span> <span class="variable">lama</span> = <span class="string">"jangan"</span>;      <span class="comment">// gaya lama, JANGAN dipakai lagi</span>
+
+<span class="comment">// const menahan variabelnya, bukan isinya:</span>
+<span class="keyword">const</span> <span class="variable">daftar</span> = [<span class="number">1</span>, <span class="number">2</span>];
+<span class="variable">daftar</span>.<span class="function">push</span>(<span class="number">3</span>);          <span class="comment">// boleh — isi array diubah</span>
+<span class="comment">// daftar = [4, 5];       error — variabelnya di-assign ulang</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Aturan praktis:</strong> pakai <code>const</code> untuk semua hal. Ganti ke <code>let</code> hanya kalau editor/Node memprotes karena nilainya memang di-assign ulang. <code>var</code> tidak punya alasan untuk dipakai lagi di kode baru.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>41-variabel.js</code>:
+                    <pre><code><span class="comment">// 41-variabel.js</span>
+<span class="keyword">const</span> <span class="variable">nama</span> = <span class="string">"Andi"</span>;
+<span class="keyword">let</span> <span class="variable">total</span> = <span class="number">0</span>;
+<span class="variable">total</span> = <span class="variable">total</span> + <span class="number">10</span>;          <span class="comment">// let boleh di-assign ulang</span>
+
+<span class="keyword">const</span> <span class="variable">daftar</span> = [<span class="number">1</span>, <span class="number">2</span>];
+<span class="variable">daftar</span>.<span class="function">push</span>(<span class="number">3</span>);              <span class="comment">// isi array diubah</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">nama</span>, <span class="variable">total</span>, <span class="variable">daftar</span>);
+
+<span class="variable">nama</span> = <span class="string">"Budi"</span>;                <span class="comment">// baris ini akan menghentikan program</span></code></pre>
+                    Jalankan:
+                    <div class="terminal"><span class="prompt">$</span> node 41-variabel.js
+<span class="out">Andi 10 [ 1, 2, 3 ]
+TypeError: Assignment to constant variable.</span></div>
+                    Setelah melihat galatnya, hapus baris terakhir lalu jalankan lagi &mdash; sekarang bersih.
+                </div>
+
+                <h3>4.2 Lingkup Variabel (Scope)</h3>
+                <p><strong>Lingkup (<em>scope</em>)</strong> adalah jawaban atas pertanyaan: "dari bagian kode mana saja sebuah variabel bisa dibaca?" Variabel tidak ada di mana-mana &mdash; ia hanya hidup di wilayah tempat ia dibuat. Salah paham soal ini adalah sumber bug paling sering pada minggu-minggu awal.</p>
+
+                <h4>Tiga tingkat lingkup</h4>
+                <table>
+                    <tr>
+                        <th>Lingkup</th>
+                        <th>Dibuat di mana</th>
+                        <th>Bisa dibaca dari</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Global</strong></td>
+                        <td>Di luar semua fungsi dan blok</td>
+                        <td>Seluruh berkas &mdash; hati-hati, mudah tercemar</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fungsi</strong></td>
+                        <td>Di dalam sebuah <code>function</code></td>
+                        <td>Hanya di dalam fungsi itu (termasuk fungsi bersarang di dalamnya)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Blok</strong></td>
+                        <td>Di dalam sepasang <code>{ }</code> mana pun &mdash; <code>if</code>, <code>for</code>, <code>while</code>, atau blok telanjang</td>
+                        <td>Hanya di dalam <code>{ }</code> itu. <strong>Hanya berlaku untuk <code>let</code> dan <code>const</code></strong></td>
+                    </tr>
+                </table>
+
+                <h4>Perbedaan <code>var</code> vs <code>let</code>/<code>const</code></h4>
+                <pre><code><span class="keyword">function</span> <span class="function">contoh</span>() {
+    <span class="keyword">if</span> (<span class="keyword">true</span>) {
+        <span class="keyword">var</span> <span class="variable">a</span> = <span class="string">"var"</span>;    <span class="comment">// lingkup: SELURUH fungsi contoh()</span>
+        <span class="keyword">let</span> <span class="variable">b</span> = <span class="string">"let"</span>;    <span class="comment">// lingkup: blok { } milik if ini saja</span>
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">a</span>);       <span class="comment">// "var"  — bocor keluar blok if</span>
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">b</span>);       <span class="comment">// ReferenceError: b is not defined</span>
+}</code></pre>
+                <p><code>var</code> mengabaikan blok <code>{ }</code> &mdash; ia selalu naik ke tingkat fungsi terdekat. <code>let</code> dan <code>const</code> berhenti tepat di blok tempat ia ditulis. Blok yang lebih rapat hampir selalu lebih aman, karena variabel tidak "bocor" ke tempat yang tidak kalian sangka.</p>
+
+                <h4>Hoisting: kapan variabel "mulai ada"</h4>
+                <p>JavaScript memindahkan <em>deklarasi</em> variabel ke atas lingkupnya sebelum kode dijalankan (disebut <strong>hoisting</strong>). Yang membedakan:</p>
+                <pre><code><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">x</span>);   <span class="comment">// undefined — var sudah "ada" tapi belum diisi</span>
+<span class="keyword">var</span> <span class="variable">x</span> = <span class="number">5</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">y</span>);   <span class="comment">// ReferenceError — y belum boleh disentuh</span>
+<span class="keyword">let</span> <span class="variable">y</span> = <span class="number">5</span>;      <span class="comment">// (rentang sebelum baris ini disebut "Temporal Dead Zone")</span></code></pre>
+                <p>Dengan <code>let</code>/<code>const</code>, memakai variabel sebelum barisnya langsung dianggap error &mdash; ini justru menolong: bug ketahuan lebih cepat, bukan diam-diam bernilai <code>undefined</code>.</p>
+
+                <h4>Jebakan klasik: <code>var</code> di dalam perulangan</h4>
+                <pre><code><span class="comment">// dengan var — SEMUA cetak 3</span>
+<span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number">0</span>; <span class="variable">i</span> &lt; <span class="number">3</span>; <span class="variable">i</span>++) {
+    <span class="function">setTimeout</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">i</span>), <span class="number">100</span>);   <span class="comment">// 3, 3, 3</span>
+}
+
+<span class="comment">// dengan let — tiap iterasi punya i sendiri</span>
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">i</span> = <span class="number">0</span>; <span class="variable">i</span> &lt; <span class="number">3</span>; <span class="variable">i</span>++) {
+    <span class="function">setTimeout</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">i</span>), <span class="number">100</span>);   <span class="comment">// 0, 1, 2</span>
+}</code></pre>
+                <p>Karena <code>var i</code> hanya satu untuk seluruh fungsi, saat <code>setTimeout</code> akhirnya jalan, perulangan sudah selesai dan <code>i</code> bernilai 3. Dengan <code>let</code>, setiap putaran membuat <code>i</code> baru, sehingga nilai yang "terekam" oleh fungsi di dalamnya tetap benar.</p>
+
+                <h4>Lingkup bersarang &amp; <em>shadowing</em></h4>
+                <pre><code><span class="keyword">const</span> <span class="variable">pesan</span> = <span class="string">"luar"</span>;
+
+<span class="keyword">function</span> <span class="function">cetak</span>() {
+    <span class="keyword">const</span> <span class="variable">pesan</span> = <span class="string">"dalam"</span>;   <span class="comment">// menutupi (shadow) yang di luar</span>
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>);        <span class="comment">// "dalam"</span>
+}
+<span class="function">cetak</span>();
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>);            <span class="comment">// "luar" — yang di dalam tidak mengubah yang di luar</span></code></pre>
+                <p>Fungsi bisa membaca variabel dari lingkup di <strong>luar</strong>nya (ini yang membuat <em>closure</em> di Pertemuan 2 bekerja), tetapi kalau ada nama yang sama di lingkup lebih dalam, yang dipakai adalah yang paling dekat. JavaScript mencari nama variabel dari lingkup terdalam ke terluar, berhenti pada kecocokan pertama.</p>
+
+                <div class="info-box">
+                    <strong>Beda dengan PHP:</strong> di PHP, fungsi <em>tidak</em> otomatis melihat variabel di luarnya &mdash; harus pakai <code>global</code> atau <code>use (...)</code> pada closure. Di JavaScript sebaliknya: fungsi <strong>otomatis</strong> melihat semua variabel di lingkup luarnya. Ini terasa praktis, tetapi juga alasan kenapa disiplin memakai <code>const</code> dan blok yang rapat itu penting &mdash; supaya tidak ada variabel luar yang tidak sengaja ikut terbawa.
+                </div>
+
+                <h4>Contoh 1 &mdash; variabel <code>if</code> yang dibutuhkan di luar</h4>
+                <pre><code><span class="comment">// salah: diskon dideklarasikan di dalam if, mati begitu blok selesai</span>
+<span class="keyword">function</span> <span class="function">hitungBayar</span>(<span class="variable">total</span>, <span class="variable">anggota</span>) {
+    <span class="keyword">if</span> (<span class="variable">anggota</span>) {
+        <span class="keyword">const</span> <span class="variable">diskon</span> = <span class="variable">total</span> * <span class="number">0.1</span>;
+    }
+    <span class="keyword">return</span> <span class="variable">total</span> - <span class="variable">diskon</span>;   <span class="comment">// ReferenceError: diskon is not defined</span>
+}
+
+<span class="comment">// benar: deklarasikan di lingkup tempat ia dipakai, isi di dalam if</span>
+<span class="keyword">function</span> <span class="function">hitungBayar</span>(<span class="variable">total</span>, <span class="variable">anggota</span>) {
+    <span class="keyword">let</span> <span class="variable">diskon</span> = <span class="number">0</span>;
+    <span class="keyword">if</span> (<span class="variable">anggota</span>) {
+        <span class="variable">diskon</span> = <span class="variable">total</span> * <span class="number">0.1</span>;
+    }
+    <span class="keyword">return</span> <span class="variable">total</span> - <span class="variable">diskon</span>;   <span class="comment">// 0 kalau bukan anggota</span>
+}</code></pre>
+
+                <h4>Contoh 2 &mdash; lupa <code>const</code>/<code>let</code> membuat variabel global tak sengaja</h4>
+                <pre><code><span class="keyword">function</span> <span class="function">isiKeranjang</span>() {
+    <span class="keyword">for</span> (<span class="variable">i</span> = <span class="number">0</span>; <span class="variable">i</span> &lt; <span class="number">3</span>; <span class="variable">i</span>++) {   <span class="comment">// ⚠️ lupa "let" → i jadi global</span>
+        <span class="comment">/* ... */</span>
+    }
+}
+<span class="function">isiKeranjang</span>();
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">i</span>);   <span class="comment">// 3  — bocor ke seluruh program, menabrak "i" milik kode lain</span></code></pre>
+                <p>Menulis <code>"use strict"</code> di atas berkas (otomatis aktif pada berkas <code>"type": "module"</code>) mengubah kelalaian ini menjadi <code>ReferenceError</code> yang langsung terlihat &mdash; satu alasan lagi memakai ESM.</p>
+
+                <h4>Contoh 3 &mdash; nama sama di dua fungsi tidak saling mengganggu</h4>
+                <pre><code><span class="keyword">function</span> <span class="function">a</span>() { <span class="keyword">const</span> <span class="variable">x</span> = <span class="number">1</span>; <span class="function">b</span>(); <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">x</span>); }  <span class="comment">// 1</span>
+<span class="keyword">function</span> <span class="function">b</span>() { <span class="keyword">const</span> <span class="variable">x</span> = <span class="number">99</span>; }                        <span class="comment">// x milik b(), terpisah</span>
+<span class="function">a</span>();
+<span class="comment">// b() TIDAK bisa membaca x milik a() — fungsi hanya mengintip ke LUAR,</span>
+<span class="comment">// mengikuti tempat ia DITULIS, bukan tempat ia DIPANGGIL.</span></code></pre>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>42-scope.js</code> dan ketik kode ini:
+                    <pre><code><span class="comment">// 42-scope.js</span>
+<span class="keyword">function</span> <span class="function">contoh</span>() {
+    <span class="keyword">if</span> (<span class="keyword">true</span>) {
+        <span class="keyword">var</span> <span class="variable">a</span> = <span class="string">"var: bocor keluar blok"</span>;
+        <span class="keyword">let</span> <span class="variable">b</span> = <span class="string">"let: hanya di dalam blok"</span>;
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">a</span>);     <span class="comment">// jalan</span>
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">b</span>);     <span class="comment">// akan error di sini</span>
+}
+<span class="function">contoh</span>();</code></pre>
+                    Jalankan:
+                    <div class="terminal"><span class="prompt">$</span> node 42-scope.js
+<span class="out">var: bocor keluar blok
+ReferenceError: b is not defined</span></div>
+                    <strong>Sekarang perbaiki:</strong> pindahkan <code>let b</code> ke luar <code>if</code> (deklarasikan di awal fungsi), isi nilainya di dalam <code>if</code>. Jalankan lagi &mdash; kedua <code>console.log</code> berhasil. Simpan kedua versi supaya kelihatan bedanya.
+                    <br><br>
+                    <strong>Lanjutan (opsional):</strong> tambahkan berkas <code>42-loop.js</code> berisi dua perulangan (satu <code>var i</code>, satu <code>let j</code>) yang di dalamnya ada <code>setTimeout(() =&gt; console.log(i), 0)</code>. Jalankan dan bandingkan: yang <code>var</code> mencetak <code>3 3 3</code>, yang <code>let</code> mencetak <code>0 1 2</code>.
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Lingkup Variabel</h5>
+                    <button onclick="demoScope('blok')">Blok: var vs let</button>
+                    <button onclick="demoScope('loop')">Perulangan + setTimeout</button>
+                    <button onclick="demoScope('shadow')">Shadowing &amp; lingkup bersarang</button>
+                    <button onclick="demoScope('tdz')">Hoisting / TDZ</button>
+                    <div class="console-output" id="demo-scope-out">Klik salah satu tombol di atas...</div>
+                </div>
+
+                <div class="warning-box">
+                    <strong>Inti 4.2:</strong> pakai <code>const</code>/<code>let</code> (bukan <code>var</code>) supaya lingkup berhenti di blok <code>{ }</code>; buat variabel sedekat mungkin dengan tempat ia dipakai; dan ingat bahwa fungsi di JavaScript selalu bisa "mengintip" ke luar mengikuti tempat ia <em>ditulis</em>, tidak pernah ke dalam fungsi lain.
+                </div>
+
+                <h3>4.3 Tipe Dinamis dan Jebakan <code>==</code></h3>
+                <p>Sama seperti PHP, JavaScript tidak mewajibkan penulisan tipe. Bedanya, aturan konversi otomatisnya lebih longgar dan lebih mengejutkan:</p>
+
+                <pre><code><span class="variable">console</span>.<span class="function">log</span>(<span class="string">"5"</span> == <span class="number">5</span>);        <span class="comment">// true  — tipe dikonversi diam-diam</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">"5"</span> === <span class="number">5</span>);       <span class="comment">// false — nilai DAN tipe dibandingkan</span>
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="number">0</span> == <span class="string">""</span>);          <span class="comment">// true  😱</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="keyword">null</span> == <span class="keyword">undefined</span>); <span class="comment">// true  😱</span>
+<span class="variable">console</span>.<span class="function">log</span>([] == <span class="keyword">false</span>);      <span class="comment">// true  😱</span>
+
+<span class="comment">// Aturannya satu kalimat: SELALU pakai === dan !==</span></code></pre>
+
+                <div class="warning-box">
+                    <strong>Aturan wajib di mata kuliah ini:</strong> gunakan <code>===</code> dan <code>!==</code>. Penggunaan <code>==</code> akan dianggap kesalahan pada tinjauan kode, kecuali dalam satu pola yang memang lazim: <code>x == null</code> untuk memeriksa <code>null</code> dan <code>undefined</code> sekaligus.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>43-tipe.js</code>:
+                    <pre><code><span class="comment">// 43-tipe.js</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">"5"</span> == <span class="number">5</span>, <span class="string">"5"</span> === <span class="number">5</span>);         <span class="comment">// ?</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="number">0</span> == <span class="string">""</span>, <span class="number">0</span> === <span class="string">""</span>);             <span class="comment">// ?</span>
+<span class="variable">console</span>.<span class="function">log</span>([] == <span class="keyword">false</span>, [] === <span class="keyword">false</span>);       <span class="comment">// ?</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="string">"a"</span>, <span class="keyword">typeof</span> <span class="number">1</span>, <span class="keyword">typeof</span> <span class="keyword">null</span>);  <span class="comment">// ?</span></code></pre>
+                    Tebak dulu hasil tiap baris, baru jalankan <code>node 43-tipe.js</code> untuk mengeceknya:
+                    <div class="terminal"><span class="prompt">$</span> node 43-tipe.js
+<span class="out">true false
+true false
+true false
+string number object</span></div>
+                    Perhatikan kolom kiri (<code>==</code>) selalu <code>true</code> karena tipe dikonversi diam-diam, kolom kanan (<code>===</code>) selalu <code>false</code>. Dan <code>typeof null</code> yang seharusnya <code>"null"</code> malah <code>"object"</code> &mdash; bug lama JavaScript yang tidak bisa diperbaiki.
+                </div>
+
+                <h3>4.4 Fungsi Adalah Nilai</h3>
+                <p>Ini <strong>perbedaan paling penting</strong> dan yang paling sering membuat mahasiswa tersandung. Di JavaScript, fungsi bukan sekadar sesuatu yang dipanggil &mdash; fungsi adalah <strong>nilai biasa</strong>, sama seperti angka atau string. Ia bisa disimpan di variabel, dioper sebagai argumen, dan dikembalikan dari fungsi lain.</p>
+
+                <pre><code><span class="comment">// 1. Disimpan di variabel</span>
+<span class="keyword">const</span> <span class="function">sapa</span> = <span class="keyword">function</span>(<span class="variable">nama</span>) {
+    <span class="keyword">return</span> <span class="string">`Halo, ${nama}`</span>;
+};
+
+<span class="comment">// 2. Arrow function — bentuk ringkas yang paling sering dipakai</span>
+<span class="keyword">const</span> <span class="function">sapa2</span> = (<span class="variable">nama</span>) <span class="operator">=&gt;</span> <span class="string">`Halo, ${nama}`</span>;
+
+<span class="comment">// 3. Dioper sebagai argumen (inilah "callback")</span>
+<span class="keyword">const</span> <span class="variable">angka</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+<span class="keyword">const</span> <span class="variable">dobel</span> = <span class="variable">angka</span>.<span class="function">map</span>((<span class="variable">n</span>) <span class="operator">=&gt;</span> <span class="variable">n</span> * <span class="number">2</span>);   <span class="comment">// [2, 4, 6]</span>
+
+<span class="comment">// 4. Dikembalikan dari fungsi lain</span>
+<span class="keyword">const</span> <span class="function">pengali</span> = (<span class="variable">faktor</span>) <span class="operator">=&gt;</span> (<span class="variable">n</span>) <span class="operator">=&gt;</span> <span class="variable">n</span> * <span class="variable">faktor</span>;
+<span class="keyword">const</span> <span class="function">kaliTiga</span> = <span class="function">pengali</span>(<span class="number">3</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="function">kaliTiga</span>(<span class="number">5</span>));                   <span class="comment">// 15</span></code></pre>
+
+                <div class="info-box">
+                    <strong>Mengapa ini penting?</strong> Seluruh materi setelah ini bergantung pada konsep tersebut:
+                    <ul>
+                        <li><code>array.map(fn)</code> &mdash; fungsi dioper ke metode array (Section 5)</li>
+                        <li><code>app.get('/x', handler)</code> &mdash; fungsi dioper ke Express (Minggu 4)</li>
+                        <li><code>tombol.addEventListener('click', fn)</code> &mdash; fungsi dioper ke event (Minggu 11)</li>
+                        <li>Middleware, promise, dan async semuanya memakai pola yang sama</li>
+                    </ul>
+                    Kalau bagian ini terasa asing, ulangi sampai paham &mdash; ini fondasinya.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>44-fungsi.js</code>:
+                    <pre><code><span class="comment">// 44-fungsi.js</span>
+<span class="comment">// fungsi disimpan di variabel</span>
+<span class="keyword">const</span> <span class="function">sapa</span> = (<span class="variable">nama</span>) <span class="operator">=&gt;</span> <span class="string">`Halo, ${nama}`</span>;
+<span class="variable">console</span>.<span class="function">log</span>(<span class="function">sapa</span>(<span class="string">"Andi"</span>));
+
+<span class="comment">// fungsi dioper sebagai argumen (callback)</span>
+<span class="keyword">const</span> <span class="variable">nilai</span> = [<span class="number">70</span>, <span class="number">85</span>, <span class="number">90</span>];
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">nilai</span>.<span class="function">map</span>((<span class="variable">n</span>) <span class="operator">=&gt;</span> <span class="variable">n</span> + <span class="number">5</span>));
+
+<span class="comment">// fungsi dikembalikan dari fungsi lain</span>
+<span class="keyword">const</span> <span class="function">pengali</span> = (<span class="variable">faktor</span>) <span class="operator">=&gt;</span> (<span class="variable">n</span>) <span class="operator">=&gt;</span> <span class="variable">n</span> * <span class="variable">faktor</span>;
+<span class="keyword">const</span> <span class="function">kaliTiga</span> = <span class="function">pengali</span>(<span class="number">3</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="function">kaliTiga</span>(<span class="number">5</span>));
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="keyword">typeof</span> <span class="function">sapa</span>);   <span class="comment">// bukti: fungsi adalah nilai</span></code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 44-fungsi.js
+<span class="out">Halo, Andi
+[ 75, 90, 95 ]
+15
+function</span></div>
+                </div>
+
+                <h3>4.5 Bentuk Penulisan Arrow Function</h3>
+                <pre><code><span class="comment">// Satu parameter, langsung mengembalikan nilai</span>
+<span class="keyword">const</span> <span class="function">a</span> = <span class="variable">n</span> <span class="operator">=&gt;</span> <span class="variable">n</span> * <span class="number">2</span>;
+
+<span class="comment">// Beberapa parameter → kurung wajib</span>
+<span class="keyword">const</span> <span class="function">b</span> = (<span class="variable">x</span>, <span class="variable">y</span>) <span class="operator">=&gt;</span> <span class="variable">x</span> + <span class="variable">y</span>;
+
+<span class="comment">// Badan lebih dari satu baris → kurung kurawal + return</span>
+<span class="keyword">const</span> <span class="function">c</span> = (<span class="variable">n</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="variable">n</span> * <span class="number">2</span>;
+    <span class="keyword">return</span> <span class="variable">hasil</span> + <span class="number">1</span>;
+};
+
+<span class="comment">// Mengembalikan object → bungkus dengan kurung biasa</span>
+<span class="keyword">const</span> <span class="function">d</span> = (<span class="variable">nama</span>) <span class="operator">=&gt;</span> ({ <span class="variable">nama</span>, <span class="variable">aktif</span>: <span class="keyword">true</span> });</code></pre>
+
+                <div class="warning-box">
+                    <strong>Kesalahan yang sangat sering terjadi:</strong> <code>n =&gt; { nama: n }</code> mengembalikan <code>undefined</code>, bukan object &mdash; kurung kurawal itu dibaca sebagai <em>badan fungsi</em>, bukan object. Bungkus dengan kurung biasa: <code>n =&gt; ({ nama: n })</code>.
+                </div>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>45-arrow.js</code> dan buktikan sendiri kesalahan di atas:
+                    <pre><code><span class="comment">// 45-arrow.js</span>
+<span class="keyword">const</span> <span class="function">salah</span> = (<span class="variable">n</span>) <span class="operator">=&gt;</span> { <span class="variable">nama</span>: <span class="variable">n</span> };      <span class="comment">// { } dibaca sebagai badan fungsi</span>
+<span class="keyword">const</span> <span class="function">benar</span> = (<span class="variable">n</span>) <span class="operator">=&gt;</span> ({ <span class="variable">nama</span>: <span class="variable">n</span> });    <span class="comment">// ( ) memaksa { } jadi object</span>
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="function">salah</span>(<span class="string">"Andi"</span>));   <span class="comment">// ?</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="function">benar</span>(<span class="string">"Andi"</span>));   <span class="comment">// ?</span></code></pre>
+                    <div class="terminal"><span class="prompt">$</span> node 45-arrow.js
+<span class="out">undefined
+{ nama: 'Andi' }</span></div>
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Tipe Data & Perbandingan</h5>
+                    <button onclick="demoTipe('typeof')">typeof berbagai nilai</button>
+                    <button onclick="demoTipe('banding')">== vs ===</button>
+                    <button onclick="demoTipe('fungsi')">Fungsi sebagai nilai</button>
+                    <div class="console-output" id="demo1-out">Klik salah satu tombol di atas...</div>
+                </div>
+            </section>
+
+
+
+            <!-- Section 5 -->
+            <section id="mysql">
+                <h2>5. Penyiapan MySQL Lokal <span class="badge">Indikator 1.7</span></h2>
+
+                <p>Sepanjang semester ini kita memakai <strong>MySQL</strong> &mdash; basis data yang sama seperti pada mata kuliah Pemrograman Web dengan Laravel. Yang berubah bukan basis datanya, melainkan <strong>cara mengaksesnya</strong>: tidak lagi lewat Eloquent, tetapi lewat driver <code>mysql2</code> atau ORM Prisma.</p>
+
+                <div class="info-box">
+                    <strong>Mengapa MySQL?</strong>
+                    <ul>
+                        <li>Kalian sudah mengenalnya dari mata kuliah prasyarat &mdash; fokus pertemuan ini adalah lingkungan Node.js, bukan belajar basis data baru</li>
+                        <li>Sudah tersedia bawaan di Laragon (Windows) dan mudah dipasang di semua sistem operasi</li>
+                        <li>Didukung penuh oleh Prisma (ORM yang kita pakai mulai Minggu 5)</li>
+                    </ul>
+                    <strong>Tanpa Docker.</strong> Basis data dipasang langsung pada komputer masing-masing. Kontainerisasi dibahas di mata kuliah DevOps, bukan di sini.
+                </div>
+
+                <div class="info-box">
+                    <strong>PostgreSQL &mdash; opsional.</strong> Kalau kalian ingin mencoba PostgreSQL (tipe data lebih kaya seperti <code>JSONB</code>, transaksi lebih ketat, dan menjadi bawaan banyak layanan hosting), langkah lengkapnya ada di <strong>5.5</strong> di akhir bagian ini. Untuk penilaian indikator 1.7, MySQL <em>maupun</em> PostgreSQL sama-sama diterima &mdash; pilih salah satu.
+                </div>
+
+                <div class="info-box">
+                    <strong>Masih di proyek <code>latihan-js</code> yang sama.</strong> Bagian ini melanjutkan proyek dari Section 3 &amp; 4 &mdash; tidak membuat folder baru.
+                    <ul>
+                        <li><strong>5.1 dan 5.2</strong> menyiapkan <em>server</em> MySQL di komputer kalian (di luar proyek). Cukup sekali.</li>
+                        <li><strong>5.3</strong> menambahkan berkas <code>.env</code>, <code>.env.example</code>, dan <code>cek-koneksi.js</code> <strong>di dalam <code>latihan-js</code></strong>, lalu memasang paket <code>mysql2</code> dan <code>dotenv</code> ke proyek itu.</li>
+                    </ul>
+                    Jadi setelah selesai, isi folder <code>latihan-js</code> bertambah: berkas latihan 4.x, <code>process-info.js</code>, <code>.env</code>, dan <code>cek-koneksi.js</code> &mdash; semua di satu tempat.
+                </div>
+
+                <h3>5.1 Pemasangan per Sistem Operasi</h3>
+
+                <table>
+                    <tr>
+                        <th>Sistem Operasi</th>
+                        <th>Cara yang dianjurkan</th>
+                        <th>Catatan</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Windows</strong></td>
+                        <td><a href="https://laragon.org" target="_blank">Laragon</a> (Full) &mdash; sudah menyertakan MySQL</td>
+                        <td>Alternatif: MySQL Installer resmi dari mysql.com</td>
+                    </tr>
+                    <tr>
+                        <td><strong>macOS</strong></td>
+                        <td><code>brew install mysql</code> lalu <code>brew services start mysql</code></td>
+                        <td>Alternatif: <a href="https://dbngin.com" target="_blank">DBngin</a> &mdash; tinggal klik Start</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Linux</strong></td>
+                        <td><code>sudo apt install mysql-server</code></td>
+                        <td>Sesuaikan dengan manajer paket distribusi masing-masing</td>
+                    </tr>
+                </table>
+
+                <h3>5.2 Membuat Basis Data</h3>
+                <div class="terminal"><span class="prompt">$</span> mysql -u root -p
+<span class="out">Enter password:
+Welcome to the MySQL monitor.</span>
+
+mysql&gt; CREATE DATABASE latihan_pwl;
+<span class="out">Query OK, 1 row affected</span>
+
+mysql&gt; SHOW DATABASES;
+<span class="out">+--------------------+
+| Database           |
++--------------------+
+| latihan_pwl        |
++--------------------+</span>
+
+mysql&gt; USE latihan_pwl;
+<span class="out">Database changed</span>
+
+mysql&gt; exit;</div>
+
+                <table>
+                    <tr>
+                        <th>Perintah klien <code>mysql</code></th>
+                        <th>Fungsi</th>
+                        <th>Padanan <code>psql</code> (PostgreSQL)</th>
+                    </tr>
+                    <tr><td><code>SHOW DATABASES;</code></td><td>Daftar basis data</td><td><code>\l</code></td></tr>
+                    <tr><td><code>USE nama_db;</code></td><td>Pindah basis data</td><td><code>\c nama_db</code></td></tr>
+                    <tr><td><code>SHOW TABLES;</code></td><td>Daftar tabel</td><td><code>\dt</code></td></tr>
+                    <tr><td><code>DESCRIBE tabel;</code></td><td>Struktur tabel</td><td><code>\d tabel</code></td></tr>
+                    <tr><td><code>exit;</code></td><td>Keluar</td><td><code>\q</code></td></tr>
+                </table>
+
+                <h3>5.3 Membuktikan Koneksi dari Node.js</h3>
+                <p>Memasang basis data saja belum cukup. Indikator 1.7 menuntut <strong>bukti bahwa Node.js benar-benar bisa terhubung</strong>. Semua langkah berikut dikerjakan <strong>di dalam folder <code>latihan-js</code></strong>.</p>
+
+                <p><strong>Langkah 1 &mdash; pasang paket ke proyek:</strong></p>
+                <div class="terminal"><span class="prompt">$</span> cd latihan-js
+<span class="prompt">$</span> npm install mysql2 dotenv</div>
+                <div class="flow-note">Pakai PostgreSQL? Ikuti bagian 5.5 (opsional) &mdash; paketnya <code>pg dotenv</code>.</div>
+
+                <p><strong>Langkah 2 &mdash; buat berkas <code>.env</code></strong> di <code>latihan-js</code> (berisi rahasia, jangan dibagikan):</p>
+                <pre><code><span class="comment"># .env</span>
+DATABASE_URL=mysql://root:passwordku@localhost:3306/latihan_pwl</code></pre>
+
+                <div class="info-box">
+                    <strong>Kalau user <code>root</code> kalian tidak punya password</strong> &mdash; ini normal pada Laragon dan sebagian pemasangan lokal &mdash; <strong>kosongkan saja bagian password</strong>, hapus juga titik dua di belakang <code>root</code>:
+                    <pre><code><span class="comment"># .env — root tanpa password</span>
+DATABASE_URL=mysql://root@localhost:3306/latihan_pwl</code></pre>
+                    Bentuk <code>mysql://root:@localhost:3306/latihan_pwl</code> (titik dua tetap ada, password kosong) juga diterima. Kalau password kalian mengandung karakter khusus seperti <code>@</code>, <code>#</code>, atau <code>/</code>, tulis dalam bentuk ter-<em>encode</em> (mis. <code>@</code> &rarr; <code>%40</code>) atau pakai bentuk terurai:
+                    <pre><code><span class="comment"># alternatif: variabel terpisah, tanpa perlu encode</span>
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=latihan_pwl</code></pre>
+                    lalu di <code>cek-koneksi.js</code>: <code>mysql.createConnection({ host: process.env.DB_HOST, port: process.env.DB_PORT, user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME })</code>.
+                    <br><br>
+                    Root tanpa password <strong>boleh untuk latihan lokal</strong>, tetapi jangan pernah dipakai di server produksi &mdash; di sana <code>root</code> wajib berpassword kuat dan aplikasi memakai user khusus dengan hak terbatas.
+                </div>
+
+                <p><strong>Langkah 3 &mdash; buat <code>.env.example</code></strong> di <code>latihan-js</code> (contoh tanpa nilai asli, boleh dibagikan agar orang lain tahu variabel apa yang dibutuhkan):</p>
+                <pre><code><span class="comment"># .env.example</span>
+DATABASE_URL=mysql://USER:PASSWORD@localhost:3306/NAMA_DATABASE</code></pre>
+
+                <p><strong>Langkah 4 &mdash; buat <code>cek-koneksi.js</code></strong> di <code>latihan-js</code>:</p>
+                <pre><code><span class="comment">// cek-koneksi.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> <span class="variable">mysql</span> <span class="keyword">from</span> <span class="string">'mysql2/promise'</span>;
+
+<span class="keyword">const</span> <span class="variable">koneksi</span> = <span class="keyword">await</span> <span class="variable">mysql</span>.<span class="function">createConnection</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);
+
+<span class="keyword">try</span> {
+    <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">koneksi</span>.<span class="function">query</span>(<span class="string">'SELECT VERSION() AS versi, DATABASE() AS db'</span>);
+
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Koneksi berhasil'</span>);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Database :'</span>, <span class="variable">baris</span>[<span class="number">0</span>].<span class="variable">db</span>);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Versi    :'</span>, <span class="variable">baris</span>[<span class="number">0</span>].<span class="variable">versi</span>);
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Koneksi gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+} <span class="keyword">finally</span> {
+    <span class="keyword">await</span> <span class="variable">koneksi</span>.<span class="function">end</span>();
+}</code></pre>
+
+                <p><strong>Langkah 5 &mdash; jalankan</strong> (dari dalam <code>latihan-js</code>):</p>
+                <div class="terminal"><span class="prompt">$</span> node cek-koneksi.js
+<span class="out">Koneksi berhasil
+Database : latihan_pwl
+Versi    : 8.4.0</span></div>
+                <p><code>process.env.DATABASE_URL</code> di sini dibaca dari berkas <code>.env</code> oleh <code>dotenv</code> &mdash; contoh nyata objek <code>process</code> dari Section 3.</p>
+
+                <div class="info-box">
+                    <strong>Kata kunci <code>await</code> di baris paling luar</strong> itu disebut <em>top-level await</em>, dan hanya bekerja kalau <code>package.json</code> berisi <code>"type": "module"</code>. Cara kerja <code>await</code> dibahas tuntas di <strong>Pertemuan 2</strong> &mdash; untuk sekarang, cukup pahami bahwa ia berarti "tunggu operasi ini selesai dulu".
+                </div>
+
+                <h3>5.4 Kalau Gagal Terhubung</h3>
+                <table>
+                    <tr>
+                        <th>Pesan galat</th>
+                        <th>Penyebab umum</th>
+                        <th>Yang harus diperiksa</th>
+                    </tr>
+                    <tr>
+                        <td><code>ECONNREFUSED</code></td>
+                        <td>Layanan MySQL belum berjalan</td>
+                        <td>Nyalakan lewat Laragon / DBngin / <code>brew services start mysql</code> / <code>systemctl</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>ER_ACCESS_DENIED_ERROR</code></td>
+                        <td>User atau password salah &mdash; sering karena root kalian sebenarnya <strong>tanpa password</strong> tapi <code>DATABASE_URL</code> menuliskan password</td>
+                        <td>Cocokkan dengan MySQL kalian. Root tanpa password &rarr; <code>mysql://root@localhost:3306/latihan_pwl</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>ER_BAD_DB_ERROR</code> (<code>Unknown database</code>)</td>
+                        <td>Basis data belum dibuat</td>
+                        <td>Jalankan <code>CREATE DATABASE</code> lagi</td>
+                    </tr>
+                    <tr>
+                        <td><code>process.env.DATABASE_URL</code> bernilai <code>undefined</code></td>
+                        <td><code>dotenv</code> belum di-import, atau <code>.env</code> tidak di folder yang sama</td>
+                        <td>Pastikan baris <code>import 'dotenv/config'</code> ada di paling atas</td>
+                    </tr>
+                    <tr>
+                        <td>Port <code>3306</code> dipakai proses lain</td>
+                        <td>Ada instalasi MySQL lain yang aktif</td>
+                        <td>Matikan salah satu, atau ubah port di <code>DATABASE_URL</code></td>
+                    </tr>
+                </table>
+
+                <h3>5.5 Alternatif: PostgreSQL <span class="badge">opsional</span></h3>
+                <p>Bagian ini <strong>tidak wajib</strong>. Kerjakan hanya kalau kalian ingin mencoba PostgreSQL &mdash; untuk penilaian indikator 1.7, MySQL <em>maupun</em> PostgreSQL sama-sama diterima. Semua langkahnya sejajar dengan 5.1&ndash;5.3, tetap di proyek <code>latihan-js</code>.</p>
+
+                <p><strong>a. Pasang server PostgreSQL</strong> (padanan 5.1):</p>
+                <table>
+                    <tr><th>Sistem Operasi</th><th>Cara yang dianjurkan</th></tr>
+                    <tr><td><strong>Windows</strong></td><td>Laragon (Full) sudah menyertakan PostgreSQL &mdash; alternatif: installer dari <a href="https://www.postgresql.org/download/" target="_blank">postgresql.org</a></td></tr>
+                    <tr><td><strong>macOS</strong></td><td><a href="https://postgresapp.com" target="_blank">Postgres.app</a> (klik Start) atau <code>brew install postgresql@17</code></td></tr>
+                    <tr><td><strong>Linux</strong></td><td><code>sudo apt install postgresql</code></td></tr>
+                </table>
+
+                <p><strong>b. Buat basis data</strong> (padanan 5.2) &mdash; lewat klien <code>psql</code>:</p>
+                <div class="terminal"><span class="prompt">$</span> psql -U postgres
+<span class="out">psql (17.2)</span>
+
+postgres=# CREATE DATABASE latihan_pwl;
+<span class="out">CREATE DATABASE</span>
+
+postgres=# \l
+<span class="out">                 List of databases
+    Name     |  Owner   | Encoding
+-------------+----------+----------
+ latihan_pwl | postgres | UTF8</span>
+
+postgres=# \q</div>
+                <table>
+                    <tr><th>Perintah <code>psql</code></th><th>Fungsi</th><th>Padanan klien <code>mysql</code></th></tr>
+                    <tr><td><code>\l</code></td><td>Daftar basis data</td><td><code>SHOW DATABASES;</code></td></tr>
+                    <tr><td><code>\c nama_db</code></td><td>Pindah basis data</td><td><code>USE nama_db;</code></td></tr>
+                    <tr><td><code>\dt</code></td><td>Daftar tabel</td><td><code>SHOW TABLES;</code></td></tr>
+                    <tr><td><code>\d tabel</code></td><td>Struktur tabel</td><td><code>DESCRIBE tabel;</code></td></tr>
+                    <tr><td><code>\q</code></td><td>Keluar</td><td><code>exit;</code></td></tr>
+                </table>
+
+                <p><strong>c. Buktikan koneksi dari Node.js</strong> (padanan 5.3) &mdash; di dalam <code>latihan-js</code>:</p>
+                <div class="terminal"><span class="prompt">$</span> cd latihan-js
+<span class="prompt">$</span> npm install pg dotenv</div>
+
+                <p><code>.env</code> memakai skema <code>postgresql://</code> dan port <code>5432</code>:</p>
+                <pre><code><span class="comment"># .env</span>
+DATABASE_URL=postgresql://postgres:passwordku@localhost:5432/latihan_pwl</code></pre>
+                <div class="flow-note">Postgres tanpa password? Pakai <code>postgresql://postgres@localhost:5432/latihan_pwl</code>.</div>
+
+                <p><code>cek-koneksi.js</code> versi PostgreSQL &mdash; driver <code>pg</code> memakai kelas <code>Client</code>:</p>
+                <pre><code><span class="comment">// cek-koneksi.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> <span class="variable">pg</span> <span class="keyword">from</span> <span class="string">'pg'</span>;
+
+<span class="keyword">const</span> <span class="variable">klien</span> = <span class="keyword">new</span> <span class="variable">pg</span>.<span class="function">Client</span>({ <span class="variable">connectionString</span>: <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span> });
+
+<span class="keyword">try</span> {
+    <span class="keyword">await</span> <span class="variable">klien</span>.<span class="function">connect</span>();
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">klien</span>.<span class="function">query</span>(<span class="string">'SELECT version() AS versi, current_database() AS db'</span>);
+
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Koneksi berhasil'</span>);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Database :'</span>, <span class="variable">hasil</span>.<span class="variable">rows</span>[<span class="number">0</span>].<span class="variable">db</span>);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Versi    :'</span>, <span class="variable">hasil</span>.<span class="variable">rows</span>[<span class="number">0</span>].<span class="variable">versi</span>.<span class="function">split</span>(<span class="string">' '</span>).<span class="function">slice</span>(<span class="number">0</span>, <span class="number">2</span>).<span class="function">join</span>(<span class="string">' '</span>));
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Koneksi gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+} <span class="keyword">finally</span> {
+    <span class="keyword">await</span> <span class="variable">klien</span>.<span class="function">end</span>();
+}</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node cek-koneksi.js
+<span class="out">Koneksi berhasil
+Database : latihan_pwl
+Versi    : PostgreSQL 17.2</span></div>
+
+                <table>
+                    <tr><th>Beda dengan MySQL</th><th>MySQL (<code>mysql2</code>)</th><th>PostgreSQL (<code>pg</code>)</th></tr>
+                    <tr><td>Paket npm</td><td><code>mysql2</code></td><td><code>pg</code></td></tr>
+                    <tr><td>Skema URL &amp; port</td><td><code>mysql://</code> :3306</td><td><code>postgresql://</code> :5432</td></tr>
+                    <tr><td>Membuat koneksi</td><td><code>await mysql.createConnection(url)</code></td><td><code>new pg.Client({ connectionString: url })</code> lalu <code>await klien.connect()</code></td></tr>
+                    <tr><td>Hasil kueri</td><td><code>const [baris] = await ...</code> &rarr; <code>baris[0]</code></td><td><code>const hasil = await ...</code> &rarr; <code>hasil.rows[0]</code></td></tr>
+                    <tr><td>Galat &ldquo;akses ditolak&rdquo;</td><td><code>ER_ACCESS_DENIED_ERROR</code></td><td><code>password authentication failed</code></td></tr>
+                </table>
+                <p>Mulai Minggu 5, ORM <strong>Prisma</strong> menutup hampir semua perbedaan SQL kedua basis data ini &mdash; kalian cukup mengganti satu baris <code>provider</code> pada skema.</p>
+
+                <div class="success-box">
+                    <strong>Titik periksa Section 5:</strong> di dalam <code>latihan-js</code>, perintah <code>node cek-koneksi.js</code> menampilkan nama basis data dan versi basis data (MySQL <em>atau</em> PostgreSQL). Simpan tangkapan layarnya &mdash; ini bukti indikator 1.7.
+                </div>
+            </section>
+
+            <!-- Section Praktik -->
+            <section id="praktik">
+                <h2>6. Praktik: Menyiapkan Proyek dari Nol <span class="badge badge-new">Latihan</span></h2>
+
+                <p>Bagian ini merangkai langkah-langkah dari Section 3 dan 4 menjadi satu alur kerja utuh: dari folder kosong sampai proyek npm yang siap dipakai. Kerjakan sendiri di komputer kalian, jangan hanya membaca.</p>
+
+                <div class="info-box">
+                    <strong>Fokus praktik ini:</strong> membuat proyek npm dari nol, memasang paket dari npm, lalu memakainya di kode. Koneksi ke MySQL <strong>tidak diulang di sini</strong> &mdash; langkah lengkapnya sudah ada di <a href="#mysql" onclick="showSection('mysql')">Section 5.3</a> dan dikerjakan di proyek <code>latihan-js</code>.
+                </div>
+
+                <h3>Langkah 1 &mdash; Buat Folder Proyek &amp; Inisialisasi npm</h3>
+                <div class="terminal"><span class="prompt">$</span> mkdir pwl-praktik
+<span class="prompt">$</span> cd pwl-praktik
+<span class="prompt">$</span> npm init -y
+<span class="out">Wrote to .../pwl-praktik/package.json</span></div>
+
+                <p>Buka <code>package.json</code>, tambahkan baris <code>"type": "module"</code> agar bisa memakai <code>import/export</code> (dibahas tuntas di Pertemuan 3):</p>
+                <pre><code>{
+  <span class="string">"name"</span>: <span class="string">"pwl-praktik"</span>,
+  <span class="string">"version"</span>: <span class="string">"1.0.0"</span>,
+  <span class="string">"type"</span>: <span class="string">"module"</span>,
+  <span class="string">"main"</span>: <span class="string">"index.js"</span>
+}</code></pre>
+
+                <h3>Langkah 2 &mdash; Buat index.js Pertama</h3>
+                <pre><code><span class="comment">// index.js</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Proyek siap!'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Node.js versi: ${process.version}`</span>);</code></pre>
+
+                <div class="terminal"><span class="prompt">$</span> node index.js
+<span class="out">Proyek siap!
+Node.js versi: v24.4.1</span></div>
+
+                <p><code>process.version</code> di sini adalah salah satu anggota objek <code>process</code> &mdash; papan dashboard proses Node yang dibahas di <a href="#nodejs" onclick="showSection('nodejs')">Section 3</a>. Coba ganti dengan <code>process.platform</code> atau <code>process.cwd()</code> lalu jalankan lagi.</p>
+
+                <h3>Langkah 3 &mdash; Memasang Paket dari npm (contoh: <code>chalk</code>)</h3>
+                <p>Latih pola yang dipakai untuk paket apa pun: <strong>pasang &rarr; baca dokumentasi &rarr; pakai</strong>. Kita coba dengan <a href="https://www.npmjs.com/package/chalk" target="_blank">chalk</a> &mdash; paket kecil untuk memberi warna pada teks di terminal.</p>
+
+                <p><strong>Langkah 3a &mdash; pasang paketnya:</strong></p>
+                <div class="terminal"><span class="prompt">$</span> npm install chalk
+<span class="out">added 1 package in 1s</span></div>
+
+                <p>Perhatikan apa yang berubah setelah perintah itu:</p>
+                <ul>
+                    <li><code>package.json</code> &mdash; muncul <code>"chalk"</code> di dalam <code>"dependencies"</code></li>
+                    <li><code>package-lock.json</code> &mdash; dibuat/diperbarui, mencatat versi persis yang terpasang</li>
+                    <li>folder <code>node_modules/</code> &mdash; berisi kode chalk yang sebenarnya, hasil unduhan npm</li>
+                </ul>
+
+                <p><strong>Langkah 3b &mdash; baca dokumentasinya dulu, jangan menebak.</strong> Buka halaman paket di <a href="https://www.npmjs.com/package/chalk" target="_blank">npmjs.com/package/chalk</a> (atau tautan &ldquo;Repository&rdquo; ke GitHub-nya). Di bagian <em>Usage</em> tertulis kira-kira begini:</p>
+                <pre><code><span class="keyword">import</span> <span class="variable">chalk</span> <span class="keyword">from</span> <span class="string">'chalk'</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="function">blue</span>(<span class="string">'Hello world!'</span>));</code></pre>
+                <p>Dari dokumentasi itu kita tahu tiga hal: cara meng-<em>import</em>-nya (<code>default export</code>, jadi tanpa kurung kurawal), nama fungsi yang tersedia (<code>chalk.blue</code>, <code>chalk.red</code>, &hellip;), dan bahwa fungsi-fungsi itu bisa dirangkai (<code>chalk.bold.bgRed</code>).</p>
+
+                <p><strong>Langkah 3c &mdash; pakai di berkas sendiri.</strong> Biar <code>index.js</code> tetap bersih, buat berkas baru <code>warna.js</code>:</p>
+                <pre><code><span class="comment">// warna.js</span>
+<span class="keyword">import</span> <span class="variable">chalk</span> <span class="keyword">from</span> <span class="string">'chalk'</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="function">green</span>(<span class="string">'✔ Proyek siap!'</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="variable">bold</span>.<span class="function">cyan</span>(<span class="string">`Node.js versi: ${process.version}`</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="variable">bgYellow</span>.<span class="function">black</span>(<span class="string">' PERINGATAN '</span>), <span class="string">'ini contoh teks berwarna'</span>);</code></pre>
+
+                <div class="terminal"><span class="prompt">$</span> node warna.js
+<span class="out"><span style="color:#3c873a">✔ Proyek siap!</span>
+<span style="color:#22d3ee;font-weight:bold">Node.js versi: v24.4.1</span>
+<span style="background:#eab308;color:#000"> PERINGATAN </span> ini contoh teks berwarna</span></div>
+
+                <h3>Langkah 4 &mdash; Paket Kedua: <code>figlet</code></h3>
+                <p>Ulangi pola yang sama untuk paket lain: <a href="https://www.npmjs.com/package/figlet" target="_blank">figlet</a> mengubah teks biasa menjadi huruf ASCII besar (sering dipakai untuk judul di aplikasi baris perintah).</p>
+
+                <p><strong>Langkah 4a &mdash; pasang:</strong></p>
+                <div class="terminal"><span class="prompt">$</span> npm install figlet
+<span class="out">added 2 packages in 1s</span></div>
+                <p>Perhatikan tulisannya <em>&ldquo;added 2 packages&rdquo;</em>, bukan 1 &mdash; figlet sendiri memakai 1 paket lain (dependensi milik dependensi). Lihat <code>package.json</code>: yang tercatat di <code>"dependencies"</code> hanya <code>figlet</code>; paket turunannya dicatat di <code>package-lock.json</code>.</p>
+
+                <p><strong>Langkah 4b &mdash; baca dokumentasi.</strong> Di halaman npm figlet, bagian <em>Usage</em> menunjukkan dua gaya: <code>figlet(text, callback)</code> (asinkron, dibahas Pertemuan 3) dan <code>figlet.textSync(text)</code> yang langsung mengembalikan string. Kita pakai yang <code>textSync</code>.</p>
+
+                <p><strong>Langkah 4c &mdash; buat <code>banner.js</code></strong> &mdash; sekaligus latihan memakai <strong>dua paket bersama</strong>:</p>
+                <pre><code><span class="comment">// banner.js</span>
+<span class="keyword">import</span> <span class="variable">figlet</span> <span class="keyword">from</span> <span class="string">'figlet'</span>;
+<span class="keyword">import</span> <span class="variable">chalk</span> <span class="keyword">from</span> <span class="string">'chalk'</span>;
+
+<span class="keyword">const</span> <span class="variable">judul</span> = <span class="variable">figlet</span>.<span class="function">textSync</span>(<span class="string">'PWL'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="function">cyan</span>(<span class="variable">judul</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="variable">dim</span>(<span class="string">'Pemrograman Web Lanjut'</span>));</code></pre>
+
+                <div class="terminal"><span class="prompt">$</span> node banner.js
+<span class="out"><span style="color:#22d3ee">  ______        ___
+ |  _ \ \      / / |
+ | |_) \ \ /\ / /| |
+ |  __/ \ V  V / | |___
+ |_|     \_/\_/  |_____|</span>
+<span style="opacity:0.6">Pemrograman Web Lanjut</span></span></div>
+
+                <div class="info-box">
+                    <strong>Kebiasaan yang dilatih di sini:</strong> setiap kali butuh fungsi baru, langkahnya selalu sama &mdash; cari paketnya di npm, baca bagian <em>Usage</em> di dokumentasi, baru tulis kode. Bukan menyalin dari jawaban teman. Perhatikan juga: tiap percobaan paket ditaruh di berkasnya sendiri (<code>warna.js</code>, <code>banner.js</code>), <code>index.js</code> dibiarkan sederhana.
+                </div>
+
+                <div class="success-box">
+                    <strong>Selesai kalau:</strong> <code>node warna.js</code> mencetak teks berwarna, <code>node banner.js</code> mencetak judul ASCII, dan <code>package.json</code> mencatat <code>chalk</code> serta <code>figlet</code> di <code>"dependencies"</code>. (Bukti koneksi MySQL sudah dikerjakan terpisah di <code>latihan-js</code>, Section 5.3.)
+                </div>
+
+                <h3>Latihan Mandiri</h3>
+                <p>Kerjakan tanpa panduan langkah demi langkah &mdash; justru itu yang dinilai: kalian bisa memasang paket sendiri lalu memakainya berdasarkan dokumentasi. Tetap di proyek <code>pwl-praktik</code>.</p>
+                <ol>
+                    <li><strong><a href="https://www.npmjs.com/package/dayjs" target="_blank">dayjs</a> &mdash; mengolah tanggal.</strong> Pasang, lalu buat <code>tanggal.js</code> yang mencetak tanggal hari ini dengan format <code>DD MMMM YYYY</code> dan menghitung selisih hari sampai akhir semester. Baca bagian <em>Formatting</em> dan <em>Difference</em> di dokumentasinya.</li>
+                    <li><strong><a href="https://www.npmjs.com/package/nanoid" target="_blank">nanoid</a> &mdash; membuat ID acak.</strong> Pasang, lalu buat <code>id.js</code> yang mencetak 5 ID unik. Coba juga <code>customAlphabet</code> untuk membuat ID yang hanya berisi angka.</li>
+                    <li>Buat <code>gabung.js</code> yang memakai <strong>tiga paket sekaligus</strong>: cetak tanggal hari ini (<code>dayjs</code>) berwarna hijau (<code>chalk</code>), dan sebuah kode pesanan acak (<code>nanoid</code>) berwarna kuning. Di komentar paling atas tiap berkas, tulis: nama paket, tautan dokumentasi, dan satu kalimat kegunaannya.</li>
+                    <li>Cari <strong>sendiri</strong> satu paket sederhana lain di <a href="https://www.npmjs.com" target="_blank">npmjs.com</a> (mis. <code>boxen</code>, <code>cli-table3</code>, <code>slugify</code>) dan buat satu berkas kecil yang memakainya.</li>
+                    <li>Tambahkan skrip <code>"dev": "node --watch index.js"</code> di <code>package.json</code>, jalankan dengan <code>npm run dev</code> sambil mengedit <code>index.js</code> &mdash; amati apa yang terjadi setiap kali menyimpan berkas.</li>
+                    <li>Jelaskan dengan kalimat sendiri (tulis sebagai komentar di <code>index.js</code>): apa beda <code>dependencies</code> dan <code>devDependencies</code>, dan mengapa <code>node_modules/</code> tidak perlu disalin ke mana-mana selama ada <code>package.json</code> dan <code>package-lock.json</code>.</li>
+                </ol>
+            </section>
+
+            <!-- Section CPMK -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran (Pertemuan 1)</h2>
+
+                <p>Pertemuan 1 dan <a href="materi-02-metode-array.html">Pertemuan 2</a> bersama-sama membentuk <strong>Sub-CPMK 1</strong>: Mahasiswa mampu menyiapkan lingkungan kerja web modern (Node.js, package manager, Git, dan basis data lokal) serta menggunakan sintaks JavaScript modern untuk mengolah data array dan objek. <strong>[C2, C3]</strong></p>
+
+                <p>Pertemuan 1 berfokus pada <strong>menyiapkan lingkungan kerja</strong>:</p>
+
+                <table>
+                    <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
+                    <tr>
+                        <td>1.1</td>
+                        <td>Menjelaskan perbedaan aplikasi yang dirender di server dengan aplikasi yang memisahkan antarmuka dari API</td>
+                        <td>Section 1</td>
+                    </tr>
+                    <tr>
+                        <td>1.2</td>
+                        <td>Menyiapkan Node.js, package manager (npm), dan proyek npm baru</td>
+                        <td>Section 2, 3</td>
+                    </tr>
+                    <tr>
+                        <td>1.3</td>
+                        <td>Menjelaskan package.json, berkas kunci versi, dan semver</td>
+                        <td>Section 3</td>
+                    </tr>
+                    <tr>
+                        <td>1.4</td>
+                        <td>Menjelaskan perbedaan JavaScript dengan bahasa sisi server yang sudah dikuasai: tipe dinamis, fungsi sebagai nilai, lingkup variabel</td>
+                        <td>Section 4</td>
+                    </tr>
+                    <tr>
+                        <td>1.7</td>
+                        <td>Memasang MySQL pada komputer sendiri dan membuktikan koneksinya dari aplikasi Node.js</td>
+                        <td>Section 5</td>
+                    </tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Menuju Pertemuan 2:</strong> indikator 1.5 (rantai metode array) dan 1.6 (destrukturisasi &amp; spread) dibahas tuntas di pertemuan berikutnya, melengkapi Sub-CPMK 1 secara utuh.
+                </div>
+
+                <h3>Daftar Periksa Akhir Pertemuan</h3>
+                <div class="info-box">
+                    <ul>
+                        <li><code>node -v</code> dan <code>npm -v</code> berjalan di terminal</li>
+                        <li>Ada folder proyek npm dengan <code>package.json</code> ber-<code>"type": "module"</code></li>
+                        <li>Bisa menjelaskan beda <code>dependencies</code> dan <code>devDependencies</code>, serta guna <code>package-lock.json</code></li>
+                        <li>Berhasil memasang paket dari npm sendiri (<code>chalk</code>, <code>figlet</code>, dan minimal satu paket pilihan sendiri) dan memakainya berdasarkan dokumentasi</li>
+                        <li>Bisa membedakan <code>==</code> dan <code>===</code>, serta <code>let</code>, <code>const</code>, dan <code>var</code></li>
+                        <li>MySQL terpasang dan terbukti bisa dihubungi dari Node.js</li>
+                    </ul>
+                </div>
+
+                <h3>&#128218; Referensi</h3>
+                <ul>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" target="_blank">MDN &mdash; JavaScript Guide</a> [1]</li>
+                    <li><a href="https://nodejs.org/docs/latest/api/" target="_blank">Node.js Documentation (v24 LTS)</a> [2]</li>
+                    <li><a href="https://dev.mysql.com/doc/" target="_blank">MySQL Documentation</a> [13]</li>
+                    <li><a href="https://www.postgresql.org/docs/" target="_blank">PostgreSQL Documentation</a> (opsional)</li>
+                    <li><a href="https://docs.npmjs.com/about-semantic-versioning" target="_blank">npm &mdash; About Semantic Versioning</a></li>
+                    <li><a href="https://www.npmjs.com/package/chalk" target="_blank">chalk</a>, <a href="https://www.npmjs.com/package/figlet" target="_blank">figlet</a>, <a href="https://www.npmjs.com/package/dayjs" target="_blank">dayjs</a>, <a href="https://www.npmjs.com/package/nanoid" target="_blank">nanoid</a> &mdash; paket latihan di Section 6</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 1 &mdash; Pemrograman Web Lanjut &mdash; Lingkungan Kerja Web Modern</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        function tulis(id, teks) { document.getElementById(id).textContent = teks; }
+
+        // ============================================
+        // DEMO — Tipe data & fungsi sebagai nilai
+        // ============================================
+        function demoTipe(mode) {
+            let out = '';
+            if (mode === 'typeof') {
+                const nilai = ["Andi", 42, true, null, undefined, [1,2], {a:1}, (x)=>x];
+                nilai.forEach(v => {
+                    out += `typeof ${JSON.stringify(v) ?? String(v)} → "${typeof v}"\n`;
+                });
+                out += '\nCatatan: typeof null === "object" adalah bug lama JavaScript\nyang tidak bisa diperbaiki karena akan merusak kode lama.';
+            } else if (mode === 'banding') {
+                out += 'Longgar (==)                Ketat (===)\n';
+                out += '--------------------------------------------\n';
+                out += `"5" == 5           → ${"5" == 5}      "5" === 5           → ${"5" === 5}\n`;
+                out += `0 == ""            → ${0 == ""}      0 === ""            → ${0 === ""}\n`;
+                out += `null == undefined  → ${null == undefined}      null === undefined  → ${null === undefined}\n`;
+                out += `[] == false        → ${[] == false}      [] === false        → ${[] === false}\n`;
+                out += '\n→ Selalu pakai === agar tidak ada konversi diam-diam.';
+            } else {
+                const sapa = (nama) => `Halo, ${nama}`;
+                const pengali = (f) => (n) => n * f;
+                const kaliTiga = pengali(3);
+                out += 'const sapa = (nama) => `Halo, ${nama}`;\n';
+                out += `sapa("Andi")        → "${sapa("Andi")}"\n\n`;
+                out += 'const pengali = (f) => (n) => n * f;\n';
+                out += 'const kaliTiga = pengali(3);\n';
+                out += `kaliTiga(5)         → ${kaliTiga(5)}\n\n`;
+                out += 'Fungsi dioper ke metode array:\n';
+                out += `[1,2,3].map(n => n*2) → ${JSON.stringify([1,2,3].map(n=>n*2))}\n`;
+                out += `typeof sapa           → "${typeof sapa}"  ← fungsi adalah nilai`;
+            }
+            tulis('demo1-out', out);
+        }
+
+        // ============================================
+        // DEMO — Lingkup variabel (scope)
+        // ============================================
+        function demoScope(mode) {
+            let out = '';
+            if (mode === 'blok') {
+                out += 'function contoh() {\n';
+                out += '    if (true) {\n';
+                out += '        var a = "var";   // lingkup: seluruh fungsi\n';
+                out += '        let b = "let";   // lingkup: blok if ini saja\n';
+                out += '    }\n';
+                out += '    console.log(a);      // ?\n';
+                out += '    console.log(b);      // ?\n';
+                out += '}\n\n';
+                out += 'Hasil:\n';
+                function contoh() {
+                    if (true) { var a = 'var'; let b = 'let'; }
+                    out += `  console.log(a) → "${a}"\n`;
+                    try { out += `  console.log(b) → "${b}"\n`; }
+                    catch (e) { out += `  console.log(b) → ${e.name}: b is not defined\n`; }
+                }
+                contoh();
+                out += '\n→ var mengabaikan blok { }, let/const berhenti di blok.';
+            } else if (mode === 'loop') {
+                const fnsVar = [];
+                for (var i = 0; i < 3; i++) { fnsVar.push(() => i); }
+                const fnsLet = [];
+                for (let j = 0; j < 3; j++) { fnsLet.push(() => j); }
+                out += 'Tiap putaran menyimpan sebuah fungsi () => variabel-loop,\n';
+                out += 'lalu semua fungsi itu dipanggil SETELAH perulangan selesai:\n\n';
+                out += `for (var i ...)  →  [${fnsVar.map(f => f()).join(', ')}]   // semua lihat i terakhir\n`;
+                out += `for (let j ...)  →  [${fnsLet.map(f => f()).join(', ')}]   // tiap fungsi punya j sendiri\n`;
+                out += '\n→ var i cuma SATU untuk seluruh fungsi; let j dibuat baru tiap putaran.\n';
+                out += '   Ini persis yang terjadi pada setTimeout di dalam for.';
+            } else if (mode === 'shadow') {
+                const pesan = 'luar';
+                let hasilDalam;
+                function cetak() { const pesan = 'dalam'; hasilDalam = pesan; }
+                cetak();
+                out += 'const pesan = "luar";\n';
+                out += 'function cetak() { const pesan = "dalam"; ... }\n\n';
+                out += `di dalam cetak()  → "${hasilDalam}"\n`;
+                out += `di luar (global)  → "${pesan}"\n\n`;
+                out += '→ nama sama di lingkup lebih dalam "menutupi" yang luar,\n';
+                out += '   tapi tidak mengubahnya. Pencarian: dari dalam ke luar,\n';
+                out += '   berhenti di kecocokan pertama.';
+            } else {
+                function pakaiVarDulu() { const lihat = x; var x = 5; return String(lihat); }
+                function pakaiLetDulu() {
+                    try { const lihat = y; let y = 5; return String(lihat); }
+                    catch (e) { return e.name; }
+                }
+                out += 'function f() { console.log(x); var x = 5; }   →  ';
+                out += `"${pakaiVarDulu()}"   (var sudah "ada", belum diisi)\n\n`;
+                out += 'function g() { console.log(y); let y = 5; }   →  ';
+                out += `${pakaiLetDulu()}   (Temporal Dead Zone)\n\n`;
+                out += '→ let/const menolak dipakai sebelum barisnya. Itu justru\n';
+                out += '   menolong: bug ketahuan langsung, bukan diam-diam undefined.';
+            }
+            tulis('demo-scope-out', out);
+        }
+
+        // ============================================
+        // SECTION VISIBILITY
+        // ============================================
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('arsitektur');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        // ============================================
+        // ANTI-COPY PROTECTION untuk elemen pre, code, terminal
+        // ============================================
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showCopyWarning();
+                    return false;
+                });
+                el.style.userSelect = 'none';
+                el.style.webkitUserSelect = 'none';
+                el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
+                        e.preventDefault();
+                        showCopyWarning();
+                        return false;
+                    }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) existingModal.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
+                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
+                            <h3 style="color:#3c873a;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#3c873a;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+                setTimeout(function() {
+                    var m = document.getElementById('copy-warning-modal');
+                    if (m) m.remove();
+                }, 3000);
+            }
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+</body>
+</html>
