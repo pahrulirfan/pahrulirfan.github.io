@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi 2 — Ruang Keadaan &amp; Pencarian Buta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ---- Visualisasi pohon pencarian ---- */
+        .tree-svg-wrap {
+            overflow-x: auto;
+            background: #f5f8ff;
+            border: 2px dashed #b0c4de;
+            border-radius: 10px;
+            padding: 20px 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .tree-svg-wrap svg { max-width: 100%; }
+
+        /* node colours */
+        .node-default  { fill: #1565c0; }
+        .node-visited  { fill: #7986cb; }
+        .node-current  { fill: #e65100; }
+        .node-goal     { fill: #2e7d32; }
+        .node-frontier { fill: #f9a825; }
+        .node-text     { fill: white; font-size: 13px; font-weight: 700;
+                         font-family: 'Segoe UI', sans-serif; }
+        .edge          { stroke: #90a4ae; stroke-width: 2; fill: none; }
+        .edge-cost     { fill: #546e7a; font-size: 11px;
+                         font-family: 'Segoe UI', sans-serif; }
+
+        /* trace tables */
+        .trace-table { font-size: 0.88em; }
+        .trace-table td:first-child { font-weight: 700; color: #1565c0; }
+        .trace-table .tr-current td { background: #fff3e0; }
+        .trace-table .tr-goal    td { background: #e8f5e9; }
+
+        /* step-by-step interactive */
+        .step-box {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 8px;
+            border-left: 4px solid #1565c0;
+            display: none;
+        }
+        .step-box.show { display: block; animation: fadeInUp 0.3s ease; }
+        .step-box strong { color: #1a2a4a; }
+
+        /* complexity card */
+        .cplx-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin: 15px 0;
+        }
+        .cplx-card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+            border-top: 4px solid #1565c0;
+            text-align: center;
+        }
+        .cplx-card h5 { color: #1a2a4a; margin-bottom: 8px; font-size: 1em; }
+        .cplx-card .val {
+            font-family: 'Consolas', monospace;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin: 4px 0;
+        }
+        .cplx-card p { font-size: 0.82em; color: #666; margin: 0; text-align: center; }
+
+        /* algorithm legend */
+        .legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.85em; }
+        .legend-dot {
+            width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0;
+        }
+
+        /* comparison bar */
+        .cmp-row {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 8px; font-size: 0.88em;
+        }
+        .cmp-label { width: 55px; font-weight: 600; color: #1a2a4a; flex-shrink: 0; }
+        .cmp-bar {
+            height: 22px; border-radius: 4px; display: flex;
+            align-items: center; padding: 0 10px; color: white;
+            font-weight: 600; font-size: 0.85em; transition: width 0.6s ease;
+        }
+        .cmp-note { color: #555; font-size: 0.82em; }
+
+        @media (max-width: 480px) {
+            .cplx-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Pertemuan 3 &amp; 4</h1>
+        <p>Sub-CPMK2 · Ruang Keadaan &amp; Pencarian Buta: BFS, DFS, DLS, IDS, UCS</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#cpmk" class="active">0. Capaian</a></li>
+                <li><a href="#ruang-keadaan">1. Ruang Keadaan</a></li>
+                <li><a href="#formulasi">2. Formulasi Masalah</a></li>
+                <li><a href="#pohon-vs-graf">3. Pohon vs Graf Pencarian</a></li>
+                <li><a href="#ukuran-kinerja">4. Ukuran Kinerja</a></li>
+                <li><a href="#bfs">5. BFS</a></li>
+                <li><a href="#dfs">6. DFS &amp; DLS</a></li>
+                <li><a href="#ids">7. IDS</a></li>
+                <li><a href="#ucs">8. UCS</a></li>
+                <li><a href="#perbandingan">9. Perbandingan</a></li>
+                <li><a href="#rangkuman">10. Rangkuman</a></li>
+            </ul>
+            <!-- <h3><i class="fa-solid fa-compass"></i> Navigasi</h3>
+            <ul>
+                <li><a href="index.html">← Daftar Materi</a></li>
+                <li><a href="materi-1.html">← Materi 1</a></li>
+                <li><a href="materi-3.html">Materi 3 →</a></li>
+                <li><a href="https://berajah-if.unram.ac.id" target="_blank">eLearning BERAJAH</a></li>
+            </ul> -->
+        </nav>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- CPMK -->
+            <!-- ============================================================ -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran <span class="badge">Sub-CPMK2</span></h2>
+                <div class="success-box">
+                    <strong>Kemampuan Akhir yang Diharapkan:</strong>
+                    <p style="margin-top:8px;">Mahasiswa mampu <strong>merumuskan masalah sebagai ruang keadaan</strong> dan <strong>menerapkan algoritma pencarian buta</strong> (BFS, DFS, DLS, IDS, UCS) beserta analisis kelengkapan, optimalitas, serta kompleksitas waktu dan ruangnya. <em>(C3/C4)</em></p>
+                </div>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-map"></i></div>
+                        <h4>2.1 Formulasi Ruang Keadaan</h4>
+                        <p>Merumuskan keadaan awal, aksi, model transisi, uji tujuan, dan biaya lintasan.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-tree"></i></div>
+                        <h4>2.2 Pohon vs Graf</h4>
+                        <p>Membedakan pohon pencarian dengan graf pencarian beserta konsekuensinya.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-play"></i></div>
+                        <h4>2.3 Penelusuran Manual</h4>
+                        <p>Menelusuri BFS, DFS, DLS, IDS, dan UCS secara manual langkah demi langkah.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                        <h4>2.4 Implementasi Python</h4>
+                        <p>Mengimplementasikan kelima algoritma pada antarmuka masalah yang seragam.</p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                        <h4>2.5 Analisis Kompleksitas</h4>
+                        <p>Menyimpulkan kelengkapan, optimalitas, dan kompleksitas setiap algoritma.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4>2.6 Alasan IDS</h4>
+                        <p>Menjelaskan mengapa IDS lebih baik dari DFS dan BFS secara memori.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Ruang Keadaan -->
+            <!-- ============================================================ -->
+            <section id="ruang-keadaan">
+                <h2>1. Konsep Ruang Keadaan <span class="badge">Dasar</span></h2>
+
+                <p>Banyak masalah AI dapat dimodelkan sebagai pencarian dalam sebuah <strong>ruang keadaan (state space)</strong> — yaitu kumpulan semua keadaan yang mungkin dicapai dari keadaan awal melalui serangkaian aksi.</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-thumbtack"></i> Intuisi:</strong>
+                    <p style="margin-top:6px;">Bayangkan Anda mencari rute dari kota A ke kota B di peta. Setiap kota adalah sebuah <em>keadaan</em>, jalan yang menghubungkannya adalah <em>aksi</em>, dan peta seluruhnya adalah <em>ruang keadaan</em>. Tugas agen adalah menemukan urutan aksi yang membawa dari keadaan awal ke keadaan tujuan.</p>
+                </div>
+
+                <h3>Empat Langkah Membangun Sistem AI berbasis Pencarian</h3>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Definisikan masalah dengan tepat</strong><p>Tentukan keadaan awal, keadaan tujuan, dan batasan yang berlaku.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Analisis masalah &amp; cari beberapa teknik penyelesaian</strong><p>Perhatikan sifat ruang keadaan (besar/kecil, ada biaya/tidak, ada heuristik/tidak).</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Representasikan pengetahuan untuk penyelesaian</strong><p>Pilih representasi keadaan (larik, tuple, graf) dan definisikan aksi/aturan.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content"><strong>Pilih teknik penyelesaian terbaik</strong><p>Bandingkan kelengkapan, optimalitas, dan kompleksitas tiap algoritma untuk masalah tersebut.</p></div>
+                    </div>
+                </div>
+
+                <h3>Contoh Masalah: 8-Puzzle</h3>
+                <div class="demo-box">
+                    <h5>Masalah 8-Puzzle</h5>
+                    <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:10px;">
+                        <div>
+                            <p style="text-align:center; font-weight:600; color:#1565c0; margin-bottom:8px;">Keadaan Awal</p>
+                            <div style="display:grid; grid-template-columns:repeat(3,50px); gap:3px;">
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">7</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">2</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">4</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">5</div>
+                                <div style="background:#e3f2fd;width:50px;height:50px;border-radius:5px;border:2px dashed #1565c0;"></div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">6</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">8</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">3</div>
+                                <div style="background:#1565c0;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">1</div>
+                            </div>
+                        </div>
+                        <div style="font-size:2em; color:#1565c0;"><i class="fa-solid fa-arrow-right-long"></i></div>
+                        <div>
+                            <p style="text-align:center; font-weight:600; color:#2e7d32; margin-bottom:8px;">Keadaan Tujuan</p>
+                            <div style="display:grid; grid-template-columns:repeat(3,50px); gap:3px;">
+                                <div style="background:#e3f2fd;width:50px;height:50px;border-radius:5px;border:2px dashed #1565c0;"></div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">1</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">2</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">3</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">4</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">5</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">6</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">7</div>
+                                <div style="background:#2e7d32;color:white;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:5px;font-size:1.3em;font-weight:700;">8</div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="text-align:center; margin-top:12px; font-size:0.88em; color:#555;">Total kemungkinan keadaan: 9! / 2 = <strong>181.440</strong> keadaan yang dapat dicapai.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Formulasi Masalah -->
+            <!-- ============================================================ -->
+            <section id="formulasi">
+                <h2>2. Formulasi Masalah sebagai Ruang Keadaan <span class="badge badge-algo">Inti</span></h2>
+
+                <p>Setiap masalah pencarian harus diformulasikan secara formal melalui lima komponen berikut sebelum algoritma dapat diterapkan.</p>
+
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Keadaan Awal — <em>Initial State s₀</em></strong>
+                            <p>Keadaan tempat agen memulai. Contoh 8-puzzle: susunan awal ubin.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Aksi — <em>Actions(s)</em></strong>
+                            <p>Himpunan aksi yang dapat dilakukan dari keadaan <em>s</em>. Contoh: geser ubin ke atas/bawah/kiri/kanan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Model Transisi — <em>Result(s, a)</em></strong>
+                            <p>Keadaan baru yang dihasilkan dari melakukan aksi <em>a</em> di keadaan <em>s</em>. Mendefinisikan sepenuhnya ruang keadaan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Uji Tujuan — <em>Goal-Test(s)</em></strong>
+                            <p>Fungsi yang mengembalikan <em>true</em> jika <em>s</em> adalah keadaan tujuan. Bisa berupa keadaan tunggal atau himpunan keadaan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <strong>Biaya Lintasan — <em>Path Cost</em></strong>
+                            <p>Fungsi yang memberikan nilai numerik pada setiap lintasan. Biasanya: jumlah biaya tiap langkah. Contoh: jarak tempuh, jumlah gerakan.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Formulasi Contoh: Masalah Peta Romania</h3>
+                <table>
+                    <thead>
+                        <tr><th>Komponen</th><th>Isian</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td>Kota saat ini (Arad, Zerind, Oradea, ...)</td></tr>
+                        <tr><td><strong>Keadaan Awal</strong></td><td>Arad</td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Berkendara ke kota tetangga yang terhubung</td></tr>
+                        <tr><td><strong>Model Transisi</strong></td><td>Result(Arad, "ke Zerind") = Zerind</td></tr>
+                        <tr><td><strong>Uji Tujuan</strong></td><td>Apakah kota saat ini = Bucharest?</td></tr>
+                        <tr><td><strong>Biaya Lintasan</strong></td><td>Jumlah jarak (km) jalan yang dilalui</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Peta Romania (Graf Pencarian)</h3>
+                <div class="tree-svg-wrap">
+                    <svg width="700" height="380" viewBox="0 0 700 380">
+                        <!-- edges -->
+                        <line x1="80" y1="80"  x2="160" y2="60"  class="edge"/>
+                        <line x1="80" y1="80"  x2="100" y2="200" class="edge"/>
+                        <line x1="80" y1="80"  x2="220" y2="170" class="edge"/>
+                        <line x1="160" y1="60" x2="240" y2="60"  class="edge"/>
+                        <line x1="240" y1="60" x2="310" y2="120" class="edge"/>
+                        <line x1="100" y1="200" x2="220" y2="170" class="edge"/>
+                        <line x1="100" y1="200" x2="130" y2="310" class="edge"/>
+                        <line x1="220" y1="170" x2="310" y2="120" class="edge"/>
+                        <line x1="220" y1="170" x2="300" y2="250" class="edge"/>
+                        <line x1="310" y1="120" x2="420" y2="100" class="edge"/>
+                        <line x1="310" y1="120" x2="300" y2="250" class="edge"/>
+                        <line x1="420" y1="100" x2="520" y2="80"  class="edge"/>
+                        <line x1="420" y1="100" x2="490" y2="210" class="edge"/>
+                        <line x1="520" y1="80"  x2="620" y2="140" class="edge"/>
+                        <line x1="490" y1="210" x2="620" y2="140" class="edge"/>
+                        <line x1="490" y1="210" x2="490" y2="320" class="edge"/>
+                        <line x1="300" y1="250" x2="400" y2="300" class="edge"/>
+                        <line x1="400" y1="300" x2="490" y2="320" class="edge"/>
+                        <line x1="130" y1="310" x2="300" y2="250" class="edge"/>
+
+                        <!-- edge costs -->
+                        <text x="108" y="64"  class="edge-cost">75</text>
+                        <text x="72"  y="148" class="edge-cost">118</text>
+                        <text x="140" y="140" class="edge-cost">140</text>
+                        <text x="195" y="55"  class="edge-cost">71</text>
+                        <text x="272" y="83"  class="edge-cost">151</text>
+                        <text x="148" y="195" class="edge-cost">80</text>
+                        <text x="255" y="225" class="edge-cost">99</text>
+                        <text x="260" y="135" class="edge-cost">146</text>
+                        <text x="360" y="100" class="edge-cost">111</text>
+                        <text x="452" y="82"  class="edge-cost">99</text>
+                        <text x="535" y="100" class="edge-cost">211</text>
+                        <text x="448" y="165" class="edge-cost">101</text>
+                        <text x="560" y="190" class="edge-cost">90</text>
+                        <text x="470" y="270" class="edge-cost">86</text>
+                        <text x="340" y="290" class="edge-cost">97</text>
+                        <text x="432" y="325" class="edge-cost">138</text>
+
+                        <!-- nodes -->
+                        <circle cx="80"  cy="80"  r="22" class="node-current"/>
+                        <text x="80"  y="85"  class="node-text" text-anchor="middle">Arad</text>
+
+                        <circle cx="160" cy="60"  r="22" class="node-default"/>
+                        <text x="160" y="65"  class="node-text" text-anchor="middle">Zerind</text>
+
+                        <circle cx="240" cy="60"  r="22" class="node-default"/>
+                        <text x="240" y="65"  class="node-text" text-anchor="middle" font-size="11">Oradea</text>
+
+                        <circle cx="100" cy="200" r="22" class="node-default"/>
+                        <text x="100" y="205" class="node-text" text-anchor="middle" font-size="11">Timisoara</text>
+
+                        <circle cx="220" cy="170" r="22" class="node-default"/>
+                        <text x="220" y="175" class="node-text" text-anchor="middle" font-size="11">Lugoj</text>
+
+                        <circle cx="310" cy="120" r="22" class="node-default"/>
+                        <text x="310" y="125" class="node-text" text-anchor="middle" font-size="11">Sibiu</text>
+
+                        <circle cx="420" cy="100" r="22" class="node-default"/>
+                        <text x="420" y="105" class="node-text" text-anchor="middle" font-size="10">Fagaras</text>
+
+                        <circle cx="520" cy="80"  r="22" class="node-default"/>
+                        <text x="520" y="85"  class="node-text" text-anchor="middle" font-size="10">Pitesti</text>
+
+                        <circle cx="620" cy="140" r="26" class="node-goal"/>
+                        <text x="620" y="145" class="node-text" text-anchor="middle" font-size="11">Bucharest</text>
+
+                        <circle cx="490" cy="210" r="22" class="node-default"/>
+                        <text x="490" y="215" class="node-text" text-anchor="middle" font-size="10">Giurgiu</text>
+
+                        <circle cx="300" cy="250" r="22" class="node-default"/>
+                        <text x="300" y="255" class="node-text" text-anchor="middle" font-size="10">Mehadia</text>
+
+                        <circle cx="130" cy="310" r="22" class="node-default"/>
+                        <text x="130" y="315" class="node-text" text-anchor="middle" font-size="10">Drobeta</text>
+
+                        <circle cx="400" cy="300" r="22" class="node-default"/>
+                        <text x="400" y="305" class="node-text" text-anchor="middle" font-size="10">Craiova</text>
+
+                        <circle cx="490" cy="320" r="22" class="node-default"/>
+                        <text x="490" y="325" class="node-text" text-anchor="middle" font-size="10">Urziceni</text>
+
+                        <!-- legend -->
+                        <circle cx="20"  cy="355" r="8" class="node-current"/>
+                        <text x="33" y="360" font-size="11" fill="#555">Awal</text>
+                        <circle cx="80"  cy="355" r="8" class="node-goal"/>
+                        <text x="93" y="360" font-size="11" fill="#555">Tujuan</text>
+                        <circle cx="145" cy="355" r="8" class="node-default"/>
+                        <text x="158" y="360" font-size="11" fill="#555">Kota lain</text>
+                    </svg>
+                </div>
+
+                <h3>Implementasi Antarmuka Masalah (Python)</h3>
+                <pre><code><span class="kw">class</span> <span class="cl">Problem</span>:
+    <span class="st">"""Antarmuka abstrak untuk masalah pencarian."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, initial, goal=<span class="kw">None</span>):
+        self.initial = initial   <span class="cm"># keadaan awal</span>
+        self.goal    = goal      <span class="cm"># keadaan tujuan (tunggal atau himpunan)</span>
+
+    <span class="kw">def</span> <span class="fn">actions</span>(self, state):
+        <span class="st">"""Kembalikan daftar aksi yang dapat dilakukan di 'state'."""</span>
+        <span class="kw">raise</span> NotImplementedError
+
+    <span class="kw">def</span> <span class="fn">result</span>(self, state, action):
+        <span class="st">"""Kembalikan keadaan baru setelah melakukan 'action' di 'state'."""</span>
+        <span class="kw">raise</span> NotImplementedError
+
+    <span class="kw">def</span> <span class="fn">is_goal</span>(self, state):
+        <span class="st">"""Kembalikan True jika 'state' adalah tujuan."""</span>
+        <span class="kw">return</span> state == self.goal
+
+    <span class="kw">def</span> <span class="fn">step_cost</span>(self, state, action, next_state):
+        <span class="st">"""Biaya satu langkah. Default = 1."""</span>
+        <span class="kw">return</span> <span class="nm">1</span>
+
+
+<span class="kw">class</span> <span class="cl">Node</span>:
+    <span class="st">"""Simpul dalam pohon pencarian."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, state, parent=<span class="kw">None</span>, action=<span class="kw">None</span>, path_cost=<span class="nm">0</span>):
+        self.state     = state
+        self.parent    = parent    <span class="cm"># simpul induk</span>
+        self.action    = action    <span class="cm"># aksi yang menghasilkan simpul ini</span>
+        self.path_cost = path_cost <span class="cm"># biaya dari akar ke simpul ini</span>
+        self.depth     = <span class="nm">0</span> <span class="kw">if</span> parent <span class="kw">is</span> <span class="kw">None</span> <span class="kw">else</span> parent.depth + <span class="nm">1</span>
+
+    <span class="kw">def</span> <span class="fn">expand</span>(self, problem):
+        <span class="st">"""Bangkitkan semua simpul anak."""</span>
+        <span class="kw">return</span> [
+            <span class="cl">Node</span>(
+                state     = problem.result(self.state, a),
+                parent    = self,
+                action    = a,
+                path_cost = self.path_cost + problem.step_cost(self.state, a, problem.result(self.state, a))
+            )
+            <span class="kw">for</span> a <span class="kw">in</span> problem.actions(self.state)
+        ]
+
+    <span class="kw">def</span> <span class="fn">solution</span>(self):
+        <span class="st">"""Kembalikan urutan aksi dari akar ke simpul ini."""</span>
+        path = []
+        node = self
+        <span class="kw">while</span> node.parent:
+            path.append(node.action)
+            node = node.parent
+        <span class="kw">return</span> path[::-<span class="nm">1</span>]</code></pre>
+
+                <h3>Contoh Formulasi Lain</h3>
+                <p>Selain 8-puzzle dan peta Romania, banyak teka-teki klasik yang cocok dimodelkan sebagai ruang keadaan.</p>
+
+                <h4>a. Masalah Ember Air (Water Jug Problem)</h4>
+                <p>Ada ember <strong>4 liter</strong> (A) dan ember <strong>3 liter</strong> (B), serta sumber air tak terbatas. Isi <em>tepat 2 liter</em> di ember A.</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td>Pasangan <code>(x, y)</code> — x isi ember A (0–4), y isi ember B (0–3)</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0)</code></td></tr>
+                        <tr><td><strong>Uji tujuan</strong></td><td><code>x == 2</code> (y bebas)</td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Isi penuh A / B; kosongkan A / B; tuang A→B atau B→A sampai penuh atau habis</td></tr>
+                        <tr><td><strong>Biaya lintasan</strong></td><td>Jumlah aksi (tiap aksi berbiaya 1)</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Salah satu solusi: <code>(0,0) → (0,3) → (3,0) → (3,3) → (4,2) → (0,2) → (2,0)</code>.</p>
+
+                <h4>b. Petani, Serigala, Kambing, dan Sayuran (River Crossing)</h4>
+                <p>Seorang petani harus menyeberangkan serigala, kambing, dan sayuran dengan perahu yang hanya memuat petani + satu penumpang. Kambing tidak boleh ditinggal berdua dengan serigala (dimakan) atau dengan sayuran (dimakan).</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td><code>(kambing, serigala, sayuran, perahu)</code> — tiap unsur 0 = sisi asal, 1 = sisi seberang</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0, 0, 0)</code></td></tr>
+                        <tr><td><strong>Keadaan tujuan</strong></td><td><code>(1, 1, 1, 1)</code></td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Perahu menyeberang membawa 0 atau 1 penumpang — <em>hanya jika keadaan hasil aman</em></td></tr>
+                        <tr><td><strong>Batasan</strong></td><td>Kambing tidak sendirian dengan serigala / sayuran tanpa petani</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>c. Kompleksitas Ruang Keadaan</h4>
+                <table>
+                    <thead><tr><th>Masalah</th><th><em>Branching factor</em> (b)</th><th>Ukuran ruang keadaan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Ember air</td><td>± 6</td><td>5 × 4 = 20 keadaan</td></tr>
+                        <tr><td>8-Puzzle</td><td>± 3</td><td>9! / 2 = 181.440</td></tr>
+                        <tr><td>15-Puzzle</td><td>± 3</td><td>± 10<sup>13</sup></td></tr>
+                        <tr><td>Rubik's Cube 3×3</td><td>27 aturan putaran</td><td>± 4,3 × 10<sup>19</sup></td></tr>
+                        <tr><td>Catur (per langkah)</td><td>± 35</td><td>± 10<sup>40</sup> posisi legal</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Untuk catur, ruang keadaan didefinisikan lewat posisi awal + aturan langkah legal (mis. kaidah "JIKA bidak putih di (e,2) DAN (e,3) kosong DAN (e,4) kosong MAKA gerakkan bidak (e,2)→(e,4)"), dengan tujuan berupa posisi <em>skakmat</em>.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Pohon vs Graf -->
+            <!-- ============================================================ -->
+            <section id="pohon-vs-graf">
+                <h2>3. Pohon Pencarian vs Graf Pencarian <span class="badge">Konsep</span></h2>
+
+                <table>
+                    <thead>
+                        <tr><th>Aspek</th><th><i class="fa-solid fa-tree"></i> Pohon Pencarian</th><th><i class="fa-solid fa-diagram-project"></i> Graf Pencarian</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Definisi</strong></td>
+                            <td>Ekspansi keadaan tanpa melacak keadaan yang sudah dikunjungi</td>
+                            <td>Melacak semua keadaan yang sudah dikunjungi (<em>explored set</em>)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Siklus</strong></td>
+                            <td>Bisa terjebak loop tak hingga</td>
+                            <td>Aman dari siklus, tidak mengekspansi ulang</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Memori</strong></td>
+                            <td>Lebih hemat (tidak simpan explored set)</td>
+                            <td>Butuh memori lebih untuk explored set</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Kelengkapan</strong></td>
+                            <td>Tidak terjamin jika ada siklus</td>
+                            <td>Lebih terjamin selama ruang keadaan terhingga</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Digunakan oleh</strong></td>
+                            <td>DFS naif</td>
+                            <td>BFS, UCS, A* (standar)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Siklus adalah musuh utama DFS!</strong>
+                    <p style="margin-top:6px;">Pada graf pencarian, DFS dapat masuk ke dalam siklus A→B→A→B→... tanpa batas. Solusinya: gunakan <em>explored set</em> (biasa disebut <em>closed list</em>) untuk mencatat keadaan yang sudah diekspansi.</p>
+                </div>
+
+                <h3>Membentang Graf Keadaan menjadi Pohon Pelacakan</h3>
+                <p>Sebuah <strong>graf keadaan</strong> menggambarkan seluruh keadaan dan transisinya. Ketika algoritma menelusurinya, ia membentuk <strong>pohon pelacakan</strong> (<em>search tree</em>) — sebuah keadaan yang dapat dicapai lewat beberapa lintasan akan <em>muncul beberapa kali</em> sebagai simpul berbeda.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="620" height="230" viewBox="0 0 620 230">
+                        <!-- graph M A B C D E F G H I J T -->
+                        <line x1="60" y1="115" x2="140" y2="60" class="edge"/>
+                        <line x1="60" y1="115" x2="140" y2="175" class="edge"/>
+                        <line x1="140" y1="60" x2="220" y2="60" class="edge"/>
+                        <line x1="220" y1="60" x2="300" y2="115" class="edge"/>
+                        <line x1="140" y1="175" x2="300" y2="115" class="edge"/>
+                        <line x1="140" y1="175" x2="220" y2="175" class="edge"/>
+                        <line x1="220" y1="175" x2="300" y2="115" class="edge"/>
+                        <line x1="300" y1="115" x2="390" y2="55" class="edge"/>
+                        <line x1="300" y1="115" x2="390" y2="115" class="edge"/>
+                        <line x1="300" y1="115" x2="470" y2="115" class="edge"/>
+                        <line x1="390" y1="55" x2="470" y2="55" class="edge"/>
+                        <line x1="390" y1="115" x2="470" y2="175" class="edge"/>
+                        <line x1="390" y1="115" x2="470" y2="115" class="edge"/>
+                        <circle cx="60"  cy="115" r="18" class="node-current"/><text x="60"  y="120" class="node-text" text-anchor="middle">M</text>
+                        <circle cx="140" cy="60"  r="18" class="node-default"/><text x="140" y="65"  class="node-text" text-anchor="middle">A</text>
+                        <circle cx="220" cy="60"  r="18" class="node-default"/><text x="220" y="65"  class="node-text" text-anchor="middle">B</text>
+                        <circle cx="140" cy="175" r="18" class="node-default"/><text x="140" y="180" class="node-text" text-anchor="middle">D</text>
+                        <circle cx="220" cy="175" r="18" class="node-default"/><text x="220" y="180" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="300" cy="115" r="18" class="node-default"/><text x="300" y="120" class="node-text" text-anchor="middle">C</text>
+                        <circle cx="390" cy="55"  r="18" class="node-default"/><text x="390" y="60"  class="node-text" text-anchor="middle">E</text>
+                        <circle cx="390" cy="115" r="18" class="node-default"/><text x="390" y="120" class="node-text" text-anchor="middle">F</text>
+                        <circle cx="470" cy="55"  r="18" class="node-default"/><text x="470" y="60"  class="node-text" text-anchor="middle">G</text>
+                        <circle cx="470" cy="175" r="18" class="node-default"/><text x="470" y="180" class="node-text" text-anchor="middle">J</text>
+                        <circle cx="470" cy="115" r="20" class="node-goal"/><text x="470" y="120" class="node-text" text-anchor="middle">T</text>
+                    </svg>
+                </div>
+                <p>Dari graf di atas (awal <strong>M</strong>, tujuan <strong>T</strong>), lintasan yang mungkin:</p>
+                <table>
+                    <thead><tr><th>Jenis</th><th>Lintasan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Sampai ke tujuan</td><td><code>M-A-B-C-E-T</code> · <code>M-A-B-C-E-H-T</code> · <code>M-D-C-E-T</code> · <code>M-D-C-E-H-T</code></td></tr>
+                        <tr><td>Jalan buntu (<em>dead end</em>)</td><td><code>M-A-B-C-E-F-G</code> · <code>M-A-B-C-E-I-J</code> · <code>M-D-I-J</code></td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Perhatikan simpul <strong>C</strong> dan <strong>E</strong> muncul di banyak lintasan — pada pohon pelacakan keduanya diduplikasi. Inilah alasan <em>explored set</em> (graf pencarian) menghemat pekerjaan.</p>
+
+                <h3>Pohon AND/OR (Reduksi Masalah)</h3>
+                <p>Pada pohon pencarian biasa (pohon <strong>OR</strong>), sebuah simpul terpecahkan jika <em>salah satu</em> anaknya terpecahkan. Pada <strong>pohon AND</strong>, sebuah simpul terpecahkan hanya jika <em>semua</em> anaknya terpecahkan — dipakai saat sebuah masalah harus dipecah menjadi beberapa sub-masalah yang semuanya wajib diselesaikan.</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-code-branch"></i></div>
+                        <h4>Simpul OR</h4>
+                        <p>"M dapat dicapai lewat A <em>atau</em> B <em>atau</em> C." Cukup satu cabang berhasil.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-object-group"></i></div>
+                        <h4>Simpul AND</h4>
+                        <p>"Untuk menyelesaikan M, harus menyelesaikan A <em>dan</em> B <em>dan</em> C." Semua cabang wajib berhasil (ditandai busur melengkung antar-cabang).</p>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Contoh:</strong>
+                    <p style="margin-top:6px;">"Membangun rumah" = <em>AND</em>(pondasi, dinding, atap). "Pergi ke kampus" = <em>OR</em>(naik motor, naik angkot, jalan kaki). Pohon AND/OR menjadi dasar <em>problem reduction</em> dan perencanaan hierarkis.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. Ukuran Kinerja -->
+            <!-- ============================================================ -->
+            <section id="ukuran-kinerja">
+                <h2>4. Ukuran Kinerja Algoritma Pencarian <span class="badge">Dasar</span></h2>
+
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#1565c0;">
+                        <h5><i class="fa-solid fa-circle-check"></i> Kelengkapan</h5>
+                        <div class="val" style="color:#1565c0;">Completeness</div>
+                        <p>Apakah algoritma <em>pasti</em> menemukan solusi jika solusi ada?</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5><i class="fa-solid fa-trophy"></i> Optimalitas</h5>
+                        <div class="val" style="color:#2e7d32;">Optimality</div>
+                        <p>Apakah solusi yang ditemukan adalah yang <em>biaya paling rendah</em>?</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5><i class="fa-solid fa-clock"></i> Kompleksitas Waktu</h5>
+                        <div class="val" style="color:#e65100;">Time</div>
+                        <p>Berapa banyak simpul yang perlu di-ekspansi / di-bangkitkan?</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#6a1b9a;">
+                        <h5><i class="fa-solid fa-memory"></i> Kompleksitas Ruang</h5>
+                        <div class="val" style="color:#6a1b9a;">Space</div>
+                        <p>Berapa banyak simpul yang perlu disimpan dalam memori?</p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Parameter Kompleksitas:</strong>
+                    <ul style="margin-top:8px;">
+                        <li><strong>b</strong> = <em>branching factor</em> — jumlah rata-rata anak tiap simpul</li>
+                        <li><strong>d</strong> = <em>depth</em> — kedalaman solusi optimal (keadaan tujuan paling dangkal)</li>
+                        <li><strong>m</strong> = <em>maximum depth</em> — kedalaman maksimum ruang keadaan (bisa tak hingga)</li>
+                    </ul>
+                </div>
+
+                <h3>Dua Kelas Besar Algoritma Pencarian</h3>
+                <table>
+                    <thead>
+                        <tr><th>Aspek</th><th><i class="fa-solid fa-eye-slash"></i> Pencarian Buta (Uninformed)</th><th><i class="fa-solid fa-compass"></i> Pencarian Terbimbing (Heuristik)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Informasi</strong></td><td>Hanya deskripsi masalah — tidak tahu arah tujuan</td><td>Punya fungsi heuristik <em>h(n)</em> — estimasi jarak ke tujuan</td></tr>
+                        <tr><td><strong>Cara kerja</strong></td><td>Coba semua kemungkinan (<em>brute force / exhaustive</em>) selama solusi belum ditemukan</td><td>Utamakan cabang yang paling menjanjikan, abaikan yang "kelihatan bodoh"</td></tr>
+                        <tr><td><strong>Anggota</strong></td><td>BFS, DFS, DLS, IDS, UCS, <em>Bidirectional Search</em></td><td>Greedy Best-First, A*, Hill Climbing, Simulated Annealing (Pertemuan 5–6)</td></tr>
+                        <tr><td><strong>Alternatif dibuang?</strong></td><td>Tidak — hanya soal urutan/prioritas pemeriksaan</td><td>Ya — sebagian alternatif diabaikan akibat estimasi</td></tr>
+                    </tbody>
+                </table>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-hammer"></i> Prinsip Brute Force / Exhaustive Search:</strong>
+                    <p style="margin-top:6px;">Semua algoritma pencarian buta pada dasarnya mencoba <em>seluruh</em> kemungkinan tanpa mengabaikan satu alternatif pun. Kata "force" menunjukkan pemakaian "tenaga" ketimbang "otak": sederhana, mudah diimplementasi, tetapi boros. Cocok untuk ruang masalah kecil. Seperti kata Ken Thompson (pencipta UNIX): <em>"When in doubt, use brute force."</em></p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 5. BFS -->
+            <!-- ============================================================ -->
+            <section id="bfs">
+                <h2>5. Breadth-First Search (BFS) <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>BFS mengekspansi simpul secara <strong>melebar</strong> — semua simpul pada kedalaman <em>d</em> diekspansi sebelum simpul pada kedalaman <em>d+1</em>. BFS menggunakan struktur data <strong>antrian FIFO</strong> (First In First Out).</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Intuisi:</strong>
+                    <p style="margin-top:6px;">Seperti gelombang air yang menyebar dari titik tengah — semua posisi berjarak 1 dicapai dulu, lalu jarak 2, dst. BFS <em>menjamin</em> solusi terpendek dalam hal jumlah langkah.</p>
+                </div>
+
+                <h3>Pseudocode BFS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">BFS</span>(problem) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial)
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    frontier ← <span class="fn">Queue</span>()          <span class="cm">-- antrian FIFO</span>
+    frontier.<span class="fn">enqueue</span>(node)
+    explored ← <span class="fn">set</span>()            <span class="cm">-- explored set (closed list)</span>
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">dequeue</span>()
+        explored.<span class="fn">add</span>(node.state)
+
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored <span class="kw">and</span> child.state <span class="kw">not in</span> frontier:
+                <span class="kw">if</span> problem.is_goal(child.state): <span class="kw">return</span> child
+                frontier.<span class="fn">enqueue</span>(child)</code></pre>
+
+                <h3>Penelusuran BFS — Contoh Graf Sederhana</h3>
+                <div class="tree-svg-wrap">
+                    <svg width="500" height="220" viewBox="0 0 500 220">
+                        <!-- edges -->
+                        <line x1="250" y1="35"  x2="120" y2="100" class="edge"/>
+                        <line x1="250" y1="35"  x2="250" y2="100" class="edge"/>
+                        <line x1="250" y1="35"  x2="380" y2="100" class="edge"/>
+                        <line x1="120" y1="100" x2="70"  y2="175" class="edge"/>
+                        <line x1="120" y1="100" x2="170" y2="175" class="edge"/>
+                        <line x1="250" y1="100" x2="230" y2="175" class="edge"/>
+                        <line x1="250" y1="100" x2="300" y2="175" class="edge"/>
+                        <line x1="380" y1="100" x2="360" y2="175" class="edge"/>
+                        <line x1="380" y1="100" x2="430" y2="175" class="edge"/>
+                        <!-- nodes level 0 -->
+                        <circle cx="250" cy="35"  r="25" class="node-visited"/>
+                        <text x="250" y="40"  class="node-text" text-anchor="middle">A</text>
+                        <!-- nodes level 1 -->
+                        <circle cx="120" cy="100" r="25" class="node-visited"/>
+                        <text x="120" y="105" class="node-text" text-anchor="middle">B</text>
+                        <circle cx="250" cy="100" r="25" class="node-visited"/>
+                        <text x="250" y="105" class="node-text" text-anchor="middle">C</text>
+                        <circle cx="380" cy="100" r="25" class="node-frontier"/>
+                        <text x="380" y="105" class="node-text" text-anchor="middle">D</text>
+                        <!-- nodes level 2 -->
+                        <circle cx="70"  cy="175" r="25" class="node-visited"/>
+                        <text x="70"  y="180" class="node-text" text-anchor="middle">E</text>
+                        <circle cx="170" cy="175" r="25" class="node-frontier"/>
+                        <text x="170" y="180" class="node-text" text-anchor="middle">F</text>
+                        <circle cx="230" cy="175" r="25" class="node-frontier"/>
+                        <text x="230" y="180" class="node-text" text-anchor="middle">G</text>
+                        <circle cx="300" cy="175" r="25" class="node-goal"/>
+                        <text x="300" y="180" class="node-text" text-anchor="middle">H ✓</text>
+                        <circle cx="360" cy="175" r="25" class="node-default"/>
+                        <text x="360" y="180" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="430" cy="175" r="25" class="node-default"/>
+                        <text x="430" y="180" class="node-text" text-anchor="middle">J</text>
+                        <!-- depth labels -->
+                        <text x="10" y="40"  fill="#888" font-size="11">d=0</text>
+                        <text x="10" y="105" fill="#888" font-size="11">d=1</text>
+                        <text x="10" y="180" fill="#888" font-size="11">d=2</text>
+                    </svg>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#7986cb;"></div>Sudah di-ekspansi</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#f9a825;"></div>Di frontier (antrian)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32;"></div>Tujuan ditemukan</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Belum dieksplorasi</div>
+                </div>
+
+                <h3>Jejak Ekspansi BFS</h3>
+                <table class="trace-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>Frontier (Antrian)</th><th>Explored</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>0</td><td>—</td><td>[A]</td><td>{}</td></tr>
+                        <tr><td>1</td><td>A</td><td>[B, C, D]</td><td>{A}</td></tr>
+                        <tr><td>2</td><td>B</td><td>[C, D, E, F]</td><td>{A, B}</td></tr>
+                        <tr><td>3</td><td>C</td><td>[D, E, F, G, H]</td><td>{A, B, C}</td></tr>
+                        <tr class="tr-goal"><td>4</td><td>D</td><td>[E, F, G, <strong>H</strong>, I, J]</td><td>{A, B, C, D}</td></tr>
+                        <tr class="tr-goal"><td>—</td><td colspan="3"><i class="fa-solid fa-check" style="color:#2e7d32;"></i> H ditemukan saat diekspansi D / di-dequeue. Solusi: A→C→H</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Sifat BFS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya</div>
+                        <p>Selama b terhingga, BFS pasti menemukan solusi jika ada.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya*</div>
+                        <p>Optimal jika semua biaya langkah sama. Jika tidak sama, gunakan UCS.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Waktu</h5>
+                        <div class="val O-bad">O(b<sup>d+1</sup>)</div>
+                        <p>Eksponen terhadap kedalaman solusi. Bisa sangat lambat.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Ruang</h5>
+                        <div class="val O-bad">O(b<sup>d+1</sup>)</div>
+                        <p>Semua simpul level d disimpan di frontier. <strong>Masalah utama BFS.</strong></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 6. DFS & DLS -->
+            <!-- ============================================================ -->
+            <section id="dfs">
+                <h2>6. Depth-First Search (DFS) &amp; Depth-Limited Search (DLS) <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>DFS mengekspansi simpul secara <strong>mendalam</strong> — selalu mengekspansi simpul paling dalam di frontier. DFS menggunakan struktur data <strong>tumpukan LIFO</strong> (Last In First Out), atau memanfaatkan <em>rekursi</em>.</p>
+
+                <h3>Pseudocode DFS (Rekursif)</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">DFS-RECURSIVE</span>(problem, node) <span class="kw">returns</span> node | failure
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+        result ← <span class="fn">DFS-RECURSIVE</span>(problem, child)
+        <span class="kw">if</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
+    <span class="kw">return</span> failure
+
+<span class="cm">-- Pemanggilan awal:</span>
+<span class="fn">DFS-RECURSIVE</span>(problem, <span class="cl">Node</span>(problem.initial))</code></pre>
+
+                <h3>Sifat DFS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#c62828;"><i class="fa-solid fa-xmark"></i> Tidak</div>
+                        <p>Bisa terjebak di cabang tak hingga atau siklus.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#c62828;"><i class="fa-solid fa-xmark"></i> Tidak</div>
+                        <p>Solusi yang ditemukan bisa bukan yang terpendek.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Waktu</h5>
+                        <div class="val O-bad">O(b<sup>m</sup>)</div>
+                        <p>Bisa jauh lebih buruk dari BFS jika solusi dangkal.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Ruang</h5>
+                        <div class="val O-good">O(b·m)</div>
+                        <p><strong>Keunggulan utama DFS!</strong> Hanya menyimpan satu lintasan aktif + saudara.</p>
+                    </div>
+                </div>
+
+                <h3>Depth-Limited Search (DLS)</h3>
+                <p>DLS adalah DFS dengan batas kedalaman <strong><em>ℓ</em></strong> yang eksplisit. Simpul pada kedalaman <em>ℓ</em> tidak diekspansi lebih lanjut (dianggap sebagai simpul daun).</p>
+
+                <pre><code><span class="kw">function</span> <span class="fn">DLS</span>(problem, limit) <span class="kw">returns</span> node | failure | cutoff
+    <span class="kw">return</span> <span class="fn">DLS-RECURSIVE</span>(<span class="cl">Node</span>(problem.initial), problem, limit)
+
+<span class="kw">function</span> <span class="fn">DLS-RECURSIVE</span>(node, problem, limit) <span class="kw">returns</span> node | failure | cutoff
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    <span class="kw">if</span> limit == <span class="nm">0</span>:               <span class="kw">return</span> <span class="st">"cutoff"</span>  <span class="cm">-- batas kedalaman tercapai</span>
+    cutoff_occurred ← <span class="kw">False</span>
+    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+        result ← <span class="fn">DLS-RECURSIVE</span>(child, problem, limit - <span class="nm">1</span>)
+        <span class="kw">if</span> result == <span class="st">"cutoff"</span>: cutoff_occurred ← <span class="kw">True</span>
+        <span class="kw">elif</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
+    <span class="kw">if</span> cutoff_occurred: <span class="kw">return</span> <span class="st">"cutoff"</span>
+    <span class="kw">return</span> failure</code></pre>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Masalah DLS:</strong>
+                    <p style="margin-top:6px;">Pemilihan batas <em>ℓ</em> sangat kritis. Jika <em>ℓ &lt; d</em> (terlalu dangkal), solusi tidak akan ditemukan. Jika <em>ℓ &gg; d</em>, boros komputasi. Solusi: gunakan IDS!</p>
+                </div>
+
+                <h3>Backtracking — DFS sebagai Metode Pemecahan Masalah</h3>
+                <p><strong>Backtracking (runut-balik)</strong> adalah DFS yang dipakai sebagai <em>strategi pemecahan masalah terstruktur</em>: bangun solusi selangkah demi selangkah; begitu sebuah pilihan terbukti buntu, batalkan pilihan itu (<em>unmove</em>) dan coba pilihan lain.</p>
+                <div class="demo-box">
+                    <h5>Contoh: Mencari jalan keluar labirin (Maze Problem)</h5>
+                    <p style="margin-top:6px;">Pada tiap persimpangan ada tiga pilihan: lurus, belok kiri, belok kanan. Anda tidak punya cukup informasi untuk memilih yang benar — jadi coba satu, jika buntu mundur dan coba yang lain.</p>
+                    <pre style="margin-top:8px;"><code><span class="kw">function</span> <span class="fn">SOLVE-MAZE</span>(M) <span class="kw">returns</span> boolean
+    <span class="kw">if</span> posisi sekarang == pintu keluar: <span class="kw">return</span> <span class="kw">True</span>
+    <span class="kw">for</span> arah <span class="kw">in</span> [lurus, kiri, kanan]:
+        <span class="fn">MOVE</span>(M, arah)                <span class="cm">-- maju satu sel</span>
+        <span class="kw">if</span> <span class="fn">SOLVE-MAZE</span>(M): <span class="kw">return</span> <span class="kw">True</span>
+        <span class="fn">UNMOVE</span>(M, arah)              <span class="cm">-- backtrack: batalkan langkah</span>
+    <span class="kw">return</span> <span class="kw">False</span>                       <span class="cm">-- semua arah buntu</span></code></pre>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-table-cells"></i> Contoh lain: Sudoku</strong>
+                    <p style="margin-top:6px;">Isi sel kosong dengan angka 1. Periksa apakah melanggar aturan baris/kolom/kotak. Jika tidak, lanjut ke sel berikutnya; jika melanggar, coba 2, 3, dst. Bila 1–9 semua gagal, kosongkan sel dan <em>mundur</em> ke sel sebelumnya, naikkan nilainya. Ulangi hingga 81 sel terisi benar. Aturan pembentukan simpulnya adalah DFS.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 7. IDS -->
+            <!-- ============================================================ -->
+            <section id="ids">
+                <h2>7. Iterative Deepening Search (IDS) <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>IDS menggabungkan keunggulan BFS (kelengkapan, optimalitas) dengan keunggulan DFS (hemat memori) dengan cara menjalankan DLS berulang kali dengan batas kedalaman yang terus meningkat: <em>ℓ = 0, 1, 2, 3, …</em></p>
+
+                <h3>Pseudocode IDS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">ITERATIVE-DEEPENING-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
+    <span class="kw">for</span> depth <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, ∞):
+        result ← <span class="fn">DLS</span>(problem, limit=depth)
+        <span class="kw">if</span> result != <span class="st">"cutoff"</span>:
+            <span class="kw">return</span> result  <span class="cm">-- bisa berupa solusi atau failure</span></code></pre>
+
+                <h3>Ilustrasi IDS: Iterasi demi Iterasi</h3>
+                <div class="demo-box" style="padding:15px;">
+                    <h5>Iterasi IDS pada pohon dengan b=3</h5>
+                    <div style="overflow-x:auto;">
+                    <table style="font-size:0.85em; margin:10px 0;">
+                        <thead>
+                            <tr>
+                                <th>Iterasi (ℓ)</th>
+                                <th>Simpul Diekspansi</th>
+                                <th>Jumlah Ekspansi</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>ℓ = 0</td><td>A</td><td>1</td><td>cutoff</td></tr>
+                            <tr><td>ℓ = 1</td><td>A, B, C, D</td><td>4</td><td>cutoff</td></tr>
+                            <tr><td>ℓ = 2</td><td>A, B, E, F, G, C, H, I, J, D, K, L, M</td><td>13</td><td>cutoff</td></tr>
+                            <tr class="tr-goal"><td>ℓ = 3</td><td>… termasuk kedalaman 3 …</td><td>40</td><td><i class="fa-solid fa-check" style="color:#2e7d32;"></i> Solusi ditemukan!</td></tr>
+                        </tbody>
+                    </table>
+                    </div>
+                    <div style="margin-top:10px; padding:10px; background:#e8f5e9; border-radius:6px;">
+                        <strong>Overhead ekspansi ulang:</strong> Node A diekspansi 4× (sekali tiap iterasi hingga d=3), node di kedalaman 1 diekspansi 3×, dst. Total overhead ≈ <strong>11%</strong> dibanding BFS untuk b=10, d=5 — sangat kecil!
+                    </div>
+                </div>
+
+                <h3>Sifat IDS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya</div>
+                        <p>Seperti BFS, pasti menemukan solusi jika b terhingga.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya*</div>
+                        <p>Optimal jika biaya langkah seragam (seperti BFS).</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Waktu</h5>
+                        <div class="val O-ok">O(b<sup>d</sup>)</div>
+                        <p>Sedikit lebih besar dari BFS karena ekspansi ulang, tapi asymptotically sama.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Ruang</h5>
+                        <div class="val O-good">O(b·d)</div>
+                        <p><strong>Seperti DFS!</strong> Hemat memori — inilah keunggulan utama IDS.</p>
+                    </div>
+                </div>
+
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> IDS adalah algoritma pencarian buta yang direkomendasikan secara umum</strong> karena menggabungkan kelengkapan dan optimalitas BFS dengan efisiensi memori DFS. Untuk ruang keadaan besar tanpa informasi heuristik, IDS adalah pilihan pertama.
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 8. UCS -->
+            <!-- ============================================================ -->
+            <section id="ucs">
+                <h2>8. Uniform Cost Search (UCS) <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>UCS memperluas BFS untuk menangani <strong>biaya langkah yang berbeda-beda</strong>. UCS mengekspansi simpul berdasarkan <strong>biaya lintasan terendah</strong> <em>g(n)</em> menggunakan <strong>antrian prioritas</strong>.</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Hubungan dengan BFS:</strong>
+                    <p style="margin-top:6px;">Jika semua biaya langkah bernilai 1, UCS identik dengan BFS. UCS adalah generalisasi BFS untuk biaya tidak seragam.</p>
+                </div>
+
+                <h3>Pseudocode UCS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">UNIFORM-COST-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial, path_cost=<span class="nm">0</span>)
+    frontier ← <span class="fn">PriorityQueue</span>(key=<span class="kw">lambda</span> n: n.path_cost)
+    frontier.<span class="fn">insert</span>(node)
+    explored ← <span class="fn">set</span>()
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">pop_min</span>()       <span class="cm">-- ambil simpul dengan g(n) terkecil</span>
+        <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+        explored.<span class="fn">add</span>(node.state)
+
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored:
+                <span class="kw">if</span> child.state <span class="kw">not in</span> frontier:
+                    frontier.<span class="fn">insert</span>(child)
+                <span class="kw">elif</span> frontier[child.state].path_cost &gt; child.path_cost:
+                    frontier.<span class="fn">replace</span>(child)  <span class="cm">-- update jika lebih murah</span></code></pre>
+
+                <h3>Penelusuran UCS — Contoh Graf Romania (Arad → Bucharest)</h3>
+                <table class="trace-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>Frontier (priority queue)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Arad</td><td>0</td><td>Zerind(75), Timisoara(118), Sibiu(140)</td></tr>
+                        <tr><td>2</td><td>Zerind</td><td>75</td><td>Timisoara(118), Sibiu(140), Oradea(146)</td></tr>
+                        <tr><td>3</td><td>Timisoara</td><td>118</td><td>Sibiu(140), Oradea(146), Lugoj(229)</td></tr>
+                        <tr><td>4</td><td>Sibiu</td><td>140</td><td>Oradea(146), Rimnicu(239), Fagaras(239), Lugoj(229)</td></tr>
+                        <tr><td>5</td><td>Oradea</td><td>146</td><td>Lugoj(229), Rimnicu(239), Fagaras(239)</td></tr>
+                        <tr><td>6</td><td>Lugoj</td><td>229</td><td>Rimnicu(239), Fagaras(239), Mehadia(299)</td></tr>
+                        <tr><td>7</td><td>Rimnicu</td><td>239</td><td>Fagaras(239), Pitesti(357), Craiova(366)</td></tr>
+                        <tr><td>8</td><td>Fagaras</td><td>239</td><td>Pitesti(357), <strong>Bucharest(450)</strong>, Craiova(366)</td></tr>
+                        <tr class="tr-goal"><td>9</td><td><strong>Bucharest</strong></td><td><strong>418</strong></td><td>Diekspansi via Pitesti(418) → <strong><i class="fa-solid fa-check" style="color:#2e7d32;"></i> Solusi optimal!</strong></td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Sifat UCS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya*</div>
+                        <p>Selama biaya langkah ≥ ε > 0 (tidak nol / negatif).</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya</div>
+                        <p>Selalu menemukan solusi biaya terendah.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Waktu</h5>
+                        <div class="val O-bad">O(b<sup>1+⌊C*/ε⌋</sup>)</div>
+                        <p>C* = biaya solusi optimal, ε = biaya langkah minimum.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Ruang</h5>
+                        <div class="val O-bad">O(b<sup>1+⌊C*/ε⌋</sup>)</div>
+                        <p>Sama dengan waktu — semua simpul dalam frontier disimpan.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Uji Tujuan di UCS:</strong>
+                    <p style="margin-top:6px;">Pada UCS, uji tujuan dilakukan <strong>saat simpul diekspansi</strong> (diambil dari frontier), bukan saat dibangkitkan. Ini penting untuk memastikan optimalitas — kita harus yakin tidak ada lintasan yang lebih murah.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 9. Perbandingan -->
+            <!-- ============================================================ -->
+            <section id="perbandingan">
+                <h2>9. Perbandingan Algoritma Pencarian Buta <span class="badge">Ringkasan</span></h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algoritma</th>
+                            <th>Struktur Data</th>
+                            <th>Lengkap?</th>
+                            <th>Optimal?</th>
+                            <th>Waktu</th>
+                            <th>Ruang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>BFS</strong></td>
+                            <td>Queue (FIFO)</td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya</span></td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya*</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>d+1</sup>)</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>d+1</sup>)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>DFS</strong></td>
+                            <td>Stack (LIFO)</td>
+                            <td><span style="color:#c62828; font-weight:700;"><i class="fa-solid fa-xmark"></i> Tidak</span></td>
+                            <td><span style="color:#c62828; font-weight:700;"><i class="fa-solid fa-xmark"></i> Tidak</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>m</sup>)</span></td>
+                            <td><span class="complexity-badge O-good">O(b·m)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>DLS</strong></td>
+                            <td>Stack (LIFO)</td>
+                            <td><span style="color:#e65100; font-weight:700;"><i class="fa-solid fa-triangle-exclamation"></i> Jika ℓ ≥ d</span></td>
+                            <td><span style="color:#c62828; font-weight:700;"><i class="fa-solid fa-xmark"></i> Tidak</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>ℓ</sup>)</span></td>
+                            <td><span class="complexity-badge O-good">O(b·ℓ)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>IDS</strong></td>
+                            <td>Stack (LIFO)</td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya</span></td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya*</span></td>
+                            <td><span class="complexity-badge O-ok">O(b<sup>d</sup>)</span></td>
+                            <td><span class="complexity-badge O-good">O(b·d)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>UCS</strong></td>
+                            <td>Priority Queue</td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya*</span></td>
+                            <td><span style="color:#2e7d32; font-weight:700;"><i class="fa-solid fa-check"></i> Ya</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>1+⌊C*/ε⌋</sup>)</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>1+⌊C*/ε⌋</sup>)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.82em; color:#888; margin-top:4px;">*) Ya dengan syarat: biaya langkah seragam (BFS/IDS) atau ≥ ε > 0 (UCS).</p>
+
+                <h3>Pencarian Dua Arah (Bidirectional Search / BDS)</h3>
+                <p>BDS menjalankan <strong>dua pencarian sekaligus</strong>: satu maju dari keadaan awal, satu mundur dari keadaan tujuan. Pencarian berhenti ketika kedua frontier <em>bertemu</em> pada keadaan yang sama; solusi diperoleh dengan menyambung kedua lintasan.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="420" height="150" viewBox="0 0 420 150">
+                        <circle cx="40" cy="75" r="18" class="node-current"/><text x="40" y="80" class="node-text" text-anchor="middle">S</text>
+                        <circle cx="380" cy="75" r="18" class="node-goal"/><text x="380" y="80" class="node-text" text-anchor="middle">G</text>
+                        <circle cx="130" cy="45" r="13" class="node-visited"/>
+                        <circle cx="130" cy="105" r="13" class="node-visited"/>
+                        <circle cx="290" cy="45" r="13" class="node-visited"/>
+                        <circle cx="290" cy="105" r="13" class="node-visited"/>
+                        <circle cx="210" cy="75" r="16" class="node-frontier"/><text x="210" y="80" class="node-text" text-anchor="middle" font-size="10">temu</text>
+                        <line x1="58" y1="65" x2="118" y2="48" class="edge"/>
+                        <line x1="58" y1="85" x2="118" y2="102" class="edge"/>
+                        <line x1="142" y1="50" x2="196" y2="70" class="edge"/>
+                        <line x1="142" y1="100" x2="196" y2="80" class="edge"/>
+                        <line x1="224" y1="70" x2="278" y2="50" class="edge"/>
+                        <line x1="224" y1="80" x2="278" y2="100" class="edge"/>
+                        <line x1="302" y1="48" x2="362" y2="65" class="edge"/>
+                        <line x1="302" y1="102" x2="362" y2="85" class="edge"/>
+                    </svg>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Mengapa lebih cepat?</strong>
+                    <p style="margin-top:6px;">Dua pohon berkedalaman <em>d/2</em> jauh lebih kecil daripada satu pohon berkedalaman <em>d</em>: <strong>O(b<sup>d/2</sup>) + O(b<sup>d/2</sup>)</strong> jauh lebih kecil dari <strong>O(b<sup>d</sup>)</strong>. Syaratnya: aksi harus bisa dibalik (untuk pencarian mundur) dan keadaan tujuan harus diketahui secara eksplisit.</p>
+                </div>
+
+                <h3>Kapan Menggunakan Apa?</h3>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-water"></i></div>
+                        <h4>Gunakan BFS</h4>
+                        <p>Solusi dangkal, semua biaya sama, memori tidak terbatas.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-arrow-down"></i></div>
+                        <h4>Gunakan DFS</h4>
+                        <p>Solusi dalam, memori sangat terbatas, tidak peduli optimalitas.</p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4>Gunakan IDS</h4>
+                        <p>Solusi dangkal, memori terbatas, butuh kelengkapan dan optimalitas.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <h4>Gunakan UCS</h4>
+                        <p>Biaya langkah berbeda-beda, butuh solusi biaya optimal.</p>
+                    </div>
+                </div>
+
+                <h3>Visualisasi Perbandingan Memori (b=10)</h3>
+                <div class="demo-box">
+                    <h5>Jumlah simpul di memori saat d=5</h5>
+                    <div style="margin-top:10px;">
+                        <div class="cmp-row">
+                            <div class="cmp-label">BFS</div>
+                            <div class="cmp-bar" style="width:95%; background:#c62828;">~1.111.111 simpul (b⁵+b⁴+…)</div>
+                        </div>
+                        <div class="cmp-row">
+                            <div class="cmp-label">DFS</div>
+                            <div class="cmp-bar" style="width:15%; background:#2e7d32;">50 simpul (b×m)</div>
+                        </div>
+                        <div class="cmp-row">
+                            <div class="cmp-label">IDS</div>
+                            <div class="cmp-bar" style="width:15%; background:#1565c0;">50 simpul (b×d)</div>
+                        </div>
+                        <div class="cmp-row">
+                            <div class="cmp-label">UCS</div>
+                            <div class="cmp-bar" style="width:95%; background:#6a1b9a;">~1.111.111+ simpul</div>
+                        </div>
+                    </div>
+                    <p style="font-size:0.82em; color:#666; margin-top:8px;">IDS = efisiensi memori DFS + kelengkapan BFS. Inilah mengapa IDS direkomendasikan sebagai default pencarian buta.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 10. Rangkuman -->
+            <!-- ============================================================ -->
+            <section id="rangkuman">
+                <h2>10. Rangkuman Pertemuan 3 &amp; 4</h2>
+
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
+                    <ul style="margin-top:10px;">
+                        <li>Masalah pencarian diformulasikan dengan 5 komponen: keadaan awal, aksi, model transisi, uji tujuan, biaya lintasan.</li>
+                        <li>Pohon pencarian tidak melacak keadaan yang dikunjungi — rawan siklus. Graf pencarian menggunakan <em>explored set</em>.</li>
+                        <li>Empat ukuran kinerja: kelengkapan, optimalitas, kompleksitas waktu, kompleksitas ruang.</li>
+                        <li><strong>BFS</strong>: lengkap + optimal (biaya sama), tapi boros memori O(b<sup>d+1</sup>).</li>
+                        <li><strong>DFS</strong>: hemat memori O(b·m), tapi tidak lengkap dan tidak optimal.</li>
+                        <li><strong>DLS</strong>: DFS berkedalaman terbatas — perlu memilih batas ℓ yang tepat.</li>
+                        <li><strong>IDS</strong>: menggabungkan terbaik BFS dan DFS — lengkap, optimal*, dan hemat memori O(b·d). <strong>Rekomendasi default.</strong></li>
+                        <li><strong>UCS</strong>: menjamin solusi biaya terendah untuk biaya langkah yang berbeda-beda.</li>
+                        <li><strong>BDS</strong> (dua arah): mencari maju dari awal dan mundur dari tujuan sekaligus — O(b<sup>d/2</sup>), tapi butuh aksi yang dapat dibalik.</li>
+                        <li><strong>Backtracking</strong> adalah DFS sebagai strategi pemecahan masalah (labirin, Sudoku, N-Queen).</li>
+                        <li><strong>Pohon AND/OR</strong>: simpul OR butuh salah satu anak berhasil; simpul AND butuh semua anak berhasil (reduksi masalah).</li>
+                    </ul>
+                </div>
+
+                <h3>Persiapan Pertemuan Berikutnya</h3>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-book"></i> Untuk Materi 3 (Pencarian Heuristik):</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Baca Russell &amp; Norvig (2021) Bab 3, Sub-bab 3.5–3.6: <em>Informed Search Strategies</em></li>
+                        <li>Pahami konsep <em>heuristic function h(n)</em> dan perbedaannya dengan <em>g(n)</em></li>
+                        <li>Review makalah klasik: Hart, Nilsson &amp; Raphael (1968) — fondasi algoritma A*</li>
+                        <li>Tugas RTM II: Implementasikan BFS dan UCS pada masalah pencarian jalan di peta sederhana</li>
+                    </ul>
+                </div>
+
+                <h3>Referensi Utama</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Referensi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 3</td></tr>
+                        <tr><td>2</td><td>Poole, D. L., &amp; Mackworth, A. K. (2023). <em>Artificial Intelligence: Foundations of Computational Agents</em> (3rd ed.). Cambridge UP. — Bab 3</td></tr>
+                        <tr><td>3</td><td>Suyanto. (2014). <em>Artificial Intelligence: Searching, Reasoning, Planning, dan Learning</em>. Informatika. — Bab 2</td></tr>
+                        <tr><td>4</td><td>NetworkX Documentation. <a href="https://networkx.org" target="_blank">networkx.org</a> — untuk implementasi graf pencarian Python</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal materi';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir materi';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi 3 — Pencarian Heuristik &amp; Algoritma A*</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ---- Inline styles khusus materi-3 ---- */
+        .tree-svg-wrap {
+            overflow-x: auto;
+            background: #f5f8ff;
+            border: 2px dashed #b0c4de;
+            border-radius: 10px;
+            padding: 20px 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .tree-svg-wrap svg { max-width: 100%; }
+
+        /* node colours (sama dengan materi-2 agar konsisten) */
+        .node-default  { fill: #1565c0; }
+        .node-visited  { fill: #7986cb; }
+        .node-current  { fill: #e65100; }
+        .node-goal     { fill: #2e7d32; }
+        .node-frontier { fill: #f9a825; }
+        .node-text     { fill: white; font-size: 13px; font-weight: 700;
+                         font-family: 'Segoe UI', sans-serif; }
+        .edge          { stroke: #90a4ae; stroke-width: 2; fill: none; }
+        .edge-cost     { fill: #546e7a; font-size: 11px;
+                         font-family: 'Segoe UI', sans-serif; }
+        .edge-highlight { stroke: #e65100; stroke-width: 3; fill: none; }
+
+        /* heuristic value label */
+        .h-val {
+            font-size: 11px; font-style: italic;
+            fill: #f9a825; font-family: 'Segoe UI', sans-serif;
+        }
+        .f-val {
+            font-size: 11px; font-weight: 700;
+            fill: #4fc3f7; font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* trace tables */
+        .trace-table           { font-size: 0.88em; }
+        .trace-table td:first-child { font-weight: 700; color: #1565c0; }
+        .tr-current td         { background: #fff3e0; }
+        .tr-goal    td         { background: #e8f5e9; }
+
+        /* complexity cards */
+        .cplx-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px; margin: 15px 0;
+        }
+        .cplx-card {
+            background: white; border-radius: 10px; padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+            border-top: 4px solid #1565c0; text-align: center;
+        }
+        .cplx-card h5 { color: #1a2a4a; margin-bottom: 8px; font-size: 1em; }
+        .cplx-card .val {
+            font-family: 'Consolas', monospace; font-size: 1.2em;
+            font-weight: 700; margin: 4px 0;
+        }
+        .cplx-card p { font-size: 0.82em; color: #666; margin: 0; text-align: center; }
+
+        /* legend */
+        .legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 0; }
+        .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.85em; }
+        .legend-dot  { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+        /* heuristic table highlight */
+        .h-table td:nth-child(2) { font-family: 'Consolas', monospace; color: #f9a825; font-weight: 700; }
+        .h-table td:nth-child(3) { font-style: italic; color: #888; }
+
+        /* admissibility proof steps */
+        .proof-step {
+            display: flex; gap: 12px; align-items: flex-start;
+            padding: 12px 15px; margin-bottom: 8px;
+            background: #f5f8ff; border-radius: 8px;
+            border-left: 4px solid #1565c0;
+        }
+        .proof-icon { font-size: 1.4em; flex-shrink: 0; }
+        .proof-body strong { color: #1a2a4a; display: block; margin-bottom: 3px; }
+        .proof-body p { color: #555; font-size: 0.9em; margin: 0; text-align: left; }
+
+        /* greedy vs astar comparison */
+        .compare-cols {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 15px 0;
+        }
+        .compare-col {
+            background: white; border-radius: 10px; padding: 18px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+        }
+        .compare-col.greedy { border-top: 4px solid #f9a825; }
+        .compare-col.astar  { border-top: 4px solid #1565c0; }
+        .compare-col h4 { margin-bottom: 10px; }
+        .compare-col p  { font-size: 0.9em; color: #555; margin-bottom: 8px; }
+
+        /* dominance bar */
+        .dom-row {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size:0.88em;
+        }
+        .dom-label { width: 80px; font-weight: 600; color: #1a2a4a; flex-shrink: 0; }
+        .dom-bar   {
+            height: 24px; border-radius: 4px; display: flex; align-items: center;
+            padding: 0 10px; color: white; font-weight: 600; font-size: 0.85em;
+        }
+
+        @media (max-width: 600px) {
+            .compare-cols { grid-template-columns: 1fr; }
+            .cplx-grid    { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Pertemuan 5 &amp; 6</h1>
+        <p>Sub-CPMK3 · Pencarian Heuristik: Greedy Best-First &amp; Algoritma A*</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#cpmk" class="active">0. Capaian</a></li>
+                <li><a href="#motivasi">1. Motivasi Heuristik</a></li>
+                <li><a href="#fungsi-eval">2. Fungsi Evaluasi g, h, f</a></li>
+                <li><a href="#greedy">3. Greedy Best-First</a></li>
+                <li><a href="#astar">4. Algoritma A*</a></li>
+                <li><a href="#admissible">5. Sifat Admissible</a></li>
+                <li><a href="#konsisten">6. Konsistensi</a></li>
+                <li><a href="#desain-h">7. Merancang Heuristik</a></li>
+                <li><a href="#dominasi">8. Dominasi Heuristik</a></li>
+                <li><a href="#local-search">9. Pencarian Lokal (Hill Climbing)</a></li>
+                <li><a href="#perbandingan">10. Greedy vs A* vs UCS</a></li>
+                <li><a href="#rangkuman">11. Rangkuman</a></li>
+            </ul>
+            <!-- <h3>🔗 Navigasi</h3>
+            <ul>
+                <li><a href="index.html">← Daftar Materi</a></li>
+                <li><a href="materi-2.html">← Materi 2</a></li>
+                <li><a href="index.html">Materi 4 →</a></li>
+                <li><a href="https://berajah-if.unram.ac.id" target="_blank">eLearning BERAJAH</a></li>
+            </ul> -->
+        </nav>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- CPMK -->
+            <!-- ============================================================ -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran <span class="badge">Sub-CPMK3</span></h2>
+                <div class="success-box">
+                    <strong>Kemampuan Akhir yang Diharapkan:</strong>
+                    <p style="margin-top:8px;">Mahasiswa mampu <strong>menerapkan pencarian heuristik greedy best-first dan A*</strong>, merancang fungsi heuristik, serta <strong>membuktikan sifat admissible dan konsisten</strong> beserta pengaruhnya terhadap optimalitas solusi. <em>(C3/C4)</em></p>
+                </div>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon">📐</div>
+                        <h4>3.1 Fungsi g, h, f</h4>
+                        <p>Menjelaskan peran fungsi biaya g, heuristik h, dan evaluasi f = g + h.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon">▶️</div>
+                        <h4>3.2 Penelusuran Manual</h4>
+                        <p>Menelusuri Greedy BFS dan A* beserta isi antrian prioritasnya.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon">🔧</div>
+                        <h4>3.3 Merancang Heuristik</h4>
+                        <p>Merancang dua fungsi heuristik dan membandingkan ketajamannya.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon">✅</div>
+                        <h4>3.4 Admissible</h4>
+                        <p>Membuktikan sifat admissible atau menunjukkan contoh penyangkalannya.</p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon">🔗</div>
+                        <h4>3.5 Konsistensi</h4>
+                        <p>Menjelaskan hubungan konsistensi heuristik dengan jaminan optimalitas.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon">⚡</div>
+                        <h4>3.6 Ketajaman Heuristik</h4>
+                        <p>Menunjukkan pengaruh ketajaman heuristik terhadap jumlah simpul yang diperiksa.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Motivasi -->
+            <!-- ============================================================ -->
+            <section id="motivasi">
+                <h2>1. Mengapa Kita Butuh Heuristik? <span class="badge">Motivasi</span></h2>
+
+                <p>Algoritma pencarian buta (BFS, DFS, IDS, UCS) tidak menggunakan pengetahuan tentang <em>lokasi tujuan</em>. Mereka "buta" — mengeksplorasi semua arah secara sistematis. Ini sangat boros untuk masalah berukuran besar.</p>
+
+                <div class="info-box">
+                    <strong>💡 Analogi:</strong>
+                    <p style="margin-top:6px;">Bayangkan mencari kunci di rumah besar. Pencarian buta memeriksa setiap sudut ruangan secara urut. Pencarian heuristik lebih cerdas — ia <em>menduga</em> di mana kunci kemungkinan besar berada (kamar tidur, meja dapur) dan memeriksa sana dulu.</p>
+                </div>
+
+                <h3>Skala Masalah Nyata</h3>
+                <table>
+                    <thead>
+                        <tr><th>Masalah</th><th>Ruang Keadaan</th><th>BFS (kedalaman 20)</th><th>Dengan Heuristik Baik</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>8-Puzzle</td>
+                            <td>181.440</td>
+                            <td>~10⁶ simpul</td>
+                            <td>~50 simpul</td>
+                        </tr>
+                        <tr>
+                            <td>15-Puzzle</td>
+                            <td>~10¹³</td>
+                            <td>Tidak layak</td>
+                            <td>~1.000 simpul</td>
+                        </tr>
+                        <tr>
+                            <td>24-Puzzle</td>
+                            <td>~10²⁵</td>
+                            <td>Mustahil</td>
+                            <td>~100.000 simpul</td>
+                        </tr>
+                        <tr>
+                            <td>Rubik's Cube</td>
+                            <td>~4.3×10¹⁹</td>
+                            <td>Mustahil</td>
+                            <td>Dengan IDA*: feasible</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box">
+                    <strong>🎯 Ide Utama Pencarian Heuristik:</strong>
+                    <p style="margin-top:6px;">Gunakan <strong>fungsi heuristik <em>h(n)</em></strong> — estimasi biaya dari simpul <em>n</em> ke tujuan — untuk memandu ekspansi ke arah yang paling menjanjikan. Semakin akurat <em>h(n)</em>, semakin sedikit simpul yang perlu diekspansi.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Fungsi Evaluasi -->
+            <!-- ============================================================ -->
+            <section id="fungsi-eval">
+                <h2>2. Fungsi Evaluasi: g(n), h(n), dan f(n) <span class="badge badge-algo">Inti</span></h2>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon" style="font-family:'Consolas',monospace; font-size:2em; font-weight:700;">g(n)</div>
+                        <h4>Biaya Lintasan</h4>
+                        <p><strong>Biaya aktual</strong> dari keadaan awal s₀ ke simpul n. Nilai ini diketahui dengan pasti saat n dibangkitkan.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon" style="font-family:'Consolas',monospace; font-size:2em; font-weight:700;">h(n)</div>
+                        <h4>Fungsi Heuristik</h4>
+                        <p><strong>Estimasi biaya</strong> dari simpul n ke tujuan terdekat. Ini adalah "pengetahuan" tambahan yang dimiliki agen. h(goal) = 0 selalu.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon" style="font-family:'Consolas',monospace; font-size:2em; font-weight:700;">f(n)</div>
+                        <h4>Fungsi Evaluasi</h4>
+                        <p><strong>f(n) = g(n) + h(n)</strong> — estimasi biaya total lintasan terbaik yang melalui simpul n. Digunakan A* untuk mengurutkan frontier.</p>
+                    </div>
+                </div>
+
+                <h3>Visualisasi g, h, f</h3>
+                <div class="demo-box">
+                    <h5>Ilustrasi nilai g, h, f pada lintasan</h5>
+                    <div style="display:flex; align-items:center; justify-content:center; gap:0; flex-wrap:wrap; margin-top:10px; text-align:center;">
+                        <div style="padding:12px 18px; background:#e3f2fd; border-radius:10px; min-width:100px;">
+                            <div style="font-size:1.5em;">🏁</div>
+                            <strong>Start (s₀)</strong>
+                            <div style="font-size:0.82em; color:#1565c0; margin-top:4px;">g = 0</div>
+                        </div>
+                        <div style="padding:10px; color:#546e7a; text-align:center; min-width:80px;">
+                            <div style="font-size:0.85em; font-style:italic;">g(n)=70</div>
+                            <div style="font-size:1.2em;">───→</div>
+                        </div>
+                        <div style="padding:12px 18px; background:#fff3e0; border-radius:10px; border:2px solid #e65100; min-width:100px;">
+                            <div style="font-size:1.5em;">📍</div>
+                            <strong>Simpul n</strong>
+                            <div style="font-size:0.78em; color:#555; margin-top:4px;">
+                                g(n) = <strong style="color:#1565c0;">70</strong><br>
+                                h(n) = <strong style="color:#f9a825;">253</strong><br>
+                                f(n) = <strong style="color:#6a1b9a;">323</strong>
+                            </div>
+                        </div>
+                        <div style="padding:10px; color:#546e7a; text-align:center; min-width:80px;">
+                            <div style="font-size:0.85em; font-style:italic;">h(n)≈253</div>
+                            <div style="font-size:1.2em;">- - →</div>
+                        </div>
+                        <div style="padding:12px 18px; background:#e8f5e9; border-radius:10px; min-width:100px;">
+                            <div style="font-size:1.5em;">🎯</div>
+                            <strong>Tujuan</strong>
+                            <div style="font-size:0.82em; color:#2e7d32; margin-top:4px;">h = 0</div>
+                        </div>
+                    </div>
+                    <p style="text-align:center; margin-top:12px; font-size:0.85em; color:#555;">Garis penuh = biaya aktual yang sudah dilalui. Garis putus = estimasi sisa biaya.</p>
+                </div>
+
+                <h3>Contoh Heuristik: Jarak Garis Lurus ke Bucharest</h3>
+                <p>Untuk masalah peta Romania, fungsi heuristik yang umum digunakan adalah <strong>jarak garis lurus (straight-line distance / SLD)</strong> dari setiap kota ke Bucharest. Nilai ini selalu tersedia dan tidak pernah melebih-lebihkan biaya sebenarnya.</p>
+
+                <div class="info-box">
+                    <strong>📐 Rumus SLD (jarak Euclidean):</strong>
+                    <p style="margin-top:6px; text-align:center; font-family:'Consolas',monospace; font-size:1.05em; color:#1565c0;">d(a, b) = &radic;( (x<sub>b</sub> − x<sub>a</sub>)² + (y<sub>b</sub> − y<sub>a</sub>)² )</p>
+                    <p style="margin-top:6px;">Jika koordinat tiap lokasi diketahui, <em>h<sub>SLD</sub>(n)</em> = jarak Euclidean dari <em>n</em> ke tujuan. Karena garis lurus adalah jarak terpendek antara dua titik, nilai ini <strong>selalu ≤ jarak jalan sebenarnya</strong> → otomatis admissible.</p>
+                </div>
+
+                <table class="h-table">
+                    <thead>
+                        <tr><th>Kota</th><th>h_SLD (km)</th><th>Catatan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Arad</td><td>366</td><td>Titik awal</td></tr>
+                        <tr><td>Zerind</td><td>374</td><td>—</td></tr>
+                        <tr><td>Oradea</td><td>380</td><td>—</td></tr>
+                        <tr><td>Sibiu</td><td>253</td><td>—</td></tr>
+                        <tr><td>Timisoara</td><td>329</td><td>—</td></tr>
+                        <tr><td>Fagaras</td><td>176</td><td>—</td></tr>
+                        <tr><td>Rimnicu</td><td>193</td><td>—</td></tr>
+                        <tr><td>Pitesti</td><td>100</td><td>—</td></tr>
+                        <tr><td>Lugoj</td><td>244</td><td>—</td></tr>
+                        <tr><td>Bucharest</td><td>0</td><td>h(goal) = 0</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Greedy BFS -->
+            <!-- ============================================================ -->
+            <section id="greedy">
+                <h2>3. Greedy Best-First Search <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>Greedy BFS hanya menggunakan fungsi heuristik <em>h(n)</em> sebagai prioritas — ia selalu mengekspansi simpul yang <strong>terlihat paling dekat ke tujuan</strong> menurut estimasi heuristik, tanpa memperhitungkan biaya yang sudah ditempuh.</p>
+
+                <div class="info-box">
+                    <strong>📌 Fungsi evaluasi Greedy:</strong>
+                    <p style="margin-top:6px; font-family:'Consolas', monospace; font-size:1.1em; color:#1565c0;">f(n) = h(n)</p>
+                    <p style="margin-top:6px;">Tidak memperhitungkan biaya lintasan g(n) sama sekali. Seperti "orang yang selalu bergerak ke arah tujuan, tak peduli jalannya berliku."</p>
+                </div>
+
+                <h3>Pseudocode Greedy BFS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">GREEDY-BEST-FIRST-SEARCH</span>(problem, h) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial)
+    frontier ← <span class="fn">PriorityQueue</span>(key=<span class="kw">lambda</span> n: h(n.state))
+    frontier.<span class="fn">insert</span>(node)
+    explored ← <span class="fn">set</span>()
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">pop_min</span>()       <span class="cm">-- ambil simpul dengan h(n) terkecil</span>
+        <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+        explored.<span class="fn">add</span>(node.state)
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored <span class="kw">and</span> child.state <span class="kw">not in</span> frontier:
+                frontier.<span class="fn">insert</span>(child)</code></pre>
+
+                <h3>Penelusuran Greedy — Arad → Bucharest</h3>
+                <table class="trace-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>h(n)</th><th>Frontier (diurutkan h)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Arad</td><td>366</td><td>Sibiu(253), Timisoara(329), Zerind(374)</td></tr>
+                        <tr><td>2</td><td>Sibiu</td><td>253</td><td>Fagaras(176), Rimnicu(193), Timisoara(329), Zerind(374), Oradea(380)</td></tr>
+                        <tr><td>3</td><td>Fagaras</td><td>176</td><td>Rimnicu(193), Timisoara(329), …</td></tr>
+                        <tr class="tr-goal"><td>4</td><td><strong>Bucharest</strong></td><td>0</td><td>✅ Tujuan ditemukan!</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="demo-box">
+                    <h5>Lintasan yang ditemukan Greedy</h5>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; margin:10px 0;">
+                        <span style="background:#e65100;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Arad</span>
+                        <span style="color:#555;">→ 140km →</span>
+                        <span style="background:#1565c0;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Sibiu</span>
+                        <span style="color:#555;">→ 99km →</span>
+                        <span style="background:#1565c0;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Fagaras</span>
+                        <span style="color:#555;">→ 211km →</span>
+                        <span style="background:#2e7d32;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Bucharest</span>
+                    </div>
+                    <p style="text-align:center; font-size:0.9em;">Total biaya: 140 + 99 + 211 = <strong style="color:#c62828;">450 km</strong></p>
+                    <p style="text-align:center; font-size:0.85em; color:#888;">Solusi optimal sebenarnya: Arad→Sibiu→Rimnicu→Pitesti→Bucharest = <strong style="color:#2e7d32;">418 km</strong></p>
+                </div>
+
+                <h3>Sifat Greedy BFS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#e65100;">⚠️ Parsial</div>
+                        <p>Tidak lengkap pada ruang tak hingga — bisa terjebak dalam lintasan suboptimal.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#c62828;">❌ Tidak</div>
+                        <p>Tidak menjamin solusi biaya terendah seperti terbukti di contoh di atas.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Waktu</h5>
+                        <div class="val O-ok">O(b<sup>m</sup>)</div>
+                        <p>Dengan heuristik baik bisa jauh lebih cepat dalam praktik.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Ruang</h5>
+                        <div class="val O-bad">O(b<sup>m</sup>)</div>
+                        <p>Menyimpan semua simpul di memori seperti BFS.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. A* -->
+            <!-- ============================================================ -->
+            <section id="astar">
+                <h2>4. Algoritma A* <span class="badge badge-algo">Inti</span></h2>
+
+                <p>A* menggabungkan keunggulan UCS (optimalitas, biaya aktual g) dengan keunggulan Greedy BFS (panduan heuristik h). A* adalah algoritma pencarian terinformasi yang paling banyak digunakan dalam AI klasik.</p>
+
+                <div class="success-box">
+                    <strong>🏆 Fungsi evaluasi A*:</strong>
+                    <p style="margin-top:6px; font-family:'Consolas', monospace; font-size:1.2em; color:#1a2a4a; text-align:center;">f(n) = g(n) + h(n)</p>
+                    <p style="margin-top:6px; text-align:center;"><em>g(n)</em> = biaya yang sudah ditempuh dari awal ke n &nbsp;|&nbsp; <em>h(n)</em> = estimasi sisa biaya dari n ke tujuan</p>
+                </div>
+
+                <h3>Pseudocode A*</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">A-STAR-SEARCH</span>(problem, h) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial, path_cost=<span class="nm">0</span>)
+    frontier ← <span class="fn">PriorityQueue</span>(key=<span class="kw">lambda</span> n: n.path_cost + h(n.state))
+    frontier.<span class="fn">insert</span>(node)
+    explored ← <span class="fn">set</span>()
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">pop_min</span>()       <span class="cm">-- ambil simpul dengan f(n) = g+h terkecil</span>
+        <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+        explored.<span class="fn">add</span>(node.state)
+
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            child_f = child.path_cost + h(child.state)
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored:
+                <span class="kw">if</span> child.state <span class="kw">not in</span> frontier:
+                    frontier.<span class="fn">insert</span>(child)
+                <span class="kw">elif</span> frontier[child.state].path_cost &gt; child.path_cost:
+                    frontier.<span class="fn">replace</span>(child)  <span class="cm">-- update jika ditemukan lintasan lebih murah</span></code></pre>
+
+                <h3>Penelusuran A* — Arad → Bucharest</h3>
+                <table class="trace-table">
+                    <thead>
+                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>h(n)</th><th>f(n)</th><th>Frontier (f terkecil)</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td><td>Arad</td><td>0</td><td>366</td><td>366</td>
+                            <td>Sibiu(f=393), Timisoara(f=447), Zerind(f=449)</td>
+                        </tr>
+                        <tr>
+                            <td>2</td><td>Sibiu</td><td>140</td><td>253</td><td>393</td>
+                            <td>Rimnicu(f=413), Timisoara(f=447), Zerind(f=449), Fagaras(f=415), Oradea(f=671)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td><td>Rimnicu</td><td>220</td><td>193</td><td>413</td>
+                            <td>Fagaras(f=415), Timisoara(f=447), Zerind(f=449), Pitesti(f=417), Craiova(f=526)</td>
+                        </tr>
+                        <tr>
+                            <td>4</td><td>Fagaras</td><td>239</td><td>176</td><td>415</td>
+                            <td>Pitesti(f=417), Bucharest_via_Fagaras(f=450), Timisoara(f=447), …</td>
+                        </tr>
+                        <tr>
+                            <td>5</td><td>Pitesti</td><td>317</td><td>100</td><td>417</td>
+                            <td>Bucharest_via_Pitesti(f=418), Bucharest_via_Fagaras(f=450), …</td>
+                        </tr>
+                        <tr class="tr-goal">
+                            <td>6</td><td><strong>Bucharest</strong></td><td><strong>418</strong></td><td>0</td><td><strong>418</strong></td>
+                            <td>✅ Solusi optimal ditemukan!</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="demo-box">
+                    <h5>Lintasan Optimal A*</h5>
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center; margin:10px 0;">
+                        <span style="background:#e65100;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Arad</span>
+                        <span style="color:#555;">→140→</span>
+                        <span style="background:#1565c0;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Sibiu</span>
+                        <span style="color:#555;">→80→</span>
+                        <span style="background:#1565c0;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Rimnicu</span>
+                        <span style="color:#555;">→97→</span>
+                        <span style="background:#1565c0;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Pitesti</span>
+                        <span style="color:#555;">→101→</span>
+                        <span style="background:#2e7d32;color:white;padding:6px 14px;border-radius:20px;font-weight:700;">Bucharest</span>
+                    </div>
+                    <p style="text-align:center; font-size:0.9em;">Total biaya: 140 + 80 + 97 + 101 = <strong style="color:#2e7d32;">418 km ✅ Optimal!</strong></p>
+                </div>
+
+                <h3>Visualisasi SVG: Ekspansi A* (Langkah 1–3)</h3>
+                <div class="tree-svg-wrap">
+                    <svg width="680" height="300" viewBox="0 0 680 300">
+                        <!-- edges level 0-1 -->
+                        <line x1="340" y1="40"  x2="140" y2="130" class="edge-highlight"/>
+                        <line x1="340" y1="40"  x2="340" y2="130" class="edge"/>
+                        <line x1="340" y1="40"  x2="540" y2="130" class="edge"/>
+                        <!-- edges level 1-2 from Sibiu -->
+                        <line x1="140" y1="130" x2="60"  y2="230" class="edge-highlight"/>
+                        <line x1="140" y1="130" x2="160" y2="230" class="edge"/>
+                        <line x1="140" y1="130" x2="260" y2="230" class="edge"/>
+                        <!-- edges level 2-3 from Rimnicu -->
+                        <line x1="60"  y1="230" x2="30"  y2="290" class="edge"/>
+                        <line x1="60"  y1="230" x2="110" y2="290" class="edge-highlight"/>
+
+                        <!-- level 0: Arad -->
+                        <circle cx="340" cy="40"  r="28" class="node-visited"/>
+                        <text x="340" y="37"  class="node-text" text-anchor="middle" font-size="11">Arad</text>
+                        <text x="340" y="52"  class="f-val"     text-anchor="middle">f=366</text>
+
+                        <!-- level 1 -->
+                        <circle cx="140" cy="130" r="28" class="node-visited"/>
+                        <text x="140" y="125" class="node-text" text-anchor="middle" font-size="11">Sibiu</text>
+                        <text x="140" y="140" class="f-val"     text-anchor="middle">f=393</text>
+
+                        <circle cx="340" cy="130" r="28" class="node-frontier"/>
+                        <text x="340" y="125" class="node-text" text-anchor="middle" font-size="9">Timisoara</text>
+                        <text x="340" y="140" class="f-val"     text-anchor="middle">f=447</text>
+
+                        <circle cx="540" cy="130" r="28" class="node-frontier"/>
+                        <text x="540" y="125" class="node-text" text-anchor="middle" font-size="11">Zerind</text>
+                        <text x="540" y="140" class="f-val"     text-anchor="middle">f=449</text>
+
+                        <!-- level 2: children of Sibiu -->
+                        <circle cx="60"  cy="230" r="28" class="node-visited"/>
+                        <text x="60"  y="225" class="node-text" text-anchor="middle" font-size="10">Rimnicu</text>
+                        <text x="60"  y="240" class="f-val"     text-anchor="middle">f=413</text>
+
+                        <circle cx="160" cy="230" r="28" class="node-frontier"/>
+                        <text x="160" y="225" class="node-text" text-anchor="middle" font-size="10">Fagaras</text>
+                        <text x="160" y="240" class="f-val"     text-anchor="middle">f=415</text>
+
+                        <circle cx="260" cy="230" r="28" class="node-frontier"/>
+                        <text x="260" y="225" class="node-text" text-anchor="middle" font-size="11">Oradea</text>
+                        <text x="260" y="240" class="f-val"     text-anchor="middle">f=671</text>
+
+                        <!-- level 3: children of Rimnicu -->
+                        <circle cx="30"  cy="290" r="22" class="node-frontier"/>
+                        <text x="30"  y="293" class="node-text" text-anchor="middle" font-size="10">Craiova</text>
+
+                        <circle cx="110" cy="290" r="22" class="node-frontier"/>
+                        <text x="110" y="293" class="node-text" text-anchor="middle" font-size="10">Pitesti</text>
+
+                        <!-- g and h labels on edges -->
+                        <text x="225" y="80"  class="edge-cost">g+140</text>
+                        <text x="80"  y="180" class="edge-cost">g+80</text>
+                        <text x="75"  y="265" class="edge-cost">g+97</text>
+
+                        <!-- legend -->
+                        <circle cx="380" cy="260" r="8" class="node-visited"/>
+                        <text x="394" y="264" font-size="11" fill="#555">Sudah ekspansi</text>
+                        <circle cx="380" cy="280" r="8" class="node-frontier"/>
+                        <text x="394" y="284" font-size="11" fill="#555">Di frontier</text>
+                        <text x="500" y="264" font-size="11" fill="#e65100">━━ Lintasan terpilih A*</text>
+                    </svg>
+                </div>
+
+                <div class="legend">
+                    <div class="legend-item"><span style="color:#4fc3f7; font-family:monospace; font-weight:700;">f=xxx</span> = f(n) = g(n)+h(n) di tiap simpul</div>
+                    <div class="legend-item"><span style="color:#e65100; font-weight:700;">━━</span> = Lintasan yang dipilih A*</div>
+                </div>
+
+                <h3>Implementasi A* dengan Python</h3>
+                <pre><code><span class="kw">import</span> heapq
+
+<span class="kw">def</span> <span class="fn">astar</span>(graph, start, goal, h):
+    <span class="st">"""
+    graph : dict {node: [(neighbor, cost), ...]}
+    h     : dict {node: heuristic_value}
+    """</span>
+    <span class="cm"># (f_score, g_score, node, path)</span>
+    frontier = [(h[start], <span class="nm">0</span>, start, [start])]
+    explored = <span class="fn">set</span>()
+
+    <span class="kw">while</span> frontier:
+        f, g, node, path = heapq.<span class="fn">heappop</span>(frontier)
+        <span class="kw">if</span> node == goal:
+            <span class="kw">return</span> path, g        <span class="cm"># kembalikan lintasan dan biayanya</span>
+        <span class="kw">if</span> node <span class="kw">in</span> explored:
+            <span class="kw">continue</span>
+        explored.<span class="fn">add</span>(node)
+        <span class="kw">for</span> neighbor, cost <span class="kw">in</span> graph.get(node, []):
+            <span class="kw">if</span> neighbor <span class="kw">not in</span> explored:
+                g_new = g + cost
+                f_new = g_new + h[neighbor]
+                heapq.<span class="fn">heappush</span>(frontier, (f_new, g_new, neighbor, path + [neighbor]))
+
+    <span class="kw">return</span> <span class="kw">None</span>, <span class="nm">float</span>(<span class="st">'inf'</span>)   <span class="cm"># tidak ada solusi</span>
+
+
+<span class="cm"># Contoh penggunaan — Graf Romania (sebagian)</span>
+romania = {
+    <span class="st">'Arad'</span>    : [(<span class="st">'Zerind'</span>, <span class="nm">75</span>), (<span class="st">'Sibiu'</span>, <span class="nm">140</span>), (<span class="st">'Timisoara'</span>, <span class="nm">118</span>)],
+    <span class="st">'Sibiu'</span>   : [(<span class="st">'Rimnicu'</span>, <span class="nm">80</span>),  (<span class="st">'Fagaras'</span>, <span class="nm">99</span>),  (<span class="st">'Oradea'</span>, <span class="nm">151</span>)],
+    <span class="st">'Rimnicu'</span> : [(<span class="st">'Pitesti'</span>, <span class="nm">97</span>),  (<span class="st">'Craiova'</span>, <span class="nm">146</span>)],
+    <span class="st">'Pitesti'</span> : [(<span class="st">'Bucharest'</span>, <span class="nm">101</span>)],
+    <span class="st">'Fagaras'</span> : [(<span class="st">'Bucharest'</span>, <span class="nm">211</span>)],
+}
+h_sld = {
+    <span class="st">'Arad'</span>: <span class="nm">366</span>, <span class="st">'Zerind'</span>: <span class="nm">374</span>, <span class="st">'Sibiu'</span>: <span class="nm">253</span>, <span class="st">'Timisoara'</span>: <span class="nm">329</span>,
+    <span class="st">'Rimnicu'</span>: <span class="nm">193</span>, <span class="st">'Fagaras'</span>: <span class="nm">176</span>, <span class="st">'Oradea'</span>: <span class="nm">380</span>,
+    <span class="st">'Pitesti'</span>: <span class="nm">100</span>, <span class="st">'Craiova'</span>: <span class="nm">160</span>, <span class="st">'Bucharest'</span>: <span class="nm">0</span>,
+}
+
+path, cost = <span class="fn">astar</span>(romania, <span class="st">'Arad'</span>, <span class="st">'Bucharest'</span>, h_sld)
+<span class="fn">print</span>(<span class="st">f"Lintasan: {path}"</span>)    <span class="cm"># ['Arad', 'Sibiu', 'Rimnicu', 'Pitesti', 'Bucharest']</span>
+<span class="fn">print</span>(<span class="st">f"Biaya  : {cost}"</span>)     <span class="cm"># 418</span></code></pre>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 5. Admissible -->
+            <!-- ============================================================ -->
+            <section id="admissible">
+                <h2>5. Sifat Admissible (Dapat Diterima) <span class="badge badge-hard">Pembuktian</span></h2>
+
+                <div class="info-box">
+                    <strong>📌 Definisi Admissible:</strong>
+                    <p style="margin-top:6px;">Fungsi heuristik <em>h(n)</em> dikatakan <strong>admissible</strong> jika untuk setiap simpul <em>n</em>:</p>
+                    <p style="text-align:center; font-family:'Consolas',monospace; font-size:1.2em; color:#1565c0; margin:10px 0;">h(n) ≤ h*(n)</p>
+                    <p>di mana <em>h*(n)</em> adalah biaya aktual (sesungguhnya) dari <em>n</em> ke tujuan. Heuristik admissible <strong>tidak pernah melebih-lebihkan</strong> biaya yang sebenarnya.</p>
+                </div>
+
+                <h3>Teorema: A* dengan Heuristik Admissible adalah Optimal</h3>
+                <div style="background:#f5f8ff; border-radius:10px; padding:20px; margin:15px 0; border:1px solid #b0c4de;">
+                    <p><strong>Teorema:</strong> Jika h(n) admissible, maka A* pada pohon pencarian <em>pasti menemukan solusi optimal</em>.</p>
+                    <br>
+                    <p><strong>Sketsa Bukti (Kontradiksi):</strong></p>
+                    <div class="proof-step">
+                        <div class="proof-icon">1️⃣</div>
+                        <div class="proof-body">
+                            <strong>Misalkan A* mengembalikan solusi suboptimal G₂</strong>
+                            <p>Dengan biaya lintasan f(G₂) = g(G₂) &gt; C* (biaya solusi optimal G₁).</p>
+                        </div>
+                    </div>
+                    <div class="proof-step">
+                        <div class="proof-icon">2️⃣</div>
+                        <div class="proof-body">
+                            <strong>Pasti ada simpul n di frontier pada lintasan menuju G₁</strong>
+                            <p>Karena G₁ belum diekspansi, ada simpul n pada lintasan optimal yang masih di frontier.</p>
+                        </div>
+                    </div>
+                    <div class="proof-step">
+                        <div class="proof-icon">3️⃣</div>
+                        <div class="proof-body">
+                            <strong>f(n) ≤ C* karena h admissible</strong>
+                            <p>f(n) = g(n) + h(n) ≤ g(n) + h*(n) = C* (karena h(n) ≤ h*(n)).</p>
+                        </div>
+                    </div>
+                    <div class="proof-step">
+                        <div class="proof-icon">4️⃣</div>
+                        <div class="proof-body">
+                            <strong>Kontradiksi: f(n) ≤ C* &lt; g(G₂) = f(G₂)</strong>
+                            <p>Artinya A* seharusnya memilih n sebelum G₂ — kontradiksi dengan asumsi bahwa G₂ dipilih. ∎</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Contoh Heuristik Admissible</h3>
+                <div class="card-grid">
+                    <div class="card card-green">
+                        <div class="card-icon">📏</div>
+                        <h4>Jarak Garis Lurus (SLD)</h4>
+                        <p>Untuk masalah rute peta: SLD selalu ≤ jarak jalan sebenarnya. <strong>Admissible.</strong></p>
+                    </div>
+                    <div class="card card-blue">
+                        <div class="card-icon">🔢</div>
+                        <h4>Jumlah Ubin Salah Tempat</h4>
+                        <p>Untuk 8-puzzle: setiap ubin butuh minimal 1 gerakan — selalu ≤ gerakan aktual. <strong>Admissible.</strong></p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon">↔️</div>
+                        <h4>Manhattan Distance</h4>
+                        <p>Jumlah gerak horizontal + vertikal setiap ubin ke posisi tujuan. <strong>Admissible</strong> (lebih tajam dari jumlah ubin salah).</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon">❌</div>
+                        <h4>Contoh TIDAK Admissible</h4>
+                        <p>h(n) = 2 × jarak_sld. Bisa melebihi biaya aktual pada jalan lurus — <strong>tidak admissible.</strong></p>
+                    </div>
+                </div>
+
+                <h3>Verifikasi Admissible: Contoh 8-Puzzle</h3>
+                <div class="demo-box">
+                    <h5>Heuristik h₁ = Jumlah ubin salah tempat</h5>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin:10px 0; align-items:center;">
+                        <div>
+                            <p style="text-align:center; font-size:0.85em; font-weight:600; color:#1565c0; margin-bottom:6px;">Keadaan Saat Ini</p>
+                            <div style="display:grid; grid-template-columns:repeat(3,42px); gap:2px;">
+                                <div style="background:#1565c0;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">8</div>
+                                <div style="background:#c62828;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">1</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">3</div>
+                                <div style="background:#c62828;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">4</div>
+                                <div style="background:#e3f2fd;width:42px;height:42px;border-radius:4px;border:2px dashed #1565c0;"></div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">2</div>
+                                <div style="background:#c62828;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">7</div>
+                                <div style="background:#c62828;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">6</div>
+                                <div style="background:#c62828;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">5</div>
+                            </div>
+                        </div>
+                        <div style="font-size:1.5em; color:#1565c0;">⟶</div>
+                        <div>
+                            <p style="text-align:center; font-size:0.85em; font-weight:600; color:#2e7d32; margin-bottom:6px;">Tujuan</p>
+                            <div style="display:grid; grid-template-columns:repeat(3,42px); gap:2px;">
+                                <div style="background:#e3f2fd;width:42px;height:42px;border-radius:4px;border:2px dashed #1565c0;"></div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">1</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">2</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">3</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">4</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">5</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">6</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">7</div>
+                                <div style="background:#2e7d32;color:white;width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:4px;font-weight:700;">8</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top:10px; padding:10px; background:#e3f2fd; border-radius:6px; font-size:0.9em;">
+                        <p>Ubin salah tempat (merah): <strong>8, 4, 7, 6, 5</strong> = <strong style="color:#1565c0;">h₁ = 5</strong></p>
+                        <p>Ubin benar (hijau): <strong>1, 3, 2</strong> (sudah di posisi tujuan)</p>
+                        <p>h₁ = 5 ≤ h*(n) karena setiap ubin butuh minimal 1 gerakan. <strong style="color:#2e7d32;">✅ Admissible</strong></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 6. Konsistensi -->
+            <!-- ============================================================ -->
+            <section id="konsisten">
+                <h2>6. Konsistensi (Monotonicity) <span class="badge badge-hard">Teorema</span></h2>
+
+                <div class="info-box">
+                    <strong>📌 Definisi Konsistensi:</strong>
+                    <p style="margin-top:6px;">Heuristik <em>h(n)</em> dikatakan <strong>konsisten</strong> (atau <em>monotone</em>) jika untuk setiap simpul <em>n</em> dan setiap penerus <em>n'</em> melalui aksi <em>a</em>:</p>
+                    <p style="text-align:center; font-family:'Consolas',monospace; font-size:1.1em; color:#1565c0; margin:10px 0;">h(n) ≤ cost(n, a, n') + h(n')</p>
+                    <p>Ini adalah bentuk <em>ketidaksamaan segitiga</em> — estimasi biaya dari n tidak boleh melebihi biaya satu langkah ke n' ditambah estimasi dari n'.</p>
+                </div>
+
+                <h3>Visualisasi Konsistensi</h3>
+                <div class="tree-svg-wrap">
+                    <svg width="340" height="180" viewBox="0 0 340 180">
+                        <line x1="90"  y1="60"  x2="230" y2="130" class="edge"/>
+                        <line x1="90"  y1="60"  x2="300" y2="60"  class="edge" stroke-dasharray="6,4"/>
+
+                        <circle cx="90"  cy="60"  r="25" class="node-default"/>
+                        <text x="90"  y="65"  class="node-text" text-anchor="middle" font-size="12">n</text>
+
+                        <circle cx="230" cy="130" r="25" class="node-current"/>
+                        <text x="230" y="135" class="node-text" text-anchor="middle" font-size="11">n'</text>
+
+                        <circle cx="300" cy="60"  r="25" class="node-goal"/>
+                        <text x="300" y="65"  class="node-text" text-anchor="middle" font-size="10">Goal</text>
+
+                        <text x="140" y="105" class="edge-cost">c(n,a,n')</text>
+                        <text x="90"  y="40"  class="h-val" text-anchor="middle">h(n)</text>
+                        <text x="230" y="115" class="h-val" text-anchor="middle">h(n')</text>
+
+                        <!-- triangle inequality annotation -->
+                        <text x="170" y="170" fill="#1565c0" font-size="12" text-anchor="middle"
+                              font-family="'Segoe UI', sans-serif">
+                            h(n) ≤ c(n,a,n') + h(n')
+                        </text>
+                    </svg>
+                </div>
+
+                <h3>Hubungan Konsistensi dengan Admissible dan Optimalitas</h3>
+                <table>
+                    <thead>
+                        <tr><th>Properti</th><th>Definisi</th><th>Implikasi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Admissible</strong></td>
+                            <td>h(n) ≤ h*(n) untuk semua n</td>
+                            <td>A* pada pohon pencarian menghasilkan solusi optimal</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Konsisten</strong></td>
+                            <td>h(n) ≤ c(n,a,n') + h(n') untuk semua n, a, n'</td>
+                            <td>A* pada graf pencarian menghasilkan solusi optimal; nilai f tidak pernah turun sepanjang lintasan</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hubungan</strong></td>
+                            <td colspan="2">Konsisten ⟹ Admissible. Admissible tidak selalu konsisten, tapi hampir selalu dalam praktik.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="success-box">
+                    <strong>✅ Jika h konsisten:</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Nilai f(n) tidak pernah menurun sepanjang lintasan yang dipilih A*.</li>
+                        <li>Setiap simpul yang diekspansi A* pasti melalui lintasan optimal ke simpul tersebut.</li>
+                        <li>A* pada graf pencarian (dengan explored set) tetap optimal — tidak perlu periksa ulang simpul yang sudah diekspansi.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 7. Merancang Heuristik -->
+            <!-- ============================================================ -->
+            <section id="desain-h">
+                <h2>7. Merancang Fungsi Heuristik <span class="badge badge-tip">Teknik</span></h2>
+
+                <p>Merancang heuristik yang baik adalah seni sekaligus ilmu dalam AI. Heuristik yang terlalu lemah membuat A* lambat; heuristik yang tidak admissible membuat A* tidak optimal.</p>
+
+                <h3>Teknik 1: Masalah yang Dilonggarkan (Relaxed Problem)</h3>
+                <div class="info-box">
+                    <strong>💡 Ide:</strong>
+                    <p style="margin-top:6px;">Buat versi masalah yang lebih mudah dengan <em>menghapus sebagian batasan</em>. Biaya optimal masalah yang dilonggarkan selalu ≤ biaya masalah asli → otomatis admissible!</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon">🧩</div>
+                        <h4>8-Puzzle: h₁</h4>
+                        <p><strong>Batasan dihapus:</strong> Ubin bisa dipindah ke mana saja (bukan hanya ke ruang kosong).<br>
+                        → <em>h₁ = jumlah ubin salah tempat.</em></p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon">🗺️</div>
+                        <h4>8-Puzzle: h₂</h4>
+                        <p><strong>Batasan dihapus:</strong> Ubin bisa melewati ubin lain (hanya tidak bisa diagonal).<br>
+                        → <em>h₂ = Manhattan distance.</em></p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon">🐦</div>
+                        <h4>Peta Rute: h_SLD</h4>
+                        <p><strong>Batasan dihapus:</strong> Boleh terbang garis lurus, tidak perlu ikuti jalan.<br>
+                        → <em>h_SLD = jarak garis lurus ke tujuan.</em></p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon">🔗</div>
+                        <h4>Rute String: Jaccard</h4>
+                        <p><strong>Integrasi penelitian [Ref. 23]:</strong> Jaccard similarity sebagai heuristik jarak edit kata — masalah yang dilonggarkan dari edit distance.<br></p>
+                    </div>
+                </div>
+
+                <h3>Teknik 2: Heuristik Komposit (Maksimum)</h3>
+                <pre><code><span class="cm"># Jika punya beberapa heuristik admissible, ambil maksimumnya</span>
+<span class="cm"># Hasilnya tetap admissible dan lebih tajam!</span>
+
+<span class="kw">def</span> <span class="fn">h_composite</span>(state):
+    h1 = <span class="fn">misplaced_tiles</span>(state)    <span class="cm"># h₁: ubin salah tempat</span>
+    h2 = <span class="fn">manhattan_distance</span>(state)  <span class="cm"># h₂: Manhattan distance</span>
+    <span class="kw">return</span> <span class="fn">max</span>(h1, h2)              <span class="cm"># max tetap admissible, lebih tajam</span>
+
+<span class="cm"># Mengapa max admissible?</span>
+<span class="cm"># h1 ≤ h*(n) dan h2 ≤ h*(n)</span>
+<span class="cm"># → max(h1, h2) ≤ h*(n)  ✅</span></code></pre>
+
+                <h3>Teknik 3: Heuristik dari Pola Database</h3>
+                <div class="info-box">
+                    <strong>Pattern Database Heuristics:</strong>
+                    <p style="margin-top:6px;">Pra-komputasi biaya optimal untuk sub-masalah (misalnya, hanya gerakan ubin 1–4) dan simpan dalam database. Biaya sub-masalah selalu ≤ biaya masalah penuh → admissible dan sangat tajam. Digunakan untuk memecahkan 15-puzzle dan 24-puzzle.</p>
+                </div>
+
+                <h3>Checklist Heuristik yang Baik</h3>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <strong>h(goal) = 0</strong>
+                            <p>Heuristik harus bernilai 0 di semua keadaan tujuan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <strong>h(n) ≥ 0 untuk semua n</strong>
+                            <p>Nilai heuristik tidak boleh negatif.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <strong>h(n) ≤ h*(n) — Admissible</strong>
+                            <p>Tidak pernah melebih-lebihkan biaya sebenarnya ke tujuan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <strong>Efisien dihitung</strong>
+                            <p>Waktu komputasi h(n) harus jauh lebih kecil dari biaya pencarian. O(1) atau O(n) lebih baik dari O(n²).</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">✓</div>
+                        <div class="step-content">
+                            <strong>Tajam (h lebih besar = lebih baik)</strong>
+                            <p>Di antara dua heuristik admissible, pilih yang nilainya lebih besar — ia lebih mendekati h*(n) dan mengurangi simpul yang diekspansi.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 8. Dominasi -->
+            <!-- ============================================================ -->
+            <section id="dominasi">
+                <h2>8. Dominasi Heuristik <span class="badge">Analisis</span></h2>
+
+                <div class="info-box">
+                    <strong>📌 Definisi Dominasi:</strong>
+                    <p style="margin-top:6px;">Heuristik <em>h₂</em> <strong>mendominasi</strong> <em>h₁</em> jika untuk semua simpul <em>n</em>:</p>
+                    <p style="text-align:center; font-family:'Consolas',monospace; font-size:1.1em; color:#1565c0; margin:10px 0;">h₂(n) ≥ h₁(n)  (dan keduanya admissible)</p>
+                    <p>Heuristik yang lebih dominan <strong>selalu menghasilkan lebih sedikit simpul diekspansi</strong> oleh A*.</p>
+                </div>
+
+                <h3>Perbandingan h₁ vs h₂ pada 8-Puzzle</h3>
+                <table>
+                    <thead>
+                        <tr><th>Kedalaman Solusi</th><th>h₁ (Ubin Salah)</th><th>h₂ (Manhattan)</th><th>Rasio Pengurangan</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>2</td><td>6 simpul</td><td>6 simpul</td><td>—</td></tr>
+                        <tr><td>4</td><td>13 simpul</td><td>12 simpul</td><td>~8%</td></tr>
+                        <tr><td>8</td><td>39 simpul</td><td>25 simpul</td><td>~36%</td></tr>
+                        <tr><td>12</td><td>227 simpul</td><td>73 simpul</td><td>~68%</td></tr>
+                        <tr><td>16</td><td>1.301 simpul</td><td>211 simpul</td><td>~84%</td></tr>
+                        <tr><td>20</td><td>7.276 simpul</td><td>676 simpul</td><td>~91%</td></tr>
+                        <tr><td>24</td><td>39.135 simpul</td><td>1.641 simpul</td><td>~96%</td></tr>
+                    </tbody>
+                </table>
+
+                <p>Karena h₂ (Manhattan) ≥ h₁ (ubin salah tempat) untuk semua keadaan, h₂ mendominasi h₁. Hasilnya: A* dengan h₂ mengekspansi jauh lebih sedikit simpul, terutama pada kedalaman besar.</p>
+
+                <h3>Visualisasi Pengaruh Kekuatan Heuristik</h3>
+                <div class="demo-box">
+                    <h5>Jumlah simpul diekspansi pada kedalaman 20 (8-Puzzle)</h5>
+                    <div style="margin-top:10px;">
+                        <div class="dom-row">
+                            <div class="dom-label">h = 0 (UCS)</div>
+                            <div class="dom-bar" style="width:95%; background:#c62828;">~10⁶ simpul</div>
+                        </div>
+                        <div class="dom-row">
+                            <div class="dom-label">h₁ = misplaced</div>
+                            <div class="dom-bar" style="width:45%; background:#e65100;">7.276 simpul</div>
+                        </div>
+                        <div class="dom-row">
+                            <div class="dom-label">h₂ = Manhattan</div>
+                            <div class="dom-bar" style="width:15%; background:#1565c0;">676 simpul</div>
+                        </div>
+                        <div class="dom-row">
+                            <div class="dom-label">h = h* (sempurna)</div>
+                            <div class="dom-bar" style="width:5%; background:#2e7d32;">~20 simpul</div>
+                        </div>
+                    </div>
+                    <p style="font-size:0.82em; color:#666; margin-top:8px;">h = 0 setara UCS (tanpa heuristik). h = h* adalah batas ideal — A* hanya ekspansi simpul pada lintasan optimal.</p>
+                </div>
+
+                <div class="success-box">
+                    <strong>✅ Kesimpulan Dominasi:</strong>
+                    <p style="margin-top:6px;">Semakin tajam heuristik (semakin mendekati h*), semakin dekat A* ke <em>pencarian optimal</em> yang hanya mengekspansi simpul pada lintasan solusi. Di sinilah nilai dari heuristik yang dirancang dengan cermat.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 9. Pencarian Lokal -->
+            <!-- ============================================================ -->
+            <section id="local-search">
+                <h2>9. Pencarian Lokal: Hill Climbing &amp; Simulated Annealing <span class="badge badge-new">Pelengkap</span></h2>
+
+                <p>Greedy BFS dan A* menyimpan seluruh frontier dan melacak lintasan. Untuk masalah <em>optimasi</em> di mana yang penting hanya <strong>keadaan akhir</strong> (bukan lintasan menuju ke sana), kita bisa memakai <strong>pencarian lokal</strong>: simpan hanya satu keadaan "saat ini", lalu terus pindah ke tetangga yang lebih baik. Hemat memori, tetapi tidak menjamin optimalitas.</p>
+
+                <h3>Lanskap Ruang Keadaan</h3>
+                <div class="demo-box">
+                    <h5>Istilah pada permukaan fungsi objektif</h5>
+                    <div class="tree-svg-wrap">
+                        <svg width="560" height="230" viewBox="0 0 560 230">
+                            <path d="M20,190 C70,180 90,120 130,120 C150,120 150,120 175,120 C200,120 210,40 260,40 C310,40 320,150 360,150 C390,150 400,95 430,95 C455,95 460,110 490,110 C520,110 520,175 540,185"
+                                  fill="none" stroke="#1565c0" stroke-width="3"/>
+                            <circle cx="360" cy="150" r="6" fill="#e65100"/>
+                            <text x="360" y="185" font-size="11" fill="#e65100" text-anchor="middle">keadaan sekarang</text>
+                            <line x1="360" y1="175" x2="360" y2="158" stroke="#e65100" stroke-width="1.5"/>
+                            <text x="260" y="30" font-size="11" fill="#2e7d32" text-anchor="middle">maksimum global</text>
+                            <text x="430" y="82" font-size="11" fill="#c62828" text-anchor="middle">maksimum lokal</text>
+                            <text x="490" y="98" font-size="10" fill="#6a1b9a" text-anchor="middle">plateau / "flat" local max</text>
+                            <text x="120" y="112" font-size="10" fill="#546e7a" text-anchor="middle">shoulder</text>
+                            <text x="15" y="205" font-size="10" fill="#888">fungsi objektif ↑ &nbsp;|&nbsp; ruang keadaan →</text>
+                        </svg>
+                    </div>
+                    <p style="font-size:0.85em; color:#555;">Hill climbing selalu bergerak "menanjak" — sehingga bisa terjebak di <strong>maksimum lokal</strong>, <strong>plateau</strong> (datar, tak ada arah menanjak), atau <strong>ridge</strong> (punggungan yang butuh gerak zig-zag).</p>
+                </div>
+
+                <h3>Simple Hill Climbing</h3>
+                <p>Variasi dari DFS: pada tiap langkah, ambil <strong>tetangga pertama</strong> yang lebih baik dari keadaan sekarang, lalu pindah ke sana. Analogi: mendaki gunung dalam kabut tebal sambil terkena amnesia — hanya tahu apakah langkah berikutnya naik atau turun.</p>
+                <pre><code><span class="kw">function</span> <span class="fn">SIMPLE-HILL-CLIMBING</span>(problem) <span class="kw">returns</span> state
+    current ← problem.initial
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> problem.is_goal(current): <span class="kw">return</span> current
+        <span class="kw">for</span> next <span class="kw">in</span> <span class="fn">successors</span>(current):
+            <span class="kw">if</span> <span class="fn">value</span>(next) &gt; <span class="fn">value</span>(current):   <span class="cm"># tetangga PERTAMA yang lebih baik</span>
+                current ← next
+                <span class="kw">break</span>
+        <span class="kw">else</span>:
+            <span class="kw">return</span> current                      <span class="cm"># tak ada tetangga lebih baik → berhenti</span></code></pre>
+                <div class="warning-box">
+                    <strong>⚠️ Tiga kelemahan Simple Hill Climbing:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>Berhenti di <strong>optimum lokal</strong>, bukan global.</li>
+                        <li><strong>Urutan pemakaian operator</strong> sangat memengaruhi solusi yang ditemukan.</li>
+                        <li>Tidak boleh "mengintip" lebih dari satu langkah ke depan.</li>
+                    </ul>
+                </div>
+
+                <h3>Steepest-Ascent Hill Climbing</h3>
+                <p>Mirip Simple HC, tetapi mengevaluasi <strong>semua</strong> tetangga lebih dulu, lalu pindah ke yang <strong>paling baik</strong>. Berhenti jika tidak ada tetangga yang lebih baik dari keadaan sekarang.</p>
+                <table>
+                    <thead><tr><th></th><th>Simple HC</th><th>Steepest-Ascent HC</th></tr></thead>
+                    <tbody>
+                        <tr><td>Tetangga yang dipilih</td><td>Yang <em>pertama</em> lebih baik</td><td>Yang <em>terbaik</em> di antara semua</td></tr>
+                        <tr><td>Evaluasi per langkah</td><td>Lebih sedikit (berhenti begitu ketemu)</td><td>Semua tetangga</td></tr>
+                        <tr><td>Kualitas arah</td><td>Kadang bukan arah terbaik</td><td>Selalu arah menanjak tercuram</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Simulated Annealing (SA)</h3>
+                <div class="info-box">
+                    <strong>🔥 Ide:</strong>
+                    <p style="margin-top:6px;">Untuk lolos dari optimum lokal, SA sesekali <em>mengizinkan langkah yang memperburuk</em> keadaan, dengan probabilitas yang menurun seiring "suhu" <em>T</em> yang mendingin. Di awal (T tinggi) agen bebas menjelajah; menjelang akhir (T rendah) agen berperilaku seperti hill climbing biasa. Terinspirasi proses <em>annealing</em> (pendinginan lambat) pada logam.</p>
+                    <p style="margin-top:6px; font-family:'Consolas',monospace; font-size:0.95em; color:#1565c0;">P(terima langkah buruk) = e<sup>−ΔE / T</sup></p>
+                </div>
+
+                <h3>Generate and Test</h3>
+                <p>Metode paling sederhana: <strong>bangkitkan</strong> sebuah kandidat solusi (acak atau sistematis), lalu <strong>uji</strong> apakah ia solusi. Jika bukan, ulangi. Setara DFS jika pembangkitannya sistematis; setara pencarian acak jika tidak. Praktis hanya untuk ruang solusi kecil.</p>
+
+                <div class="success-box">
+                    <strong>✅ Kapan memakai pencarian lokal?</strong>
+                    <p style="margin-top:6px;">Saat lintasan menuju solusi <em>tidak</em> penting (mis. penjadwalan, penempatan komponen, penyetelan parameter, <em>N-Queens</em>), ruang keadaan sangat besar, dan solusi "cukup baik" sudah memadai. Untuk solusi yang <strong>dijamin optimal</strong> beserta lintasannya, tetap gunakan A*.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 10. Perbandingan -->
+            <!-- ============================================================ -->
+            <section id="perbandingan">
+                <h2>10. Perbandingan: Greedy BFS vs A* vs UCS <span class="badge">Ringkasan</span></h2>
+
+                <div class="compare-cols">
+                    <div class="compare-col greedy">
+                        <h4>🟡 Greedy Best-First</h4>
+                        <p><strong>Fungsi evaluasi:</strong> f(n) = h(n)</p>
+                        <p><strong>Strategi:</strong> Selalu ke yang terlihat paling dekat ke tujuan</p>
+                        <p><strong>Kelengkapan:</strong> ❌ Tidak terjamin</p>
+                        <p><strong>Optimalitas:</strong> ❌ Tidak terjamin</p>
+                        <p><strong>Kecepatan:</strong> ✅ Sangat cepat jika heuristik baik</p>
+                        <p><strong>Cocok untuk:</strong> Situasi real-time di mana kecepatan lebih penting dari optimalitas</p>
+                    </div>
+                    <div class="compare-col astar">
+                        <h4>🔵 A*</h4>
+                        <p><strong>Fungsi evaluasi:</strong> f(n) = g(n) + h(n)</p>
+                        <p><strong>Strategi:</strong> Seimbangkan biaya aktual dan estimasi sisa</p>
+                        <p><strong>Kelengkapan:</strong> ✅ Ya (b terhingga, h admissible)</p>
+                        <p><strong>Optimalitas:</strong> ✅ Ya (h admissible/konsisten)</p>
+                        <p><strong>Kecepatan:</strong> ✅ Tergantung kualitas heuristik</p>
+                        <p><strong>Cocok untuk:</strong> Navigasi, perencanaan jalur, game AI — butuh optimal</p>
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Algoritma</th>
+                            <th>f(n)</th>
+                            <th>Lengkap?</th>
+                            <th>Optimal?</th>
+                            <th>Waktu</th>
+                            <th>Ruang</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>UCS</strong></td>
+                            <td><code>g(n)</code></td>
+                            <td><span style="color:#2e7d32;">✅</span></td>
+                            <td><span style="color:#2e7d32;">✅</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>C*/ε</sup>)</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>C*/ε</sup>)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Greedy BFS</strong></td>
+                            <td><code>h(n)</code></td>
+                            <td><span style="color:#e65100;">⚠️</span></td>
+                            <td><span style="color:#c62828;">❌</span></td>
+                            <td><span class="complexity-badge O-ok">O(b<sup>m</sup>) praktis ↓</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>m</sup>)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>A*</strong></td>
+                            <td><code>g(n)+h(n)</code></td>
+                            <td><span style="color:#2e7d32;">✅</span></td>
+                            <td><span style="color:#2e7d32;">✅*</span></td>
+                            <td><span class="complexity-badge O-ok">O(b<sup>d</sup>) dengan h baik</span></td>
+                            <td><span class="complexity-badge O-bad">O(b<sup>d</sup>)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.82em; color:#888; margin-top:4px;">*) Optimal jika h admissible (pohon) atau konsisten (graf).</p>
+
+                <div class="warning-box">
+                    <strong>⚠️ Keterbatasan A*:</strong>
+                    <p style="margin-top:6px;">Meskipun optimal, A* masih menghabiskan memori O(b<sup>d</sup>) untuk menyimpan frontier. Pada masalah sangat besar, varian seperti <strong>IDA*</strong> (Iterative Deepening A*) digunakan — menggabungkan A* dengan pendekatan iterative deepening untuk menghemat memori.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 11. Rangkuman -->
+            <!-- ============================================================ -->
+            <section id="rangkuman">
+                <h2>11. Rangkuman Pertemuan 5 &amp; 6</h2>
+
+                <div class="success-box">
+                    <strong>✅ Poin-poin Kunci:</strong>
+                    <ul style="margin-top:10px;">
+                        <li><strong>Heuristik h(n)</strong> adalah estimasi biaya dari simpul n ke tujuan — "pengetahuan domain" yang memandu pencarian.</li>
+                        <li><strong>g(n)</strong> = biaya aktual dari awal ke n; <strong>h(n)</strong> = estimasi sisa; <strong>f(n) = g+h</strong> = estimasi total.</li>
+                        <li><strong>Greedy BFS</strong> hanya pakai h(n) — cepat tapi tidak optimal dan tidak lengkap.</li>
+                        <li><strong>A*</strong> pakai f(n) = g(n)+h(n) — optimal jika h admissible, lebih optimal pada graf jika h konsisten.</li>
+                        <li><strong>Admissible:</strong> h(n) ≤ h*(n) — tidak melebih-lebihkan biaya → menjamin optimalitas A*.</li>
+                        <li><strong>Konsisten:</strong> h(n) ≤ c(n,a,n') + h(n') — ketidaksamaan segitiga → f tidak pernah turun sepanjang lintasan.</li>
+                        <li><strong>Teknik desain heuristik:</strong> masalah yang dilonggarkan, maksimum beberapa heuristik, pattern database.</li>
+                        <li><strong>Dominasi:</strong> h₂ dominan atas h₁ jika h₂(n) ≥ h₁(n) → A* dengan h₂ lebih efisien.</li>
+                        <li><strong>Pencarian lokal</strong> (Hill Climbing, Simulated Annealing) menyimpan satu keadaan saja — hemat memori, cocok untuk optimasi tanpa peduli lintasan, tapi rawan terjebak optimum lokal.</li>
+                    </ul>
+                </div>
+
+                <h3>Peta Konsep Pertemuan 5 &amp; 6</h3>
+                <div class="demo-box">
+                    <h5>Hierarki Algoritma Pencarian</h5>
+                    <div style="text-align:center; font-size:0.88em; line-height:2.8; padding:10px;">
+                        <div>
+                            <span style="background:#1a2a4a;color:white;padding:6px 16px;border-radius:20px;font-weight:700;">Search Algorithms</span>
+                        </div>
+                        <div>↙ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↘</div>
+                        <div>
+                            <span style="background:#546e7a;color:white;padding:5px 14px;border-radius:15px;margin:0 20px;">Uninformed Search</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <span style="background:#1565c0;color:white;padding:5px 14px;border-radius:15px;margin:0 20px;">Informed Search ← kita di sini</span>
+                        </div>
+                        <div>↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↙ &nbsp;&nbsp;&nbsp; ↘</div>
+                        <div>
+                            <span style="background:#546e7a;color:white;padding:4px 12px;border-radius:12px;">BFS/IDS/UCS</span>
+                            &nbsp;&nbsp;
+                            <span style="background:#f9a825;color:white;padding:4px 12px;border-radius:12px;">Greedy BFS</span>
+                            &nbsp;&nbsp;
+                            <span style="background:#1565c0;color:white;padding:4px 12px;border-radius:12px;">A*</span>
+                        </div>
+                        <div style="margin-top:8px; font-size:0.85em; color:#666;">A* dengan h admissible = optimal | A* dengan h konsisten = optimal di graf</div>
+                    </div>
+                </div>
+
+                <h3>Persiapan Pertemuan Berikutnya (Minggu 7)</h3>
+                <div class="info-box">
+                    <strong>📚 Untuk Materi 4 (Pencarian dengan Lawan — Minimax &amp; Alpha-Beta):</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Baca Russell &amp; Norvig (2021) Bab 5: <em>Adversarial Search and Games</em></li>
+                        <li>Pahami konsep permainan dua pemain berjumlah nol (zero-sum game)</li>
+                        <li>Review rekursi — algoritma minimax bersifat rekursif</li>
+                        <li>Tugas RTM II: Implementasikan A* pada masalah 8-puzzle, bandingkan h₁ dan h₂</li>
+                    </ul>
+                </div>
+
+                <h3>Referensi Utama</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Referensi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 3.5–3.6</td></tr>
+                        <tr><td>2</td><td>Hart, P. E., Nilsson, N. J., &amp; Raphael, B. (1968). A Formal Basis for the Heuristic Determination of Minimum Cost Paths. <em>IEEE Trans. on Systems Science and Cybernetics</em>, 4(2), 100–107. <em>(Makalah asli A*)</em></td></tr>
+                        <tr><td>3</td><td>Suyanto. (2014). <em>Artificial Intelligence</em>. Informatika. — Bab 2.4–2.5</td></tr>
+                        <tr><td>4</td><td>Tresna, I M. A., Dwiyansaputra, R., &amp; Akhyar, H. (2025). Perbaikan Kesalahan Kata Menggunakan Kombinasi Jaro-Winkler dan Jaccard Similarity. <em>JTIKA</em>, 7(1), 25–36. <em>(heuristik kemiripan string)</em></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal materi';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir materi';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>
