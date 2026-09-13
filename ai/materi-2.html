@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Materi 2 — Ruang Keadaan &amp; Pencarian Buta</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260913f">
     <style>
         /* ---- Visualisasi pohon pencarian ---- */
         .tree-svg-wrap {
@@ -93,8 +93,76 @@
         }
         .cmp-note { color: #555; font-size: 0.82em; }
 
+        .node-dead     { fill: #90a4ae; }
+        .node-repeat   { fill: #c62828; }
+
+        /* gambar tetangga 8-puzzle (keadaan s dan RESULT(s, a)) */
+        .succ-fig {
+            display: grid;
+            grid-template-columns: repeat(3, auto);
+            justify-content: center;
+            align-items: center;
+            gap: 10px 26px;
+            margin: 15px 0;
+            padding: 16px;
+            background: #f5f8ff;
+            border: 2px dashed #b0c4de;
+            border-radius: 10px;
+        }
+        .succ-fig figure { margin: 0; text-align: center; }
+        .succ-fig figcaption { font-size: 0.8em; color: #555; margin-top: 5px; white-space: nowrap; }
+        .succ-fig .succ-center .ss-board span:not(.blank) { background: #e65100; }
+
+        /* kunci jawaban latihan */
+        details.kunci {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #d6e2f3;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+        details.kunci summary { cursor: pointer; font-weight: 600; color: #1565c0; }
+        details.kunci[open] summary { margin-bottom: 6px; }
+        details.kunci ul { margin: 0 0 0 18px; font-size: 0.92em; }
+
+        /* blok kode yang bisa disalin (pre[data-copy]) */
+        .code-wrap { margin: 15px 0; }
+        .code-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #10203d;
+            color: #cfd8dc;
+            padding: 7px 10px 7px 16px;
+            border-radius: 8px 8px 0 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+        }
+        .code-head .fa-python { color: #ffd54f; margin-right: 6px; }
+        .code-wrap pre { margin: 0; border-radius: 0 0 8px 8px; }
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #1565c0;
+            color: #fff;
+            border: 0;
+            border-radius: 6px;
+            padding: 5px 12px;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .copy-btn:hover { background: #0d47a1; }
+        .copy-btn.done { background: #2e7d32; }
+
         @media (max-width: 480px) {
             .cplx-grid { grid-template-columns: 1fr 1fr; }
+            .succ-fig { gap: 8px; padding: 10px 6px; }
+            .succ-fig .ss-board.small span { width: 24px; height: 24px; font-size: 0.8em; }
+            .succ-fig figcaption { white-space: normal; font-size: 0.7em; }
         }
     </style>
 </head>
@@ -117,14 +185,15 @@
                 <li><a href="#cpmk" class="active">0. Capaian</a></li>
                 <li><a href="#ruang-keadaan">1. Ruang Keadaan</a></li>
                 <li><a href="#formulasi">2. Formulasi Masalah</a></li>
-                <li><a href="#pohon-vs-graf">3. Pohon vs Graf Pencarian</a></li>
-                <li><a href="#ukuran-kinerja">4. Ukuran Kinerja</a></li>
-                <li><a href="#bfs">5. BFS</a></li>
-                <li><a href="#dfs">6. DFS &amp; DLS</a></li>
-                <li><a href="#ids">7. IDS</a></li>
-                <li><a href="#ucs">8. UCS</a></li>
-                <li><a href="#perbandingan">9. Perbandingan</a></li>
-                <li><a href="#rangkuman">10. Rangkuman</a></li>
+                <li><a href="#contoh-ruang-keadaan">3. Contoh Ruang Keadaan</a></li>
+                <li><a href="#pohon-vs-graf">4. Pohon vs Graf Pencarian</a></li>
+                <li><a href="#ukuran-kinerja">5. Ukuran Kinerja</a></li>
+                <li><a href="#bfs">6. BFS</a></li>
+                <li><a href="#dfs">7. DFS &amp; DLS</a></li>
+                <li><a href="#ids">8. IDS</a></li>
+                <li><a href="#ucs">9. UCS</a></li>
+                <li><a href="#perbandingan">10. Perbandingan</a></li>
+                <li><a href="#rangkuman">11. Rangkuman</a></li>
             </ul>
             <!-- <h3><i class="fa-solid fa-compass"></i> Navigasi</h3>
             <ul>
@@ -193,6 +262,33 @@
                     <p style="margin-top:6px;">Bayangkan Anda mencari rute dari kota A ke kota B di peta. Setiap kota adalah sebuah <em>keadaan</em>, jalan yang menghubungkannya adalah <em>aksi</em>, dan peta seluruhnya adalah <em>ruang keadaan</em>. Tugas agen adalah menemukan urutan aksi yang membawa dari keadaan awal ke keadaan tujuan.</p>
                 </div>
 
+                <h3>Agen Pemecah Masalah: Empat Fase</h3>
+                <p>Di Materi 1 kita sudah mengenal <em>agen berbasis tujuan</em>. Agen jenis ini tidak sekadar bereaksi terhadap persepsi, tetapi memikirkan dulu <strong>urutan aksi</strong> yang akan membawanya ke tujuan. Russell &amp; Norvig menyebutnya <strong>agen pemecah masalah</strong> (<em>problem-solving agent</em>).</p>
+                <p>Contoh dari buku: seorang agen sedang berlibur di kota Arad, Romania, dan besok harus terbang dari Bucharest. Dari Arad ada tiga jalan (ke Sibiu, Timisoara, dan Zerind), dan tidak satu pun langsung sampai ke Bucharest. Agen menyelesaikannya dalam empat fase:</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Formulasi tujuan</strong><p>Agen menetapkan tujuan "sampai di Bucharest". Tujuan membatasi apa yang perlu dipikirkan: kuliner dan tempat wisata di Arad tidak lagi relevan.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Formulasi masalah</strong><p>Agen memilih keadaan dan aksi yang relevan. Model yang baik: <em>keadaan</em> = kota tempat agen berada, <em>aksi</em> = berkendara ke kota tetangga.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Pencarian</strong><p>Sebelum bergerak di dunia nyata, agen <em>menyimulasikan</em> urutan aksi di dalam modelnya sampai menemukan urutan yang mencapai tujuan. Urutan itu disebut <strong>solusi</strong>, misalnya Arad → Sibiu → Fagaras → Bucharest.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content"><strong>Eksekusi</strong><p>Agen menjalankan aksi di dalam solusi satu per satu.</p></div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-circle-question"></i> Mengapa solusinya cukup berupa urutan aksi yang tetap?</strong>
+                    <p style="margin-top:6px;">Karena lingkungannya <em>teramati penuh</em>, <em>deterministik</em>, dan <em>diketahui</em> (lihat karakteristik lingkungan di Materi 1). Jika modelnya benar, agen bisa menjalankan solusi "dengan mata tertutup" tanpa memeriksa persepsi lagi (<em>open-loop</em>). Jika lingkungan bisa berubah di luar dugaan, misalnya ada papan "Jalan Ditutup", agen perlu terus memantau persepsinya (<em>closed-loop</em>).</p>
+                </div>
+                <p>Materi ini berfokus pada fase 2 dan 3: <strong>merumuskan masalah sebagai ruang keadaan</strong>, lalu <strong>mencari solusi di dalamnya</strong>.</p>
+
                 <h3>Empat Langkah Membangun Sistem AI berbasis Pencarian</h3>
                 <div class="algo-steps">
                     <div class="algo-step">
@@ -213,7 +309,9 @@
                     </div>
                 </div>
 
-                <h3>Contoh Masalah: 8-Puzzle</h3>
+                <h3>Keadaan (State): Potret Dunia pada Satu Saat</h3>
+                <p>Sebuah <strong>keadaan</strong> adalah deskripsi situasi pada satu saat. Deskripsi ini harus cukup lengkap untuk menjawab dua pertanyaan: <em>aksi apa saja yang bisa dilakukan sekarang?</em> dan <em>apakah tujuan sudah tercapai?</em> Kita akan memakai teka-teki <strong>8-puzzle</strong> sebagai contoh berjalan. Papannya berukuran 3×3 dengan delapan ubin bernomor dan satu petak kosong, dan keadaannya adalah susunan ubin di papan tersebut.</p>
+                <p>Dua keadaan yang istimewa adalah <strong>keadaan awal</strong>, tempat agen memulai, dan <strong>keadaan tujuan</strong>, keadaan yang ingin dicapai. Tujuan boleh berupa satu keadaan atau himpunan keadaan, misalnya "semua ruangan bersih, di mana pun robot berada".</p>
                 <div class="demo-box">
                     <h5>Masalah 8-Puzzle</h5>
                     <div style="display:flex; gap:30px; flex-wrap:wrap; justify-content:center; align-items:center; margin-top:10px;">
@@ -247,8 +345,132 @@
                             </div>
                         </div>
                     </div>
-                    <p style="text-align:center; margin-top:12px; font-size:0.88em; color:#555;">Total kemungkinan keadaan: 9! / 2 = <strong>181.440</strong> keadaan yang dapat dicapai.</p>
+                    <p style="text-align:center; margin-top:12px; font-size:0.88em; color:#555;">Dua keadaan dari ruang keadaan yang sama (Gambar 3.3 AIMA). Setiap susunan ubin yang berbeda adalah keadaan yang berbeda.</p>
                 </div>
+
+                <h3>Aksi dan Model Transisi: Berpindah Antarkeadaan</h3>
+                <p><strong>Aksi</strong> (sering disebut <em>aturan</em> atau <em>operator</em>) adalah pilihan tindakan yang dapat dilakukan pada suatu keadaan. Pada 8-puzzle yang bergeser sebenarnya ubin, tetapi cara paling sederhana memodelkannya adalah menganggap <em>petak kosong</em> yang bergerak: <strong>Atas</strong>, <strong>Bawah</strong>, <strong>Kiri</strong>, atau <strong>Kanan</strong>. Dua fungsi mendefinisikan perpindahan ini:</p>
+                <ul>
+                    <li><code>ACTIONS(s)</code> mengembalikan himpunan aksi yang <em>berlaku</em> di keadaan <em>s</em>.</li>
+                    <li><code>RESULT(s, a)</code>, disebut <strong>model transisi</strong>, mengembalikan keadaan baru setelah aksi <em>a</em> dilakukan di keadaan <em>s</em>.</li>
+                </ul>
+                <div class="succ-fig" role="img" aria-label="Keadaan awal 8-puzzle di tengah dan empat keadaan hasil aksi Atas, Bawah, Kiri, Kanan di sekelilingnya">
+                    <div></div>
+                    <figure>
+                        <div class="ss-board small"><span>7</span><span class="blank"></span><span>4</span><span>5</span><span>2</span><span>6</span><span>8</span><span>3</span><span>1</span></div>
+                        <figcaption><i class="fa-solid fa-arrow-up"></i> RESULT(s, Atas)</figcaption>
+                    </figure>
+                    <div></div>
+                    <figure>
+                        <div class="ss-board small"><span>7</span><span>2</span><span>4</span><span class="blank"></span><span>5</span><span>6</span><span>8</span><span>3</span><span>1</span></div>
+                        <figcaption><i class="fa-solid fa-arrow-left"></i> RESULT(s, Kiri)</figcaption>
+                    </figure>
+                    <figure class="succ-center">
+                        <div class="ss-board small"><span>7</span><span>2</span><span>4</span><span>5</span><span class="blank"></span><span>6</span><span>8</span><span>3</span><span>1</span></div>
+                        <figcaption><strong>s</strong> = keadaan awal</figcaption>
+                    </figure>
+                    <figure>
+                        <div class="ss-board small"><span>7</span><span>2</span><span>4</span><span>5</span><span>6</span><span class="blank"></span><span>8</span><span>3</span><span>1</span></div>
+                        <figcaption>RESULT(s, Kanan) <i class="fa-solid fa-arrow-right"></i></figcaption>
+                    </figure>
+                    <div></div>
+                    <figure>
+                        <div class="ss-board small"><span>7</span><span>2</span><span>4</span><span>5</span><span>3</span><span>6</span><span>8</span><span class="blank"></span><span>1</span></div>
+                        <figcaption><i class="fa-solid fa-arrow-down"></i> RESULT(s, Bawah)</figcaption>
+                    </figure>
+                    <div></div>
+                </div>
+                <p>Karena petak kosong berada di tengah, <code>ACTIONS(s) = {Atas, Bawah, Kiri, Kanan}</code>. Jika petak kosong ada di pojok, hanya dua aksi yang berlaku; jika di tepi, tiga. Rata-rata ada sekitar tiga aksi per keadaan. Angka ini disebut <em>faktor percabangan</em> <strong>b</strong> dan akan dipakai lagi di Bagian 5.</p>
+
+                <h3>Coba Sendiri: ACTIONS dan RESULT pada 8-Puzzle <span class="badge badge-new">Interaktif</span></h3>
+                <p>Tekan tombol aksi untuk menggerakkan petak kosong. Setiap tombol sudah memperlihatkan <code>RESULT(s, a)</code> sebelum dipilih, dan aksi yang tidak berlaku (petak kosong di tepi papan) dinonaktifkan. Coba selesaikan tingkat <em>Mudah</em> sendiri. Jika buntu, tekan <strong>Langkah berikutnya</strong> untuk menjalankan satu langkah dari solusi terpendek, dan <strong>Langkah sebelumnya</strong> untuk mundur satu langkah. Pada tingkat <em>Gambar 3.3 AIMA</em>, perhatikan pesan di langkah pertama: berapa banyak keadaan yang harus dibangkitkan BFS untuk menemukan solusi 26 langkah.</p>
+                <div data-viz="state-space" data-problem="puzzle"></div>
+                <div class="viz-link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    <div><p><strong>Eksplorasi lanjutan:</strong> <a href="https://jsurrea.github.io/aima-visualizations/chapter-03/" target="_blank" rel="noopener">AIMA Visualizations — Bab 3</a>, bagian <em>Example Problems</em>, memuat 8-puzzle interaktif: geser ubin sendiri, acak, lalu tekan <em>BFS Solve</em> untuk melihat solusi terpendeknya langkah demi langkah. Bagian <em>Problem Formulation</em> di halaman yang sama membandingkan formulasi peta Romania, 8-puzzle, dan dunia penyedot debu (bahasa Inggris).</p></div>
+                </div>
+
+                <h3>Ruang Keadaan: Semua Keadaan yang Dapat Dijangkau</h3>
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-book-open"></i> Definisi</strong>
+                    <p style="margin-top:6px;"><strong>Ruang keadaan</strong> (<em>state space</em>) adalah himpunan semua keadaan yang dapat dijangkau dari keadaan awal dengan menerapkan urutan aksi apa pun.</p>
+                </div>
+                <p>Kata kuncinya adalah <em>dapat dijangkau</em>. Ada 9! = 362.880 cara menaruh delapan ubin dan satu petak kosong di papan 8-puzzle. Karena sifat paritas, hanya separuhnya, yaitu <strong>181.440</strong> susunan, yang dapat dicapai dari keadaan awal tertentu. Separuh sisanya tidak akan pernah muncul, berapa kali pun ubin digeser. Contoh yang lebih kecil ada di Bagian 3: pada masalah ember air, hanya 14 dari 20 kombinasi isi ember yang dapat dicapai.</p>
+
+                <h4>Ruang Keadaan sebagai Graf</h4>
+                <p>Ruang keadaan dapat digambar sebagai <strong>graf berarah</strong>: <em>simpul</em> mewakili keadaan, dan <em>sisi</em> mewakili aksi yang memindahkan satu keadaan ke keadaan lain. Gambar tetangga 8-puzzle di atas adalah potongan kecil dari graf ini, yaitu satu simpul beserta empat sisi yang keluar darinya. Peta Romania di Bagian 2 juga merupakan graf ruang keadaan; setiap ruas jalan mewakili dua aksi, satu untuk tiap arah.</p>
+                <table>
+                    <thead><tr><th>Aspek</th><th>Graf eksplisit</th><th>Graf implisit</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Contoh</strong></td><td>Peta Romania (20 kota), dunia penyedot debu (8 keadaan)</td><td>8-puzzle (181.440 keadaan), catur (± 10<sup>40</sup> posisi)</td></tr>
+                        <tr><td><strong>Cara menyimpan</strong></td><td>Semua simpul dan sisi disimpan sebagai tabel atau daftar ketetanggaan</td><td>Tidak disimpan; tetangga dibangkitkan saat diperlukan lewat <code>ACTIONS</code> dan <code>RESULT</code></td></tr>
+                        <tr><td><strong>Akibatnya</strong></td><td>Bisa digambar dan diperiksa seluruhnya</td><td>Algoritma hanya "melihat" bagian ruang keadaan yang pernah dibangkitkannya</td></tr>
+                    </tbody>
+                </table>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Mengapa ini penting?</strong>
+                    <p style="margin-top:6px;">Algoritma pencarian di Bagian 6–9 tidak pernah menerima "graf lengkap" sebagai masukan. Masukannya hanya keadaan awal, fungsi <code>ACTIONS</code>, fungsi <code>RESULT</code>, dan uji tujuan. Dari situ algoritma membangkitkan ruang keadaan sedikit demi sedikit. Karena itu, ukuran ruang keadaan dan faktor percabangannya menentukan seberapa berat sebuah pencarian.</p>
+                </div>
+
+                <h3>Kamus Istilah Ruang Keadaan</h3>
+                <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Istilah</th><th>Arti</th><th>8-Puzzle</th><th>Peta Romania</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong> (<em>state</em>)</td><td>Deskripsi situasi pada satu saat</td><td>Susunan 8 ubin dan petak kosong</td><td>Kota tempat agen berada</td></tr>
+                        <tr><td><strong>Keadaan awal</strong> (s₀)</td><td>Keadaan tempat agen mulai</td><td>Susunan acak, mis. Gambar 3.3</td><td>Arad</td></tr>
+                        <tr><td><strong>Keadaan tujuan</strong></td><td>Satu atau beberapa keadaan yang ingin dicapai</td><td>Ubin terurut, petak kosong di pojok</td><td>Bucharest</td></tr>
+                        <tr><td><strong>Aksi</strong> / aturan</td><td>Tindakan yang berlaku di suatu keadaan</td><td>Petak kosong ke Atas/Bawah/Kiri/Kanan</td><td>Berkendara ke kota tetangga</td></tr>
+                        <tr><td><strong>Model transisi</strong></td><td><code>RESULT(s, a)</code>: keadaan hasil aksi</td><td>Petak kosong bertukar tempat dengan ubin tetangganya</td><td>RESULT(Arad, ke Zerind) = Zerind</td></tr>
+                        <tr><td><strong>Biaya aksi</strong></td><td><code>c(s, a, s′)</code>: harga satu aksi</td><td>1 per gerakan</td><td>Jarak jalan (km)</td></tr>
+                        <tr><td><strong>Lintasan</strong></td><td>Urutan keadaan yang dihubungkan oleh aksi</td><td>Rangkaian gerakan petak kosong</td><td>Arad → Sibiu → Fagaras</td></tr>
+                        <tr><td><strong>Solusi</strong></td><td>Lintasan dari keadaan awal ke keadaan tujuan</td><td>Rangkaian gerakan yang berakhir di susunan tujuan</td><td>Arad → Sibiu → Fagaras → Bucharest (450 km)</td></tr>
+                        <tr><td><strong>Solusi optimal</strong></td><td>Solusi dengan biaya lintasan terkecil</td><td>26 gerakan untuk Gambar 3.3</td><td>Arad → Sibiu → Rimnicu → Pitesti → Bucharest (418 km)</td></tr>
+                        <tr><td><strong>Ruang keadaan</strong></td><td>Semua keadaan yang dapat dijangkau dari s₀</td><td>181.440 keadaan</td><td>20 kota</td></tr>
+                    </tbody>
+                </table>
+                </div>
+
+                <h3>Abstraksi: Apa yang Perlu Masuk ke dalam Keadaan?</h3>
+                <p>Formulasi masalah adalah sebuah <strong>model</strong>, bukan dunia yang sebenarnya. Perjalanan nyata dari Arad ke Bucharest melibatkan teman seperjalanan, siaran radio, pemandangan, cuaca, lalu lintas, dan banyak hal lain. Semua itu dibuang dari model karena tidak memengaruhi pilihan rute. Proses membuang detail dari sebuah representasi disebut <strong>abstraksi</strong>.</p>
+                <table>
+                    <thead><tr><th colspan="3">Contoh: agen menghitung rute dari Kampus UNRAM ke Bandara Lombok di Praya</th></tr>
+                        <tr><th>Detail di dunia nyata</th><th>Masuk ke keadaan?</th><th>Alasan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Persimpangan atau kota tempat kendaraan berada</td><td><strong>Ya</strong></td><td>Menentukan jalan mana yang bisa diambil dan apakah tujuan sudah tercapai</td></tr>
+                        <tr><td>Lagu yang sedang diputar, warna kendaraan</td><td><strong>Tidak</strong></td><td>Tidak mengubah aksi yang tersedia maupun biayanya</td></tr>
+                        <tr><td>Cuaca</td><td><strong>Tidak</strong> (model sederhana)</td><td>Bisa dimasukkan ke <em>biaya aksi</em> bila model memperhitungkan waktu tempuh saat hujan</td></tr>
+                        <tr><td>Sisa bensin</td><td><strong>Tergantung</strong></td><td>Wajib masuk jika rute harus mempertimbangkan kapan mengisi bensin; jika tidak, dibuang</td></tr>
+                    </tbody>
+                </table>
+                <div class="card-grid">
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <h4>Abstraksi yang valid</h4>
+                        <p>Setiap solusi abstrak dapat dijabarkan menjadi solusi di dunia nyata. Jika model berkata "Arad → Sibiu", jalan dari Arad ke Sibiu harus benar-benar ada.</p>
+                    </div>
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-hand-pointer"></i></div>
+                        <h4>Abstraksi yang berguna</h4>
+                        <p>Setiap aksi abstrak mudah dikerjakan tanpa pencarian lagi. "Berkendara dari Mataram ke Praya" dapat langsung dilakukan oleh pengemudi biasa.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                        <h4>Terlalu rinci</h4>
+                        <p>Aksi seperti "geser kaki kanan 1 cm" atau "putar setir 1° ke kiri" membuat ruang keadaan meledak. Agen tidak akan pernah keluar dari tempat parkir.</p>
+                    </div>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Formulasi 8-puzzle pun penuh abstraksi. Posisi ubin saat sedang bergeser diabaikan, begitu pula aksi menggoyang papan ketika ubin macet atau mencongkel ubin keluar dengan pisau. Yang tersisa hanya aturan permainannya.</p>
+
+                <h3>Langkah Mendefinisikan Penyelesaian Masalah</h3>
+                <p>Untuk menyelesaikan sebuah masalah dengan pencarian, kita perlu:</p>
+                <ol>
+                    <li>mendefinisikan <strong>ruang keadaan</strong>, yaitu representasi keadaan yang mencakup semua situasi yang mungkin;</li>
+                    <li>menetapkan satu atau lebih <strong>keadaan awal</strong>;</li>
+                    <li>menetapkan satu atau lebih <strong>keadaan tujuan</strong>;</li>
+                    <li>menetapkan himpunan <strong>aksi (aturan)</strong> beserta syarat berlakunya.</li>
+                </ol>
+                <p>Bagian 2 menyusun keempat hal ini menjadi lima komponen formal, dan Bagian 3 menerapkannya pada beberapa masalah lain.</p>
             </section>
 
             <!-- ============================================================ -->
@@ -313,99 +535,8 @@
                 </table>
 
                 <h3>Peta Romania (Graf Pencarian)</h3>
-                <div class="tree-svg-wrap">
-                    <svg width="700" height="380" viewBox="0 0 700 380">
-                        <!-- edges -->
-                        <line x1="80" y1="80"  x2="160" y2="60"  class="edge"/>
-                        <line x1="80" y1="80"  x2="100" y2="200" class="edge"/>
-                        <line x1="80" y1="80"  x2="220" y2="170" class="edge"/>
-                        <line x1="160" y1="60" x2="240" y2="60"  class="edge"/>
-                        <line x1="240" y1="60" x2="310" y2="120" class="edge"/>
-                        <line x1="100" y1="200" x2="220" y2="170" class="edge"/>
-                        <line x1="100" y1="200" x2="130" y2="310" class="edge"/>
-                        <line x1="220" y1="170" x2="310" y2="120" class="edge"/>
-                        <line x1="220" y1="170" x2="300" y2="250" class="edge"/>
-                        <line x1="310" y1="120" x2="420" y2="100" class="edge"/>
-                        <line x1="310" y1="120" x2="300" y2="250" class="edge"/>
-                        <line x1="420" y1="100" x2="520" y2="80"  class="edge"/>
-                        <line x1="420" y1="100" x2="490" y2="210" class="edge"/>
-                        <line x1="520" y1="80"  x2="620" y2="140" class="edge"/>
-                        <line x1="490" y1="210" x2="620" y2="140" class="edge"/>
-                        <line x1="490" y1="210" x2="490" y2="320" class="edge"/>
-                        <line x1="300" y1="250" x2="400" y2="300" class="edge"/>
-                        <line x1="400" y1="300" x2="490" y2="320" class="edge"/>
-                        <line x1="130" y1="310" x2="300" y2="250" class="edge"/>
-
-                        <!-- edge costs -->
-                        <text x="108" y="64"  class="edge-cost">75</text>
-                        <text x="72"  y="148" class="edge-cost">118</text>
-                        <text x="140" y="140" class="edge-cost">140</text>
-                        <text x="195" y="55"  class="edge-cost">71</text>
-                        <text x="272" y="83"  class="edge-cost">151</text>
-                        <text x="148" y="195" class="edge-cost">80</text>
-                        <text x="255" y="225" class="edge-cost">99</text>
-                        <text x="260" y="135" class="edge-cost">146</text>
-                        <text x="360" y="100" class="edge-cost">111</text>
-                        <text x="452" y="82"  class="edge-cost">99</text>
-                        <text x="535" y="100" class="edge-cost">211</text>
-                        <text x="448" y="165" class="edge-cost">101</text>
-                        <text x="560" y="190" class="edge-cost">90</text>
-                        <text x="470" y="270" class="edge-cost">86</text>
-                        <text x="340" y="290" class="edge-cost">97</text>
-                        <text x="432" y="325" class="edge-cost">138</text>
-
-                        <!-- nodes -->
-                        <circle cx="80"  cy="80"  r="22" class="node-current"/>
-                        <text x="80"  y="85"  class="node-text" text-anchor="middle">Arad</text>
-
-                        <circle cx="160" cy="60"  r="22" class="node-default"/>
-                        <text x="160" y="65"  class="node-text" text-anchor="middle">Zerind</text>
-
-                        <circle cx="240" cy="60"  r="22" class="node-default"/>
-                        <text x="240" y="65"  class="node-text" text-anchor="middle" font-size="11">Oradea</text>
-
-                        <circle cx="100" cy="200" r="22" class="node-default"/>
-                        <text x="100" y="205" class="node-text" text-anchor="middle" font-size="11">Timisoara</text>
-
-                        <circle cx="220" cy="170" r="22" class="node-default"/>
-                        <text x="220" y="175" class="node-text" text-anchor="middle" font-size="11">Lugoj</text>
-
-                        <circle cx="310" cy="120" r="22" class="node-default"/>
-                        <text x="310" y="125" class="node-text" text-anchor="middle" font-size="11">Sibiu</text>
-
-                        <circle cx="420" cy="100" r="22" class="node-default"/>
-                        <text x="420" y="105" class="node-text" text-anchor="middle" font-size="10">Fagaras</text>
-
-                        <circle cx="520" cy="80"  r="22" class="node-default"/>
-                        <text x="520" y="85"  class="node-text" text-anchor="middle" font-size="10">Pitesti</text>
-
-                        <circle cx="620" cy="140" r="26" class="node-goal"/>
-                        <text x="620" y="145" class="node-text" text-anchor="middle" font-size="11">Bucharest</text>
-
-                        <circle cx="490" cy="210" r="22" class="node-default"/>
-                        <text x="490" y="215" class="node-text" text-anchor="middle" font-size="10">Giurgiu</text>
-
-                        <circle cx="300" cy="250" r="22" class="node-default"/>
-                        <text x="300" y="255" class="node-text" text-anchor="middle" font-size="10">Mehadia</text>
-
-                        <circle cx="130" cy="310" r="22" class="node-default"/>
-                        <text x="130" y="315" class="node-text" text-anchor="middle" font-size="10">Drobeta</text>
-
-                        <circle cx="400" cy="300" r="22" class="node-default"/>
-                        <text x="400" y="305" class="node-text" text-anchor="middle" font-size="10">Craiova</text>
-
-                        <circle cx="490" cy="320" r="22" class="node-default"/>
-                        <text x="490" y="325" class="node-text" text-anchor="middle" font-size="10">Urziceni</text>
-
-                        <!-- legend -->
-                        <circle cx="20"  cy="355" r="8" class="node-current"/>
-                        <text x="33" y="360" font-size="11" fill="#555">Awal</text>
-                        <circle cx="80"  cy="355" r="8" class="node-goal"/>
-                        <text x="93" y="360" font-size="11" fill="#555">Tujuan</text>
-                        <circle cx="145" cy="355" r="8" class="node-default"/>
-                        <text x="158" y="360" font-size="11" fill="#555">Kota lain</text>
-                    </svg>
-                </div>
+                <p>Peta berikut memuat 20 kota dan 23 ruas jalan persis seperti pada buku Russell &amp; Norvig. Angka pada setiap ruas adalah jarak dalam km, yaitu <em>biaya langkah</em> dalam formulasi di atas. Peta yang sama dipakai oleh semua simulasi interaktif di materi ini.</p>
+                <div data-viz="romania-map"></div>
 
                 <h3>Implementasi Antarmuka Masalah (Python)</h3>
                 <pre><code><span class="kw">class</span> <span class="cl">Problem</span>:
@@ -462,56 +593,470 @@
             path.append(node.action)
             node = node.parent
         <span class="kw">return</span> path[::-<span class="nm">1</span>]</code></pre>
+                <div class="viz-link">
+                    <i class="fa-solid fa-laptop-code"></i>
+                    <div><p><strong>Jalankan langsung di browser:</strong> pustaka <a href="https://github.com/aimacode/aima-python" target="_blank" rel="noopener">aima-python</a> memakai kerangka <code>Problem</code> dan <code>Node</code> yang sama dengan kode di atas. Notebook <a href="https://aimacode.github.io/aima-python/lite/lab/index.html?path=search.ipynb" target="_blank" rel="noopener">search.ipynb di JupyterLite</a> menjalankan BFS dan A* pada peta Romania tanpa perlu memasang Python.</p></div>
+                </div>
 
-                <h3>Contoh Formulasi Lain</h3>
-                <p>Selain 8-puzzle dan peta Romania, banyak teka-teki klasik yang cocok dimodelkan sebagai ruang keadaan.</p>
-
-                <h4>a. Masalah Ember Air (Water Jug Problem)</h4>
-                <p>Ada ember <strong>4 liter</strong> (A) dan ember <strong>3 liter</strong> (B), serta sumber air tak terbatas. Isi <em>tepat 2 liter</em> di ember A.</p>
-                <table>
-                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
-                    <tbody>
-                        <tr><td><strong>Keadaan</strong></td><td>Pasangan <code>(x, y)</code> — x isi ember A (0–4), y isi ember B (0–3)</td></tr>
-                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0)</code></td></tr>
-                        <tr><td><strong>Uji tujuan</strong></td><td><code>x == 2</code> (y bebas)</td></tr>
-                        <tr><td><strong>Aksi</strong></td><td>Isi penuh A / B; kosongkan A / B; tuang A→B atau B→A sampai penuh atau habis</td></tr>
-                        <tr><td><strong>Biaya lintasan</strong></td><td>Jumlah aksi (tiap aksi berbiaya 1)</td></tr>
-                    </tbody>
-                </table>
-                <p style="font-size:0.9em; color:#555;">Salah satu solusi: <code>(0,0) → (0,3) → (3,0) → (3,3) → (4,2) → (0,2) → (2,0)</code>.</p>
-
-                <h4>b. Petani, Serigala, Kambing, dan Sayuran (River Crossing)</h4>
-                <p>Seorang petani harus menyeberangkan serigala, kambing, dan sayuran dengan perahu yang hanya memuat petani + satu penumpang. Kambing tidak boleh ditinggal berdua dengan serigala (dimakan) atau dengan sayuran (dimakan).</p>
-                <table>
-                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
-                    <tbody>
-                        <tr><td><strong>Keadaan</strong></td><td><code>(kambing, serigala, sayuran, perahu)</code> — tiap unsur 0 = sisi asal, 1 = sisi seberang</td></tr>
-                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0, 0, 0)</code></td></tr>
-                        <tr><td><strong>Keadaan tujuan</strong></td><td><code>(1, 1, 1, 1)</code></td></tr>
-                        <tr><td><strong>Aksi</strong></td><td>Perahu menyeberang membawa 0 atau 1 penumpang — <em>hanya jika keadaan hasil aman</em></td></tr>
-                        <tr><td><strong>Batasan</strong></td><td>Kambing tidak sendirian dengan serigala / sayuran tanpa petani</td></tr>
-                    </tbody>
-                </table>
-
-                <h4>c. Kompleksitas Ruang Keadaan</h4>
-                <table>
-                    <thead><tr><th>Masalah</th><th><em>Branching factor</em> (b)</th><th>Ukuran ruang keadaan</th></tr></thead>
-                    <tbody>
-                        <tr><td>Ember air</td><td>± 6</td><td>5 × 4 = 20 keadaan</td></tr>
-                        <tr><td>8-Puzzle</td><td>± 3</td><td>9! / 2 = 181.440</td></tr>
-                        <tr><td>15-Puzzle</td><td>± 3</td><td>± 10<sup>13</sup></td></tr>
-                        <tr><td>Rubik's Cube 3×3</td><td>27 aturan putaran</td><td>± 4,3 × 10<sup>19</sup></td></tr>
-                        <tr><td>Catur (per langkah)</td><td>± 35</td><td>± 10<sup>40</sup> posisi legal</td></tr>
-                    </tbody>
-                </table>
-                <p style="font-size:0.9em; color:#555;">Untuk catur, ruang keadaan didefinisikan lewat posisi awal + aturan langkah legal (mis. kaidah "JIKA bidak putih di (e,2) DAN (e,3) kosong DAN (e,4) kosong MAKA gerakkan bidak (e,2)→(e,4)"), dengan tujuan berupa posisi <em>skakmat</em>.</p>
             </section>
 
             <!-- ============================================================ -->
-            <!-- 3. Pohon vs Graf -->
+            <!-- 3. Contoh Ruang Keadaan -->
+            <!-- ============================================================ -->
+            <section id="contoh-ruang-keadaan">
+                <h2>3. Contoh-contoh Ruang Keadaan <span class="badge badge-new">Latihan Konsep</span></h2>
+
+                <p>Cara tercepat memahami ruang keadaan adalah merumuskan banyak contoh. Russell &amp; Norvig membedakan dua jenis masalah. <strong>Masalah standar</strong> (<em>standardized problem</em>) dirumuskan secara ringkas dan pasti, sehingga cocok untuk belajar dan untuk membandingkan algoritma. <strong>Masalah dunia nyata</strong> (<em>real-world problem</em>) adalah masalah yang solusinya benar-benar dipakai orang, dan formulasinya berbeda dari satu kasus ke kasus lain.</p>
+                <p>Bagian ini dimulai dari tiga masalah standar yang ruang keadaannya cukup kecil untuk <em>digambar seluruhnya</em>. Pada setiap masalah, perhatikan tiga hal: bagaimana keadaan direpresentasikan, aksi apa yang berlaku beserta syaratnya, dan berapa banyak keadaan yang benar-benar dapat dijangkau.</p>
+
+                <h3>a. Dunia Penyedot Debu: Ruang Keadaan Terkecil</h3>
+                <p>Robot penyedot debu dari Materi 1 kini dipandang sebagai masalah pencarian. Ada dua petak, A dan B. Robot berada di salah satunya, dan tiap petak bisa kotor atau bersih.</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td>Tripel <code>(lokasi, A, B)</code>: lokasi robot (A atau B) serta status petak A dan petak B (1 = kotor, 0 = bersih). Ada 2 × 2 × 2 = <strong>8</strong> keadaan. Secara umum, dunia dengan <em>n</em> petak memiliki <em>n</em> · 2<sup><em>n</em></sup> keadaan.</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td>Keadaan mana pun boleh dipilih, misalnya <code>(A,1,1)</code></td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Kiri, Kanan, Hisap</td></tr>
+                        <tr><td><strong>Model transisi</strong></td><td>Hisap membersihkan petak tempat robot berada; Kiri dan Kanan memindahkan robot. Bergerak ke arah dinding (Kiri saat sudah di A) tidak mengubah apa pun.</td></tr>
+                        <tr><td><strong>Uji tujuan</strong></td><td>Semua petak bersih: <code>(A,0,0)</code> atau <code>(B,0,0)</code>. Jadi ada <strong>dua</strong> keadaan tujuan.</td></tr>
+                        <tr><td><strong>Biaya aksi</strong></td><td>1 per aksi</td></tr>
+                    </tbody>
+                </table>
+                <p>Karena hanya ada 8 keadaan, seluruh ruang keadaannya dapat digambar sebagai graf, mengikuti Gambar 3.2 AIMA. Klik keadaan tetangga atau tombol aksi untuk berjalan di graf. Setelah itu, ganti keadaan awal menjadi <code>(A,0,0)</code> dan perhatikan berapa keadaan yang masih dapat dijangkau.</p>
+                <div data-viz="state-space" data-problem="vacuum"></div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-magnifying-glass"></i> Yang perlu diperhatikan dari graf ini</strong>
+                    <ul style="margin-top:8px;">
+                        <li><strong>Panah melingkar</strong> adalah aksi yang tidak mengubah keadaan, misalnya Hisap di petak yang sudah bersih. Aksi seperti ini sah, tetapi hanya membuang biaya.</li>
+                        <li>Pasangan Kiri/Kanan membentuk <strong>siklus</strong> (A → B → A → …). Algoritma yang tidak mencatat keadaan yang sudah dikunjungi bisa berputar-putar di sini (lihat Bagian 4).</li>
+                        <li>Tidak ada aksi yang membuat petak kotor lagi, sehingga dari <code>(A,0,0)</code> hanya dua keadaan yang dapat dijangkau. Ruang keadaan bergantung pada keadaan awal <em>dan</em> pada aksi yang tersedia.</li>
+                    </ul>
+                </div>
+
+                <h3>b. Masalah Ember Air (Water Jug Problem)</h3>
+                <p>Ada ember <strong>4 liter</strong> (A) dan ember <strong>3 liter</strong> (B), keduanya tanpa garis takar, serta sumber air yang tidak terbatas. Bagaimana cara mendapatkan <em>tepat 2 liter</em> air di ember A?</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td>Pasangan <code>(x, y)</code>: x = isi ember A (0–4 liter), y = isi ember B (0–3 liter). Ada 5 × 4 = 20 kombinasi.</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0)</code>, kedua ember kosong</td></tr>
+                        <tr><td><strong>Uji tujuan</strong></td><td><code>x == 2</code>, berapa pun isi B: <code>(2,0)</code>, <code>(2,1)</code>, <code>(2,2)</code>, atau <code>(2,3)</code></td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Isi penuh A atau B; kosongkan A atau B; tuang A→B atau B→A sampai ember tujuan penuh atau ember asal habis</td></tr>
+                        <tr><td><strong>Biaya lintasan</strong></td><td>Jumlah aksi (tiap aksi berbiaya 1)</td></tr>
+                    </tbody>
+                </table>
+
+                <h4>Aksi sebagai Kaidah Produksi</h4>
+                <p>Dalam buku klasik Rich &amp; Knight, aksi masalah ini ditulis sebagai <strong>kaidah produksi</strong> berbentuk <em>JIKA syarat MAKA keadaan baru</em>. Kolom "Jika" menentukan kapan sebuah aksi <em>berlaku</em>, sehingga menjadi isi fungsi <code>ACTIONS(s)</code>. Kolom "Maka" menjadi isi <code>RESULT(s, a)</code>. Daftar asli Rich &amp; Knight berisi 12 kaidah, tetapi hanya delapan yang benar-benar dibutuhkan (penjelasannya di bawah tabel).</p>
+                <div style="overflow-x:auto;">
+                <table class="trace-table">
+                    <thead><tr><th>No</th><th>Jika keadaan (x, y) dan …</th><th>Maka keadaan baru</th><th>Keterangan</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>x &lt; 4</td><td>(4, y)</td><td>Isi penuh ember A</td></tr>
+                        <tr><td>2</td><td>y &lt; 3</td><td>(x, 3)</td><td>Isi penuh ember B</td></tr>
+                        <tr><td>3</td><td>x &gt; 0</td><td>(0, y)</td><td>Kosongkan ember A</td></tr>
+                        <tr><td>4</td><td>y &gt; 0</td><td>(x, 0)</td><td>Kosongkan ember B</td></tr>
+                        <tr><td>5</td><td>x &lt; 4, y &gt; 0, x + y &gt; 4</td><td>(4, x + y − 4)</td><td>Tuang B ke A sampai A penuh; B masih bersisa</td></tr>
+                        <tr><td>6</td><td>x &gt; 0, y &lt; 3, x + y &gt; 3</td><td>(x + y − 3, 3)</td><td>Tuang A ke B sampai B penuh; A masih bersisa</td></tr>
+                        <tr><td>7</td><td>y &gt; 0, x + y ≤ 4</td><td>(x + y, 0)</td><td>Tuang seluruh isi B ke A</td></tr>
+                        <tr><td>8</td><td>x &gt; 0, x + y ≤ 3</td><td>(0, x + y)</td><td>Tuang seluruh isi A ke B</td></tr>
+                    </tbody>
+                </table>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-circle-question"></i> Mengapa hanya delapan kaidah?</strong>
+                    <p style="margin-top:6px;">Ember tidak bertakar, jadi sebuah aksi hanya bisa dilakukan jika berhenti pada kondisi yang terlihat: <strong>ember penuh</strong> atau <strong>ember kosong</strong>. Karena itu, empat kaidah dari daftar asli dibuang:</p>
+                    <ul style="margin-top:6px;">
+                        <li>Dua kaidah "buang sebagian air sebanyak <em>d</em> liter", karena <em>d</em> tidak dapat diukur.</li>
+                        <li>Dua kaidah khusus, (0, 2) → (2, 0) dan (2, y) → (0, y), karena hasilnya selalu sama dengan kaidah 7 dan kaidah 3, sehingga tidak menambah transisi baru.</li>
+                    </ul>
+                    <p style="margin-top:6px;">Syarat kaidah menuang juga dipertajam. Syarat x &lt; 4 pada kaidah 5 dan y &lt; 3 pada kaidah 6 mencegah aksi "menuang ke ember yang sudah penuh", yang tidak mengubah keadaan. Tanda &gt; dan ≤ memisahkan kaidah 5 dari 7 serta kaidah 6 dari 8, sehingga saat x + y tepat 4 (atau 3) hanya satu kaidah yang berlaku. Hasilnya, setiap kaidah yang berlaku selalu menghasilkan keadaan baru yang berbeda.</p>
+                    <p style="margin-top:6px;">Isi ember tetap diketahui tanpa takaran karena setiap aksi berakhir di penuh atau kosong. Misalnya dari (3,3), tuang B ke A sampai A penuh: A menjadi 4 liter, jadi sisa di B pasti 2 liter. Kedelapan kaidah ini sama dengan enam aksi di simulasi: Isi A (1), Isi B (2), Kosongkan A (3), Kosongkan B (4), Tuang B→A (5 atau 7), dan Tuang A→B (6 atau 8), seperti kelas <code>PourProblem</code> di aima-python.</p>
+                </div>
+
+                <h4>Membentangkan Ruang Keadaan dari (0,0)</h4>
+                <p>Ruang keadaan tidak diberikan dalam bentuk gambar; kita harus <em>membangkitkannya</em> sendiri, mulai dari keadaan awal, dengan menerapkan kaidah. Hasilnya berupa pohon. Supaya tidak bingung memilih aksi dan menentukan level, ikuti tiga aturan berikut.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Aksi tidak "dipilih": semua kaidah diperiksa</strong><p>Untuk simpul yang sedang dibentangkan, periksa kaidah 1 sampai 8 secara berurutan. Setiap kaidah yang syaratnya terpenuhi menghasilkan <em>satu anak</em>; kaidah yang syaratnya tidak terpenuhi dilewati. Urutan anak dari kiri ke kanan mengikuti nomor kaidah.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Level anak = level induk + 1</strong><p>Level tidak ditentukan sendiri. Akar (0,0) ada di level 0, anak-anaknya di level 1, cucunya di level 2, dan seterusnya. Level sebuah simpul sama dengan banyaknya aksi dari (0,0) sampai simpul itu.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Habiskan satu level dulu, baru turun</strong><p>Bentangkan semua simpul di satu level dari kiri ke kanan. Setelah level itu selesai, barulah pindah ke simpul-simpul di level berikutnya. Keadaan yang <em>sudah pernah muncul</em> tetap ditulis (merah), tetapi <em>tidak</em> dibentangkan lagi, karena cabangnya pasti sama dengan kemunculan sebelumnya. Tanpa aturan ini, pohon berulang tanpa akhir: (0,0) → (4,0) → (0,0) → (4,0) → …</p></div>
+                    </div>
+                </div>
+
+                <h5 style="margin-top:14px;">Pemeriksaan kaidah, simpul demi simpul</h5>
+                <div style="overflow-x:auto;">
+                <table class="trace-table">
+                    <thead><tr><th>Langkah</th><th>Simpul yang dibentangkan</th><th>Pemeriksaan kaidah 1–8</th><th>Anak yang dihasilkan</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>(0,0), level 0</td><td>1 ✓ (x = 0 &lt; 4) → (4,0) · 2 ✓ (y = 0 &lt; 3) → (0,3) · 3–8 ✗ (kedua ember kosong, tidak ada yang bisa dibuang atau dituang)</td><td>(4,0), (0,3) di level 1</td></tr>
+                        <tr><td>2</td><td>(4,0), level 1</td><td>1 ✗ A penuh · 2 ✓ → (4,3) · 3 ✓ → (0,0) · 4 ✗ B kosong · 5 ✗ A penuh · 6 ✓ (x + y = 4 &gt; 3) → (1,3) · 7 ✗ B kosong · 8 ✗ (x + y = 4, tidak ≤ 3)</td><td>(4,3), <span style="color:#c62828;">(0,0)</span>, (1,3) di level 2</td></tr>
+                        <tr><td>3</td><td>(0,3), level 1</td><td>1 ✓ → (4,3) · 2 ✗ B penuh · 3 ✗ A kosong · 4 ✓ → (0,0) · 5 ✗ (x + y = 3, tidak &gt; 4) · 6 ✗ A kosong · 7 ✓ (x + y = 3 ≤ 4) → (3,0) · 8 ✗ A kosong</td><td><span style="color:#c62828;">(4,3)</span>, <span style="color:#c62828;">(0,0)</span>, (3,0) di level 2</td></tr>
+                        <tr class="tr-current"><td>—</td><td colspan="3">Level 1 selesai. Turun ke level 2: yang dibentangkan hanya keadaan baru, yaitu (4,3), (1,3), dan (3,0). Keadaan merah dilewati.</td></tr>
+                        <tr><td>4</td><td>(4,3), level 2</td><td>3 ✓ → (0,3) · 4 ✓ → (4,0) · kaidah lain ✗</td><td>Keduanya sudah pernah muncul, jadi tidak ada anak baru (buntu)</td></tr>
+                        <tr><td>5</td><td>(1,3), level 2</td><td>1 ✓ → (4,3) · 3 ✓ → (0,3) · 4 ✓ → (1,0) · 7 ✓ (x + y = 4 ≤ 4) → (4,0) · kaidah lain ✗</td><td>(1,0) baru di level 3</td></tr>
+                        <tr><td>6</td><td>(3,0), level 2</td><td>1 ✓ → (4,0) · 2 ✓ → (3,3) · 3 ✓ → (0,0) · 8 ✓ (x + y = 3 ≤ 3) → (0,3) · kaidah lain ✗</td><td>(3,3) baru di level 3</td></tr>
+                    </tbody>
+                </table>
+                </div>
+                <p>Langkah 1–3 digambar sebagai pohon di bawah. Angka dalam lingkaran adalah nomor kaidah yang menghasilkan cabang tersebut.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="780" height="245" viewBox="0 0 780 245" role="img" aria-label="Pohon hasil membentangkan masalah ember air dari (0,0) sampai level 2, dengan nomor kaidah pada setiap cabang">
+                        <line x1="360" y1="46" x2="180" y2="96" class="edge"/>
+                        <line x1="180" y1="124" x2="60" y2="181" class="edge"/>
+                        <line x1="180" y1="124" x2="180" y2="181" class="edge"/>
+                        <line x1="180" y1="124" x2="300" y2="181" class="edge"/>
+                        <line x1="360" y1="46" x2="540" y2="96" class="edge"/>
+                        <line x1="540" y1="124" x2="420" y2="181" class="edge"/>
+                        <line x1="540" y1="124" x2="540" y2="181" class="edge"/>
+                        <line x1="540" y1="124" x2="660" y2="181" class="edge"/>
+                        <g stroke-dasharray="3 3">
+                            <line x1="60" y1="209" x2="44" y2="229" class="edge"/><line x1="60" y1="209" x2="60" y2="229" class="edge"/><line x1="60" y1="209" x2="76" y2="229" class="edge"/>
+                            <line x1="300" y1="209" x2="284" y2="229" class="edge"/><line x1="300" y1="209" x2="300" y2="229" class="edge"/><line x1="300" y1="209" x2="316" y2="229" class="edge"/>
+                            <line x1="660" y1="209" x2="644" y2="229" class="edge"/><line x1="660" y1="209" x2="660" y2="229" class="edge"/><line x1="660" y1="209" x2="676" y2="229" class="edge"/>
+                        </g>
+                        <rect x="333" y="18" width="54" height="28" rx="14" class="node-current"/><text x="360" y="37" class="node-text" text-anchor="middle">(0,0)</text>
+                        <rect x="153" y="96" width="54" height="28" rx="14" class="node-default"/><text x="180" y="115" class="node-text" text-anchor="middle">(4,0)</text>
+                        <rect x="33" y="181" width="54" height="28" rx="14" class="node-default"/><text x="60" y="200" class="node-text" text-anchor="middle">(4,3)</text>
+                        <rect x="153" y="181" width="54" height="28" rx="14" class="node-repeat"/><text x="180" y="200" class="node-text" text-anchor="middle">(0,0)</text>
+                        <rect x="273" y="181" width="54" height="28" rx="14" class="node-default"/><text x="300" y="200" class="node-text" text-anchor="middle">(1,3)</text>
+                        <rect x="513" y="96" width="54" height="28" rx="14" class="node-default"/><text x="540" y="115" class="node-text" text-anchor="middle">(0,3)</text>
+                        <rect x="393" y="181" width="54" height="28" rx="14" class="node-repeat"/><text x="420" y="200" class="node-text" text-anchor="middle">(4,3)</text>
+                        <rect x="513" y="181" width="54" height="28" rx="14" class="node-repeat"/><text x="540" y="200" class="node-text" text-anchor="middle">(0,0)</text>
+                        <rect x="633" y="181" width="54" height="28" rx="14" class="node-default"/><text x="660" y="200" class="node-text" text-anchor="middle">(3,0)</text>
+                        <circle cx="270" cy="71" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="270" y="74" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">1</text>
+                        <circle cx="120" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="120" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">2</text>
+                        <circle cx="180" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="180" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">3</text>
+                        <circle cx="240" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="240" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">6</text>
+                        <circle cx="450" cy="71" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="450" y="74" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">2</text>
+                        <circle cx="480" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="480" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">1</text>
+                        <circle cx="540" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="540" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">4</text>
+                        <circle cx="600" cy="152" r="9" fill="#fff" stroke="#1565c0" stroke-width="1.5"/><text x="600" y="156" font-size="10" font-weight="700" fill="#1565c0" text-anchor="middle">7</text>
+                        <text x="180" y="223" text-anchor="middle" font-size="9.5" fill="#c62828">tidak dibentangkan</text>
+                        <text x="420" y="223" text-anchor="middle" font-size="9.5" fill="#c62828">tidak dibentangkan</text>
+                        <text x="540" y="223" text-anchor="middle" font-size="9.5" fill="#c62828">tidak dibentangkan</text>
+                        <text x="712" y="36" font-size="11" fill="#888">Level 0</text>
+                        <text x="712" y="114" font-size="11" fill="#888">Level 1</text>
+                        <text x="712" y="199" font-size="11" fill="#888">Level 2</text>
+                    </svg>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#e65100;"></div>Keadaan awal (level 0)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Keadaan baru</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#c62828;"></div>Sudah pernah muncul, tidak dibentangkan lagi</div>
+                    <div class="legend-item"><span style="color:#888;">- - -</span>&nbsp;cabang berikutnya (lihat langkah 4–6)</div>
+                </div>
+
+                <h5 style="margin-top:14px;">Hasil lengkap per level</h5>
+                <p>Jika proses ini diteruskan sampai tidak ada lagi keadaan baru, ke-14 keadaan yang dapat dijangkau tersusun per level sebagai berikut:</p>
+                <table class="trace-table">
+                    <thead><tr><th>Level (banyak aksi dari awal)</th><th>Keadaan baru di level ini</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>(0,0)</td></tr>
+                        <tr><td>1</td><td>(4,0), (0,3)</td></tr>
+                        <tr><td>2</td><td>(4,3), (1,3), (3,0)</td></tr>
+                        <tr><td>3</td><td>(1,0), (3,3)</td></tr>
+                        <tr><td>4</td><td>(0,1), (4,2)</td></tr>
+                        <tr><td>5</td><td>(4,1), (0,2)</td></tr>
+                        <tr class="tr-goal"><td>6</td><td>(2,3), (2,0) <i class="fa-solid fa-check" style="color:#2e7d32;"></i> keduanya lolos uji tujuan</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Keadaan tujuan pertama kali muncul di level 6, jadi solusi terpendek membutuhkan 6 aksi. Cara membentangkan level demi level ini persis cara kerja BFS (Bagian 6). Algoritma lain memakai urutan berbeda; DFS (Bagian 7), misalnya, turun sedalam-dalamnya di cabang paling kiri sebelum kembali ke atas.</p>
+
+                <h4>Coba Sendiri: Graf Ruang Keadaan Ember Air <span class="badge badge-new">Interaktif</span></h4>
+                <p>Graf berikut memuat semua 20 kombinasi (x, y). Panah oranye menunjukkan aksi yang tersedia dari keadaan saat ini, dan panel kanan menyebutkan nomor kaidah untuk tiap aksi. Cari solusi sendiri dulu. Jika buntu, tekan <strong>Langkah berikutnya</strong>: simulasi menjalankan <em>satu</em> aksi dari solusi terpendek dan menjelaskan kaidah yang dipakai. Tekan lagi untuk langkah selanjutnya, atau tekan <strong>Langkah sebelumnya</strong> untuk mundur dan membaca ulang penjelasan langkah sebelumnya. Tombol ini bisa ditekan dari keadaan mana pun sebagai petunjuk.</p>
+                <div data-viz="state-space" data-problem="jug"></div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Hanya 14 dari 20 kombinasi yang dapat dijangkau</strong>
+                    <p style="margin-top:6px;">Enam kotak pudar, yaitu (1,1), (1,2), (2,1), (2,2), (3,1), dan (3,2), tidak pernah bisa dicapai. Setiap aksi selalu membuat salah satu ember penuh atau kosong, sehingga keadaan dengan kedua ember "setengah terisi" tidak mungkin terjadi. Keadaan (2,1) dan (2,2) sebenarnya lolos uji tujuan, tetapi tidak termasuk ruang keadaan karena tidak dapat dijangkau dari (0,0).</p>
+                </div>
+
+                <h4>Jejak Solusi dengan Nomor Kaidah</h4>
+                <table class="trace-table">
+                    <thead><tr><th>Langkah</th><th>Keadaan</th><th>Kaidah</th><th>Aksi</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>(0,0)</td><td>—</td><td>Keadaan awal</td></tr>
+                        <tr><td>1</td><td>(0,3)</td><td>2</td><td>Isi penuh ember B</td></tr>
+                        <tr><td>2</td><td>(3,0)</td><td>7</td><td>Tuang seluruh isi B ke A</td></tr>
+                        <tr><td>3</td><td>(3,3)</td><td>2</td><td>Isi penuh ember B</td></tr>
+                        <tr><td>4</td><td>(4,2)</td><td>5</td><td>Tuang B ke A sampai A penuh (1 liter berpindah)</td></tr>
+                        <tr><td>5</td><td>(0,2)</td><td>3</td><td>Kosongkan ember A</td></tr>
+                        <tr class="tr-goal"><td>6</td><td><strong>(2,0)</strong></td><td>7</td><td>Tuang seluruh isi B ke A. <i class="fa-solid fa-check" style="color:#2e7d32;"></i> Tujuan tercapai</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Ada solusi lain yang sama pendeknya, juga 6 langkah: <code>(0,0) → (4,0) → (1,3) → (1,0) → (0,1) → (4,1) → (2,3)</code>. Solusi inilah yang ditemukan BFS di simulasi karena BFS mencoba "Isi A" lebih dulu. Tidak ada solusi yang lebih pendek dari 6 langkah.</p>
+
+                <h4>Implementasi Python</h4>
+                <p>Formulasi di atas dapat langsung diterjemahkan menjadi turunan kelas <code>Problem</code> dari Bagian 2. Fungsi <code>ruang_keadaan</code> membangkitkan semua keadaan yang dapat dijangkau, persis sesuai definisi ruang keadaan. Fungsi <code>cari_solusi</code> mencari solusi terpendek, lalu program mencetaknya langkah demi langkah. Kode di bawah sudah lengkap, termasuk versi ringkas kelas <code>Problem</code>, sehingga bisa langsung dijalankan.</p>
+                <h5 style="margin-top:14px;">Cara menjalankan</h5>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Pastikan Python 3 terpasang</strong><p>Buka terminal (Command Prompt atau PowerShell di Windows, Terminal di macOS/Linux), lalu ketik <code>python --version</code> (Windows) atau <code>python3 --version</code> (macOS/Linux). Jika perintahnya tidak dikenal, unduh Python dari <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org</a>. Di Windows, centang <em>Add python.exe to PATH</em> saat instalasi.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Buat file <code>ember_air.py</code></strong><p>Buat folder kerja, misalnya <code>kecerdasan-buatan</code>. Buka folder itu di teks editor (VS Code, Notepad++, atau Notepad), lalu buat file baru bernama <code>ember_air.py</code>. Pastikan ekstensinya <code>.py</code>, bukan <code>.py.txt</code>.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Salin dan tempel kode</strong><p>Tekan tombol <strong>Salin kode</strong> di pojok kanan atas blok kode di bawah, tempel ke <code>ember_air.py</code> (Ctrl+V, atau Cmd+V di macOS), lalu simpan (Ctrl+S).</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content"><strong>Jalankan</strong><p>Di terminal, masuk ke folder kerja dengan <code>cd kecerdasan-buatan</code>, lalu ketik <code>python ember_air.py</code> (Windows) atau <code>python3 ember_air.py</code> (macOS/Linux). Di VS Code yang sudah memasang ekstensi Python, cukup tekan tombol <em>Run Python File</em> (ikon ▶) di kanan atas.</p></div>
+                    </div>
+                </div>
+                <pre data-copy="ember_air.py"><code><span class="kw">class</span> <span class="cl">Problem</span>:
+    <span class="st">"""Kerangka masalah pencarian (versi ringkas dari Bagian 2)."""</span>
+
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, initial, goal=<span class="kw">None</span>):
+        self.initial = initial
+        self.goal = goal
+
+
+<span class="kw">class</span> <span class="cl">EmberAir</span>(<span class="cl">Problem</span>):
+    <span class="st">"""Ember A 4 liter, ember B 3 liter. Keadaan = (x, y)."""</span>
+
+    <span class="kw">def</span> <span class="fn">actions</span>(self, s):
+        x, y = s
+        aksi = []
+        <span class="kw">if</span> x &lt; <span class="nm">4</span>: aksi.append(<span class="st">'Isi A'</span>)                 <span class="cm"># kaidah 1</span>
+        <span class="kw">if</span> y &lt; <span class="nm">3</span>: aksi.append(<span class="st">'Isi B'</span>)                 <span class="cm"># kaidah 2</span>
+        <span class="kw">if</span> x &gt; <span class="nm">0</span>: aksi.append(<span class="st">'Kosongkan A'</span>)           <span class="cm"># kaidah 3</span>
+        <span class="kw">if</span> y &gt; <span class="nm">0</span>: aksi.append(<span class="st">'Kosongkan B'</span>)           <span class="cm"># kaidah 4</span>
+        <span class="kw">if</span> x &gt; <span class="nm">0</span> <span class="kw">and</span> y &lt; <span class="nm">3</span>: aksi.append(<span class="st">'Tuang A→B'</span>)   <span class="cm"># kaidah 6 / 8</span>
+        <span class="kw">if</span> y &gt; <span class="nm">0</span> <span class="kw">and</span> x &lt; <span class="nm">4</span>: aksi.append(<span class="st">'Tuang B→A'</span>)   <span class="cm"># kaidah 5 / 7</span>
+        <span class="kw">return</span> aksi
+
+    <span class="kw">def</span> <span class="fn">result</span>(self, s, a):
+        x, y = s
+        <span class="kw">if</span> a == <span class="st">'Isi A'</span>:       <span class="kw">return</span> (<span class="nm">4</span>, y)
+        <span class="kw">if</span> a == <span class="st">'Isi B'</span>:       <span class="kw">return</span> (x, <span class="nm">3</span>)
+        <span class="kw">if</span> a == <span class="st">'Kosongkan A'</span>: <span class="kw">return</span> (<span class="nm">0</span>, y)
+        <span class="kw">if</span> a == <span class="st">'Kosongkan B'</span>: <span class="kw">return</span> (x, <span class="nm">0</span>)
+        <span class="kw">if</span> a == <span class="st">'Tuang A→B'</span>:
+            d = <span class="fn">min</span>(x, <span class="nm">3</span> - y)          <span class="cm"># tuang sebanyak mungkin tanpa tumpah</span>
+            <span class="kw">return</span> (x - d, y + d)
+        <span class="kw">if</span> a == <span class="st">'Tuang B→A'</span>:
+            d = <span class="fn">min</span>(y, <span class="nm">4</span> - x)
+            <span class="kw">return</span> (x + d, y - d)
+
+    <span class="kw">def</span> <span class="fn">is_goal</span>(self, s):
+        <span class="kw">return</span> s[<span class="nm">0</span>] == <span class="nm">2</span>
+
+
+<span class="kw">def</span> <span class="fn">ruang_keadaan</span>(problem):
+    <span class="st">"""Bangkitkan semua keadaan yang dapat dijangkau dari keadaan awal."""</span>
+    terjangkau = {problem.initial}
+    antrian = [problem.initial]
+    <span class="kw">while</span> antrian:
+        s = antrian.pop(<span class="nm">0</span>)
+        <span class="kw">for</span> a <span class="kw">in</span> problem.actions(s):
+            t = problem.result(s, a)
+            <span class="kw">if</span> t <span class="kw">not in</span> terjangkau:
+                terjangkau.add(t)
+                antrian.append(t)
+    <span class="kw">return</span> terjangkau
+
+
+<span class="kw">def</span> <span class="fn">cari_solusi</span>(problem):
+    <span class="st">"""BFS: kembalikan daftar (aksi, keadaan) dari keadaan awal sampai tujuan."""</span>
+    induk = {problem.initial: <span class="kw">None</span>}      <span class="cm"># keadaan -&gt; (keadaan sebelumnya, aksi)</span>
+    antrian = [problem.initial]
+    <span class="kw">while</span> antrian:
+        s = antrian.pop(<span class="nm">0</span>)
+        <span class="kw">if</span> problem.is_goal(s):
+            langkah = []
+            <span class="kw">while</span> induk[s] <span class="kw">is not</span> <span class="kw">None</span>:    <span class="cm"># telusuri balik sampai keadaan awal</span>
+                sebelum, a = induk[s]
+                langkah.append((a, s))
+                s = sebelum
+            <span class="kw">return</span> langkah[::-<span class="nm">1</span>]            <span class="cm"># balik urutannya: awal -&gt; tujuan</span>
+        <span class="kw">for</span> a <span class="kw">in</span> problem.actions(s):
+            t = problem.result(s, a)
+            <span class="kw">if</span> t <span class="kw">not in</span> induk:
+                induk[t] = (s, a)
+                antrian.append(t)
+    <span class="kw">return</span> <span class="kw">None</span>
+
+
+masalah = <span class="cl">EmberAir</span>(initial=(<span class="nm">0</span>, <span class="nm">0</span>))
+ruang = ruang_keadaan(masalah)
+<span class="fn">print</span>(<span class="st">'Keadaan terjangkau :'</span>, <span class="fn">len</span>(ruang))                                    <span class="cm"># 14, bukan 20</span>
+<span class="fn">print</span>(<span class="st">'Keadaan tujuan     :'</span>, <span class="fn">sorted</span>(s <span class="kw">for</span> s <span class="kw">in</span> ruang <span class="kw">if</span> masalah.is_goal(s)))
+
+solusi = cari_solusi(masalah)
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">'Keadaan awal:'</span>, masalah.initial)
+<span class="kw">for</span> i, (a, s) <span class="kw">in</span> <span class="fn">enumerate</span>(solusi, start=<span class="nm">1</span>):
+    <span class="fn">print</span>(<span class="st">f'Langkah {i}: {a:&lt;12} → {s}'</span>)
+<span class="fn">print</span>(<span class="st">'Tujuan tercapai dalam'</span>, <span class="fn">len</span>(solusi), <span class="st">'langkah.'</span>)</code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>Keadaan terjangkau : 14
+Keadaan tujuan     : [(2, 0), (2, 3)]
+
+Keadaan awal: (0, 0)
+Langkah 1: Isi A        → (4, 0)
+Langkah 2: Tuang A→B    → (1, 3)
+Langkah 3: Kosongkan B  → (1, 0)
+Langkah 4: Tuang A→B    → (0, 1)
+Langkah 5: Isi A        → (4, 1)
+Langkah 6: Tuang A→B    → (2, 3)
+Tujuan tercapai dalam 6 langkah.</pre>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-laptop"></i> Tanpa memasang Python</strong>
+                    <p style="margin-top:6px;">Buka <a href="https://colab.research.google.com" target="_blank" rel="noopener">Google Colab</a> (perlu akun Google) atau <a href="https://aimacode.github.io/aima-python/lite/lab/index.html" target="_blank" rel="noopener">JupyterLite aima-python</a> (tanpa akun, berjalan di browser). Buat notebook baru, tempel kode ke sebuah sel, lalu tekan Shift+Enter.</p>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Jika muncul error</strong>
+                    <ul style="margin-top:8px;">
+                        <li><code>'python' is not recognized</code> atau <code>command not found</code>: Python belum masuk PATH. Di Windows, coba <code>py ember_air.py</code>, atau pasang ulang Python dengan mencentang <em>Add python.exe to PATH</em>.</li>
+                        <li><code>IndentationError</code>: spasi di awal baris berubah saat menempel. Salin ulang memakai tombol <strong>Salin kode</strong>; jangan mengetik ulang atau menyalin dari PDF.</li>
+                        <li><code>No such file or directory</code>: terminal belum berada di folder yang berisi <code>ember_air.py</code>. Periksa isi folder dengan <code>dir</code> (Windows) atau <code>ls</code> (macOS/Linux).</li>
+                    </ul>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Perhatikan bahwa <code>ruang_keadaan</code> dan <code>cari_solusi</code> sama-sama memakai antrian FIFO. Bedanya, <code>cari_solusi</code> melakukan uji tujuan dan mencatat <em>induk</em> setiap keadaan (kamus <code>induk</code>), sehingga lintasan solusi dapat ditelusuri balik dari tujuan ke keadaan awal. Inilah kerangka BFS yang dibahas di Bagian 6. Langkah-langkah yang tercetak sama dengan hasil tombol <strong>Langkah berikutnya</strong> pada simulasi di atas.</p>
+
+                <h3>c. Petani, Serigala, Kambing, dan Sayuran (River Crossing)</h3>
+                <p>Seorang petani harus menyeberangkan serigala, kambing, dan sayuran dengan perahu yang hanya muat untuk petani dan satu penumpang. Jika ditinggal tanpa petani, kambing akan dimakan serigala, dan sayuran akan dimakan kambing.</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td><code>(kambing, serigala, sayuran, perahu)</code>, tiap unsur 0 = tepi asal, 1 = tepi seberang. Petani selalu ikut perahu, jadi posisinya sama dengan posisi perahu. Ada 2<sup>4</sup> = 16 kombinasi.</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td><code>(0, 0, 0, 0)</code></td></tr>
+                        <tr><td><strong>Keadaan tujuan</strong></td><td><code>(1, 1, 1, 1)</code></td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>Petani menyeberang sendiri, atau membawa serigala, kambing, atau sayuran yang berada di tepi yang sama dengannya</td></tr>
+                        <tr><td><strong>Batasan</strong></td><td>Keadaan hasil harus <em>aman</em>: kambing tidak boleh berada di tepi yang sama dengan serigala atau sayuran tanpa petani</td></tr>
+                        <tr><td><strong>Biaya lintasan</strong></td><td>Jumlah penyeberangan</td></tr>
+                    </tbody>
+                </table>
+                <p>Batasan membuang keadaan yang tidak aman dari ruang keadaan. Dari 16 kombinasi, ada 6 yang tidak aman: <code>(1,1,0,0)</code>, <code>(1,0,1,0)</code>, <code>(1,1,1,0)</code>, <code>(0,0,1,1)</code>, <code>(0,1,0,1)</code>, dan <code>(0,0,0,1)</code>. Contohnya, <code>(1,1,0,0)</code> berarti kambing dan serigala sudah di seberang sementara petani kembali ke tepi asal. Sepuluh keadaan sisanya semuanya dapat dijangkau dan membentuk graf di bawah. Di simulasi, aksi yang menghasilkan keadaan tidak aman tetap ditampilkan tetapi dicoret beserta alasannya.</p>
+                <div data-viz="state-space" data-problem="river"></div>
+                <table class="trace-table">
+                    <thead><tr><th>Langkah</th><th>Aksi</th><th>Keadaan (K, S, Y, P)</th><th>Tepi asal ‖ tepi seberang</th></tr></thead>
+                    <tbody>
+                        <tr><td>0</td><td>—</td><td>(0,0,0,0)</td><td>petani, serigala, kambing, sayuran ‖ —</td></tr>
+                        <tr><td>1</td><td>Bawa kambing</td><td>(1,0,0,1)</td><td>serigala, sayuran ‖ petani, kambing</td></tr>
+                        <tr><td>2</td><td>Kembali sendiri</td><td>(1,0,0,0)</td><td>petani, serigala, sayuran ‖ kambing</td></tr>
+                        <tr><td>3</td><td>Bawa serigala</td><td>(1,1,0,1)</td><td>sayuran ‖ petani, serigala, kambing</td></tr>
+                        <tr class="tr-current"><td>4</td><td>Bawa kambing <em>kembali</em></td><td>(0,1,0,0)</td><td>petani, kambing, sayuran ‖ serigala</td></tr>
+                        <tr><td>5</td><td>Bawa sayuran</td><td>(0,1,1,1)</td><td>kambing ‖ petani, serigala, sayuran</td></tr>
+                        <tr><td>6</td><td>Kembali sendiri</td><td>(0,1,1,0)</td><td>petani, kambing ‖ serigala, sayuran</td></tr>
+                        <tr class="tr-goal"><td>7</td><td>Bawa kambing</td><td>(1,1,1,1)</td><td>— ‖ petani, serigala, kambing, sayuran <i class="fa-solid fa-check" style="color:#2e7d32;"></i></td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Langkah 4 adalah kunci teka-teki ini: kambing harus dibawa <em>kembali</em> ke tepi asal. Orang sering buntu karena merasa aksi "mundur" tidak masuk akal, padahal di ruang keadaan aksi itu sah selama keadaan hasilnya aman. Solusi kedua yang sama pendeknya menukar urutan serigala dan sayuran (langkah 3 dan 5).</p>
+
+                <h3>d. Ruang Keadaan Tak Hingga: Masalah Knuth</h3>
+                <p>Ruang keadaan tidak selalu terhingga. Donald Knuth (1964) menduga bahwa dengan memulai dari bilangan 4 dan menerapkan akar kuadrat, pembulatan ke bawah (<em>floor</em>), dan faktorial berulang-ulang, kita dapat mencapai bilangan bulat positif mana pun.</p>
+                <table>
+                    <thead><tr><th>Komponen</th><th>Isian</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Keadaan</strong></td><td>Bilangan real positif</td></tr>
+                        <tr><td><strong>Keadaan awal</strong></td><td>4</td></tr>
+                        <tr><td><strong>Aksi</strong></td><td>√ (akar kuadrat), ⌊ ⌋ (bulatkan ke bawah), ! (faktorial, hanya untuk bilangan bulat)</td></tr>
+                        <tr><td><strong>Keadaan tujuan</strong></td><td>Bilangan bulat yang diinginkan, misalnya 5</td></tr>
+                        <tr><td><strong>Biaya aksi</strong></td><td>1 per operasi</td></tr>
+                    </tbody>
+                </table>
+                <div class="demo-box">
+                    <h5>Lintasan terpendek dari 4 ke 5</h5>
+                    <p style="margin-top:8px; text-align:center; font-family:Consolas, monospace;">4 <i class="fa-solid fa-arrow-right"></i> 4! = 24 <i class="fa-solid fa-arrow-right"></i> 24! = 620.448.401.733.239.439.360.000 <i class="fa-solid fa-arrow-right"></i> √ lima kali ≈ 5,54 <i class="fa-solid fa-arrow-right"></i> ⌊5,54⌋ = <strong>5</strong></p>
+                </div>
+                <p>Ruang keadaannya tak hingga karena faktorial dari bilangan bulat yang lebih besar dari 2 selalu menghasilkan bilangan yang lebih besar lagi. Lintasan terpendek ke 5 bahkan harus melewati bilangan 24 digit. Ruang keadaan tak hingga sering muncul pada masalah yang membangkitkan ekspresi matematika, rangkaian, bukti, atau program. Algoritma yang terus menyelam ke satu cabang tanpa batas (DFS di Bagian 7) bisa tidak pernah berhenti di ruang keadaan seperti ini.</p>
+
+                <h3>e. Masalah Dunia Nyata</h3>
+                <p>Formulasi yang sama dipakai pada masalah yang solusinya benar-benar digunakan. Bedanya, keadaan pada masalah nyata biasanya memuat lebih banyak informasi.</p>
+                <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Masalah</th><th>Keadaan</th><th>Aksi</th><th>Tujuan dan biaya</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Pencarian rute</strong> (peta daring, ojek daring)</td><td>Lokasi saat ini (persimpangan jalan)</td><td>Melewati satu ruas jalan</td><td>Sampai di alamat tujuan; biaya berupa jarak atau waktu tempuh yang dipengaruhi kemacetan</td></tr>
+                        <tr><td><strong>Perencanaan perjalanan udara</strong></td><td>Bandara, waktu saat ini, dan riwayat penerbangan (karena tarif bergantung pada penerbangan sebelumnya)</td><td>Naik penerbangan yang berangkat setelah waktu saat ini dengan cukup waktu transit</td><td>Sampai di kota tujuan; biaya gabungan harga, waktu tunggu, lama terbang, dan kenyamanan</td></tr>
+                        <tr><td><strong>Masalah tur / TSP</strong></td><td>Kota saat ini <em>dan</em> himpunan kota yang sudah dikunjungi</td><td>Pindah ke kota yang belum dikunjungi</td><td>Semua kota sudah dikunjungi dan kembali ke kota asal; biaya jarak total</td></tr>
+                        <tr><td><strong>Tata letak VLSI</strong></td><td>Posisi sel komponen dan jalur kabel di chip</td><td>Menempatkan sel, merutekan kabel</td><td>Tidak ada yang bertumpuk; luas chip dan tunda sinyal minimal</td></tr>
+                        <tr><td><strong>Navigasi robot</strong></td><td>Posisi robot, ditambah sudut setiap sendi jika robot berlengan</td><td>Bergerak atau memutar sendi</td><td>Mencapai lokasi tujuan; ruang kontinu harus didiskretkan dulu</td></tr>
+                        <tr><td><strong>Perakitan otomatis</strong></td><td>Komponen yang sudah terpasang</td><td>Memasang komponen berikutnya</td><td>Produk utuh; urutan yang salah membuat komponen lain tidak bisa dipasang</td></tr>
+                    </tbody>
+                </table>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Perhatikan TSP: keadaannya tidak cukup "kota saat ini" saja. Tanpa himpunan kota yang sudah dikunjungi, uji tujuan tidak bisa menjawab apakah semua kota sudah didatangi. Memilih informasi apa yang masuk ke keadaan adalah inti formulasi masalah.</p>
+
+                <h3>f. Seberapa Besar Ruang Keadaan?</h3>
+                <div style="overflow-x:auto;">
+                <table>
+                    <thead><tr><th>Masalah</th><th>Aksi per keadaan (b)</th><th>Ukuran ruang keadaan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Dunia penyedot debu 2 petak</td><td>3</td><td>8 keadaan</td></tr>
+                        <tr><td>Petani, serigala, kambing, sayuran</td><td>1–3 aksi aman</td><td>10 keadaan aman dari 16 kombinasi</td></tr>
+                        <tr><td>Ember air 4 &amp; 3 liter</td><td>2–4</td><td>14 terjangkau dari 5 × 4 = 20 kombinasi</td></tr>
+                        <tr><td>8-Puzzle</td><td>2–4 (± 3)</td><td>9! / 2 = 181.440</td></tr>
+                        <tr><td>15-Puzzle</td><td>2–4 (± 3)</td><td>16! / 2 ≈ 10<sup>13</sup></td></tr>
+                        <tr><td>24-Puzzle</td><td>2–4 (± 3)</td><td>± 10<sup>25</sup></td></tr>
+                        <tr><td>Sokoban 8 × 8 dengan 12 kotak</td><td>≤ 4</td><td>lebih dari 200 triliun</td></tr>
+                        <tr><td>Rubik's Cube 3×3</td><td>27 aturan putaran</td><td>± 4,3 × 10<sup>19</sup></td></tr>
+                        <tr><td>Catur</td><td>± 35</td><td>± 10<sup>40</sup> posisi legal</td></tr>
+                        <tr><td>Masalah Knuth</td><td>≤ 3</td><td>tak hingga</td></tr>
+                    </tbody>
+                </table>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Untuk catur, ruang keadaan didefinisikan lewat posisi awal dan aturan langkah legal (misalnya kaidah "JIKA bidak putih di (e,2) DAN (e,3) kosong DAN (e,4) kosong MAKA gerakkan bidak (e,2)→(e,4)"), dengan tujuan berupa posisi <em>skakmat</em>. Hanya empat baris teratas tabel yang cukup kecil untuk digambar; sisanya harus dijelajahi secara implisit.</p>
+
+                <h3>Latihan Formulasi</h3>
+                <p>Rumuskan ruang keadaan untuk masalah berikut: tentukan representasi keadaan, keadaan awal, aksi beserta syaratnya, uji tujuan, dan biaya. Buka kunci jawaban setelah mencoba sendiri.</p>
+                <div class="demo-box">
+                    <h5>1. Masalah 8-Ratu (8-Queens)</h5>
+                    <p style="margin-top:6px;">Tempatkan delapan ratu catur di papan 8 × 8 sehingga tidak ada ratu yang saling menyerang, yaitu tidak ada dua ratu yang sebaris, sekolom, atau sediagonal. Rumuskan sebagai masalah pencarian dengan menambahkan ratu satu per satu. Coba buat dua formulasi, lalu bandingkan ukuran ruang keadaannya.</p>
+                    <details class="kunci">
+                        <summary>Kunci jawaban</summary>
+                        <ul>
+                            <li><strong>Formulasi naif.</strong> Keadaan: susunan 0–8 ratu di papan. Awal: papan kosong. Aksi: taruh satu ratu di petak kosong mana pun. Tujuan: 8 ratu di papan dan tidak ada yang saling menyerang. Banyaknya urutan yang harus diperiksa: 64 × 63 × … × 57 ≈ 1,8 × 10<sup>14</sup>.</li>
+                            <li><strong>Formulasi yang lebih baik.</strong> Keadaan: <code>(r₁, …, rₖ)</code>, yaitu baris ratu di kolom 1 sampai k, dengan satu ratu per kolom dan tidak ada yang saling menyerang. Awal: <code>()</code>. Aksi: taruh ratu di kolom k + 1 pada baris yang tidak diserang ratu lain. Tujuan: k = 8. Ruang keadaannya menyusut menjadi hanya <strong>2.057</strong> keadaan.</li>
+                            <li><strong>Biaya:</strong> tidak berperan. Semua solusi berada di kedalaman 8, dan yang dicari adalah susunan akhirnya, bukan lintasannya. Ada 92 susunan yang memenuhi tujuan.</li>
+                            <li><strong>Pelajaran:</strong> masalah yang sama bisa dirumuskan dengan ruang keadaan yang ukurannya berbeda jauh. Memasukkan batasan ke dalam aksi, bukan hanya ke uji tujuan, adalah bagian dari merumuskan masalah dengan baik.</li>
+                        </ul>
+                    </details>
+                </div>
+                <div class="demo-box">
+                    <h5>2. Menara Hanoi dengan 3 Piringan</h5>
+                    <p style="margin-top:6px;">Tiga piringan berbeda ukuran bertumpuk di tiang A. Pindahkan semuanya ke tiang C, satu piringan setiap kali, tanpa pernah menaruh piringan besar di atas piringan kecil.</p>
+                    <details class="kunci">
+                        <summary>Kunci jawaban</summary>
+                        <ul>
+                            <li><strong>Keadaan:</strong> <code>(p₁, p₂, p₃)</code> = tiang tempat piringan kecil, sedang, dan besar. Susunan di setiap tiang otomatis terurut, jadi tiga nilai ini sudah cukup. Ada 3<sup>3</sup> = <strong>27</strong> keadaan, dan semuanya dapat dijangkau.</li>
+                            <li><strong>Awal:</strong> <code>(A, A, A)</code>. <strong>Tujuan:</strong> <code>(C, C, C)</code>.</li>
+                            <li><strong>Aksi:</strong> pindahkan piringan teratas sebuah tiang ke tiang lain yang kosong atau puncaknya lebih besar.</li>
+                            <li><strong>Biaya:</strong> 1 per pemindahan. Solusi terpendek: 2<sup>3</sup> − 1 = <strong>7 langkah</strong>.</li>
+                        </ul>
+                    </details>
+                </div>
+                <div class="demo-box">
+                    <h5>3. Mengubah Uji Tujuan</h5>
+                    <p style="margin-top:6px;">Pada dunia penyedot debu, ubah tujuannya menjadi (a) "petak A bersih" saja, lalu (b) "semua petak bersih <em>dan</em> robot berada di B". Berapa keadaan tujuan pada masing-masing versi, dan berapa panjang solusi terpendek dari <code>(A,1,1)</code>?</p>
+                    <details class="kunci">
+                        <summary>Kunci jawaban</summary>
+                        <ul>
+                            <li><strong>(a)</strong> Empat keadaan tujuan: <code>(A,0,0)</code>, <code>(A,0,1)</code>, <code>(B,0,0)</code>, <code>(B,0,1)</code>. Solusi terpendek 1 aksi: Hisap.</li>
+                            <li><strong>(b)</strong> Hanya satu keadaan tujuan, <code>(B,0,0)</code>. Solusi terpendek 3 aksi: Hisap, Kanan, Hisap.</li>
+                            <li>Ruang keadaan dan aksinya tidak berubah sama sekali. Yang berubah hanya uji tujuan, tetapi solusinya ikut berubah.</li>
+                        </ul>
+                    </details>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. Pohon vs Graf -->
             <!-- ============================================================ -->
             <section id="pohon-vs-graf">
-                <h2>3. Pohon Pencarian vs Graf Pencarian <span class="badge">Konsep</span></h2>
+                <h2>4. Pohon Pencarian vs Graf Pencarian <span class="badge">Konsep</span></h2>
 
                 <table>
                     <thead>
@@ -550,36 +1095,44 @@
                     <strong><i class="fa-solid fa-triangle-exclamation"></i> Siklus adalah musuh utama DFS!</strong>
                     <p style="margin-top:6px;">Pada graf pencarian, DFS dapat masuk ke dalam siklus A→B→A→B→... tanpa batas. Solusinya: gunakan <em>explored set</em> (biasa disebut <em>closed list</em>) untuk mencatat keadaan yang sudah diekspansi.</p>
                 </div>
+                <div class="viz-link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    <div><p><strong>Eksplorasi lanjutan:</strong> <a href="https://jsurrea.github.io/aima-visualizations/chapter-03/" target="_blank" rel="noopener">AIMA Visualizations — Bab 3</a>, bagian <em>Search Algorithms</em>, menggambar graf keadaan dan pohon pencarian berdampingan. Ada tombol untuk beralih antara <em>Graph Search</em> (dengan explored set) dan <em>Tree Search</em> (tanpa explored set) sehingga pengulangan simpul terlihat jelas.</p></div>
+                </div>
 
                 <h3>Membentang Graf Keadaan menjadi Pohon Pelacakan</h3>
                 <p>Sebuah <strong>graf keadaan</strong> menggambarkan seluruh keadaan dan transisinya. Ketika algoritma menelusurinya, ia membentuk <strong>pohon pelacakan</strong> (<em>search tree</em>) — sebuah keadaan yang dapat dicapai lewat beberapa lintasan akan <em>muncul beberapa kali</em> sebagai simpul berbeda.</p>
                 <div class="tree-svg-wrap">
-                    <svg width="620" height="230" viewBox="0 0 620 230">
-                        <!-- graph M A B C D E F G H I J T -->
-                        <line x1="60" y1="115" x2="140" y2="60" class="edge"/>
-                        <line x1="60" y1="115" x2="140" y2="175" class="edge"/>
-                        <line x1="140" y1="60" x2="220" y2="60" class="edge"/>
-                        <line x1="220" y1="60" x2="300" y2="115" class="edge"/>
-                        <line x1="140" y1="175" x2="300" y2="115" class="edge"/>
-                        <line x1="140" y1="175" x2="220" y2="175" class="edge"/>
-                        <line x1="220" y1="175" x2="300" y2="115" class="edge"/>
-                        <line x1="300" y1="115" x2="390" y2="55" class="edge"/>
-                        <line x1="300" y1="115" x2="390" y2="115" class="edge"/>
-                        <line x1="300" y1="115" x2="470" y2="115" class="edge"/>
-                        <line x1="390" y1="55" x2="470" y2="55" class="edge"/>
-                        <line x1="390" y1="115" x2="470" y2="175" class="edge"/>
-                        <line x1="390" y1="115" x2="470" y2="115" class="edge"/>
-                        <circle cx="60"  cy="115" r="18" class="node-current"/><text x="60"  y="120" class="node-text" text-anchor="middle">M</text>
-                        <circle cx="140" cy="60"  r="18" class="node-default"/><text x="140" y="65"  class="node-text" text-anchor="middle">A</text>
-                        <circle cx="220" cy="60"  r="18" class="node-default"/><text x="220" y="65"  class="node-text" text-anchor="middle">B</text>
-                        <circle cx="140" cy="175" r="18" class="node-default"/><text x="140" y="180" class="node-text" text-anchor="middle">D</text>
-                        <circle cx="220" cy="175" r="18" class="node-default"/><text x="220" y="180" class="node-text" text-anchor="middle">I</text>
-                        <circle cx="300" cy="115" r="18" class="node-default"/><text x="300" y="120" class="node-text" text-anchor="middle">C</text>
-                        <circle cx="390" cy="55"  r="18" class="node-default"/><text x="390" y="60"  class="node-text" text-anchor="middle">E</text>
-                        <circle cx="390" cy="115" r="18" class="node-default"/><text x="390" y="120" class="node-text" text-anchor="middle">F</text>
-                        <circle cx="470" cy="55"  r="18" class="node-default"/><text x="470" y="60"  class="node-text" text-anchor="middle">G</text>
-                        <circle cx="470" cy="175" r="18" class="node-default"/><text x="470" y="180" class="node-text" text-anchor="middle">J</text>
-                        <circle cx="470" cy="115" r="20" class="node-goal"/><text x="470" y="120" class="node-text" text-anchor="middle">T</text>
+                    <svg width="620" height="260" viewBox="0 0 620 260" role="img" aria-label="Graf keadaan berarah dengan keadaan awal M dan keadaan tujuan T">
+                        <defs><marker id="arr-m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#78909c"/></marker></defs>
+                        <line x1="87" y1="122" x2="159" y2="67" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="87" y1="149" x2="159" y2="207" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="192" y1="61" x2="246" y2="79" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="265" y1="103" x2="265" y2="130" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="189" y1="209" x2="249" y2="162" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="193" y1="218" x2="265" y2="212" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="282" y1="143" x2="352" y2="113" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="384" y1="94" x2="429" y2="57" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="463" y1="45" x2="525" y2="45" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="385" y1="116" x2="429" y2="148" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="388" y1="107" x2="531" y2="127" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="462" y1="155" x2="532" y2="136" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="359" y1="119" x2="298" y2="194" class="edge" marker-end="url(#arr-m2)"/>
+                        <line x1="303" y1="210" x2="365" y2="210" class="edge" marker-end="url(#arr-m2)"/>
+                        <circle cx="70" cy="135" r="22" class="node-current"/><text x="70" y="140" class="node-text" text-anchor="middle">M</text>
+                        <circle cx="175" cy="55" r="18" class="node-default"/><text x="175" y="60" class="node-text" text-anchor="middle">A</text>
+                        <circle cx="265" cy="85" r="18" class="node-default"/><text x="265" y="90" class="node-text" text-anchor="middle">B</text>
+                        <circle cx="265" cy="150" r="18" class="node-default"/><text x="265" y="155" class="node-text" text-anchor="middle">C</text>
+                        <circle cx="175" cy="220" r="18" class="node-default"/><text x="175" y="225" class="node-text" text-anchor="middle">D</text>
+                        <circle cx="285" cy="210" r="18" class="node-default"/><text x="285" y="215" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="385" cy="210" r="18" class="node-default"/><text x="385" y="215" class="node-text" text-anchor="middle">J</text>
+                        <circle cx="370" cy="105" r="18" class="node-default"/><text x="370" y="110" class="node-text" text-anchor="middle">E</text>
+                        <circle cx="445" cy="45" r="18" class="node-default"/><text x="445" y="50" class="node-text" text-anchor="middle">F</text>
+                        <circle cx="545" cy="45" r="18" class="node-default"/><text x="545" y="50" class="node-text" text-anchor="middle">G</text>
+                        <circle cx="445" cy="160" r="18" class="node-default"/><text x="445" y="165" class="node-text" text-anchor="middle">H</text>
+                        <circle cx="555" cy="130" r="22" class="node-goal"/><text x="555" y="135" class="node-text" text-anchor="middle">T</text>
+                        <text x="70" y="175" text-anchor="middle" font-size="11" fill="#555">keadaan awal</text>
+                        <text x="555" y="170" text-anchor="middle" font-size="11" fill="#555">keadaan tujuan</text>
                     </svg>
                 </div>
                 <p>Dari graf di atas (awal <strong>M</strong>, tujuan <strong>T</strong>), lintasan yang mungkin:</p>
@@ -587,10 +1140,88 @@
                     <thead><tr><th>Jenis</th><th>Lintasan</th></tr></thead>
                     <tbody>
                         <tr><td>Sampai ke tujuan</td><td><code>M-A-B-C-E-T</code> · <code>M-A-B-C-E-H-T</code> · <code>M-D-C-E-T</code> · <code>M-D-C-E-H-T</code></td></tr>
-                        <tr><td>Jalan buntu (<em>dead end</em>)</td><td><code>M-A-B-C-E-F-G</code> · <code>M-A-B-C-E-I-J</code> · <code>M-D-I-J</code></td></tr>
+                        <tr><td>Jalan buntu (<em>dead end</em>)</td><td><code>M-A-B-C-E-F-G</code> · <code>M-A-B-C-E-I-J</code> · <code>M-D-C-E-F-G</code> · <code>M-D-C-E-I-J</code> · <code>M-D-I-J</code></td></tr>
                     </tbody>
                 </table>
-                <p style="font-size:0.9em; color:#555;">Perhatikan simpul <strong>C</strong> dan <strong>E</strong> muncul di banyak lintasan — pada pohon pelacakan keduanya diduplikasi. Inilah alasan <em>explored set</em> (graf pencarian) menghemat pekerjaan.</p>
+                <p>Jika semua lintasan itu dibentangkan mulai dari M, hasilnya adalah <strong>pohon pelacakan</strong> berikut. Keadaan C dan E dapat dicapai lewat A maupun D, sehingga seluruh cabang di bawah C muncul <em>dua kali</em>. Keadaan I bahkan muncul tiga kali.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="640" height="370" viewBox="0 0 640 370" role="img" aria-label="Pohon pelacakan hasil membentangkan graf keadaan M sampai T">
+                        <line x1="235" y1="34" x2="147" y2="71" class="edge"/>
+                        <line x1="130" y1="94" x2="130" y2="110" class="edge"/>
+                        <line x1="130" y1="144" x2="130" y2="160" class="edge"/>
+                        <line x1="130" y1="194" x2="130" y2="210" class="edge"/>
+                        <line x1="116" y1="236" x2="56" y2="269" class="edge"/>
+                        <line x1="122" y1="242" x2="109" y2="263" class="edge"/>
+                        <line x1="138" y1="242" x2="151" y2="263" class="edge"/>
+                        <line x1="144" y1="236" x2="204" y2="269" class="edge"/>
+                        <line x1="40" y1="294" x2="40" y2="310" class="edge"/>
+                        <line x1="100" y1="294" x2="100" y2="310" class="edge"/>
+                        <line x1="160" y1="294" x2="160" y2="310" class="edge"/>
+                        <line x1="265" y1="34" x2="353" y2="71" class="edge"/>
+                        <line x1="356" y1="86" x2="305" y2="118" class="edge"/>
+                        <line x1="290" y1="144" x2="290" y2="160" class="edge"/>
+                        <line x1="384" y1="86" x2="435" y2="118" class="edge"/>
+                        <line x1="450" y1="144" x2="450" y2="160" class="edge"/>
+                        <line x1="436" y1="186" x2="376" y2="219" class="edge"/>
+                        <line x1="442" y1="192" x2="429" y2="213" class="edge"/>
+                        <line x1="458" y1="192" x2="471" y2="213" class="edge"/>
+                        <line x1="464" y1="186" x2="524" y2="219" class="edge"/>
+                        <line x1="360" y1="244" x2="360" y2="260" class="edge"/>
+                        <line x1="420" y1="244" x2="420" y2="260" class="edge"/>
+                        <line x1="480" y1="244" x2="480" y2="260" class="edge"/>
+                        <circle cx="250" cy="28" r="16" class="node-current"/><text x="250" y="33" class="node-text" text-anchor="middle">M</text>
+                        <circle cx="130" cy="78" r="16" class="node-default"/><text x="130" y="83" class="node-text" text-anchor="middle">A</text>
+                        <circle cx="130" cy="128" r="16" class="node-default"/><text x="130" y="133" class="node-text" text-anchor="middle">B</text>
+                        <circle cx="130" cy="178" r="16" class="node-frontier"/><text x="130" y="183" class="node-text" text-anchor="middle">C</text>
+                        <circle cx="130" cy="228" r="16" class="node-frontier"/><text x="130" y="233" class="node-text" text-anchor="middle">E</text>
+                        <circle cx="40" cy="278" r="16" class="node-default"/><text x="40" y="283" class="node-text" text-anchor="middle">F</text>
+                        <circle cx="100" cy="278" r="16" class="node-default"/><text x="100" y="283" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="160" cy="278" r="16" class="node-default"/><text x="160" y="283" class="node-text" text-anchor="middle">H</text>
+                        <circle cx="220" cy="278" r="16" class="node-goal"/><text x="220" y="283" class="node-text" text-anchor="middle">T</text>
+                        <text x="220" y="307" text-anchor="middle" font-size="10" fill="#2e7d32">Tujuan</text>
+                        <circle cx="40" cy="328" r="16" class="node-dead"/><text x="40" y="333" class="node-text" text-anchor="middle">G</text>
+                        <text x="40" y="357" text-anchor="middle" font-size="10" fill="#78909c">Buntu</text>
+                        <circle cx="100" cy="328" r="16" class="node-dead"/><text x="100" y="333" class="node-text" text-anchor="middle">J</text>
+                        <text x="100" y="357" text-anchor="middle" font-size="10" fill="#78909c">Buntu</text>
+                        <circle cx="160" cy="328" r="16" class="node-goal"/><text x="160" y="333" class="node-text" text-anchor="middle">T</text>
+                        <text x="160" y="357" text-anchor="middle" font-size="10" fill="#2e7d32">Tujuan</text>
+                        <circle cx="370" cy="78" r="16" class="node-default"/><text x="370" y="83" class="node-text" text-anchor="middle">D</text>
+                        <circle cx="290" cy="128" r="16" class="node-default"/><text x="290" y="133" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="290" cy="178" r="16" class="node-dead"/><text x="290" y="183" class="node-text" text-anchor="middle">J</text>
+                        <text x="290" y="207" text-anchor="middle" font-size="10" fill="#78909c">Buntu</text>
+                        <circle cx="450" cy="128" r="16" class="node-frontier"/><text x="450" y="133" class="node-text" text-anchor="middle">C</text>
+                        <circle cx="450" cy="178" r="16" class="node-frontier"/><text x="450" y="183" class="node-text" text-anchor="middle">E</text>
+                        <circle cx="360" cy="228" r="16" class="node-default"/><text x="360" y="233" class="node-text" text-anchor="middle">F</text>
+                        <circle cx="420" cy="228" r="16" class="node-default"/><text x="420" y="233" class="node-text" text-anchor="middle">I</text>
+                        <circle cx="480" cy="228" r="16" class="node-default"/><text x="480" y="233" class="node-text" text-anchor="middle">H</text>
+                        <circle cx="540" cy="228" r="16" class="node-goal"/><text x="540" y="233" class="node-text" text-anchor="middle">T</text>
+                        <text x="540" y="257" text-anchor="middle" font-size="10" fill="#2e7d32">Tujuan</text>
+                        <circle cx="360" cy="278" r="16" class="node-dead"/><text x="360" y="283" class="node-text" text-anchor="middle">G</text>
+                        <text x="360" y="307" text-anchor="middle" font-size="10" fill="#78909c">Buntu</text>
+                        <circle cx="420" cy="278" r="16" class="node-dead"/><text x="420" y="283" class="node-text" text-anchor="middle">J</text>
+                        <text x="420" y="307" text-anchor="middle" font-size="10" fill="#78909c">Buntu</text>
+                        <circle cx="480" cy="278" r="16" class="node-goal"/><text x="480" y="283" class="node-text" text-anchor="middle">T</text>
+                        <text x="480" y="307" text-anchor="middle" font-size="10" fill="#2e7d32">Tujuan</text>
+                        <text x="598" y="32" font-size="11" fill="#888">Level 0</text>
+                        <text x="598" y="82" font-size="11" fill="#888">Level 1</text>
+                        <text x="598" y="132" font-size="11" fill="#888">Level 2</text>
+                        <text x="598" y="182" font-size="11" fill="#888">Level 3</text>
+                        <text x="598" y="232" font-size="11" fill="#888">Level 4</text>
+                        <text x="598" y="282" font-size="11" fill="#888">Level 5</text>
+                        <text x="598" y="332" font-size="11" fill="#888">Level 6</text>
+                    </svg>
+                </div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#e65100;"></div>Akar (keadaan awal)</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#f9a825;"></div>C dan E: keadaan yang muncul lebih dari sekali</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32;"></div>Tujuan</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#90a4ae;"></div>Jalan buntu</div>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Graf keadaan hanya punya 12 simpul, tetapi pohon pelacakannya punya 24 simpul. Pada ruang keadaan yang besar, duplikasi seperti ini tumbuh sangat cepat. Inilah alasan <em>explored set</em> (graf pencarian) menghemat pekerjaan.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-code-branch"></i> Keadaan ≠ Simpul</strong>
+                    <p style="margin-top:6px;"><strong>Keadaan</strong> adalah bagian dari ruang keadaan, yaitu dunia yang dimodelkan. <strong>Simpul</strong> adalah bagian dari pohon pencarian, yaitu struktur data yang dibangun algoritma. Satu simpul menyimpan satu keadaan beserta induknya, aksi yang menghasilkannya, dan biaya lintasan dari akar (lihat kelas <code>Node</code> di Bagian 2). Satu keadaan bisa disimpan di banyak simpul, seperti E di atas, tetapi setiap simpul hanya punya satu lintasan kembali ke akar.</p>
+                </div>
 
                 <h3>Pohon AND/OR (Reduksi Masalah)</h3>
                 <p>Pada pohon pencarian biasa (pohon <strong>OR</strong>), sebuah simpul terpecahkan jika <em>salah satu</em> anaknya terpecahkan. Pada <strong>pohon AND</strong>, sebuah simpul terpecahkan hanya jika <em>semua</em> anaknya terpecahkan — dipakai saat sebuah masalah harus dipecah menjadi beberapa sub-masalah yang semuanya wajib diselesaikan.</p>
@@ -613,10 +1244,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 4. Ukuran Kinerja -->
+            <!-- 5. Ukuran Kinerja -->
             <!-- ============================================================ -->
             <section id="ukuran-kinerja">
-                <h2>4. Ukuran Kinerja Algoritma Pencarian <span class="badge">Dasar</span></h2>
+                <h2>5. Ukuran Kinerja Algoritma Pencarian <span class="badge">Dasar</span></h2>
 
                 <div class="cplx-grid">
                     <div class="cplx-card" style="border-top-color:#1565c0;">
@@ -669,10 +1300,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 5. BFS -->
+            <!-- 6. BFS -->
             <!-- ============================================================ -->
             <section id="bfs">
-                <h2>5. Breadth-First Search (BFS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>6. Breadth-First Search (BFS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>BFS mengekspansi simpul secara <strong>melebar</strong> — semua simpul pada kedalaman <em>d</em> diekspansi sebelum simpul pada kedalaman <em>d+1</em>. BFS menggunakan struktur data <strong>antrian FIFO</strong> (First In First Out).</p>
 
@@ -763,6 +1394,10 @@
                     </tbody>
                 </table>
 
+                <h3>Coba Sendiri: BFS di Peta Romania <span class="badge badge-new">Interaktif</span></h3>
+                <p>Tekan <strong>Langkah</strong> untuk maju satu ekspansi, atau <strong>Jalankan</strong> untuk memutarnya otomatis. Perhatikan antrian frontier: simpul baru selalu masuk di <em>belakang</em>, sedangkan yang diambil selalu yang paling <em>depan</em>. Dari Arad ke Bucharest, BFS menemukan lintasan dengan <em>jumlah ruas</em> paling sedikit (3 ruas), tetapi bukan yang <em>terpendek dalam km</em>.</p>
+                <div data-viz="search" data-algo="bfs" data-algos="bfs,dfs,dls,ids,ucs"></div>
+
                 <h3>Sifat BFS</h3>
                 <div class="cplx-grid">
                     <div class="cplx-card" style="border-top-color:#2e7d32;">
@@ -789,10 +1424,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 6. DFS & DLS -->
+            <!-- 7. DFS & DLS -->
             <!-- ============================================================ -->
             <section id="dfs">
-                <h2>6. Depth-First Search (DFS) &amp; Depth-Limited Search (DLS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>7. Depth-First Search (DFS) &amp; Depth-Limited Search (DLS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>DFS mengekspansi simpul secara <strong>mendalam</strong> — selalu mengekspansi simpul paling dalam di frontier. DFS menggunakan struktur data <strong>tumpukan LIFO</strong> (Last In First Out), atau memanfaatkan <em>rekursi</em>.</p>
 
@@ -853,6 +1488,10 @@
                     <p style="margin-top:6px;">Pemilihan batas <em>ℓ</em> sangat kritis. Jika <em>ℓ &lt; d</em> (terlalu dangkal), solusi tidak akan ditemukan. Jika <em>ℓ &gg; d</em>, boros komputasi. Solusi: gunakan IDS!</p>
                 </div>
 
+                <h3>Coba Sendiri: DFS dan DLS <span class="badge badge-new">Interaktif</span></h3>
+                <p>Pada peta Romania, DFS di simulasi ini memakai <em>explored set</em> agar tidak berputar di siklus seperti Arad → Zerind → Oradea → Sibiu → Arad. Pilih <strong>DLS</strong> lalu ubah batas ℓ: dengan ℓ = 2 tujuan tidak ditemukan (<em>cutoff</em>), sedangkan dengan ℓ = 3 tujuan ditemukan. DLS tidak memakai explored set; siklus dicegah dengan memeriksa lintasan dari akar ke simpul yang sedang diekspansi.</p>
+                <div data-viz="search" data-algo="dfs" data-algos="dfs,dls,bfs,ids,ucs"></div>
+
                 <h3>Backtracking — DFS sebagai Metode Pemecahan Masalah</h3>
                 <p><strong>Backtracking (runut-balik)</strong> adalah DFS yang dipakai sebagai <em>strategi pemecahan masalah terstruktur</em>: bangun solusi selangkah demi selangkah; begitu sebuah pilihan terbukti buntu, batalkan pilihan itu (<em>unmove</em>) dan coba pilihan lain.</p>
                 <div class="demo-box">
@@ -873,10 +1512,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 7. IDS -->
+            <!-- 8. IDS -->
             <!-- ============================================================ -->
             <section id="ids">
-                <h2>7. Iterative Deepening Search (IDS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>8. Iterative Deepening Search (IDS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>IDS menggabungkan keunggulan BFS (kelengkapan, optimalitas) dengan keunggulan DFS (hemat memori) dengan cara menjalankan DLS berulang kali dengan batas kedalaman yang terus meningkat: <em>ℓ = 0, 1, 2, 3, …</em></p>
 
@@ -913,6 +1552,10 @@
                     </div>
                 </div>
 
+                <h3>Coba Sendiri: IDS <span class="badge badge-new">Interaktif</span></h3>
+                <p>Amati label <strong>Iterasi ℓ</strong> di panel kanan. Setiap iterasi dimulai ulang dari Arad dan membuang hasil iterasi sebelumnya. Hitung berapa kali Arad diekspansi sampai Bucharest ditemukan pada ℓ = 3 — itulah ongkos ekspansi ulang yang dibayar IDS demi memori yang hemat.</p>
+                <div data-viz="search" data-algo="ids" data-algos="ids,dls,bfs,dfs,ucs"></div>
+
                 <h3>Sifat IDS</h3>
                 <div class="cplx-grid">
                     <div class="cplx-card" style="border-top-color:#2e7d32;">
@@ -943,10 +1586,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 8. UCS -->
+            <!-- 9. UCS -->
             <!-- ============================================================ -->
             <section id="ucs">
-                <h2>8. Uniform Cost Search (UCS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>9. Uniform Cost Search (UCS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>UCS memperluas BFS untuk menangani <strong>biaya langkah yang berbeda-beda</strong>. UCS mengekspansi simpul berdasarkan <strong>biaya lintasan terendah</strong> <em>g(n)</em> menggunakan <strong>antrian prioritas</strong>.</p>
 
@@ -978,20 +1621,29 @@
                 <h3>Penelusuran UCS — Contoh Graf Romania (Arad → Bucharest)</h3>
                 <table class="trace-table">
                     <thead>
-                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>Frontier (priority queue)</th></tr>
+                        <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>Frontier setelah ekspansi (urut g)</th></tr>
                     </thead>
                     <tbody>
                         <tr><td>1</td><td>Arad</td><td>0</td><td>Zerind(75), Timisoara(118), Sibiu(140)</td></tr>
                         <tr><td>2</td><td>Zerind</td><td>75</td><td>Timisoara(118), Sibiu(140), Oradea(146)</td></tr>
                         <tr><td>3</td><td>Timisoara</td><td>118</td><td>Sibiu(140), Oradea(146), Lugoj(229)</td></tr>
-                        <tr><td>4</td><td>Sibiu</td><td>140</td><td>Oradea(146), Rimnicu(239), Fagaras(239), Lugoj(229)</td></tr>
-                        <tr><td>5</td><td>Oradea</td><td>146</td><td>Lugoj(229), Rimnicu(239), Fagaras(239)</td></tr>
-                        <tr><td>6</td><td>Lugoj</td><td>229</td><td>Rimnicu(239), Fagaras(239), Mehadia(299)</td></tr>
-                        <tr><td>7</td><td>Rimnicu</td><td>239</td><td>Fagaras(239), Pitesti(357), Craiova(366)</td></tr>
-                        <tr><td>8</td><td>Fagaras</td><td>239</td><td>Pitesti(357), <strong>Bucharest(450)</strong>, Craiova(366)</td></tr>
-                        <tr class="tr-goal"><td>9</td><td><strong>Bucharest</strong></td><td><strong>418</strong></td><td>Diekspansi via Pitesti(418) → <strong><i class="fa-solid fa-check" style="color:#2e7d32;"></i> Solusi optimal!</strong></td></tr>
+                        <tr><td>4</td><td>Sibiu</td><td>140</td><td>Oradea(146), Rimnicu(220), Lugoj(229), Fagaras(239)</td></tr>
+                        <tr><td>5</td><td>Oradea</td><td>146</td><td>Rimnicu(220), Lugoj(229), Fagaras(239)</td></tr>
+                        <tr><td>6</td><td>Rimnicu</td><td>220</td><td>Lugoj(229), Fagaras(239), Pitesti(317), Craiova(366)</td></tr>
+                        <tr><td>7</td><td>Lugoj</td><td>229</td><td>Fagaras(239), Mehadia(299), Pitesti(317), Craiova(366)</td></tr>
+                        <tr class="tr-current"><td>8</td><td>Fagaras</td><td>239</td><td>Mehadia(299), Pitesti(317), Craiova(366), <strong>Bucharest(450)</strong></td></tr>
+                        <tr><td>9</td><td>Mehadia</td><td>299</td><td>Pitesti(317), Craiova(366), Drobeta(374), Bucharest(450)</td></tr>
+                        <tr class="tr-current"><td>10</td><td>Pitesti</td><td>317</td><td>Craiova(366), Drobeta(374), <strong>Bucharest(418)</strong> — diperbarui dari 450</td></tr>
+                        <tr><td>11</td><td>Craiova</td><td>366</td><td>Drobeta(374), Bucharest(418)</td></tr>
+                        <tr><td>12</td><td>Drobeta</td><td>374</td><td>Bucharest(418)</td></tr>
+                        <tr class="tr-goal"><td>13</td><td><strong>Bucharest</strong></td><td><strong>418</strong></td><td>Diambil dari frontier dan lolos uji tujuan. <strong><i class="fa-solid fa-check" style="color:#2e7d32;"></i> Solusi optimal: Arad → Sibiu → Rimnicu → Pitesti → Bucharest</strong></td></tr>
                     </tbody>
                 </table>
+                <p style="font-size:0.9em; color:#555;">Perhatikan langkah 8: Bucharest sudah masuk frontier dengan g = 450 (lewat Fagaras), tetapi <em>belum</em> dianggap solusi. Pada langkah 10 ditemukan lintasan lewat Pitesti yang lebih murah (418), sehingga isi frontier diperbarui. Bucharest baru diambil pada langkah 13, setelah semua simpul dengan g &lt; 418 selesai diperiksa.</p>
+
+                <h3>Coba Sendiri: UCS <span class="badge badge-new">Interaktif</span></h3>
+                <p>Cocokkan tabel di atas dengan simulasi berikut. Chip frontier menampilkan nilai <em>g(n)</em>; perhatikan pesan <em>Diperbarui</em> pada langkah 10.</p>
+                <div data-viz="search" data-algo="ucs" data-algos="ucs,bfs,dfs,ids"></div>
 
                 <h3>Sifat UCS</h3>
                 <div class="cplx-grid">
@@ -1024,10 +1676,10 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 9. Perbandingan -->
+            <!-- 10. Perbandingan -->
             <!-- ============================================================ -->
             <section id="perbandingan">
-                <h2>9. Perbandingan Algoritma Pencarian Buta <span class="badge">Ringkasan</span></h2>
+                <h2>10. Perbandingan Algoritma Pencarian Buta <span class="badge">Ringkasan</span></h2>
 
                 <table>
                     <thead>
@@ -1084,6 +1736,15 @@
                     </tbody>
                 </table>
                 <p style="font-size:0.82em; color:#888; margin-top:4px;">*) Ya dengan syarat: biaya langkah seragam (BFS/IDS) atau ≥ ε > 0 (UCS).</p>
+
+                <h3>Adu Algoritma di Peta Romania <span class="badge badge-new">Interaktif</span></h3>
+                <p>Tabel berikut dihitung langsung dari simulasi. Ganti kota awal dan tujuan, lalu amati: algoritma mana yang selalu optimal? Mana yang paling sedikit mengekspansi simpul? Berapa ongkos ekspansi ulang IDS dibanding BFS?</p>
+                <div data-viz="search-compare" data-algos="bfs,dfs,ids,ucs"></div>
+                <p style="font-size:0.85em; color:#666;">Catatan: jumlah ekspansi IDS dihitung kumulatif untuk semua iterasi. BFS menguji tujuan saat simpul dibangkitkan, sedangkan UCS saat simpul diambil dari frontier, sehingga BFS bisa berhenti lebih awal.</p>
+                <div class="viz-link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    <div><p><strong>Eksplorasi lanjutan:</strong> <a href="https://jsurrea.github.io/aima-visualizations/chapter-03/" target="_blank" rel="noopener">AIMA Visualizations — Bab 3</a>, bagian <em>Uninformed Search Strategies</em>, memuat tabel kompleksitas dan visualisasi peta Romania untuk BFS, DFS, UCS, dan IDDFS (bahasa Inggris).</p></div>
+                </div>
 
                 <h3>Pencarian Dua Arah (Bidirectional Search / BDS)</h3>
                 <p>BDS menjalankan <strong>dua pencarian sekaligus</strong>: satu maju dari keadaan awal, satu mundur dari keadaan tujuan. Pencarian berhenti ketika kedua frontier <em>bertemu</em> pada keadaan yang sama; solusi diperoleh dengan menyambung kedua lintasan.</p>
@@ -1161,14 +1822,19 @@
             </section>
 
             <!-- ============================================================ -->
-            <!-- 10. Rangkuman -->
+            <!-- 11. Rangkuman -->
             <!-- ============================================================ -->
             <section id="rangkuman">
-                <h2>10. Rangkuman Pertemuan 3 &amp; 4</h2>
+                <h2>11. Rangkuman Pertemuan 3 &amp; 4</h2>
 
                 <div class="success-box">
                     <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
                     <ul style="margin-top:10px;">
+                        <li>Agen pemecah masalah bekerja dalam empat fase: formulasi tujuan, formulasi masalah, pencarian, dan eksekusi.</li>
+                        <li><strong>Ruang keadaan</strong> adalah himpunan semua keadaan yang <em>dapat dijangkau</em> dari keadaan awal lewat urutan aksi apa pun. Kombinasi yang tidak terjangkau (6 dari 20 pada ember air) bukan bagian dari ruang keadaan.</li>
+                        <li>Ruang keadaan dapat dipandang sebagai graf berarah (simpul = keadaan, sisi = aksi). Graf kecil bisa disimpan secara eksplisit; graf besar seperti 8-puzzle dibangkitkan secara implisit lewat <code>ACTIONS</code> dan <code>RESULT</code>.</li>
+                        <li><strong>Abstraksi</strong> menentukan detail apa yang masuk ke keadaan: cukup untuk memilih aksi dan menguji tujuan, tidak lebih.</li>
+                        <li>Ukuran ruang keadaan bisa kecil (penyedot debu: 8 keadaan), sangat besar (catur: ± 10<sup>40</sup>), atau tak hingga (masalah Knuth).</li>
                         <li>Masalah pencarian diformulasikan dengan 5 komponen: keadaan awal, aksi, model transisi, uji tujuan, biaya lintasan.</li>
                         <li>Pohon pencarian tidak melacak keadaan yang dikunjungi — rawan siklus. Graf pencarian menggunakan <em>explored set</em>.</li>
                         <li>Empat ukuran kinerja: kelengkapan, optimalitas, kompleksitas waktu, kompleksitas ruang.</li>
@@ -1200,10 +1866,14 @@
                         <tr><th>No</th><th>Referensi</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 3</td></tr>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 3, terutama Subbab 3.1–3.3 (agen pemecah masalah, contoh masalah, pohon pencarian)</td></tr>
                         <tr><td>2</td><td>Poole, D. L., &amp; Mackworth, A. K. (2023). <em>Artificial Intelligence: Foundations of Computational Agents</em> (3rd ed.). Cambridge UP. — Bab 3</td></tr>
                         <tr><td>3</td><td>Suyanto. (2014). <em>Artificial Intelligence: Searching, Reasoning, Planning, dan Learning</em>. Informatika. — Bab 2</td></tr>
-                        <tr><td>4</td><td>NetworkX Documentation. <a href="https://networkx.org" target="_blank">networkx.org</a> — untuk implementasi graf pencarian Python</td></tr>
+                        <tr><td>4</td><td>Rich, E., &amp; Knight, K. (1991). <em>Artificial Intelligence</em> (2nd ed.). McGraw-Hill. — Bab 2 (masalah ember air dan kaidah produksi)</td></tr>
+                        <tr><td>5</td><td>Tim Pengampu Kecerdasan Buatan. (2020). <em>Slide Search v1.1</em>. Teknik Informatika Universitas Mataram. — contoh graf keadaan M–T, pohon pelacakan, ember air, dan petani–serigala–kambing</td></tr>
+                        <tr><td>6</td><td>NetworkX Documentation. <a href="https://networkx.org" target="_blank">networkx.org</a> — untuk implementasi graf pencarian Python</td></tr>
+                        <tr><td>7</td><td>Urrea, S. (2026). <em>AIMA Visualizations — AI: A Modern Approach, 4th Edition</em> [perangkat lunak, lisensi MIT]. <a href="https://jsurrea.github.io/aima-visualizations/" target="_blank" rel="noopener">jsurrea.github.io/aima-visualizations</a> — sumber ide simulasi interaktif pada materi ini</td></tr>
+                        <tr><td>8</td><td>aima-python contributors. <em>aima-python: Python implementation of algorithms from Russell &amp; Norvig's AIMA</em> [perangkat lunak, lisensi MIT]. <a href="https://github.com/aimacode/aima-python" target="_blank" rel="noopener">github.com/aimacode/aima-python</a> — sumber data peta Romania serta kelas <code>PourProblem</code> dan <code>EightPuzzle</code> yang diadaptasi untuk simulasi ruang keadaan</td></tr>
                     </tbody>
                 </table>
             </section>
@@ -1217,6 +1887,7 @@
            Pahrul Irfan &amp; Halil Akhyar</p>
     </footer>
 
+    <script src="aima-viz.js?v=20260913f"></script>
     <script>
         function toggleMobileMenu() {
             document.querySelector('.sidebar').classList.toggle('active');
@@ -1226,6 +1897,46 @@
             document.querySelector('.sidebar').classList.remove('active');
             document.querySelector('.sidebar-overlay').classList.remove('active');
         }
+
+        // ---- Tombol "Salin kode" untuk blok kode yang bisa dijalankan (pre[data-copy]) ----
+        // navigator.clipboard hanya tersedia di konteks aman (https/localhost); selain itu pakai execCommand.
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok ? Promise.resolve() : Promise.reject(new Error('copy gagal'));
+        }
+        document.querySelectorAll('pre[data-copy]').forEach(pre => {
+            const wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            const head = document.createElement('div');
+            head.className = 'code-head';
+            head.innerHTML = '<span><i class="fa-brands fa-python"></i>' + pre.dataset.copy + '</span>';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'copy-btn';
+            const label = '<i class="fa-regular fa-copy"></i> Salin kode';
+            btn.innerHTML = label;
+            btn.addEventListener('click', () => {
+                copyText(pre.querySelector('code').textContent).then(() => {
+                    btn.classList.add('done');
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin';
+                }, () => {
+                    btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Gagal, salin manual';
+                }).finally(() => setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = label; }, 2000));
+            });
+            head.appendChild(btn);
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(head);
+            wrap.appendChild(pre);
+        });
 
         // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
         document.body.classList.add('materi-tab');

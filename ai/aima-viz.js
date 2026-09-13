@@ -14,6 +14,7 @@
  *   data-viz="search-compare"  tabel adu algoritma     (data-algos)
  *   data-viz="grid-lab"        lab heuristik berbasis grid (data-heuristic, data-weight)
  *   data-viz="vacuum"          dunia penyedot debu     (data-agents="reflex" | "reflex,model" | "hunter")
+ *   data-viz="state-space"     penjelajah ruang keadaan (data-problem="vacuum" | "jug" | "river" | "puzzle")
  */
 (function () {
     'use strict';
@@ -1554,7 +1555,486 @@
     }
 
     /* =====================================================================
-     * 12. INISIALISASI
+     * 12. PENJELAJAH RUANG KEADAAN
+     *     Pengguna menerapkan aksi satu per satu — ACTIONS(s) lalu RESULT(s, a) —
+     *     dan melihat posisinya pada graf ruang keadaan. Tombol BFS menampilkan
+     *     solusi terpendek. Ember air diadaptasi dari kelas PourProblem, 8-puzzle
+     *     dari EightPuzzle (aima-python); graf penyedot debu mengikuti Gambar 3.2 AIMA.
+     * ===================================================================== */
+    const DIRT = { '1': 'kotor', '0': 'bersih' };
+    const RIVER_IDX = { K: 0, S: 1, Y: 2, P: 3 };   // kunci keadaan = (kambing, serigala, sayuran, perahu)
+    const RIVER_NAME = { P: 'petani + perahu', S: 'serigala', K: 'kambing', Y: 'sayuran' };
+    const riverBank = (k, side) => 'PSKY'.split('').filter(c => k[RIVER_IDX[c]] === side).join('');
+    function riverDanger(k) {
+        if (k[0] !== k[3] && k[0] === k[1]) return 'kambing dimakan serigala';
+        if (k[0] !== k[3] && k[0] === k[2]) return 'sayuran dimakan kambing';
+        return null;
+    }
+    const ssBoard = (k, cls) => '<div class="ss-board' + (cls ? ' ' + cls : '') + '">' +
+        k.split('').map(c => c === '0' ? '<span class="blank"></span>' : '<span>' + c + '</span>').join('') + '</div>';
+    const ssBox = (x, y, w, h, rx) => '<rect class="box" x="' + (x - w / 2) + '" y="' + (y - h / 2) +
+        '" width="' + w + '" height="' + h + '" rx="' + rx + '"/>';
+
+    function jugActions(k) {
+        const [x, y] = k.split(',').map(Number);
+        const K = (a, b) => a + ',' + b;
+        const dAB = Math.min(x, 3 - y), dBA = Math.min(y, 4 - x);
+        return [
+            x < 4 ? { name: 'Isi A', to: K(4, y), note: 'kaidah 1' } : { name: 'Isi A', why: 'A sudah penuh' },
+            y < 3 ? { name: 'Isi B', to: K(x, 3), note: 'kaidah 2' } : { name: 'Isi B', why: 'B sudah penuh' },
+            x > 0 ? { name: 'Kosongkan A', to: K(0, y), note: 'kaidah 3' } : { name: 'Kosongkan A', why: 'A sudah kosong' },
+            y > 0 ? { name: 'Kosongkan B', to: K(x, 0), note: 'kaidah 4' } : { name: 'Kosongkan B', why: 'B sudah kosong' },
+            dAB > 0 ? { name: 'Tuang A→B', to: K(x - dAB, y + dAB), note: x + y > 3 ? 'kaidah 6' : 'kaidah 8' }
+                : { name: 'Tuang A→B', why: x === 0 ? 'A kosong' : 'B sudah penuh' },
+            dBA > 0 ? { name: 'Tuang B→A', to: K(x + dBA, y - dBA), note: x + y > 4 ? 'kaidah 5' : 'kaidah 7' }
+                : { name: 'Tuang B→A', why: y === 0 ? 'B kosong' : 'A sudah penuh' }
+        ];
+    }
+
+    function riverActions(k) {
+        const p = k[3], flip = p === '0' ? '1' : '0';
+        return [['Menyeberang sendiri', null], ['Bawa serigala', 'S'], ['Bawa kambing', 'K'], ['Bawa sayuran', 'Y']]
+            .map(([name, item]) => {
+                if (item && k[RIVER_IDX[item]] !== p) return { name, why: RIVER_NAME[item] + ' tidak di tepi petani' };
+                const t = k.split('');
+                t[3] = flip;
+                if (item) t[RIVER_IDX[item]] = flip;
+                const to = t.join(''), bad = riverDanger(to);
+                return bad ? { name, why: 'tidak aman: ' + bad, bad: to } : { name, to };
+            });
+    }
+
+    function puzzleActions(k) {
+        const i = k.indexOf('0'), r = Math.floor(i / 3), c = i % 3;
+        return [['Atas', -1, 0, 'baris atas'], ['Bawah', 1, 0, 'baris bawah'], ['Kiri', 0, -1, 'kolom kiri'], ['Kanan', 0, 1, 'kolom kanan']]
+            .map(([name, dr, dc, edge]) => {
+                const nr = r + dr, nc = c + dc;
+                if (nr < 0 || nr > 2 || nc < 0 || nc > 2) return { name, why: 'ubin kosong sudah di ' + edge };
+                const j = nr * 3 + nc, t = k.split('');
+                t[i] = t[j];
+                t[j] = '0';
+                return { name, to: t.join(''), note: 'ubin ' + k[j] + ' bergeser' };
+            });
+    }
+
+    function vacNode(k, x, y, w, h) {
+        let s = ssBox(x, y, w, h, 6);
+        ['A', 'B'].forEach((r, i) => {
+            const rx = x - 38 + i * 39, ry = y - 16;
+            s += '<rect class="ss-room" x="' + rx + '" y="' + ry + '" width="37" height="32" rx="3"/>' +
+                '<text class="ss-room-name" x="' + (rx + 3) + '" y="' + (ry + 9) + '">' + r + '</text>';
+            if (k[i + 1] === '1') {
+                s += [[24, 19], [30, 24], [22, 26], [30, 15]].map(([dx, dy]) =>
+                    '<circle class="ss-dirt" cx="' + (rx + dx) + '" cy="' + (ry + dy) + '" r="2.4"/>').join('');
+            }
+            if (k[0] === r) s += '<circle class="ss-bot" cx="' + (rx + 12) + '" cy="' + (ry + 20) + '" r="6.5"/>';
+        });
+        return s;
+    }
+
+    function riverNode(k, x, y, w, h) {
+        return ssBox(x, y, w, h, 6) +
+            '<rect class="ss-water" x="' + (x - 3) + '" y="' + (y - h / 2 + 3) + '" width="6" height="' + (h - 6) + '"/>' +
+            '<text class="ss-lbl ss-bank" x="' + (x - 7) + '" y="' + (y + 4.5) + '" text-anchor="end">' + riverBank(k, '0') + '</text>' +
+            '<text class="ss-lbl ss-bank" x="' + (x + 7) + '" y="' + (y + 4.5) + '" text-anchor="start">' + riverBank(k, '1') + '</text>';
+    }
+
+    const SS_PROBLEMS = {
+        vacuum: {
+            initial: 'A11',
+            initials: ['A11', 'B11', 'A10', 'B10', 'A01', 'B01', 'A00', 'B00'].map(k =>
+                [k, '(' + k[0] + ',' + k[1] + ',' + k[2] + ') — robot di ' + k[0] + ', A ' + DIRT[k[1]] + ', B ' + DIRT[k[2]]]),
+            label: k => '(' + k[0] + ',' + k[1] + ',' + k[2] + ')',
+            describe: k => 'Robot di petak <b>' + k[0] + '</b>; petak A <b>' + DIRT[k[1]] + '</b>, petak B <b>' + DIRT[k[2]] + '</b>.',
+            actions: k => [
+                { name: 'Kiri', to: 'A' + k.slice(1) },
+                { name: 'Kanan', to: 'B' + k.slice(1) },
+                { name: 'Hisap', to: k[0] === 'A' ? 'A0' + k[2] : 'B' + k[1] + '0' }
+            ],
+            isGoal: k => k[1] === '0' && k[2] === '0',
+            goalText: 'semua petak bersih',
+            space: '8 kombinasi (2 lokasi × 2 × 2)',
+            graph: {
+                w: 560, h: 310, nw: 84, nh: 44, rx: 6, edges: 'all',
+                all: ['A11', 'B11', 'A01', 'B01', 'A10', 'B10', 'B00', 'A00'],
+                pos: {
+                    A11: [210, 62], B11: [350, 62], A01: [70, 167], B01: [210, 167],
+                    A10: [350, 167], B10: [490, 167], B00: [210, 272], A00: [350, 272]
+                },
+                loopSide: { B00: 'left', A00: 'right' },
+                short: { Kiri: 'Ki', Kanan: 'Ka', Hisap: 'H' },
+                node: vacNode,
+                legend: '<span>Ki = Kiri · Ka = Kanan · H = Hisap · kotak kiri = petak A, kanan = petak B · titik cokelat = kotoran</span>'
+            }
+        },
+        jug: {
+            initial: '0,0',
+            label: k => '(' + k + ')',
+            describe: k => {
+                const [x, y] = k.split(',');
+                return 'Ember A (4 L) berisi <b>' + x + ' L</b>; ember B (3 L) berisi <b>' + y + ' L</b>.';
+            },
+            actions: jugActions,
+            isGoal: k => k[0] === '2',
+            goalText: 'ember A berisi tepat 2 liter',
+            space: '20 kombinasi (x = 0–4, y = 0–3)',
+            graph: {
+                w: 545, h: 285, nw: 62, nh: 30, rx: 15, edges: 'local', curve: true,
+                all: (() => {
+                    const a = [];
+                    for (let y = 0; y <= 3; y++) for (let x = 0; x <= 4; x++) a.push(x + ',' + y);
+                    return a;
+                })(),
+                pos: k => { const [x, y] = k.split(',').map(Number); return [95 + x * 100, 60 + y * 60]; },
+                short: { 'Kosongkan A': 'Kos. A', 'Kosongkan B': 'Kos. B', 'Tuang A→B': 'A→B', 'Tuang B→A': 'B→A' },
+                decor: () => {
+                    let s = '<rect class="ss-goalzone" x="255" y="36" width="80" height="228" rx="10"/>' +
+                        '<text class="ss-axis goal" x="295" y="279" text-anchor="middle">tujuan: x = 2</text>';
+                    for (let x = 0; x <= 4; x++) s += '<text class="ss-axis" x="' + (95 + x * 100) + '" y="24" text-anchor="middle">x = ' + x + '</text>';
+                    for (let y = 0; y <= 3; y++) s += '<text class="ss-axis" x="30" y="' + (64 + y * 60) + '" text-anchor="middle">y = ' + y + '</text>';
+                    return s;
+                },
+                legend: '<span>Kolom = isi ember A (x), baris = isi ember B (y) · panah oranye = aksi yang tersedia</span>'
+            }
+        },
+        river: {
+            initial: '0000',
+            label: k => '(' + k.split('').join(',') + ')',
+            describe: k => {
+                const bank = side => riverBank(k, side).split('').map(c => RIVER_NAME[c]).join(', ') || '(kosong)';
+                return 'Tepi asal: <b>' + bank('0') + '</b>.<br>Tepi seberang: <b>' + bank('1') + '</b>.';
+            },
+            actions: riverActions,
+            isGoal: k => k === '1111',
+            goalText: 'semuanya sudah di tepi seberang',
+            space: '16 kombinasi (2⁴)',
+            graph: {
+                w: 590, h: 290, nw: 86, nh: 34, rx: 6, edges: 'all',
+                pos: {
+                    '0000': [55, 45], '1001': [175, 45], '1000': [295, 45], '1101': [415, 45], '0100': [535, 45],
+                    '1011': [295, 150], '0010': [415, 150], '0111': [535, 150], '0110': [535, 255], '1111': [415, 255]
+                },
+                short: { 'Menyeberang sendiri': '—', 'Bawa serigala': 'S', 'Bawa kambing': 'K', 'Bawa sayuran': 'Y' },
+                node: riverNode,
+                legend: '<span>Garis biru di tengah kotak = sungai; kiri = tepi asal, kanan = tepi seberang · P = petani (+ perahu), S = serigala, K = kambing, Y = sayuran · label panah = yang dibawa (— = sendiri)</span>'
+            }
+        },
+        puzzle: {
+            initial: '312605748',
+            initials: [
+                ['312605748', 'Mudah — 4 langkah dari tujuan'],
+                ['632705418', 'Sedang — 10 langkah dari tujuan'],
+                ['724506831', 'Gambar 3.3 AIMA — 26 langkah dari tujuan']
+            ],
+            label: k => k.replace('0', '_').replace(/(...)(...)(...)/, '$1/$2/$3'),
+            describe: k => {
+                const i = k.indexOf('0');
+                return 'Ubin kosong berada di baris ' + (Math.floor(i / 3) + 1) + ', kolom ' + (i % 3 + 1) + '.';
+            },
+            actions: puzzleActions,
+            isGoal: k => k === '012345678',
+            goalText: 'susunan ubin sama dengan keadaan tujuan',
+            space: '181.440 keadaan terjangkau (9!/2)',
+            pathStyle: 'actions',
+            mini: k => ssBoard(k, 'mini'),
+            stage: k => '<div class="ss-puzzle">' +
+                '<figure><figcaption>Keadaan saat ini</figcaption>' + ssBoard(k) + '</figure>' +
+                '<figure><figcaption>Keadaan tujuan</figcaption>' + ssBoard('012345678', 'goal small') + '</figure>' +
+                '</div><p class="viz-note">Setiap tombol aksi di sebelah kanan adalah satu panah yang keluar dari keadaan ini. ' +
+                'Graf ruang keadaan 8-puzzle berisi 181.440 simpul sehingga tidak digambar. Algoritma pencarian cukup ' +
+                'membangkitkan tetangga seperlunya lewat ACTIONS dan RESULT.</p>'
+        }
+    };
+
+    function ssReach(P, start) {
+        const seen = new Set([start]), q = [start];
+        for (let h = 0; h < q.length; h++) {
+            P.actions(q[h]).forEach(a => { if (a.to && !seen.has(a.to)) { seen.add(a.to); q.push(a.to); } });
+        }
+        return seen;
+    }
+
+    // BFS graf dengan uji tujuan saat simpul dibangkitkan (sama dengan pseudocode BFS di materi)
+    function ssBFS(P, start) {
+        if (P.isGoal(start)) return { path: [{ s: start, a: null }], generated: 1 };
+        const parent = new Map([[start, null]]), q = [start];
+        for (let h = 0; h < q.length; h++) {
+            const s = q[h];
+            for (const a of P.actions(s)) {
+                if (!a.to || parent.has(a.to)) continue;
+                parent.set(a.to, [s, a.name]);
+                if (P.isGoal(a.to)) {
+                    const path = [];
+                    for (let k = a.to; k !== null;) {
+                        const pr = parent.get(k);
+                        path.unshift({ s: k, a: pr ? pr[1] : null });
+                        k = pr ? pr[0] : null;
+                    }
+                    return { path, generated: parent.size };
+                }
+                q.push(a.to);
+            }
+        }
+        return null;
+    }
+
+    // Titik di tepi kotak (pusat c, setengah ukuran hw × hh) searah vektor d, ditambah jarak 3px
+    function ssClip(c, d, hw, hh) {
+        const ax = Math.abs(d[0]), ay = Math.abs(d[1]), len = Math.hypot(d[0], d[1]) || 1;
+        const s = Math.min(ax ? hw / ax : Infinity, ay ? hh / ay : Infinity);
+        return [c[0] + d[0] * s + d[0] / len * 3, c[1] + d[1] * s + d[1] / len * 3];
+    }
+
+    // Sisi a→b sebagai kurva kuadrat (lurus bila bend = false). Kurva dibelokkan ke arah tengah kanvas.
+    function ssEdge(G, a, b, bend) {
+        const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy);
+        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+        let nx = -dy / len, ny = dx / len;
+        if (nx * (G.w / 2 - mx) + ny * (G.h / 2 - my) < 0) { nx = -nx; ny = -ny; }
+        const off = bend ? Math.min(0.4 * len, 70) : 0;
+        const c = [mx + nx * off, my + ny * off];
+        const p0 = ssClip(a, [c[0] - a[0], c[1] - a[1]], G.nw / 2, G.nh / 2);
+        const p2 = ssClip(b, [c[0] - b[0], c[1] - b[1]], G.nw / 2, G.nh / 2);
+        const f = v => v.toFixed(1);
+        return {
+            d: 'M' + f(p0[0]) + ',' + f(p0[1]) + ' Q' + f(c[0]) + ',' + f(c[1]) + ' ' + f(p2[0]) + ',' + f(p2[1]),
+            lx: 0.25 * p0[0] + 0.5 * c[0] + 0.25 * p2[0],
+            ly: 0.25 * p0[1] + 0.5 * c[1] + 0.25 * p2[1],
+            ox: dy / len, oy: -dx / len   // normal di sisi kiri arah a→b
+        };
+    }
+
+    function ssLoop(G, p, side, text, marker) {
+        const [x, y] = p, hw = G.nw / 2, hh = G.nh / 2;
+        let d, lx, ly, anchor = 'middle';
+        if (side === 'left' || side === 'right') {
+            const sg = side === 'left' ? -1 : 1, X = x + sg * hw;
+            d = 'M' + X + ',' + (y - 8) + ' C' + (X + sg * 30) + ',' + (y - 20) + ' ' + (X + sg * 30) + ',' + (y + 20) + ' ' + (X + sg * 2) + ',' + (y + 8);
+            lx = X + sg * 28; ly = y; anchor = side === 'left' ? 'end' : 'start';
+        } else {
+            const Y = y - hh;
+            d = 'M' + (x - 9) + ',' + Y + ' C' + (x - 22) + ',' + (Y - 30) + ' ' + (x + 22) + ',' + (Y - 30) + ' ' + (x + 9) + ',' + (Y - 2);
+            lx = x; ly = Y - 30;
+        }
+        return '<path class="ss-edge" d="' + d + '" marker-end="' + marker + '"/>' +
+            '<text class="ss-elbl" x="' + lx + '" y="' + (ly + 3.5) + '" text-anchor="' + anchor + '">' + esc(text) + '</text>';
+    }
+
+    function ssGraph(P, st, uid) {
+        const G = P.graph;
+        const pos = k => (typeof G.pos === 'function' ? G.pos(k) : G.pos[k]);
+        const short = n => (G.short && G.short[n]) || n;
+        const M = t => 'url(#' + uid + '-' + t + ')';
+        const cur = st.hist[st.hist.length - 1].s;
+        const onPath = new Set(st.hist.map(h => h.s));
+        const next = new Map();
+        P.actions(cur).forEach(a => { if (a.to && a.to !== cur && !next.has(a.to)) next.set(a.to, a.name); });
+        const lbl = (x, y, t, cls) => '<text class="ss-elbl' + (cls ? ' ' + cls : '') + '" x="' + x.toFixed(1) +
+            '" y="' + (y + 3.5).toFixed(1) + '" text-anchor="middle">' + esc(t) + '</text>';
+        let base = '', over = '', labels = '';
+
+        if (G.edges === 'all') {
+            const E = new Map(), selfLoop = {};
+            st.reach.forEach(s => P.actions(s).forEach(a => {
+                if (!a.to) return;
+                if (a.to === s) (selfLoop[s] = selfLoop[s] || []).push(short(a.name));
+                else if (!E.has(s + '>' + a.to)) E.set(s + '>' + a.to, short(a.name));
+            }));
+            const done = new Set();
+            E.forEach((name, key) => {
+                if (done.has(key)) return;
+                const [s, t] = key.split('>');
+                const back = E.get(t + '>' + s);
+                done.add(key);
+                if (back !== undefined) done.add(t + '>' + s);
+                const e = ssEdge(G, pos(s), pos(t), false);
+                base += '<path class="ss-edge" d="' + e.d + '" marker-end="' + M('b') + '"' +
+                    (back !== undefined ? ' marker-start="' + M('b') + '"' : '') + '/>';
+                if (back === undefined || back === name) labels += lbl(e.lx, e.ly, name);
+                else labels += lbl(e.lx + e.ox * 9, e.ly + e.oy * 9, name) + lbl(e.lx - e.ox * 9, e.ly - e.oy * 9, back);
+            });
+            Object.keys(selfLoop).forEach(s => {
+                base += ssLoop(G, pos(s), (G.loopSide && G.loopSide[s]) || 'top', selfLoop[s].join(', '), M('b'));
+            });
+        }
+        for (let i = 1; i < st.hist.length; i++) {
+            const a = st.hist[i - 1].s, b = st.hist[i].s;
+            if (a !== b) over += '<path class="ss-edge path" d="' + ssEdge(G, pos(a), pos(b), G.curve).d + '" marker-end="' + M('p') + '"/>';
+        }
+        next.forEach((name, t) => {
+            const e = ssEdge(G, pos(cur), pos(t), G.curve);
+            over += '<path class="ss-edge out" d="' + e.d + '" marker-end="' + M('o') + '"/>';
+            if (G.edges !== 'all') labels += lbl(e.lx, e.ly, short(name), 'out');
+        });
+
+        const nodes = (G.all || Array.from(st.reach)).map(k => {
+            const [x, y] = pos(k);
+            const cls = ['ss-node'];
+            if (!st.reach.has(k)) cls.push('unreach');
+            if (k === cur) cls.push('current'); else if (onPath.has(k)) cls.push('visited');
+            if (next.has(k)) cls.push('next');
+            const ring = (pad, c) => '<rect class="' + c + '" x="' + (x - G.nw / 2 - pad) + '" y="' + (y - G.nh / 2 - pad) +
+                '" width="' + (G.nw + 2 * pad) + '" height="' + (G.nh + 2 * pad) + '" rx="' + (G.rx + pad) + '"/>';
+            return '<g class="' + cls.join(' ') + '" data-k="' + k + '"><title>' + esc(P.label(k)) + '</title>' +
+                (k === st.init ? ring(4, 'ss-ring-start') : '') +
+                (P.isGoal(k) ? ring(k === st.init ? 8 : 4, 'ss-ring-goal') : '') +
+                (G.node ? G.node(k, x, y, G.nw, G.nh)
+                    : ssBox(x, y, G.nw, G.nh, G.rx) + '<text class="ss-lbl" x="' + x + '" y="' + (y + 4.5) + '" text-anchor="middle">' + esc(P.label(k)) + '</text>') +
+                '</g>';
+        }).join('');
+
+        const mk = (t, color) => '<marker id="' + uid + '-' + t + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" ' +
+            'markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0.5 L10,5 L0,9.5 z" fill="' + color + '"/></marker>';
+        return '<svg class="ss-svg" viewBox="0 0 ' + G.w + ' ' + G.h + '" role="img" aria-label="Graf ruang keadaan">' +
+            '<defs>' + mk('b', '#90a4ae') + mk('o', '#e65100') + mk('p', '#2e7d32') + '</defs>' +
+            (G.decor ? G.decor() : '') + base + over + nodes + labels + '</svg>';
+    }
+
+    const ssLegend = G => '<div class="viz-legend">' +
+        '<span><i class="vz-dot sq" style="background:#fff3e0;box-shadow:inset 0 0 0 2px #e65100"></i>Keadaan saat ini</span>' +
+        '<span><i class="vz-dot sq" style="background:#e8eaf6;box-shadow:inset 0 0 0 2px #7986cb"></i>Sudah dilalui</span>' +
+        '<span><i class="vz-line out"></i>Aksi yang tersedia</span>' +
+        '<span><i class="vz-line"></i>Lintasan</span>' +
+        '<span><i class="vz-ring sq"></i>Awal</span>' +
+        '<span><i class="vz-ring goal sq"></i>Tujuan</span>' +
+        (G.all ? '<span><i class="vz-dot sq" style="background:#fafafa;box-shadow:inset 0 0 0 1.5px #b0bec5"></i>Tidak terjangkau</span>' : '') +
+        (G.legend || '') + '</div>';
+
+    let ssUid = 0;
+    function initStateSpace(root) {
+        const P = SS_PROBLEMS[root.dataset.problem] || SS_PROBLEMS.vacuum;
+        const uid = 'ss' + (++ssUid);
+        const st = { init: root.dataset.init || P.initial, hist: [], reach: null, plan: null, planIdx: 0 };
+        const bfsCache = {};
+        const bfsFor = s => bfsCache[s] || (bfsCache[s] = ssBFS(P, s));
+
+        root.classList.add('viz', 'viz-ss');
+        root.innerHTML =
+            (P.initials ? '<div class="viz-toolbar"><label>Keadaan awal <select data-role="init">' +
+                optionList(P.initials, st.init) + '</select></label></div>' : '') +
+            '<div class="viz-body">' +
+            '<div class="viz-stage"><div data-role="stage"></div>' + (P.graph ? ssLegend(P.graph) : '') + '</div>' +
+            '<div class="viz-panel">' +
+            '<div class="viz-step"><span data-role="now"></span><span class="vz-tag goal" data-role="goal" hidden>Tujuan tercapai</span></div>' +
+            '<div class="viz-msg" data-role="msg" aria-live="polite"></div>' +
+            '<div class="viz-block"><h6>ACTIONS(s) — aksi dari keadaan ini</h6><div class="ss-acts" data-role="acts"></div></div>' +
+            '<div class="viz-block"><h6>Lintasan dari keadaan awal (klik untuk kembali)</h6><div class="ss-path" data-role="path"></div></div>' +
+            '<div class="viz-stats" data-role="stats"></div>' +
+            '<div class="viz-result" data-role="result" hidden></div>' +
+            '</div></div>' +
+            '<div class="viz-controls">' +
+            '<button type="button" class="viz-btn secondary" data-role="reset">' + ICON('rotate-left') + ' Ulang</button>' +
+            '<button type="button" class="viz-btn secondary" data-role="undo">' + ICON('backward-step') + ' Langkah sebelumnya</button>' +
+            '<button type="button" class="viz-btn" data-role="step">Langkah berikutnya ' + ICON('forward-step') + '</button>' +
+            '</div>';
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+        const current = () => st.hist[st.hist.length - 1].s;
+        function reset() {
+            st.hist = [{ s: st.init, a: null }];
+            st.plan = null;
+            st.reach = P.graph ? ssReach(P, st.init) : null;
+            render();
+        }
+        function apply(a) {
+            st.hist.push({ s: a.to, a: a.name });
+            render();
+        }
+        // Satu langkah berikutnya dari solusi terpendek (BFS) mulai keadaan saat ini. Rencana BFS
+        // disimpan: bila keadaan saat ini ada di rencana (mis. setelah "sebelumnya"), rencana yang
+        // sama diteruskan; jika pengguna menyimpang, BFS dihitung ulang dari keadaan saat ini.
+        // Penjelasan disimpan di setiap langkah agar terbaca lagi saat pengguna mundur.
+        function nextStep() {
+            const cur = current();
+            if (P.isGoal(cur)) return;
+            let fresh = '';
+            const k = st.plan ? st.plan.findIndex(p => p.s === cur) : -1;
+            if (k >= 0 && k < st.plan.length - 1) st.planIdx = k;
+            else {
+                const r = ssBFS(P, cur);
+                if (!r) return;
+                st.plan = r.path;
+                st.planIdx = 0;
+                fresh = 'BFS dari <code>' + esc(P.label(cur)) + '</code> menemukan solusi <b>' + (r.path.length - 1) +
+                    '</b> langkah setelah membangkitkan <b>' + r.generated.toLocaleString('id-ID') + '</b> keadaan.<br>';
+            }
+            const step = st.plan[++st.planIdx];
+            const act = P.actions(cur).find(x => x.to === step.s && x.name === step.a);
+            const left = st.plan.length - 1 - st.planIdx, n = st.hist.length;
+            st.hist.push({
+                s: step.s, a: step.a,
+                note: fresh + '<b>Langkah ' + n + ' dari ' + (n + left) + ':</b> aksi <b>' + esc(step.a) + '</b>' +
+                    (act && act.note ? ' (' + esc(act.note) + ')' : '') + ' mengubah <code>' + esc(P.label(cur)) +
+                    '</code> menjadi <code>' + esc(P.label(step.s)) + '</code>. ' +
+                    (left ? 'Masih ' + left + ' langkah lagi menuju tujuan.' : 'Tujuan tercapai.')
+            });
+            render();
+        }
+
+        function render() {
+            const cur = current(), last = st.hist[st.hist.length - 1], goal = P.isGoal(cur);
+            $('stage').innerHTML = P.graph ? ssGraph(P, st, uid) : P.stage(cur);
+            $('now').innerHTML = 'Keadaan saat ini: <code>' + esc(P.label(cur)) + '</code>';
+            $('goal').hidden = !goal;
+            $('msg').className = 'viz-msg' + (goal ? ' goal' : '');
+            $('msg').innerHTML = P.describe(cur) + '<br>' + (last.note ? last.note
+                : last.a ? 'Aksi <b>' + esc(last.a) + '</b> menghasilkan keadaan ini: RESULT(s, a) = <code>' + esc(P.label(cur)) + '</code>.'
+                : 'Pilih salah satu aksi di bawah' + (P.graph ? ', atau klik keadaan tetangga (bergaris putus-putus oranye) pada graf.' : '.'));
+            $('acts').innerHTML = P.actions(cur).map((a, i) => {
+                const res = a.to || a.bad;
+                const tgt = res ? (P.mini ? P.mini(res) : '<code>' + esc(P.label(res)) + '</code>') : '';
+                const note = a.to ? (a.to === cur ? 'keadaan tidak berubah' : (a.note || '')) : a.why;
+                return '<button type="button" class="ss-act' + (a.bad ? ' bad' : '') + '" data-i="' + i + '"' + (a.to ? '' : ' disabled') + '>' +
+                    '<b>' + esc(a.name) + '</b>' + (res ? '<span class="ss-to">→ ' + tgt + '</span>' : '') +
+                    (note ? '<small>' + esc(note) + '</small>' : '') + '</button>';
+            }).join('');
+            $('path').innerHTML = st.hist.map((h, i) => {
+                const txt = P.pathStyle === 'actions' ? (i ? h.a : 'awal') : P.label(h.s);
+                const arrow = i && P.pathStyle !== 'actions' ? '<span class="ss-arrow">' + esc(h.a) + ' →</span>' : '';
+                return arrow + '<button type="button" class="vz-chip ss-chip' + (i === st.hist.length - 1 ? ' cur' : '') +
+                    '" data-i="' + i + '" title="Kembali ke langkah ' + i + '">' + esc(txt) + '</button>';
+            }).join('');
+            const n = st.hist.length - 1, uniq = new Set(st.hist.map(h => h.s)).size;
+            $('stats').innerHTML = 'Biaya lintasan: <b>' + n + '</b> aksi · Keadaan berbeda yang dilalui: <b>' + uniq + '</b><br>' +
+                (P.graph ? 'Terjangkau dari keadaan awal ini: <b>' + st.reach.size + '</b> keadaan, dari ' + P.space + '.'
+                    : 'Ruang keadaan: ' + P.space + '.');
+            const res = $('result');
+            res.hidden = !goal;
+            if (goal) {
+                const m = bfsFor(st.init).path.length - 1, ok = n <= m;
+                res.className = 'viz-result ' + (ok ? 'ok' : 'warn');
+                res.innerHTML = ICON(ok ? 'circle-check' : 'triangle-exclamation') + ' <span>Uji tujuan terpenuhi: ' + P.goalText + '. ' +
+                    (ok ? 'Lintasan ' + n + ' aksi ini termasuk solusi terpendek.'
+                        : 'Lintasan Anda ' + n + ' aksi, padahal solusi terpendek hanya ' + m + ' aksi.') + '</span>';
+            }
+            $('undo').disabled = st.hist.length < 2;
+            $('step').disabled = goal;
+        }
+
+        $('acts').addEventListener('click', e => {
+            const b = e.target.closest('.ss-act');
+            if (b && !b.disabled) apply(P.actions(current())[+b.dataset.i]);
+        });
+        $('stage').addEventListener('click', e => {
+            const g = e.target.closest('[data-k]');
+            if (!g) return;
+            const cur = current(), a = P.actions(cur).find(x => x.to === g.dataset.k && x.to !== cur);
+            if (a) apply(a);
+        });
+        $('path').addEventListener('click', e => {
+            const b = e.target.closest('[data-i]');
+            if (!b) return;
+            st.hist = st.hist.slice(0, +b.dataset.i + 1);
+            render();
+        });
+        $('reset').addEventListener('click', reset);
+        $('undo').addEventListener('click', () => { if (st.hist.length > 1) { st.hist.pop(); render(); } });
+        $('step').addEventListener('click', nextStep);
+        if (P.initials) $('init').addEventListener('change', e => { st.init = e.target.value; reset(); });
+        reset();
+    }
+
+    /* =====================================================================
+     * 13. INISIALISASI
      * ===================================================================== */
     const INIT = {
         'romania-map': initRomaniaMap,
@@ -1563,7 +2043,8 @@
         'grid-lab': initGridLab,
         'vacuum': initVacuum,
         'game-tree': initGameTree,
-        'tictactoe': initTicTacToe
+        'tictactoe': initTicTacToe,
+        'state-space': initStateSpace
     };
     function boot() {
         document.querySelectorAll('[data-viz]').forEach(el => {
