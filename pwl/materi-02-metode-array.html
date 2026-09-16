@@ -502,6 +502,61 @@ rata IPK: 3.48
                 <div class="success-box">
                     <strong>Titik periksa Section 1:</strong> diberi satu berkas JSON, kalian bisa menjawab pertanyaan seperti "berapa rata-rata X untuk kelompok Y" hanya dengan merangkai <code>filter</code> &rarr; <code>map</code> &rarr; <code>reduce</code>, tanpa satu pun <code>for</code> manual. Di folder <code>latihan-materi-2</code> sudah ada berkas <code>01-map.js</code> s.d. <code>06-bersarang.js</code> yang jalan.
                 </div>
+
+                <h3>1.7 Tiga Prinsip di Balik Metode Array</h3>
+                <p>Sampai di sini kalian sudah memakai <code>map</code>, <code>filter</code>, dan <code>reduce</code>. Sekarang mari kita bedah <em>mengapa</em> ketiganya dirancang seperti itu &mdash; karena tiga prinsip yang sama akan muncul lagi di komponen React (Pertemuan 11) dan di pengujian unit (Pertemuan 13).</p>
+
+                <h4>a. Fungsi murni (pure function)</h4>
+                <p>Fungsi murni adalah fungsi yang untuk masukan yang sama <strong>selalu</strong> mengembalikan keluaran yang sama, dan tidak menyentuh apa pun di luar dirinya.</p>
+
+<pre><code><span class="comment">// ❌ Tidak murni — hasilnya bergantung pada variabel luar yang bisa berubah</span>
+<span class="keyword">let</span> <span class="variable">potongan</span> = <span class="number">0.1</span>;
+<span class="keyword">function</span> <span class="function">hargaAkhir</span>(<span class="variable">harga</span>) {
+    <span class="keyword">return</span> <span class="variable">harga</span> - <span class="variable">harga</span> * <span class="variable">potongan</span>;   <span class="comment">// ganti `potongan`, hasilnya ikut berubah</span>
+}
+
+<span class="comment">// ✅ Murni — semua yang dibutuhkan masuk lewat parameter</span>
+<span class="keyword">function</span> <span class="function">hargaAkhir</span>(<span class="variable">harga</span>, <span class="variable">potongan</span>) {
+    <span class="keyword">return</span> <span class="variable">harga</span> - <span class="variable">harga</span> * <span class="variable">potongan</span>;
+}</code></pre>
+                <p>Bedanya terasa saat menguji. Fungsi murni bisa diuji hanya dengan memanggilnya dan membandingkan hasilnya &mdash; tanpa perlu menyiapkan basis data, server, atau keadaan apa pun. Itulah sebabnya di Pertemuan 13 fungsi murni menjadi bagian yang paling mudah ditulis ujinya.</p>
+
+                <h4>b. Fungsi tingkat tinggi (higher-order function)</h4>
+                <p>Fungsi tingkat tinggi adalah fungsi yang <strong>menerima fungsi lain sebagai argumen</strong>, atau <strong>mengembalikan fungsi</strong>. <code>map</code>, <code>filter</code>, dan <code>reduce</code> ketiganya termasuk jenis pertama.</p>
+
+<pre><code><span class="comment">// map() adalah higher-order function: argumennya sendiri sebuah fungsi</span>
+<span class="keyword">const</span> <span class="variable">nama</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>((<span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nama</span>);
+
+<span class="comment">// Jenis kedua: fungsi yang MENGEMBALIKAN fungsi</span>
+<span class="keyword">const</span> <span class="variable">minimal</span> = (<span class="variable">batas</span>) <span class="operator">=&gt;</span> (<span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nilai</span> <span class="operator">&gt;=</span> <span class="variable">batas</span>;
+
+<span class="keyword">const</span> <span class="variable">lulus</span>  = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="function">minimal</span>(<span class="number">60</span>));
+<span class="keyword">const</span> <span class="variable">cumlaude</span> = <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="function">minimal</span>(<span class="number">85</span>));   <span class="comment">// aturan sama, ambang berbeda</span></code></pre>
+                <p>Pola <code>minimal(batas)</code> di atas &mdash; fungsi yang mencetak fungsi &mdash; akan kalian temui lagi persis dalam bentuk <code>validasi(skema)</code> pada middleware Express di Pertemuan 5.</p>
+
+                <h4>c. Kekekalan (immutability)</h4>
+                <p>Data yang kekal berarti tidak diubah di tempat; setiap perubahan menghasilkan salinan baru. Bandingkan dua kelompok metode berikut.</p>
+
+                <table>
+                    <tr><th>Mengubah data asli (hindari)</th><th>Mengembalikan salinan baru (pilih ini)</th></tr>
+                    <tr><td><code>push()</code>, <code>pop()</code></td><td><code>[...arr, item]</code>, <code>arr.slice(0, -1)</code></td></tr>
+                    <tr><td><code>splice()</code></td><td><code>filter()</code></td></tr>
+                    <tr><td><code>sort()</code>, <code>reverse()</code></td><td><code>toSorted()</code>, <code>toReversed()</code></td></tr>
+                    <tr><td><code>obj.nilai = 90</code></td><td><code>{ ...obj, nilai: 90 }</code></td></tr>
+                </table>
+
+<pre><code><span class="keyword">const</span> <span class="variable">asli</span> = [<span class="number">3</span>, <span class="number">1</span>, <span class="number">2</span>];
+
+<span class="keyword">const</span> <span class="variable">salahUrut</span> = <span class="variable">asli</span>.<span class="function">sort</span>();       <span class="comment">// ⚠️ `asli` ikut berubah menjadi [1, 2, 3]</span>
+<span class="keyword">const</span> <span class="variable">benarUrut</span> = <span class="variable">asli</span>.<span class="function">toSorted</span>();   <span class="comment">// ✅ `asli` tetap [3, 1, 2]</span></code></pre>
+                <div class="warning-box">
+                    <strong><code>sort()</code> adalah jebakan klasik.</strong> Namanya terdengar seperti &ldquo;memberi versi terurut&rdquo;, padahal ia mengurutkan larik aslinya dan mengembalikan larik yang sama. Kalau larik itu dipakai di tempat lain, urutannya ikut berubah tanpa kalian sadari. Sejak Node.js 20, gunakan <code>toSorted()</code>.
+                </div>
+
+                <div class="info-box">
+                    <strong>Kenapa ini penting untuk React nanti.</strong> React memutuskan perlu tidaknya menggambar ulang layar dengan membandingkan nilai lama dan nilai baru. Kalau kalian mengubah larik di tempat, nilainya tetap objek yang sama &mdash; React menganggap tidak ada yang berubah, dan tampilan tidak diperbarui. Kebiasaan memakai salinan baru yang dilatih sekarang akan menyelamatkan kalian di Pertemuan 11.
+                </div>
+
             </section>
 
 
@@ -737,6 +792,58 @@ rata IPK: 3.48
                     <button onclick="demoSafe('spread')">Spread object</button>
                     <div class="console-output" id="demo3-out">Klik salah satu tombol di atas...</div>
                 </div>
+
+                <h3>2.5 Map dan Set &mdash; Saat Object dan Array Kurang Tepat</h3>
+                <p>Object dan Array menutup hampir semua kebutuhan, tapi ada dua kasus yang keduanya tangani dengan canggung. JavaScript menyediakan dua struktur khusus untuk itu.</p>
+
+                <h4>Set &mdash; kumpulan tanpa duplikat</h4>
+                <p><code>Set</code> menyimpan nilai-nilai unik. Menambahkan nilai yang sudah ada tidak berpengaruh apa-apa, sehingga kita tidak perlu memeriksa duplikat secara manual.</p>
+
+<pre><code><span class="keyword">const</span> <span class="variable">prodi</span> = <span class="variable">mahasiswa</span>.<span class="function">map</span>((<span class="variable">m</span>) <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">prodi</span>);
+<span class="comment">// ['Informatika', 'Elektro', 'Informatika', 'Sipil', 'Elektro']</span>
+
+<span class="keyword">const</span> <span class="variable">prodiUnik</span> = [...<span class="keyword">new</span> <span class="function">Set</span>(<span class="variable">prodi</span>)];
+<span class="comment">// ['Informatika', 'Elektro', 'Sipil']</span>
+
+<span class="keyword">const</span> <span class="variable">s</span> = <span class="keyword">new</span> <span class="function">Set</span>([<span class="string">'a'</span>, <span class="string">'b'</span>]);
+<span class="variable">s</span>.<span class="function">add</span>(<span class="string">'a'</span>);        <span class="comment">// diabaikan, 'a' sudah ada</span>
+<span class="variable">s</span>.<span class="function">has</span>(<span class="string">'b'</span>);        <span class="comment">// true</span>
+<span class="variable">s</span>.<span class="variable">size</span>;            <span class="comment">// 2</span></code></pre>
+                <p>Mari kita bedah baris kuncinya. <code>new Set(prodi)</code> membuang duplikat, tetapi hasilnya bertipe <code>Set</code> &mdash; belum bisa di-<code>map</code> atau di-<code>filter</code>. Tanda <code>[...]</code> di sekelilingnya (spread dari bagian 2.3) mengubahnya kembali menjadi larik biasa. Gabungan <code>[...new Set(arr)]</code> ini adalah cara paling ringkas membuang duplikat di JavaScript, dan layak dihafal.</p>
+
+                <h4>Map &mdash; kamus dengan kunci bebas</h4>
+                <p>Kunci pada Object <strong>selalu</strong> berupa string. Kalau kalian memakai angka sebagai kunci, JavaScript diam-diam mengubahnya menjadi string. <code>Map</code> tidak melakukan itu: kuncinya boleh berupa tipe apa pun, dan urutan penyisipan dijamin terjaga.</p>
+
+<pre><code><span class="keyword">const</span> <span class="variable">indeksNilai</span> = <span class="keyword">new</span> <span class="function">Map</span>([
+    [<span class="number">90</span>, <span class="string">'A'</span>],
+    [<span class="number">80</span>, <span class="string">'B'</span>],
+    [<span class="number">70</span>, <span class="string">'C'</span>],
+]);
+
+<span class="variable">indeksNilai</span>.<span class="function">get</span>(<span class="number">90</span>);        <span class="comment">// 'A'   — kunci tetap number</span>
+<span class="variable">indeksNilai</span>.<span class="function">has</span>(<span class="number">65</span>);        <span class="comment">// false</span>
+<span class="variable">indeksNilai</span>.<span class="function">set</span>(<span class="number">60</span>, <span class="string">'D'</span>);   <span class="comment">// menambah pasangan baru</span>
+<span class="variable">indeksNilai</span>.<span class="variable">size</span>;           <span class="comment">// 4</span>
+
+<span class="keyword">for</span> (<span class="keyword">const</span> [<span class="variable">batas</span>, <span class="variable">huruf</span>] <span class="keyword">of</span> <span class="variable">indeksNilai</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">batas</span>, <span class="variable">huruf</span>);   <span class="comment">// urutan penyisipan terjaga</span>
+}</code></pre>
+                <table>
+                    <tr><th>&nbsp;</th><th>Object</th><th>Map</th></tr>
+                    <tr><td><strong>Tipe kunci</strong></td><td>hanya string / symbol</td><td>apa saja (angka, objek, fungsi)</td></tr>
+                    <tr><td><strong>Menghitung isi</strong></td><td><code>Object.keys(o).length</code></td><td><code>map.size</code></td></tr>
+                    <tr><td><strong>Urutan</strong></td><td>tidak dijamin untuk kunci angka</td><td>urutan penyisipan dijamin</td></tr>
+                    <tr><td><strong>Diubah ke JSON</strong></td><td>langsung bisa</td><td>perlu <code>Object.fromEntries()</code> dulu</td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Kapan memilih apa.</strong> Pakai <strong>Object</strong> untuk data yang bentuknya sudah tetap dan akan dikirim sebagai JSON &mdash; misalnya satu baris mahasiswa. Pakai <strong>Map</strong> untuk kamus yang isinya sering ditambah dan dihapus saat program berjalan. Pakai <strong>Set</strong> begitu kalian mendapati diri menulis <code>if (!daftar.includes(x)) daftar.push(x)</code>.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Map tidak bisa langsung dikirim sebagai JSON.</strong> <code>JSON.stringify(new Map([['a', 1]]))</code> menghasilkan <code>{}</code>, bukan datanya. Kalau isi Map perlu dikirim sebagai tanggapan API di Pertemuan 4, ubah dulu: <code>Object.fromEntries(map)</code>.
+                </div>
+
             </section>
 
 
@@ -1136,72 +1243,6 @@ const mahasiswaDemo = [
             });
         });
 
-        // ============================================
-        // ANTI-COPY PROTECTION untuk elemen pre, code, terminal
-        // ============================================
-        (function() {
-            'use strict';
-            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
-                el.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    showCopyWarning();
-                    return false;
-                });
-                el.style.userSelect = 'none';
-                el.style.webkitUserSelect = 'none';
-                el.style.MozUserSelect = 'none';
-                el.setAttribute('draggable', 'false');
-                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
-            });
-
-            document.addEventListener('keydown', function(e) {
-                var selection = window.getSelection();
-                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
-                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
-                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) {
-                        e.preventDefault();
-                        showCopyWarning();
-                        return false;
-                    }
-                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) {
-                        e.preventDefault();
-                        return false;
-                    }
-                }
-            });
-
-            document.addEventListener('copy', function(e) {
-                var selection = window.getSelection();
-                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
-                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
-                    e.preventDefault();
-                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
-                    showCopyWarning();
-                }
-            });
-
-            function showCopyWarning() {
-                var existingModal = document.getElementById('copy-warning-modal');
-                if (existingModal) existingModal.remove();
-                var modal = document.createElement('div');
-                modal.id = 'copy-warning-modal';
-                modal.innerHTML = `
-                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
-                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
-                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
-                            <h3 style="color:#3c873a;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
-                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
-                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#3c873a;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
-                        </div>
-                    </div>`;
-                document.body.appendChild(modal);
-                setTimeout(function() {
-                    var m = document.getElementById('copy-warning-modal');
-                    if (m) m.remove();
-                }, 3000);
-            }
-            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
-        })();
     </script>
 
     <script>

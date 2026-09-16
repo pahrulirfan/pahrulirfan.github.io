@@ -415,7 +415,7 @@
                     <tr>
                         <td><strong>Model eksekusi</strong></td>
                         <td>Berurutan (blocking), satu request satu alur</td>
-                        <td>Satu utas + event loop, banyak pekerjaan menunggu bersamaan</td>
+                        <td>Satu thread + event loop, banyak pekerjaan menunggu bersamaan</td>
                     </tr>
                     <tr>
                         <td><strong>Variabel global</strong></td>
@@ -826,20 +826,28 @@ Argumen    : [ '--nama', 'Andi' ]</span></div>
                 </table>
 
                 <h3>4.1 let, const, dan var</h3>
-                <p>JavaScript punya tiga cara membuat variabel. Pilihannya sederhana:</p>
+                <p>Di PHP, kalian menulis <code>$nama = "Andi";</code> tanpa peduli apakah nanti nilainya akan diganti atau tidak &mdash; caranya sama saja. JavaScript memaksa kalian menyatakan itu <strong>di depan</strong>, lewat kata yang dipakai untuk membuat variabel:</p>
+                <ul>
+                    <li><code>const</code> &mdash; nilainya <strong>tidak akan diganti</strong> setelah baris ini. Kalau dicoba, JavaScript menolak (error).</li>
+                    <li><code>let</code> &mdash; nilainya <strong>boleh diganti</strong> nanti, misalnya angka yang bertambah di dalam perulangan.</li>
+                    <li><code>var</code> &mdash; cara lama sebelum <code>let</code>/<code>const</code> ada. Perilakunya lebih berantakan (dibahas di 4.2) dan tidak dipakai lagi di kode baru.</li>
+                </ul>
 
                 <pre><code><span class="keyword">const</span> <span class="variable">nama</span> = <span class="string">"Andi"</span>;      <span class="comment">// tidak akan di-assign ulang → PILIHAN UTAMA</span>
 <span class="keyword">let</span> <span class="variable">total</span> = <span class="number">0</span>;            <span class="comment">// nilainya akan berubah</span>
-<span class="keyword">var</span> <span class="variable">lama</span> = <span class="string">"jangan"</span>;      <span class="comment">// gaya lama, JANGAN dipakai lagi</span>
-
-<span class="comment">// const menahan variabelnya, bukan isinya:</span>
-<span class="keyword">const</span> <span class="variable">daftar</span> = [<span class="number">1</span>, <span class="number">2</span>];
-<span class="variable">daftar</span>.<span class="function">push</span>(<span class="number">3</span>);          <span class="comment">// boleh — isi array diubah</span>
-<span class="comment">// daftar = [4, 5];       error — variabelnya di-assign ulang</span></code></pre>
+<span class="keyword">var</span> <span class="variable">lama</span> = <span class="string">"jangan"</span>;      <span class="comment">// gaya lama, JANGAN dipakai lagi</span></code></pre>
 
                 <div class="info-box">
                     <strong>Aturan praktis:</strong> pakai <code>const</code> untuk semua hal. Ganti ke <code>let</code> hanya kalau editor/Node memprotes karena nilainya memang di-assign ulang. <code>var</code> tidak punya alasan untuk dipakai lagi di kode baru.
                 </div>
+
+                <h4>Titik yang sering bikin bingung: <code>const</code> pada array/object</h4>
+                <p>Bayangkan variabel sebagai <strong>label pada sebuah kotak</strong>, dan isinya adalah nilai yang disimpan. <code>const</code> hanya merekatkan labelnya &mdash; label itu tidak boleh dipindah ke kotak lain. Tetapi kalau kotaknya berisi array atau object, kalian tetap boleh <strong>membuka kotak itu dan mengubah isinya</strong>, karena itu bukan mengganti label.</p>
+
+                <pre><code><span class="keyword">const</span> <span class="variable">daftar</span> = [<span class="number">1</span>, <span class="number">2</span>];
+<span class="variable">daftar</span>.<span class="function">push</span>(<span class="number">3</span>);          <span class="comment">// BOLEH — ini mengubah ISI kotak, labelnya tetap "daftar"</span>
+<span class="variable">daftar</span> = [<span class="number">4</span>, <span class="number">5</span>];       <span class="comment">// ERROR — ini usaha memindah label ke kotak lain</span></code></pre>
+                <p>Jadi aturannya: <code>const</code> melarang <em>penulisan ulang tanda <code>=</code></em> (label pindah kotak), bukan melarang perubahan isi array/object di dalamnya. Kalau kalian memang butuh menimpa seluruh isi dengan array/object yang benar-benar baru (bukan mengubah isinya sedikit demi sedikit), itu tandanya variabelnya butuh <code>let</code>, bukan <code>const</code>.</p>
 
                 <div class="success-box">
                     <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>41-variabel.js</code>:
@@ -898,6 +906,25 @@ TypeError: Assignment to constant variable.</span></div>
 }</code></pre>
                 <p><code>var</code> mengabaikan blok <code>{ }</code> &mdash; ia selalu naik ke tingkat fungsi terdekat. <code>let</code> dan <code>const</code> berhenti tepat di blok tempat ia ditulis. Blok yang lebih rapat hampir selalu lebih aman, karena variabel tidak "bocor" ke tempat yang tidak kalian sangka.</p>
 
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>42-scope.js</code> dan ketik ulang kode <code>contoh()</code> di atas:
+                    <pre><code><span class="comment">// 42-scope.js</span>
+<span class="keyword">function</span> <span class="function">contoh</span>() {
+    <span class="keyword">if</span> (<span class="keyword">true</span>) {
+        <span class="keyword">var</span> <span class="variable">a</span> = <span class="string">"var: bocor keluar blok"</span>;
+        <span class="keyword">let</span> <span class="variable">b</span> = <span class="string">"let: hanya di dalam blok"</span>;
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">a</span>);     <span class="comment">// jalan</span>
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">b</span>);     <span class="comment">// akan error di sini</span>
+}
+<span class="function">contoh</span>();</code></pre>
+                    Jalankan:
+                    <div class="terminal"><span class="prompt">$</span> node 42-scope.js
+<span class="out">var: bocor keluar blok
+ReferenceError: b is not defined</span></div>
+                    <strong>Sekarang perbaiki:</strong> pindahkan <code>let b</code> ke luar <code>if</code> (deklarasikan di awal fungsi), isi nilainya di dalam <code>if</code>. Jalankan lagi &mdash; kedua <code>console.log</code> berhasil. Simpan kedua versi supaya kelihatan bedanya.
+                </div>
+
                 <h4>Hoisting: kapan variabel "mulai ada"</h4>
                 <p>JavaScript memindahkan <em>deklarasi</em> variabel ke atas lingkupnya sebelum kode dijalankan (disebut <strong>hoisting</strong>). Yang membedakan:</p>
                 <pre><code><span class="variable">console</span>.<span class="function">log</span>(<span class="variable">x</span>);   <span class="comment">// undefined — var sudah "ada" tapi belum diisi</span>
@@ -918,6 +945,26 @@ TypeError: Assignment to constant variable.</span></div>
     <span class="function">setTimeout</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">i</span>), <span class="number">100</span>);   <span class="comment">// 0, 1, 2</span>
 }</code></pre>
                 <p>Karena <code>var i</code> hanya satu untuk seluruh fungsi, saat <code>setTimeout</code> akhirnya jalan, perulangan sudah selesai dan <code>i</code> bernilai 3. Dengan <code>let</code>, setiap putaran membuat <code>i</code> baru, sehingga nilai yang "terekam" oleh fungsi di dalamnya tetap benar.</p>
+
+                <div class="success-box">
+                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>42-loop.js</code>, isi dengan kedua perulangan di atas sekaligus:
+                    <pre><code><span class="comment">// 42-loop.js</span>
+<span class="keyword">for</span> (<span class="keyword">var</span> <span class="variable">i</span> = <span class="number">0</span>; <span class="variable">i</span> &lt; <span class="number">3</span>; <span class="variable">i</span>++) {
+    <span class="function">setTimeout</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'var:'</span>, <span class="variable">i</span>), <span class="number">100</span>);
+}
+<span class="keyword">for</span> (<span class="keyword">let</span> <span class="variable">j</span> = <span class="number">0</span>; <span class="variable">j</span> &lt; <span class="number">3</span>; <span class="variable">j</span>++) {
+    <span class="function">setTimeout</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'let: '</span>, <span class="variable">j</span>), <span class="number">100</span>);
+}</code></pre>
+                    Jalankan:
+                    <div class="terminal"><span class="prompt">$</span> node 42-loop.js
+<span class="out">var: 3
+var: 3
+var: 3
+let:  0
+let:  1
+let:  2</span></div>
+                    Bandingkan urutannya dengan penjelasan di atas &mdash; <code>var</code> mencetak angka terakhir tiga kali, <code>let</code> mencetak angka yang berbeda tiap baris.
+                </div>
 
                 <h4>Lingkup bersarang &amp; <em>shadowing</em></h4>
                 <pre><code><span class="keyword">const</span> <span class="variable">pesan</span> = <span class="string">"luar"</span>;
@@ -968,27 +1015,6 @@ TypeError: Assignment to constant variable.</span></div>
 <span class="function">a</span>();
 <span class="comment">// b() TIDAK bisa membaca x milik a() — fungsi hanya mengintip ke LUAR,</span>
 <span class="comment">// mengikuti tempat ia DITULIS, bukan tempat ia DIPANGGIL.</span></code></pre>
-
-                <div class="success-box">
-                    <strong>Coba di <code>latihan-js</code>.</strong> Buat berkas <code>42-scope.js</code> dan ketik kode ini:
-                    <pre><code><span class="comment">// 42-scope.js</span>
-<span class="keyword">function</span> <span class="function">contoh</span>() {
-    <span class="keyword">if</span> (<span class="keyword">true</span>) {
-        <span class="keyword">var</span> <span class="variable">a</span> = <span class="string">"var: bocor keluar blok"</span>;
-        <span class="keyword">let</span> <span class="variable">b</span> = <span class="string">"let: hanya di dalam blok"</span>;
-    }
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">a</span>);     <span class="comment">// jalan</span>
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">b</span>);     <span class="comment">// akan error di sini</span>
-}
-<span class="function">contoh</span>();</code></pre>
-                    Jalankan:
-                    <div class="terminal"><span class="prompt">$</span> node 42-scope.js
-<span class="out">var: bocor keluar blok
-ReferenceError: b is not defined</span></div>
-                    <strong>Sekarang perbaiki:</strong> pindahkan <code>let b</code> ke luar <code>if</code> (deklarasikan di awal fungsi), isi nilainya di dalam <code>if</code>. Jalankan lagi &mdash; kedua <code>console.log</code> berhasil. Simpan kedua versi supaya kelihatan bedanya.
-                    <br><br>
-                    <strong>Lanjutan (opsional):</strong> tambahkan berkas <code>42-loop.js</code> berisi dua perulangan (satu <code>var i</code>, satu <code>let j</code>) yang di dalamnya ada <code>setTimeout(() =&gt; console.log(i), 0)</code>. Jalankan dan bandingkan: yang <code>var</code> mencetak <code>3 3 3</code>, yang <code>let</code> mencetak <code>0 1 2</code>.
-                </div>
 
                 <div class="interactive-demo">
                     <h5>Coba Langsung: Lingkup Variabel</h5>
@@ -1467,51 +1493,17 @@ Node.js versi: v24.4.1</span></div>
 <span style="color:#22d3ee;font-weight:bold">Node.js versi: v24.4.1</span>
 <span style="background:#eab308;color:#000"> PERINGATAN </span> ini contoh teks berwarna</span></div>
 
-                <h3>Langkah 4 &mdash; Paket Kedua: <code>figlet</code></h3>
-                <p>Ulangi pola yang sama untuk paket lain: <a href="https://www.npmjs.com/package/figlet" target="_blank">figlet</a> mengubah teks biasa menjadi huruf ASCII besar (sering dipakai untuk judul di aplikasi baris perintah).</p>
-
-                <p><strong>Langkah 4a &mdash; pasang:</strong></p>
-                <div class="terminal"><span class="prompt">$</span> npm install figlet
-<span class="out">added 2 packages in 1s</span></div>
-                <p>Perhatikan tulisannya <em>&ldquo;added 2 packages&rdquo;</em>, bukan 1 &mdash; figlet sendiri memakai 1 paket lain (dependensi milik dependensi). Lihat <code>package.json</code>: yang tercatat di <code>"dependencies"</code> hanya <code>figlet</code>; paket turunannya dicatat di <code>package-lock.json</code>.</p>
-
-                <p><strong>Langkah 4b &mdash; baca dokumentasi.</strong> Di halaman npm figlet, bagian <em>Usage</em> menunjukkan dua gaya: <code>figlet(text, callback)</code> (asinkron, dibahas Pertemuan 3) dan <code>figlet.textSync(text)</code> yang langsung mengembalikan string. Kita pakai yang <code>textSync</code>.</p>
-
-                <p><strong>Langkah 4c &mdash; buat <code>banner.js</code></strong> &mdash; sekaligus latihan memakai <strong>dua paket bersama</strong>:</p>
-                <pre><code><span class="comment">// banner.js</span>
-<span class="keyword">import</span> <span class="variable">figlet</span> <span class="keyword">from</span> <span class="string">'figlet'</span>;
-<span class="keyword">import</span> <span class="variable">chalk</span> <span class="keyword">from</span> <span class="string">'chalk'</span>;
-
-<span class="keyword">const</span> <span class="variable">judul</span> = <span class="variable">figlet</span>.<span class="function">textSync</span>(<span class="string">'PWL'</span>);
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="function">cyan</span>(<span class="variable">judul</span>));
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">chalk</span>.<span class="variable">dim</span>(<span class="string">'Pemrograman Web Lanjut'</span>));</code></pre>
-
-                <div class="terminal"><span class="prompt">$</span> node banner.js
-<span class="out"><span style="color:#22d3ee">  ______        ___
- |  _ \ \      / / |
- | |_) \ \ /\ / /| |
- |  __/ \ V  V / | |___
- |_|     \_/\_/  |_____|</span>
-<span style="opacity:0.6">Pemrograman Web Lanjut</span></span></div>
-
                 <div class="info-box">
-                    <strong>Kebiasaan yang dilatih di sini:</strong> setiap kali butuh fungsi baru, langkahnya selalu sama &mdash; cari paketnya di npm, baca bagian <em>Usage</em> di dokumentasi, baru tulis kode. Bukan menyalin dari jawaban teman. Perhatikan juga: tiap percobaan paket ditaruh di berkasnya sendiri (<code>warna.js</code>, <code>banner.js</code>), <code>index.js</code> dibiarkan sederhana.
+                    <strong>Kebiasaan yang dilatih di sini:</strong> setiap kali butuh fungsi baru, langkahnya selalu sama &mdash; cari paketnya di npm, baca bagian <em>Usage</em> di dokumentasi, baru tulis kode. Bukan menyalin dari jawaban teman. Perhatikan juga: percobaan paket ditaruh di berkasnya sendiri (<code>warna.js</code>), <code>index.js</code> dibiarkan sederhana.
                 </div>
 
                 <div class="success-box">
-                    <strong>Selesai kalau:</strong> <code>node warna.js</code> mencetak teks berwarna, <code>node banner.js</code> mencetak judul ASCII, dan <code>package.json</code> mencatat <code>chalk</code> serta <code>figlet</code> di <code>"dependencies"</code>. (Bukti koneksi MySQL sudah dikerjakan terpisah di <code>latihan-js</code>, Section 5.3.)
+                    <strong>Selesai kalau:</strong> <code>node warna.js</code> mencetak teks berwarna dan <code>package.json</code> mencatat <code>chalk</code> di <code>"dependencies"</code>. (Bukti koneksi MySQL sudah dikerjakan terpisah di <code>latihan-js</code>, Section 5.3.)
                 </div>
 
-                <h3>Latihan Mandiri</h3>
-                <p>Kerjakan tanpa panduan langkah demi langkah &mdash; justru itu yang dinilai: kalian bisa memasang paket sendiri lalu memakainya berdasarkan dokumentasi. Tetap di proyek <code>pwl-praktik</code>.</p>
-                <ol>
-                    <li><strong><a href="https://www.npmjs.com/package/dayjs" target="_blank">dayjs</a> &mdash; mengolah tanggal.</strong> Pasang, lalu buat <code>tanggal.js</code> yang mencetak tanggal hari ini dengan format <code>DD MMMM YYYY</code> dan menghitung selisih hari sampai akhir semester. Baca bagian <em>Formatting</em> dan <em>Difference</em> di dokumentasinya.</li>
-                    <li><strong><a href="https://www.npmjs.com/package/nanoid" target="_blank">nanoid</a> &mdash; membuat ID acak.</strong> Pasang, lalu buat <code>id.js</code> yang mencetak 5 ID unik. Coba juga <code>customAlphabet</code> untuk membuat ID yang hanya berisi angka.</li>
-                    <li>Buat <code>gabung.js</code> yang memakai <strong>tiga paket sekaligus</strong>: cetak tanggal hari ini (<code>dayjs</code>) berwarna hijau (<code>chalk</code>), dan sebuah kode pesanan acak (<code>nanoid</code>) berwarna kuning. Di komentar paling atas tiap berkas, tulis: nama paket, tautan dokumentasi, dan satu kalimat kegunaannya.</li>
-                    <li>Cari <strong>sendiri</strong> satu paket sederhana lain di <a href="https://www.npmjs.com" target="_blank">npmjs.com</a> (mis. <code>boxen</code>, <code>cli-table3</code>, <code>slugify</code>) dan buat satu berkas kecil yang memakainya.</li>
-                    <li>Tambahkan skrip <code>"dev": "node --watch index.js"</code> di <code>package.json</code>, jalankan dengan <code>npm run dev</code> sambil mengedit <code>index.js</code> &mdash; amati apa yang terjadi setiap kali menyimpan berkas.</li>
-                    <li>Jelaskan dengan kalimat sendiri (tulis sebagai komentar di <code>index.js</code>): apa beda <code>dependencies</code> dan <code>devDependencies</code>, dan mengapa <code>node_modules/</code> tidak perlu disalin ke mana-mana selama ada <code>package.json</code> dan <code>package-lock.json</code>.</li>
-                </ol>
+                <div class="info-box">
+                    <strong>Lanjutan praktik ini &mdash; memasang paket sendiri berdasarkan dokumentasi (<code>cowsay</code>, <code>figlet</code>, dan lainnya) &mdash; dikerjakan sebagai <a href="tugas-01-lingkungan-kerja-javascript.html">Tugas 1</a>, bukan lagi di halaman materi ini.</strong>
+                </div>
             </section>
 
             <!-- Section CPMK -->
@@ -1561,7 +1553,7 @@ Node.js versi: v24.4.1</span></div>
                         <li><code>node -v</code> dan <code>npm -v</code> berjalan di terminal</li>
                         <li>Ada folder proyek npm dengan <code>package.json</code> ber-<code>"type": "module"</code></li>
                         <li>Bisa menjelaskan beda <code>dependencies</code> dan <code>devDependencies</code>, serta guna <code>package-lock.json</code></li>
-                        <li>Berhasil memasang paket dari npm sendiri (<code>chalk</code>, <code>figlet</code>, dan minimal satu paket pilihan sendiri) dan memakainya berdasarkan dokumentasi</li>
+                        <li>Berhasil memasang paket dari npm (<code>chalk</code>) dan memakainya berdasarkan dokumentasi</li>
                         <li>Bisa membedakan <code>==</code> dan <code>===</code>, serta <code>let</code>, <code>const</code>, dan <code>var</code></li>
                         <li>MySQL terpasang dan terbukti bisa dihubungi dari Node.js</li>
                     </ul>
@@ -1574,7 +1566,7 @@ Node.js versi: v24.4.1</span></div>
                     <li><a href="https://dev.mysql.com/doc/" target="_blank">MySQL Documentation</a> [13]</li>
                     <li><a href="https://www.postgresql.org/docs/" target="_blank">PostgreSQL Documentation</a> (opsional)</li>
                     <li><a href="https://docs.npmjs.com/about-semantic-versioning" target="_blank">npm &mdash; About Semantic Versioning</a></li>
-                    <li><a href="https://www.npmjs.com/package/chalk" target="_blank">chalk</a>, <a href="https://www.npmjs.com/package/figlet" target="_blank">figlet</a>, <a href="https://www.npmjs.com/package/dayjs" target="_blank">dayjs</a>, <a href="https://www.npmjs.com/package/nanoid" target="_blank">nanoid</a> &mdash; paket latihan di Section 6</li>
+                    <li><a href="https://www.npmjs.com/package/chalk" target="_blank">chalk</a> &mdash; paket latihan di Section 6</li>
                 </ul>
             </section>
 
