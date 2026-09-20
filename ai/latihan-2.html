@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latihan 2 — Pencarian Buta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=20260913f">
+    <style>
+        /* ---- Diagram graf/pohon soal (subset dari materi-2.html) ---- */
+        .tree-svg-wrap {
+            overflow-x: auto;
+            background: #f5f8ff;
+            border: 2px dashed #b0c4de;
+            border-radius: 10px;
+            padding: 20px 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .tree-svg-wrap svg { max-width: 100%; }
+        .node-default  { fill: #1565c0; }
+        .node-goal     { fill: #2e7d32; }
+        .node-text     { fill: white; font-size: 13px; font-weight: 700;
+                         font-family: 'Segoe UI', sans-serif; }
+        .edge          { stroke: #90a4ae; stroke-width: 2; fill: none; }
+        .edge-cost     { fill: #546e7a; font-size: 11px;
+                         font-family: 'Segoe UI', sans-serif; }
+
+        /* tabel jejak pada kunci jawaban */
+        .trace-table { font-size: 0.88em; }
+        .trace-table td:first-child { font-weight: 700; color: #1565c0; }
+        .trace-table .tr-goal { background: #e8f5e9; }
+
+        /* kunci jawaban latihan */
+        details.kunci {
+            margin-top: 10px;
+            background: #fff;
+            border: 1px solid #d6e2f3;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+        details.kunci summary { cursor: pointer; font-weight: 600; color: #1565c0; }
+        details.kunci[open] summary { margin-bottom: 6px; }
+        details.kunci ul { margin: 0 0 0 18px; font-size: 0.92em; }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Latihan Materi 2</h1>
+        <p>Sub-CPMK2 · Latihan Manual: BFS, DFS, DLS, IDS, UCS, BDS</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Latihan</h3>
+            <ul>
+                <li><a href="#pendahuluan" class="active">0. Pendahuluan</a></li>
+                <li><a href="#latihan-bfs-dfs-dls">1. BFS, DFS &amp; DLS</a></li>
+                <li><a href="#latihan-ids-ucs">2. IDS &amp; UCS</a></li>
+                <li><a href="#latihan-bds">3. BDS</a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- Pendahuluan -->
+            <!-- ============================================================ -->
+            <section id="pendahuluan">
+                <h2>Latihan Materi 2 <span class="badge badge-new">Kegiatan</span></h2>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tentang halaman ini:</strong>
+                    <p style="margin-top:6px;">Halaman ini memuat tiga kegiatan latihan manual (tulis tangan di kertas) yang melengkapi <a href="materi-2.html">Materi 2 — Ruang Keadaan &amp; Pencarian Buta</a>: menelusuri BFS, DFS, DLS, IDS, UCS, dan BDS sendiri pada graf/pohon soal, lalu mencocokkan jawaban dengan kunci yang disediakan. Kerjakan materi teori dan animasinya dulu di <a href="materi-2.html">Materi 2</a> sebelum memulai latihan ini.</p>
+                </div>
+                <div class="card-grid">
+                    <a href="#latihan-bfs-dfs-dls" class="card card-blue" style="text-decoration:none;">
+                        <div class="card-icon"><i class="fa-solid fa-water"></i></div>
+                        <h4>1. BFS, DFS &amp; DLS</h4>
+                        <p>Telusuri pohon 13 simpul dengan ketiga algoritma, bandingkan jumlah simpul yang dikunjungi masing-masing.</p>
+                    </a>
+                    <a href="#latihan-ids-ucs" class="card card-teal" style="text-decoration:none;">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4>2. IDS &amp; UCS</h4>
+                        <p>Jalankan IDS pada pohon yang sama, lalu UCS pada graf berbobot baru dengan pembaruan frontier.</p>
+                    </a>
+                    <a href="#latihan-bds" class="card card-red" style="text-decoration:none;">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-left-right"></i></div>
+                        <h4>3. BDS</h4>
+                        <p>Jalankan dua frontier sekaligus pada graf baru, deteksi titik pertemuannya, dan sambungkan lintasannya.</p>
+                    </a>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Cara mengerjakan &amp; mengumpulkan:</strong>
+                    <p style="margin-top:6px;">Setiap kegiatan dikerjakan <strong>di kertas, dengan tulisan tangan</strong> — bukan diketik. Foto hasilnya dengan jelas dan terbaca, lalu kumpulkan sesuai instruksi dan tenggat waktu yang disampaikan dosen pengampu di kelas/eLearning. Kunci jawaban di tiap kegiatan disembunyikan di balik tombol <em>"Buka kunci jawaban"</em> — buka hanya setelah selesai mengerjakan sendiri, supaya latihannya benar-benar melatih pemahaman Anda.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Latihan BFS, DFS & DLS -->
+            <!-- ============================================================ -->
+            <section id="latihan-bfs-dfs-dls">
+                <h2>1. Latihan Manual BFS, DFS &amp; DLS <span class="badge badge-new">Kegiatan</span></h2>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tujuan:</strong>
+                    <p style="margin-top:6px;">Memastikan Anda benar-benar memahami cara kerja BFS, DFS, dan DLS — bukan sekadar menonton animasinya — dengan menelusurinya <strong>sendiri, dengan tulisan tangan di kertas</strong>, pada sebuah pohon baru yang mirip dengan contoh di <a href="materi-2.html#bfs">Bagian 6 (BFS)</a>, <a href="materi-2.html#dfs">7 (DFS)</a>, dan <a href="materi-2.html#dls">8 (DLS)</a> di Materi 2, tetapi bentuknya berbeda.</p>
+                </div>
+
+                <h3>Pohon Soal</h3>
+                <p>Salin pohon berikut ke kertas Anda (boleh digambar ulang persis seperti ini, lingkaran dan garis saja sudah cukup). Simpul diberi nomor 1–13. Perhatikan bahwa pohon ini <strong>tidak beraturan</strong>: beberapa simpul punya 3 anak, beberapa 1 anak, ada juga yang tidak punya anak sama sekali — beda dengan pohon biner rapi pada materi.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="560" height="230" viewBox="0 0 560 230">
+                        <!-- edges -->
+                        <line x1="280" y1="30" x2="140" y2="90" class="edge"/>
+                        <line x1="280" y1="30" x2="280" y2="90" class="edge"/>
+                        <line x1="280" y1="30" x2="440" y2="90" class="edge"/>
+                        <line x1="140" y1="90" x2="90"  y2="150" class="edge"/>
+                        <line x1="140" y1="90" x2="190" y2="150" class="edge"/>
+                        <line x1="280" y1="90" x2="280" y2="150" class="edge"/>
+                        <line x1="440" y1="90" x2="440" y2="150" class="edge"/>
+                        <line x1="90"  y1="150" x2="60"  y2="205" class="edge"/>
+                        <line x1="90"  y1="150" x2="120" y2="205" class="edge"/>
+                        <line x1="280" y1="150" x2="250" y2="205" class="edge"/>
+                        <line x1="280" y1="150" x2="310" y2="205" class="edge"/>
+                        <line x1="440" y1="150" x2="440" y2="205" class="edge"/>
+                        <!-- d0 -->
+                        <circle cx="280" cy="30" r="20" class="node-default"/>
+                        <text x="280" y="35" class="node-text" text-anchor="middle">1</text>
+                        <!-- d1 -->
+                        <circle cx="140" cy="90" r="20" class="node-default"/>
+                        <text x="140" y="95" class="node-text" text-anchor="middle">2</text>
+                        <circle cx="280" cy="90" r="20" class="node-default"/>
+                        <text x="280" y="95" class="node-text" text-anchor="middle">3</text>
+                        <circle cx="440" cy="90" r="20" class="node-default"/>
+                        <text x="440" y="95" class="node-text" text-anchor="middle">4</text>
+                        <!-- d2 -->
+                        <circle cx="90"  cy="150" r="19" class="node-default"/>
+                        <text x="90"  y="155" class="node-text" text-anchor="middle">5</text>
+                        <circle cx="190" cy="150" r="19" class="node-default"/>
+                        <text x="190" y="155" class="node-text" text-anchor="middle">6</text>
+                        <circle cx="280" cy="150" r="19" class="node-default"/>
+                        <text x="280" y="155" class="node-text" text-anchor="middle">7</text>
+                        <circle cx="440" cy="150" r="19" class="node-default"/>
+                        <text x="440" y="155" class="node-text" text-anchor="middle">8</text>
+                        <!-- d3 -->
+                        <circle cx="60"  cy="205" r="18" class="node-default"/>
+                        <text x="60"  y="210" class="node-text" text-anchor="middle" font-size="12">9</text>
+                        <circle cx="120" cy="205" r="18" class="node-default"/>
+                        <text x="120" y="210" class="node-text" text-anchor="middle" font-size="12">10</text>
+                        <circle cx="250" cy="205" r="18" class="node-default"/>
+                        <text x="250" y="210" class="node-text" text-anchor="middle" font-size="12">11</text>
+                        <circle cx="310" cy="205" r="18" class="node-goal"/>
+                        <text x="310" y="210" class="node-text" text-anchor="middle" font-size="12">12</text>
+                        <circle cx="440" cy="205" r="18" class="node-default"/>
+                        <text x="440" y="210" class="node-text" text-anchor="middle" font-size="12">13</text>
+                        <!-- depth labels -->
+                        <text x="8" y="35"  fill="#888" font-size="11">d=0</text>
+                        <text x="8" y="95"  fill="#888" font-size="11">d=1</text>
+                        <text x="8" y="155" fill="#888" font-size="11">d=2</text>
+                        <text x="8" y="210" fill="#888" font-size="11">d=3</text>
+                    </svg>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Keadaan awal = simpul <strong>1</strong>. Keadaan tujuan = simpul <strong>12</strong> (hijau). Aturan urutan anak: selalu dari <strong>kiri ke kanan</strong> sesuai gambar (mis. anak-anak simpul 1 diperiksa dengan urutan 2, 3, 4).</p>
+
+                <h3>Instruksi Pengerjaan</h3>
+                <p>Kerjakan ketiga tugas berikut <strong>di kertas, dengan tulisan tangan</strong>. Untuk tiap algoritma, gambar ulang pohon di atas (atau cukup daftar simpulnya), lalu buat tabel jejak seperti pada tabel "Jejak Ekspansi" di <a href="materi-2.html#bfs">Bagian 6</a>–<a href="materi-2.html#dls">8</a> Materi 2, dengan kolom: <em>Langkah</em>, <em>Simpul Diekspansi/Diuji</em>, <em>Frontier atau Lintasan Aktif</em>, dan <em>Explored/Dead</em>. Tulis juga kesimpulan akhirnya (solusi yang ditemukan, atau cutoff).</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan BFS</strong>
+                            <p>Gunakan antrian FIFO seperti <a href="materi-2.html#bfs">Bagian 6</a>. Catat isi frontier setelah tiap ekspansi sampai simpul 12 ditemukan. Uji tujuan dilakukan saat anak dibangkitkan (sama seperti animasi BFS di Materi 2) — tandai persis di simpul mana 12 pertama kali diuji dan ditemukan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan DFS</strong>
+                            <p>Turun ke anak paling kiri dulu, backtrack ketika buntu, seperti <a href="materi-2.html#dfs">Bagian 7</a>. Tulis urutan lengkap simpul yang dikunjungi sampai 12 ditemukan. Hitung berapa banyak simpul yang sempat dikunjungi sebelum 12 ditemukan — apakah DFS "boros" di sini seperti pada animasi F di Bagian 7, atau justru lebih hemat? Jelaskan alasannya berdasarkan letak simpul 12 di pohon.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan DLS, ℓ = 2</strong>
+                            <p>Ulangi penelusuran DFS, tetapi kali ini simpul pada kedalaman ℓ = 2 tidak boleh diekspansi lebih lanjut (dianggap daun). Tentukan: apakah hasilnya <em>solusi ditemukan</em> atau <em>cutoff</em>? Jelaskan dengan satu kalimat mengapa hasilnya seperti itu, dikaitkan dengan kedalaman simpul 12.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Pengumpulan:</strong>
+                    <p style="margin-top:6px;">Kerjakan di kertas (bukan diketik), foto hasil ketiga tugas dengan jelas dan terbaca, lalu kumpulkan sesuai instruksi dan tenggat waktu yang disampaikan dosen pengampu di kelas/eLearning. Setelah selesai mengerjakan, cocokkan jawaban Anda dengan kunci di bawah — <strong>buka kunci hanya setelah selesai mengerjakan sendiri</strong>, agar latihan ini benar-benar melatih pemahaman Anda.</p>
+                </div>
+
+                <h3>Kunci Jawaban</h3>
+                <details class="kunci">
+                    <summary>Buka kunci jawaban BFS, DFS, DLS (ℓ=2)</summary>
+                    <p style="margin-top:8px; font-weight:600;">BFS:</p>
+                    <ul>
+                        <li>Langkah 1: ekspansi 1 → frontier [2, 3, 4], explored {1}</li>
+                        <li>Langkah 2: ekspansi 2 → frontier [3, 4, 5, 6], explored {1, 2}</li>
+                        <li>Langkah 3: ekspansi 3 → anak-anaknya hanya 7, bukan tujuan → frontier [4, 5, 6, 7], explored {1, 2, 3}</li>
+                        <li>Langkah 4: ekspansi 4 → anaknya 8, bukan tujuan → frontier [5, 6, 7, 8], explored {1, 2, 3, 4}</li>
+                        <li>Langkah 5: ekspansi 5 → anak-anaknya 9 dan 10, keduanya bukan tujuan → frontier [6, 7, 8, 9, 10]</li>
+                        <li>Langkah 6: ekspansi 6 → 6 tidak punya anak → frontier tetap [7, 8, 9, 10]</li>
+                        <li>Langkah 7: ekspansi 7 → anak-anaknya 11 dan <strong>12</strong>. 11 diuji bukan tujuan → masuk frontier. 12 diuji: tujuan! BFS berhenti. <strong>Solusi: 1 → 3 → 7 → 12</strong> (3 langkah).</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">DFS:</p>
+                    <ul>
+                        <li>Urutan kunjungan: 1 → 2 → 5 → 9 (buntu, backtrack) → 10 (buntu, backtrack, 5 selesai) → 6 (buntu, backtrack, 2 selesai) → 3 → 7 → 11 (buntu, backtrack) → <strong>12 (tujuan!)</strong></li>
+                        <li><strong>Solusi: 1 → 3 → 7 → 12</strong>, sama seperti BFS — tetapi DFS sempat mengunjungi 5 simpul tambahan (2, 5, 9, 10, 6) di subtree simpul 2 yang sama sekali tidak mengarah ke solusi, sebelum akhirnya turun ke simpul 3.</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">DLS (ℓ = 2):</p>
+                    <ul>
+                        <li>Urutan kunjungan (hanya sampai d=2): 1 (d0) → 2 (d1) → 5 (d2, cutoff — 9,10 tidak dibangkitkan) → 6 (d2, cutoff) → 3 (d1) → 7 (d2, cutoff — 11,12 tidak dibangkitkan) → 4 (d1) → 8 (d2, cutoff — 13 tidak dibangkitkan).</li>
+                        <li><strong>Hasil: cutoff — tujuan TIDAK ditemukan</strong>, karena simpul 12 berada di kedalaman 3, sedangkan ℓ hanya mengizinkan penelusuran sampai kedalaman 2. Ini persis pola yang sama dengan animasi DLS di <a href="materi-2.html#dls">Bagian 8</a>.</li>
+                    </ul>
+                </details>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Latihan IDS & UCS -->
+            <!-- ============================================================ -->
+            <section id="latihan-ids-ucs">
+                <h2>2. Latihan Manual IDS &amp; UCS <span class="badge badge-new">Kegiatan</span></h2>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tujuan:</strong>
+                    <p style="margin-top:6px;">Melatih IDS dan UCS dengan tulisan tangan di kertas, seperti kegiatan BFS/DFS/DLS sebelumnya — IDS memakai pohon yang sama, UCS memakai graf berbobot yang baru.</p>
+                </div>
+
+                <h3>Bagian A: IDS pada Pohon yang Sama</h3>
+                <p>Gunakan <strong>pohon soal yang sama</strong> dengan <a href="#latihan-bfs-dfs-dls">Kegiatan 1 (BFS/DFS/DLS)</a> di atas (13 simpul, keadaan awal = 1, tujuan = 12, urutan anak selalu kiri ke kanan). Jika perlu, gambar ulang pohonnya di kertas — lihat kembali diagramnya di Kegiatan 1.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan IDS: ulangi DLS dengan ℓ = 0, 1, 2, 3, …</strong>
+                            <p>Untuk tiap nilai ℓ, telusuri pohon dengan DLS (sama seperti <a href="materi-2.html#dls">Bagian 8</a>) dan catat: simpul mana saja yang diuji, urutannya, dan hasil akhirnya (cutoff atau ditemukan). Buat tabel dengan kolom <em>Iterasi (ℓ)</em>, <em>Simpul Diuji (urut)</em>, <em>Jumlah Pengujian</em>, <em>Status</em> — persis seperti tabel "Iterasi demi Iterasi" di <a href="materi-2.html#ids">Bagian 9</a>. Berhenti begitu simpul 12 ditemukan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Hitung overhead-nya</strong>
+                            <p>Jumlahkan total pengujian simpul dari <em>semua</em> iterasi (termasuk yang cutoff). Bandingkan dengan jumlah pengujian pada latihan BFS dan DFS Anda sebelumnya pada pohon yang sama. Iterasi mana yang paling boros? Kenapa overhead ini tetap dianggap kecil dibanding manfaat hemat memori O(b·ℓ) yang diberikan IDS?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Bagian B: UCS pada Graf Berbobot Baru</h3>
+                <p>UCS butuh <strong>biaya langkah yang berbeda-beda</strong>, jadi kita pakai graf baru (bukan pohon) dengan bobot di setiap sisi. Salin graf berikut ke kertas Anda. Keadaan awal = <strong>S</strong>, keadaan tujuan = <strong>G</strong>. Graf ini tidak berarah — setiap sisi bisa dilewati dua arah dengan bobot yang sama.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="480" height="260" viewBox="0 0 480 260">
+                        <!-- edges -->
+                        <line x1="50" y1="130" x2="180" y2="60"  class="edge"/>
+                        <line x1="50" y1="130" x2="180" y2="200" class="edge"/>
+                        <line x1="180" y1="60"  x2="320" y2="60"  class="edge"/>
+                        <line x1="180" y1="60"  x2="320" y2="200" class="edge"/>
+                        <line x1="180" y1="200" x2="320" y2="200" class="edge"/>
+                        <line x1="180" y1="200" x2="430" y2="130" class="edge"/>
+                        <line x1="320" y1="60"  x2="430" y2="130" class="edge"/>
+                        <line x1="320" y1="200" x2="430" y2="130" class="edge"/>
+                        <!-- edge weights -->
+                        <text x="98"  y="85"  class="edge-cost" text-anchor="middle">2</text>
+                        <text x="98"  y="182" class="edge-cost" text-anchor="middle">5</text>
+                        <text x="250" y="52"  class="edge-cost" text-anchor="middle">4</text>
+                        <text x="273" y="125" class="edge-cost" text-anchor="middle">7</text>
+                        <text x="250" y="217" class="edge-cost" text-anchor="middle">2</text>
+                        <text x="290" y="150" class="edge-cost" text-anchor="middle">9</text>
+                        <text x="388" y="85"  class="edge-cost" text-anchor="middle">3</text>
+                        <text x="388" y="182" class="edge-cost" text-anchor="middle">4</text>
+                        <!-- nodes -->
+                        <circle data-node="S" cx="50"  cy="130" r="22" class="node-default"/>
+                        <text x="50"  y="135" class="node-text" text-anchor="middle">S</text>
+                        <circle data-node="A" cx="180" cy="60"  r="22" class="node-default"/>
+                        <text x="180" y="65"  class="node-text" text-anchor="middle">A</text>
+                        <circle data-node="B" cx="180" cy="200" r="22" class="node-default"/>
+                        <text x="180" y="205" class="node-text" text-anchor="middle">B</text>
+                        <circle data-node="C" cx="320" cy="60"  r="22" class="node-default"/>
+                        <text x="320" y="65"  class="node-text" text-anchor="middle">C</text>
+                        <circle data-node="D" cx="320" cy="200" r="22" class="node-default"/>
+                        <text x="320" y="205" class="node-text" text-anchor="middle">D</text>
+                        <circle data-node="G" cx="430" cy="130" r="22" class="node-goal"/>
+                        <text x="430" y="135" class="node-text" text-anchor="middle">G</text>
+                    </svg>
+                </div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan UCS dari S ke G</strong>
+                            <p>Gunakan antrian prioritas berdasar g(n) seperti <a href="materi-2.html#ucs">Bagian 10</a>. Buat tabel dengan kolom <em>Langkah</em>, <em>Node Diekspansi</em>, <em>g(n)</em>, <em>Frontier setelah ekspansi (urut g)</em> — persis seperti tabel Romania di Bagian 10. Uji tujuan dilakukan <strong>saat simpul diekspansi</strong> (diambil dari frontier), bukan saat dibangkitkan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Perhatikan pembaruan frontier</strong>
+                            <p>Setidaknya dua kali dalam penelusuran ini, sebuah simpul yang sudah ada di frontier akan ditemukan lagi lewat lintasan lain. Catat setiap kejadian itu: apakah nilai g(n)-nya diperbarui (karena lintasan baru lebih murah), atau tetap dipertahankan (karena lintasan baru lebih mahal)? Tulis biaya total solusi akhir dan lintasannya.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Pengumpulan:</strong>
+                    <p style="margin-top:6px;">Sama seperti kegiatan sebelumnya: kerjakan di kertas, foto hasilnya, kumpulkan sesuai instruksi dosen. Buka kunci jawaban di bawah hanya setelah selesai mengerjakan sendiri.</p>
+                </div>
+
+                <h3>Kunci Jawaban</h3>
+                <details class="kunci">
+                    <summary>Buka kunci jawaban IDS dan UCS</summary>
+                    <p style="margin-top:8px; font-weight:600;">Bagian A — IDS (pohon 13 simpul, tujuan = 12):</p>
+                    <ul>
+                        <li>ℓ = 0: uji {1} → cutoff (1 punya anak, tapi limit langsung 0). Jumlah pengujian: 1.</li>
+                        <li>ℓ = 1: uji {1, 2, 3, 4} → cutoff. Jumlah pengujian: 4.</li>
+                        <li>ℓ = 2: uji {1, 2, 5, 6, 3, 7, 4, 8} → cutoff. Jumlah pengujian: 8.</li>
+                        <li>ℓ = 3: uji {1, 2, 5, 9, 10, 6, 3, 7, 11, <strong>12</strong>} → <strong>ditemukan!</strong> Urutannya sama persis dengan DFS biasa pada Kegiatan 1 (masuk akal: begitu ℓ ≥ kedalaman pohon, DLS berperilaku sama seperti DFS tanpa batas). Jumlah pengujian: 10.</li>
+                        <li><strong>Solusi: 1 → 3 → 7 → 12</strong> (sama seperti BFS dan DFS). Total pengujian kumulatif seluruh iterasi = 1 + 4 + 8 + 10 = <strong>23</strong>. Ini lebih banyak daripada BFS (yang langsung berhenti begitu 12 diuji pada "putaran" pertama, tanpa mengulang simpul dangkal berkali-kali), tetapi jauh lebih hemat memori — IDS tidak pernah menyimpan lebih dari satu lintasan aktif (O(b·ℓ)), sedangkan BFS menyimpan seluruh frontier tiap level (O(b<sup>d+1</sup>)). Untuk pohon kecil ini bedanya tidak terasa, tapi pada ruang keadaan raksasa, penghematan memori itulah yang membuat IDS tetap bisa berjalan sementara BFS kehabisan RAM.</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">Bagian B — UCS (graf S→G):</p>
+                    <table class="trace-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>Frontier setelah ekspansi (urut g)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>S</td><td>0</td><td>A(2), B(5)</td></tr>
+                            <tr><td>2</td><td>A</td><td>2</td><td>B(5), C(6), D(9)</td></tr>
+                            <tr><td>3</td><td>B</td><td>5</td><td>C(6), D(7) — diperbarui dari 9, G(14)</td></tr>
+                            <tr><td>4</td><td>C</td><td>6</td><td>D(7), G(9) — diperbarui dari 14</td></tr>
+                            <tr><td>5</td><td>D</td><td>7</td><td>G(9) — <em>dicoba</em> diperbarui ke 11 lewat D, tetapi 11 &gt; 9 sehingga <strong>ditolak</strong></td></tr>
+                            <tr class="tr-goal"><td>6</td><td><strong>G</strong></td><td><strong>9</strong></td><td>Diambil dari frontier, lolos uji tujuan. <strong>Solusi optimal: S → A → C → G (biaya 9)</strong></td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:8px;">Dua pembaruan frontier terjadi pada G: dari 14 (lewat B) menjadi 9 (lewat C) pada langkah 4 — diperbarui karena lebih murah. Lalu pada langkah 5, lintasan lewat D menawarkan g = 11, tetapi ditolak karena lebih mahal dari 9 yang sudah tercatat. Jalur S → B → D → G (11) dan S → B → G (14) sama-sama valid tetapi lebih mahal daripada S → A → C → G (9), sehingga UCS mengabaikannya.</p>
+                </details>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Latihan BDS -->
+            <!-- ============================================================ -->
+            <section id="latihan-bds">
+                <h2>3. Latihan Manual BDS <span class="badge badge-new">Kegiatan</span></h2>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tujuan:</strong>
+                    <p style="margin-top:6px;">Melatih BDS dengan tulisan tangan di kertas: menjalankan dua frontier sekaligus, mendeteksi pertemuannya, dan menyambung kedua lintasan — pada graf baru yang bentuknya mirip tapi tidak identik dengan animasi di <a href="materi-2.html#bds">Bagian 11 Materi 2</a>.</p>
+                </div>
+
+                <h3>Graf Soal</h3>
+                <p>Salin graf berikut ke kertas Anda. Keadaan awal = <strong>P</strong>, keadaan tujuan = <strong>Y</strong>. Bedanya dengan animasi di <a href="materi-2.html#bds">Bagian 11</a>: di sini P punya <strong>tiga</strong> cabang (Q, R, S), bukan dua, sehingga ketiganya harus sama-sama dilacak sampai bertemu di M.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="560" height="220" viewBox="0 0 560 220">
+                        <!-- edges -->
+                        <line x1="40"  y1="110" x2="160" y2="40"  class="edge"/>
+                        <line x1="40"  y1="110" x2="160" y2="110" class="edge"/>
+                        <line x1="40"  y1="110" x2="160" y2="180" class="edge"/>
+                        <line x1="160" y1="40"  x2="280" y2="110" class="edge"/>
+                        <line x1="160" y1="110" x2="280" y2="110" class="edge"/>
+                        <line x1="160" y1="180" x2="280" y2="110" class="edge"/>
+                        <line x1="280" y1="110" x2="400" y2="60"  class="edge"/>
+                        <line x1="280" y1="110" x2="400" y2="160" class="edge"/>
+                        <line x1="400" y1="60"  x2="520" y2="110" class="edge"/>
+                        <line x1="400" y1="160" x2="520" y2="110" class="edge"/>
+                        <!-- nodes -->
+                        <circle cx="40"  cy="110" r="22" class="node-default"/>
+                        <text x="40"  y="115" class="node-text" text-anchor="middle">P</text>
+                        <circle cx="160" cy="40"  r="19" class="node-default"/>
+                        <text x="160" y="45"  class="node-text" text-anchor="middle">Q</text>
+                        <circle cx="160" cy="110" r="19" class="node-default"/>
+                        <text x="160" y="115" class="node-text" text-anchor="middle">R</text>
+                        <circle cx="160" cy="180" r="19" class="node-default"/>
+                        <text x="160" y="185" class="node-text" text-anchor="middle">S</text>
+                        <circle cx="280" cy="110" r="20" class="node-default"/>
+                        <text x="280" y="115" class="node-text" text-anchor="middle">M</text>
+                        <circle cx="400" cy="60"  r="19" class="node-default"/>
+                        <text x="400" y="65"  class="node-text" text-anchor="middle">C</text>
+                        <circle cx="400" cy="160" r="19" class="node-default"/>
+                        <text x="400" y="165" class="node-text" text-anchor="middle">D</text>
+                        <circle cx="520" cy="110" r="22" class="node-goal"/>
+                        <text x="520" y="115" class="node-text" text-anchor="middle">Y</text>
+                    </svg>
+                </div>
+
+                <h3>Instruksi Pengerjaan</h3>
+                <p>Kerjakan di kertas, dengan tulisan tangan. Buat tabel dengan kolom <em>Langkah</em>, <em>Frontier Maju</em>, <em>Frontier Mundur</em>, <em>Status</em>, lalu isi mengikuti aturan yang sama dengan animasi dan pseudocode BDS di <a href="materi-2.html#bds">Bagian 11</a>: tiap langkah, ekspansi frontier maju satu level dulu (cek irisan dengan frontier/explored mundur), baru ekspansi frontier mundur satu level (cek irisan dengan frontier/explored maju).</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan BDS sampai bertemu</strong>
+                            <p>Mulai dari frontier maju = {P} dan frontier mundur = {Y}. Ekspansikan bergantian (maju, mundur, maju, mundur, …) satu level per langkah, sampai sebuah simpul muncul di kedua arah. Catat simpul mana itu dan pada langkah keberapa pertemuan terjadi.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Sambungkan lintasan maju dan mundur</strong>
+                            <p>Tulis lintasan lengkap dari P ke Y melalui titik pertemuan. Perhatikan: karena P punya tiga cabang yang semuanya menuju M, ada <strong>lebih dari satu</strong> lintasan optimal yang sama panjangnya (4 langkah). Tulis satu saja, lalu sebutkan berapa banyak lintasan optimal lain yang mungkin ada.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Pertanyaan konsep: kapan BDS tidak bisa dipakai?</strong>
+                            <p>Bayangkan graf di atas menggambarkan sebuah permainan, dan aksi dari M menuju C atau D hanya bisa terjadi lewat efek acak yang <strong>tidak dapat dibalik</strong> (tidak ada cara pasti mengetahui "aksi apa yang tadinya membawa ke C"). Jelaskan dalam 2–3 kalimat mengapa BDS gagal diterapkan di sini, dan algoritma pencarian buta apa (BFS, DFS, DLS, IDS, atau UCS — lihat <a href="materi-2.html#perbandingan">ringkasan di Bagian 12</a>) yang sebaiknya dipakai sebagai gantinya.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Pengumpulan:</strong>
+                    <p style="margin-top:6px;">Sama seperti kegiatan-kegiatan sebelumnya: kerjakan di kertas, foto hasilnya, kumpulkan sesuai instruksi dosen. Buka kunci jawaban di bawah hanya setelah selesai mengerjakan sendiri.</p>
+                </div>
+
+                <h3>Kunci Jawaban</h3>
+                <details class="kunci">
+                    <summary>Buka kunci jawaban BDS</summary>
+                    <p style="margin-top:8px; font-weight:600;">Bagian 1 &amp; 2 — Jalannya BDS:</p>
+                    <table class="trace-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Langkah</th><th>Frontier Maju</th><th>Frontier Mundur</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>0</td><td>{P}</td><td>{Y}</td><td>belum bertemu</td></tr>
+                            <tr><td>1</td><td>{Q, R, S}</td><td>{C, D}</td><td>belum bertemu (dicek dua kali: setelah ekspansi maju, dan setelah ekspansi mundur)</td></tr>
+                            <tr class="tr-goal"><td>2</td><td>{M}</td><td>{M}</td><td><strong>bertemu di M</strong> — terdeteksi saat frontier mundur baru ({M}) diperiksa terhadap frontier/explored maju yang sudah memuat M</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:8px;">Lintasan: <strong>P → Q → M → C → Y</strong> (4 langkah) — salah satu dari <strong>2 × 3 = 6</strong> lintasan optimal yang sama panjangnya, karena M punya 3 kemungkinan pendahulu di sisi maju (Q, R, atau S) dan 2 kemungkinan penerus di sisi mundur (C atau D), dan semuanya bisa dikombinasikan bebas.</p>
+                    <p style="margin-top:10px; font-weight:600;">Bagian 3 — Kapan BDS gagal:</p>
+                    <p>BDS butuh fungsi aksi <em>terbalik</em> (predecessor function) di sisi mundur — untuk tiap simpul, ia harus tahu persis aksi apa yang bisa menghasilkannya. Jika transisi M→C (atau M→D) hanya terjadi lewat efek acak yang tidak dapat dibalik, pencarian mundur dari Y tidak bisa dijalankan sama sekali karena tidak ada cara mendaftar "siapa saja pendahulu C". Solusinya: pakai pencarian satu arah biasa dari keadaan awal — BFS jika semua biaya langkah seragam dan solusi diperkirakan dangkal (<a href="materi-2.html#bfs">Bagian 6</a>), atau IDS jika ruang keadaannya besar dan memori terbatas (<a href="materi-2.html#ids">Bagian 9</a>).</p>
+                </details>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="materi-2.html">Materi 2</a> ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Tampilkan satu bagian latihan saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal latihan';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir latihan';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        // Klik kartu di Pendahuluan juga menutup menu mobile & pindah tab
+        document.querySelectorAll('a.card[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>
