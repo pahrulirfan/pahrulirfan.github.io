@@ -96,6 +96,27 @@
         .node-dead     { fill: #90a4ae; }
         .node-repeat   { fill: #c62828; }
 
+        /* step-by-step tree animation (BFS/DFS/DLS) */
+        .stepper-controls {
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+            margin: 14px 0 6px;
+        }
+        .ts-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #1565c0; color: #fff; border: 0; border-radius: 6px;
+            padding: 7px 14px; font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9em; font-weight: 600; cursor: pointer;
+        }
+        .ts-btn:hover:not(:disabled) { background: #0d47a1; }
+        .ts-btn:disabled { background: #b0bec5; cursor: not-allowed; }
+        .ts-btn.ts-play.playing { background: #e65100; }
+        .ts-btn.ts-play.playing:hover { background: #bf360c; }
+        .ts-counter { font-size: 0.85em; color: #555; font-weight: 600; margin-left: auto; }
+        .ts-status p { margin: 0; }
+        .trace-table .tr-cutoff td { background: #ffebee; }
+        .node-ghost  { fill: none; stroke: #c62828; stroke-width: 2; stroke-dasharray: 4 3; }
+        .ghost-label { fill: #c62828; font-size: 10.5px; font-family: 'Segoe UI', sans-serif; font-weight: 600; }
+
         /* gambar tetangga 8-puzzle (keadaan s dan RESULT(s, a)) */
         .succ-fig {
             display: grid;
@@ -189,11 +210,14 @@
                 <li><a href="#pohon-vs-graf">4. Pohon vs Graf Pencarian</a></li>
                 <li><a href="#ukuran-kinerja">5. Ukuran Kinerja</a></li>
                 <li><a href="#bfs">6. BFS</a></li>
-                <li><a href="#dfs">7. DFS &amp; DLS</a></li>
-                <li><a href="#ids">8. IDS</a></li>
-                <li><a href="#ucs">9. UCS</a></li>
-                <li><a href="#perbandingan">10. Perbandingan</a></li>
-                <li><a href="#rangkuman">11. Rangkuman</a></li>
+                <li><a href="#dfs">7. DFS</a></li>
+                <li><a href="#dls">8. DLS</a></li>
+                <li><a href="#kegiatan-manual"><i class="fa-solid fa-pen-ruler"></i> Kegiatan: BFS, DFS &amp; DLS</a></li>
+                <li><a href="#ids">9. IDS</a></li>
+                <li><a href="#ucs">10. UCS</a></li>
+                <li><a href="#kegiatan-ids-ucs"><i class="fa-solid fa-pen-ruler"></i> Kegiatan: IDS &amp; UCS</a></li>
+                <li><a href="#perbandingan">11. Perbandingan</a></li>
+                <li><a href="#rangkuman">12. Rangkuman</a></li>
             </ul>
             <!-- <h3><i class="fa-solid fa-compass"></i> Navigasi</h3>
             <ul>
@@ -409,7 +433,7 @@
                 </table>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-lightbulb"></i> Mengapa ini penting?</strong>
-                    <p style="margin-top:6px;">Algoritma pencarian di Bagian 6–9 tidak pernah menerima "graf lengkap" sebagai masukan. Masukannya hanya keadaan awal, fungsi <code>ACTIONS</code>, fungsi <code>RESULT</code>, dan uji tujuan. Dari situ algoritma membangkitkan ruang keadaan sedikit demi sedikit. Karena itu, ukuran ruang keadaan dan faktor percabangannya menentukan seberapa berat sebuah pencarian.</p>
+                    <p style="margin-top:6px;">Algoritma pencarian buta yang dibahas di materi ini (BFS, DFS, DLS, IDS, UCS) tidak pernah menerima "graf lengkap" sebagai masukan. Masukannya hanya keadaan awal, fungsi <code>ACTIONS</code>, fungsi <code>RESULT</code>, dan uji tujuan. Dari situ algoritma membangkitkan ruang keadaan sedikit demi sedikit. Karena itu, ukuran ruang keadaan dan faktor percabangannya menentukan seberapa berat sebuah pencarian.</p>
                 </div>
 
                 <h3>Kamus Istilah Ruang Keadaan</h3>
@@ -1369,71 +1393,75 @@ Tujuan tercapai dalam 6 langkah.</pre>
                     <p style="margin-top:6px;">Seperti gelombang air yang menyebar dari titik tengah — semua posisi berjarak 1 dicapai dulu, lalu jarak 2, dst. BFS <em>menjamin</em> solusi terpendek dalam hal jumlah langkah.</p>
                 </div>
 
-                <h3>Pseudocode BFS</h3>
-                <pre><code><span class="kw">function</span> <span class="fn">BFS</span>(problem) <span class="kw">returns</span> node | failure
-    node     ← <span class="cl">Node</span>(problem.initial)
-    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
-    frontier ← <span class="fn">Queue</span>()          <span class="cm">-- antrian FIFO</span>
-    frontier.<span class="fn">enqueue</span>(node)
-    explored ← <span class="fn">set</span>()            <span class="cm">-- explored set (closed list)</span>
-
-    <span class="kw">loop</span>:
-        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
-        node ← frontier.<span class="fn">dequeue</span>()
-        explored.<span class="fn">add</span>(node.state)
-
-        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
-            <span class="kw">if</span> child.state <span class="kw">not in</span> explored <span class="kw">and</span> child.state <span class="kw">not in</span> frontier:
-                <span class="kw">if</span> problem.is_goal(child.state): <span class="kw">return</span> child
-                frontier.<span class="fn">enqueue</span>(child)</code></pre>
-
-                <h3>Penelusuran BFS — Contoh Graf Sederhana</h3>
-                <div class="tree-svg-wrap">
-                    <svg width="500" height="220" viewBox="0 0 500 220">
-                        <!-- edges -->
-                        <line x1="250" y1="35"  x2="120" y2="100" class="edge"/>
-                        <line x1="250" y1="35"  x2="250" y2="100" class="edge"/>
-                        <line x1="250" y1="35"  x2="380" y2="100" class="edge"/>
-                        <line x1="120" y1="100" x2="70"  y2="175" class="edge"/>
-                        <line x1="120" y1="100" x2="170" y2="175" class="edge"/>
-                        <line x1="250" y1="100" x2="230" y2="175" class="edge"/>
-                        <line x1="250" y1="100" x2="300" y2="175" class="edge"/>
-                        <line x1="380" y1="100" x2="360" y2="175" class="edge"/>
-                        <line x1="380" y1="100" x2="430" y2="175" class="edge"/>
-                        <!-- nodes level 0 -->
-                        <circle cx="250" cy="35"  r="25" class="node-visited"/>
-                        <text x="250" y="40"  class="node-text" text-anchor="middle">A</text>
-                        <!-- nodes level 1 -->
-                        <circle cx="120" cy="100" r="25" class="node-visited"/>
-                        <text x="120" y="105" class="node-text" text-anchor="middle">B</text>
-                        <circle cx="250" cy="100" r="25" class="node-visited"/>
-                        <text x="250" y="105" class="node-text" text-anchor="middle">C</text>
-                        <circle cx="380" cy="100" r="25" class="node-frontier"/>
-                        <text x="380" y="105" class="node-text" text-anchor="middle">D</text>
-                        <!-- nodes level 2 -->
-                        <circle cx="70"  cy="175" r="25" class="node-visited"/>
-                        <text x="70"  y="180" class="node-text" text-anchor="middle">E</text>
-                        <circle cx="170" cy="175" r="25" class="node-frontier"/>
-                        <text x="170" y="180" class="node-text" text-anchor="middle">F</text>
-                        <circle cx="230" cy="175" r="25" class="node-frontier"/>
-                        <text x="230" y="180" class="node-text" text-anchor="middle">G</text>
-                        <circle cx="300" cy="175" r="25" class="node-goal"/>
-                        <text x="300" y="180" class="node-text" text-anchor="middle">H ✓</text>
-                        <circle cx="360" cy="175" r="25" class="node-default"/>
-                        <text x="360" y="180" class="node-text" text-anchor="middle">I</text>
-                        <circle cx="430" cy="175" r="25" class="node-default"/>
-                        <text x="430" y="180" class="node-text" text-anchor="middle">J</text>
-                        <!-- depth labels -->
-                        <text x="10" y="40"  fill="#888" font-size="11">d=0</text>
-                        <text x="10" y="105" fill="#888" font-size="11">d=1</text>
-                        <text x="10" y="180" fill="#888" font-size="11">d=2</text>
-                    </svg>
-                </div>
-                <div class="legend">
-                    <div class="legend-item"><div class="legend-dot" style="background:#7986cb;"></div>Sudah di-ekspansi</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#f9a825;"></div>Di frontier (antrian)</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#2e7d32;"></div>Tujuan ditemukan</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Belum dieksplorasi</div>
+                <h3>Penelusuran BFS — Contoh Graf Sederhana <span class="badge badge-new">Animasi</span></h3>
+                <p>Tekan <strong>Berikutnya</strong> untuk memajukan BFS satu ekspansi, atau <strong>Jalankan</strong> untuk memutarnya otomatis. Warna simpul dan baris tabel di bawah bergerak bersamaan, mengikuti pseudocode di atas: uji tujuan dilakukan <em>saat anak dibangkitkan</em>, sebelum masuk frontier — begitu H dibangkitkan sebagai anak C dan lolos uji tujuan, BFS langsung berhenti tanpa perlu mengantrekan H terlebih dahulu.</p>
+                <div class="tree-stepper" data-trace="bfs1">
+                    <script type="application/json" class="ts-data">
+                    [
+                        {"note":"<strong>Mulai.</strong> Simpul akar A dimasukkan ke frontier. Belum ada yang diekspansi.","current":null,"frontier":["A"],"explored":[]},
+                        {"note":"<strong>A diekspansi</strong> (diambil dari depan antrian). Anak-anaknya B, C, D dibangkitkan; tidak satu pun tujuan, ketiganya masuk ke belakang frontier.","current":"A","frontier":["B","C","D"],"explored":["A"]},
+                        {"note":"<strong>B diekspansi</strong> — B adalah yang paling depan di antrian (FIFO). Anak-anaknya E dan F dibangkitkan, bukan tujuan, masuk frontier.","current":"B","frontier":["C","D","E","F"],"explored":["A","B"]},
+                        {"note":"<strong>C diekspansi.</strong> Anak pertama, G, dibangkitkan dan bukan tujuan → masuk frontier. Anak kedua, <strong>H</strong>, dibangkitkan dan diuji: H adalah tujuan! BFS berhenti <em>seketika</em>, tanpa memasukkan H ke frontier terlebih dahulu.","current":"C","frontier":["D","E","F","G"],"explored":["A","B","C"],"goal":"H"}
+                    ]
+                    </script>
+                    <div class="tree-svg-wrap">
+                        <svg width="500" height="220" viewBox="0 0 500 220">
+                            <!-- edges -->
+                            <line x1="250" y1="35"  x2="120" y2="100" class="edge"/>
+                            <line x1="250" y1="35"  x2="250" y2="100" class="edge"/>
+                            <line x1="250" y1="35"  x2="380" y2="100" class="edge"/>
+                            <line x1="120" y1="100" x2="70"  y2="175" class="edge"/>
+                            <line x1="120" y1="100" x2="170" y2="175" class="edge"/>
+                            <line x1="250" y1="100" x2="230" y2="175" class="edge"/>
+                            <line x1="250" y1="100" x2="300" y2="175" class="edge"/>
+                            <line x1="380" y1="100" x2="360" y2="175" class="edge"/>
+                            <line x1="380" y1="100" x2="430" y2="175" class="edge"/>
+                            <!-- nodes level 0 -->
+                            <circle data-node="A" cx="250" cy="35"  r="25" class="node-default"/>
+                            <text x="250" y="40"  class="node-text" text-anchor="middle">A</text>
+                            <!-- nodes level 1 -->
+                            <circle data-node="B" cx="120" cy="100" r="25" class="node-default"/>
+                            <text x="120" y="105" class="node-text" text-anchor="middle">B</text>
+                            <circle data-node="C" cx="250" cy="100" r="25" class="node-default"/>
+                            <text x="250" y="105" class="node-text" text-anchor="middle">C</text>
+                            <circle data-node="D" cx="380" cy="100" r="25" class="node-default"/>
+                            <text x="380" y="105" class="node-text" text-anchor="middle">D</text>
+                            <!-- nodes level 2 -->
+                            <circle data-node="E" cx="70"  cy="175" r="25" class="node-default"/>
+                            <text x="70"  y="180" class="node-text" text-anchor="middle">E</text>
+                            <circle data-node="F" cx="170" cy="175" r="25" class="node-default"/>
+                            <text x="170" y="180" class="node-text" text-anchor="middle">F</text>
+                            <circle data-node="G" cx="230" cy="175" r="25" class="node-default"/>
+                            <text x="230" y="180" class="node-text" text-anchor="middle">G</text>
+                            <circle data-node="H" cx="300" cy="175" r="25" class="node-default"/>
+                            <text x="300" y="180" class="node-text" text-anchor="middle">H</text>
+                            <circle data-node="I" cx="360" cy="175" r="25" class="node-default"/>
+                            <text x="360" y="180" class="node-text" text-anchor="middle">I</text>
+                            <circle data-node="J" cx="430" cy="175" r="25" class="node-default"/>
+                            <text x="430" y="180" class="node-text" text-anchor="middle">J</text>
+                            <!-- depth labels -->
+                            <text x="10" y="40"  fill="#888" font-size="11">d=0</text>
+                            <text x="10" y="105" fill="#888" font-size="11">d=1</text>
+                            <text x="10" y="180" fill="#888" font-size="11">d=2</text>
+                        </svg>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#e65100;"></div>Sedang diekspansi</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#7986cb;"></div>Sudah di-ekspansi</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#f9a825;"></div>Di frontier (antrian)</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#2e7d32;"></div>Tujuan ditemukan</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Belum dieksplorasi</div>
+                    </div>
+                    <div class="stepper-controls">
+                        <button type="button" class="ts-btn ts-prev"><i class="fa-solid fa-backward-step"></i> Sebelumnya</button>
+                        <button type="button" class="ts-btn ts-play"><i class="fa-solid fa-play"></i> Jalankan</button>
+                        <button type="button" class="ts-btn ts-next">Berikutnya <i class="fa-solid fa-forward-step"></i></button>
+                        <button type="button" class="ts-btn ts-reset"><i class="fa-solid fa-rotate-left"></i> Ulangi</button>
+                        <span class="ts-counter">Langkah 0 / 3</span>
+                    </div>
+                    <div class="step-box show">
+                        <strong>Status:</strong> <span class="ts-note"></span>
+                    </div>
                 </div>
 
                 <h3>Jejak Ekspansi BFS</h3>
@@ -1442,14 +1470,13 @@ Tujuan tercapai dalam 6 langkah.</pre>
                         <tr><th>Langkah</th><th>Node Diekspansi</th><th>Frontier (Antrian)</th><th>Explored</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>0</td><td>—</td><td>[A]</td><td>{}</td></tr>
-                        <tr><td>1</td><td>A</td><td>[B, C, D]</td><td>{A}</td></tr>
-                        <tr><td>2</td><td>B</td><td>[C, D, E, F]</td><td>{A, B}</td></tr>
-                        <tr><td>3</td><td>C</td><td>[D, E, F, G, H]</td><td>{A, B, C}</td></tr>
-                        <tr class="tr-goal"><td>4</td><td>D</td><td>[E, F, G, <strong>H</strong>, I, J]</td><td>{A, B, C, D}</td></tr>
-                        <tr class="tr-goal"><td>—</td><td colspan="3"><i class="fa-solid fa-check" style="color:#2e7d32;"></i> H ditemukan saat diekspansi D / di-dequeue. Solusi: A→C→H</td></tr>
+                        <tr data-trace-row="bfs1"><td>0</td><td>—</td><td>[A]</td><td>{}</td></tr>
+                        <tr data-trace-row="bfs1"><td>1</td><td>A</td><td>[B, C, D]</td><td>{A}</td></tr>
+                        <tr data-trace-row="bfs1"><td>2</td><td>B</td><td>[C, D, E, F]</td><td>{A, B}</td></tr>
+                        <tr data-trace-row="bfs1"><td>3</td><td>C</td><td>[D, E, F, G] (H diuji &amp; langsung ditemukan)</td><td>{A, B, C}</td></tr>
                     </tbody>
                 </table>
+                <p style="font-size:0.9em; color:#555;">Solusi: A → C → H. Perhatikan bahwa D, meski sudah masuk frontier sejak langkah 1, tidak pernah sempat diekspansi — BFS berhenti begitu H ditemukan pada langkah 3.</p>
 
                 <h3>Coba Sendiri: BFS di Peta Romania <span class="badge badge-new">Interaktif</span></h3>
                 <p>Tekan <strong>Langkah</strong> untuk maju satu ekspansi, atau <strong>Jalankan</strong> untuk memutarnya otomatis. Perhatikan antrian frontier: simpul baru selalu masuk di <em>belakang</em>, sedangkan yang diambil selalu yang paling <em>depan</em>. Dari Arad ke Bucharest, BFS menemukan lintasan dengan <em>jumlah ruas</em> paling sedikit (3 ruas), tetapi bukan yang <em>terpendek dalam km</em>.</p>
@@ -1478,26 +1505,132 @@ Tujuan tercapai dalam 6 langkah.</pre>
                         <p>Semua simpul level d disimpan di frontier. <strong>Masalah utama BFS.</strong></p>
                     </div>
                 </div>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kekurangan utama BFS:</strong>
+                    <p style="margin-top:6px;">Boros memori. Seluruh simpul pada level <em>d</em> harus disimpan di frontier sebelum level <em>d+1</em> mulai diekspansi, sehingga kompleksitas ruang O(b<sup>d+1</sup>) tumbuh secepat kompleksitas waktunya. Untuk b = 10 dan d = 12 saja, itu lebih dari 10 triliun simpul di memori — jauh melampaui RAM komputer mana pun. Inilah sebabnya BFS jarang dipakai langsung pada ruang keadaan besar (lihat IDS di Bagian 9 sebagai solusinya).</p>
+                </div>
+
+                <h3>Pseudocode BFS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">BFS</span>(problem) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial)
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    frontier ← <span class="fn">Queue</span>()          <span class="cm">-- antrian FIFO</span>
+    frontier.<span class="fn">enqueue</span>(node)
+    explored ← <span class="fn">set</span>()            <span class="cm">-- explored set (closed list)</span>
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">dequeue</span>()
+        explored.<span class="fn">add</span>(node.state)
+
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored <span class="kw">and</span> child.state <span class="kw">not in</span> frontier:
+                <span class="kw">if</span> problem.is_goal(child.state): <span class="kw">return</span> child
+                frontier.<span class="fn">enqueue</span>(child)</code></pre>
             </section>
 
             <!-- ============================================================ -->
-            <!-- 7. DFS & DLS -->
+            <!-- 7. DFS -->
             <!-- ============================================================ -->
             <section id="dfs">
-                <h2>7. Depth-First Search (DFS) &amp; Depth-Limited Search (DLS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>7. Depth-First Search (DFS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>DFS mengekspansi simpul secara <strong>mendalam</strong> — selalu mengekspansi simpul paling dalam di frontier. DFS menggunakan struktur data <strong>tumpukan LIFO</strong> (Last In First Out), atau memanfaatkan <em>rekursi</em>.</p>
 
-                <h3>Pseudocode DFS (Rekursif)</h3>
-                <pre><code><span class="kw">function</span> <span class="fn">DFS-RECURSIVE</span>(problem, node) <span class="kw">returns</span> node | failure
-    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
-    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
-        result ← <span class="fn">DFS-RECURSIVE</span>(problem, child)
-        <span class="kw">if</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
-    <span class="kw">return</span> failure
-
-<span class="cm">-- Pemanggilan awal:</span>
-<span class="fn">DFS-RECURSIVE</span>(problem, <span class="cl">Node</span>(problem.initial))</code></pre>
+                <h3>Penelusuran DFS — Contoh Pohon 4 Level <span class="badge badge-new">Animasi</span></h3>
+                <p>Pohon berikut sengaja dibuat lebih dalam (4 level: d=0 sampai d=3) agar perilaku DFS terlihat jelas: turun sedalam-dalamnya di cabang paling kiri dulu, baru <em>backtrack</em> ketika buntu. Tujuannya adalah <strong>F</strong>, tepat di kedalaman 2 — lebih dangkal dari cabang B yang dijelajahi lebih dulu. Tekan <strong>Berikutnya</strong> untuk mengikuti urutan kunjungannya.</p>
+                <div class="tree-stepper" data-trace="dfs1">
+                    <script type="application/json" class="ts-data">
+                    [
+                        {"note":"<strong>Mulai dari A</strong> (akar, d=0). A diuji: bukan tujuan. DFS turun ke anak paling kiri dulu.","current":"A","visited":[],"dead":[]},
+                        {"note":"<strong>Turun ke B</strong> (anak pertama A, d=1). B diuji: bukan tujuan. Lanjut turun ke anak paling kiri B.","current":"B","visited":["A"],"dead":[]},
+                        {"note":"<strong>Turun ke D</strong> (anak pertama B, d=2). D diuji: bukan tujuan. Terus turun.","current":"D","visited":["A","B"],"dead":[]},
+                        {"note":"<strong>Turun ke H</strong> (anak pertama D, d=3 — batas pohon). H diuji: bukan tujuan, dan tidak punya anak lagi → jalan buntu, <em>backtrack</em> ke D.","current":"H","visited":["A","B","D"],"dead":[]},
+                        {"note":"D masih punya anak kedua: <strong>I</strong> (d=3). I diuji: bukan tujuan, juga tidak punya anak → buntu lagi. D sudah habis kedua anaknya → backtrack ke B.","current":"I","visited":["A","B","D"],"dead":["H"]},
+                        {"note":"Cabang D sudah habis dijelajahi tanpa hasil. B lanjut ke anak keduanya: <strong>E</strong> (d=2). E diuji: bukan tujuan.","current":"E","visited":["A","B"],"dead":["H","I","D"]},
+                        {"note":"<strong>Turun ke J</strong> (anak pertama E, d=3). J diuji: bukan tujuan, tidak punya anak → buntu, backtrack ke E.","current":"J","visited":["A","B","E"],"dead":["H","I","D"]},
+                        {"note":"E lanjut ke anak kedua: <strong>K</strong> (d=3). K diuji: bukan tujuan, tidak punya anak → buntu. E habis, dan karena D maupun E sama-sama buntu, B pun selesai tanpa hasil → backtrack ke A.","current":"K","visited":["A","B","E"],"dead":["H","I","D","J"]},
+                        {"note":"<strong>Seluruh subtree B (6 simpul: D,H,I,E,J,K) sudah dijelajahi tanpa hasil.</strong> A lanjut ke anak keduanya: <strong>C</strong> (d=1). C diuji: bukan tujuan.","current":"C","visited":["A"],"dead":["H","I","D","J","K","E","B"]},
+                        {"note":"<strong>Turun ke F</strong> (anak pertama C, d=2). F diuji: F adalah tujuan! DFS berhenti. Solusi: A → C → F. Bandingkan dengan BFS: BFS akan menemukan F ini jauh lebih cepat karena mengekspansi selebar mungkin dulu, tanpa perlu menjelajahi 6 simpul subtree B yang sama sekali tidak mengarah ke solusi.","current":"F","visited":["A","C"],"dead":["H","I","D","J","K","E","B"],"goal":"F"}
+                    ]
+                    </script>
+                    <div class="tree-svg-wrap">
+                        <svg width="640" height="250" viewBox="0 0 640 250">
+                            <!-- edges -->
+                            <line x1="320" y1="35" x2="160" y2="95" class="edge"/>
+                            <line x1="320" y1="35" x2="480" y2="95" class="edge"/>
+                            <line x1="160" y1="95" x2="80"  y2="155" class="edge"/>
+                            <line x1="160" y1="95" x2="240" y2="155" class="edge"/>
+                            <line x1="480" y1="95" x2="400" y2="155" class="edge"/>
+                            <line x1="480" y1="95" x2="560" y2="155" class="edge"/>
+                            <line x1="80"  y1="155" x2="40"  y2="215" class="edge"/>
+                            <line x1="80"  y1="155" x2="120" y2="215" class="edge"/>
+                            <line x1="240" y1="155" x2="200" y2="215" class="edge"/>
+                            <line x1="240" y1="155" x2="280" y2="215" class="edge"/>
+                            <line x1="400" y1="155" x2="360" y2="215" class="edge"/>
+                            <line x1="400" y1="155" x2="440" y2="215" class="edge"/>
+                            <line x1="560" y1="155" x2="520" y2="215" class="edge"/>
+                            <line x1="560" y1="155" x2="600" y2="215" class="edge"/>
+                            <!-- d0 -->
+                            <circle data-node="A" cx="320" cy="35" r="20" class="node-default"/>
+                            <text x="320" y="40" class="node-text" text-anchor="middle">A</text>
+                            <!-- d1 -->
+                            <circle data-node="B" cx="160" cy="95" r="20" class="node-default"/>
+                            <text x="160" y="100" class="node-text" text-anchor="middle">B</text>
+                            <circle data-node="C" cx="480" cy="95" r="20" class="node-default"/>
+                            <text x="480" y="100" class="node-text" text-anchor="middle">C</text>
+                            <!-- d2 -->
+                            <circle data-node="D" cx="80"  cy="155" r="19" class="node-default"/>
+                            <text x="80"  y="160" class="node-text" text-anchor="middle">D</text>
+                            <circle data-node="E" cx="240" cy="155" r="19" class="node-default"/>
+                            <text x="240" y="160" class="node-text" text-anchor="middle">E</text>
+                            <circle data-node="F" cx="400" cy="155" r="19" class="node-default"/>
+                            <text x="400" y="160" class="node-text" text-anchor="middle">F</text>
+                            <circle data-node="G" cx="560" cy="155" r="19" class="node-default"/>
+                            <text x="560" y="160" class="node-text" text-anchor="middle">G</text>
+                            <!-- d3 -->
+                            <circle data-node="H" cx="40"  cy="215" r="17" class="node-default"/>
+                            <text x="40"  y="220" class="node-text" text-anchor="middle" font-size="11">H</text>
+                            <circle data-node="I" cx="120" cy="215" r="17" class="node-default"/>
+                            <text x="120" y="220" class="node-text" text-anchor="middle" font-size="11">I</text>
+                            <circle data-node="J" cx="200" cy="215" r="17" class="node-default"/>
+                            <text x="200" y="220" class="node-text" text-anchor="middle" font-size="11">J</text>
+                            <circle data-node="K" cx="280" cy="215" r="17" class="node-default"/>
+                            <text x="280" y="220" class="node-text" text-anchor="middle" font-size="11">K</text>
+                            <circle data-node="L" cx="360" cy="215" r="17" class="node-default"/>
+                            <text x="360" y="220" class="node-text" text-anchor="middle" font-size="11">L</text>
+                            <circle data-node="M" cx="440" cy="215" r="17" class="node-default"/>
+                            <text x="440" y="220" class="node-text" text-anchor="middle" font-size="11">M</text>
+                            <circle data-node="N" cx="520" cy="215" r="17" class="node-default"/>
+                            <text x="520" y="220" class="node-text" text-anchor="middle" font-size="11">N</text>
+                            <circle data-node="O" cx="600" cy="215" r="17" class="node-default"/>
+                            <text x="600" y="220" class="node-text" text-anchor="middle" font-size="11">O</text>
+                            <!-- depth labels -->
+                            <text x="8" y="40"  fill="#888" font-size="11">d=0</text>
+                            <text x="8" y="100" fill="#888" font-size="11">d=1</text>
+                            <text x="8" y="160" fill="#888" font-size="11">d=2</text>
+                            <text x="8" y="220" fill="#888" font-size="11">d=3</text>
+                        </svg>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#e65100;"></div>Sedang diuji</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#7986cb;"></div>Di lintasan aktif</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#90a4ae;"></div>Buntu / selesai dieksplorasi</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#2e7d32;"></div>Tujuan ditemukan</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Belum dikunjungi</div>
+                    </div>
+                    <div class="stepper-controls">
+                        <button type="button" class="ts-btn ts-prev"><i class="fa-solid fa-backward-step"></i> Sebelumnya</button>
+                        <button type="button" class="ts-btn ts-play"><i class="fa-solid fa-play"></i> Jalankan</button>
+                        <button type="button" class="ts-btn ts-next">Berikutnya <i class="fa-solid fa-forward-step"></i></button>
+                        <button type="button" class="ts-btn ts-reset"><i class="fa-solid fa-rotate-left"></i> Ulangi</button>
+                        <span class="ts-counter">Langkah 0 / 9</span>
+                    </div>
+                    <div class="step-box show">
+                        <strong>Status:</strong> <span class="ts-note"></span>
+                    </div>
+                </div>
 
                 <h3>Sifat DFS</h3>
                 <div class="cplx-grid">
@@ -1523,31 +1656,25 @@ Tujuan tercapai dalam 6 langkah.</pre>
                     </div>
                 </div>
 
-                <h3>Depth-Limited Search (DLS)</h3>
-                <p>DLS adalah DFS dengan batas kedalaman <strong><em>ℓ</em></strong> yang eksplisit. Simpul pada kedalaman <em>ℓ</em> tidak diekspansi lebih lanjut (dianggap sebagai simpul daun).</p>
-
-                <pre><code><span class="kw">function</span> <span class="fn">DLS</span>(problem, limit) <span class="kw">returns</span> node | failure | cutoff
-    <span class="kw">return</span> <span class="fn">DLS-RECURSIVE</span>(<span class="cl">Node</span>(problem.initial), problem, limit)
-
-<span class="kw">function</span> <span class="fn">DLS-RECURSIVE</span>(node, problem, limit) <span class="kw">returns</span> node | failure | cutoff
-    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
-    <span class="kw">if</span> limit == <span class="nm">0</span>:               <span class="kw">return</span> <span class="st">"cutoff"</span>  <span class="cm">-- batas kedalaman tercapai</span>
-    cutoff_occurred ← <span class="kw">False</span>
-    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
-        result ← <span class="fn">DLS-RECURSIVE</span>(child, problem, limit - <span class="nm">1</span>)
-        <span class="kw">if</span> result == <span class="st">"cutoff"</span>: cutoff_occurred ← <span class="kw">True</span>
-        <span class="kw">elif</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
-    <span class="kw">if</span> cutoff_occurred: <span class="kw">return</span> <span class="st">"cutoff"</span>
-    <span class="kw">return</span> failure</code></pre>
-
                 <div class="warning-box">
-                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Masalah DLS:</strong>
-                    <p style="margin-top:6px;">Pemilihan batas <em>ℓ</em> sangat kritis. Jika <em>ℓ &lt; d</em> (terlalu dangkal), solusi tidak akan ditemukan. Jika <em>ℓ &gg; d</em>, boros komputasi. Solusi: gunakan IDS!</p>
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kekurangan utama DFS:</strong>
+                    <p style="margin-top:6px;">Tidak lengkap dan tidak optimal. DFS bisa terjebak menjelajahi cabang yang sangat dalam atau tak hingga sebelum sempat mencoba cabang lain yang justru mengarah ke solusi lebih dangkal — persis seperti animasi di atas, di mana 6 simpul subtree B habis dijelajahi sebelum DFS sampai ke F yang sebenarnya lebih dangkal. Pada graf dengan siklus (bukan pohon murni), DFS tanpa <em>explored set</em> bahkan bisa berputar tanpa henti dan tidak pernah berhenti.</p>
                 </div>
 
-                <h3>Coba Sendiri: DFS dan DLS <span class="badge badge-new">Interaktif</span></h3>
-                <p>Pada peta Romania, DFS di simulasi ini memakai <em>explored set</em> agar tidak berputar di siklus seperti Arad → Zerind → Oradea → Sibiu → Arad. Pilih <strong>DLS</strong> lalu ubah batas ℓ: dengan ℓ = 2 tujuan tidak ditemukan (<em>cutoff</em>), sedangkan dengan ℓ = 3 tujuan ditemukan. DLS tidak memakai explored set; siklus dicegah dengan memeriksa lintasan dari akar ke simpul yang sedang diekspansi.</p>
+                <h3>Coba Sendiri: DFS di Peta Romania <span class="badge badge-new">Interaktif</span></h3>
+                <p>Pada peta Romania, DFS di simulasi ini memakai <em>explored set</em> agar tidak berputar di siklus seperti Arad → Zerind → Oradea → Sibiu → Arad.</p>
                 <div data-viz="search" data-algo="dfs" data-algos="dfs,dls,bfs,ids,ucs"></div>
+
+                <h3>Pseudocode DFS (Rekursif)</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">DFS-RECURSIVE</span>(problem, node) <span class="kw">returns</span> node | failure
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+        result ← <span class="fn">DFS-RECURSIVE</span>(problem, child)
+        <span class="kw">if</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
+    <span class="kw">return</span> failure
+
+<span class="cm">-- Pemanggilan awal:</span>
+<span class="fn">DFS-RECURSIVE</span>(problem, <span class="cl">Node</span>(problem.initial))</code></pre>
 
                 <h3>Backtracking — DFS sebagai Metode Pemecahan Masalah</h3>
                 <p><strong>Backtracking (runut-balik)</strong> adalah DFS yang dipakai sebagai <em>strategi pemecahan masalah terstruktur</em>: bangun solusi selangkah demi selangkah; begitu sebuah pilihan terbukti buntu, batalkan pilihan itu (<em>unmove</em>) dan coba pilihan lain.</p>
@@ -1569,19 +1696,288 @@ Tujuan tercapai dalam 6 langkah.</pre>
             </section>
 
             <!-- ============================================================ -->
-            <!-- 8. IDS -->
+            <!-- 8. DLS -->
+            <!-- ============================================================ -->
+            <section id="dls">
+                <h2>8. Depth-Limited Search (DLS) <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>DLS adalah DFS dengan batas kedalaman <strong><em>ℓ</em></strong> yang eksplisit. Simpul pada kedalaman <em>ℓ</em> tidak diekspansi lebih lanjut, meski sebenarnya masih punya anak — ia dipaksa dianggap sebagai simpul daun.</p>
+
+                <h3>Penelusuran DLS — Contoh Tujuan Tidak Ditemukan (ℓ = 2) <span class="badge badge-new">Animasi</span></h3>
+                <p>Pohon di bawah <strong>persis sama</strong> dengan pohon DFS di atas, tetapi kali ini tujuan sebenarnya adalah <strong>O</strong>, di kedalaman 3 (lingkaran bergaris putus-putus merah). Dengan batas <em>ℓ</em> = 2, DLS tidak pernah diizinkan turun sampai kedalaman 3 — akibatnya O <strong>tidak akan pernah ditemukan</strong>, walau O sungguh-sungguh ada di pohon. Ini contoh nyata kekurangan DLS: hasilnya bergantung sepenuhnya pada tebakan batas <em>ℓ</em>.</p>
+                <div class="tree-stepper" data-trace="dls1">
+                    <script type="application/json" class="ts-data">
+                    [
+                        {"note":"<strong>Mulai dari A</strong> (d=0 ≤ ℓ). A diuji: bukan tujuan. Karena d(A) &lt; ℓ, A boleh diekspansi.","current":"A","visited":[],"dead":[]},
+                        {"note":"<strong>Turun ke B</strong> (d=1 ≤ ℓ). B diuji: bukan tujuan. Boleh diekspansi.","current":"B","visited":["A"],"dead":[]},
+                        {"note":"<strong>Turun ke D</strong> (d=2 = ℓ, batas tercapai). D diuji: bukan tujuan. Karena d(D) sudah sama dengan ℓ, D <strong>dipaksa jadi daun</strong> — anak-anaknya (H, I) tidak pernah dibangkitkan. Hasil untuk cabang ini: cutoff.","current":"D","visited":["A","B"],"dead":[]},
+                        {"note":"Kembali ke B, lanjut ke anak kedua: <strong>E</strong> (d=2 = ℓ). E diuji: bukan tujuan. Sama seperti D, E ikut dipotong (cutoff) — J dan K tidak pernah dibangkitkan.","current":"E","visited":["A","B"],"dead":["D"]},
+                        {"note":"D dan E sama-sama cutoff, jadi B pun selesai sebagai cutoff. Backtrack ke A, lanjut ke anak kedua: <strong>C</strong> (d=1). C diuji: bukan tujuan.","current":"C","visited":["A"],"dead":["D","E","B"]},
+                        {"note":"<strong>Turun ke F</strong> (d=2 = ℓ). F diuji: bukan tujuan → cutoff lagi. Anak-anaknya (L, M) tidak dibangkitkan.","current":"F","visited":["A","C"],"dead":["D","E","B"]},
+                        {"note":"Lanjut ke anak kedua C: <strong>G</strong> (d=2 = ℓ). G diuji: bukan tujuan → cutoff. Seluruh pohon sudah dikunjungi sampai batas ℓ = 2, tidak ada simpul yang cocok.<br><strong style=\"color:#c62828;\">Hasil akhir: cutoff — tujuan TIDAK ditemukan.</strong> Padahal O (tujuan sebenarnya) ada di kedalaman 3, hanya satu level di luar jangkauan ℓ = 2. Jika ℓ dinaikkan menjadi 3, DLS akan sampai ke G lalu ke O dan menemukannya.","current":"G","visited":["A","C"],"dead":["D","E","B","F"],"cutoff":true}
+                    ]
+                    </script>
+                    <div class="tree-svg-wrap">
+                        <svg width="640" height="250" viewBox="0 0 640 250">
+                            <!-- edges -->
+                            <line x1="320" y1="35" x2="160" y2="95" class="edge"/>
+                            <line x1="320" y1="35" x2="480" y2="95" class="edge"/>
+                            <line x1="160" y1="95" x2="80"  y2="155" class="edge"/>
+                            <line x1="160" y1="95" x2="240" y2="155" class="edge"/>
+                            <line x1="480" y1="95" x2="400" y2="155" class="edge"/>
+                            <line x1="480" y1="95" x2="560" y2="155" class="edge"/>
+                            <line x1="80"  y1="155" x2="40"  y2="215" class="edge"/>
+                            <line x1="80"  y1="155" x2="120" y2="215" class="edge"/>
+                            <line x1="240" y1="155" x2="200" y2="215" class="edge"/>
+                            <line x1="240" y1="155" x2="280" y2="215" class="edge"/>
+                            <line x1="400" y1="155" x2="360" y2="215" class="edge"/>
+                            <line x1="400" y1="155" x2="440" y2="215" class="edge"/>
+                            <line x1="560" y1="155" x2="520" y2="215" class="edge"/>
+                            <line x1="560" y1="155" x2="600" y2="215" class="edge"/>
+                            <!-- d0 -->
+                            <circle data-node="A" cx="320" cy="35" r="20" class="node-default"/>
+                            <text x="320" y="40" class="node-text" text-anchor="middle">A</text>
+                            <!-- d1 -->
+                            <circle data-node="B" cx="160" cy="95" r="20" class="node-default"/>
+                            <text x="160" y="100" class="node-text" text-anchor="middle">B</text>
+                            <circle data-node="C" cx="480" cy="95" r="20" class="node-default"/>
+                            <text x="480" y="100" class="node-text" text-anchor="middle">C</text>
+                            <!-- d2 (batas ℓ=2) -->
+                            <circle data-node="D" cx="80"  cy="155" r="19" class="node-default"/>
+                            <text x="80"  y="160" class="node-text" text-anchor="middle">D</text>
+                            <circle data-node="E" cx="240" cy="155" r="19" class="node-default"/>
+                            <text x="240" y="160" class="node-text" text-anchor="middle">E</text>
+                            <circle data-node="F" cx="400" cy="155" r="19" class="node-default"/>
+                            <text x="400" y="160" class="node-text" text-anchor="middle">F</text>
+                            <circle data-node="G" cx="560" cy="155" r="19" class="node-default"/>
+                            <text x="560" y="160" class="node-text" text-anchor="middle">G</text>
+                            <!-- d3: tak terjangkau ℓ=2, digambar pudar -->
+                            <circle cx="40"  cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="40"  y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">H</text>
+                            <circle cx="120" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="120" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">I</text>
+                            <circle cx="200" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="200" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">J</text>
+                            <circle cx="280" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="280" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">K</text>
+                            <circle cx="360" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="360" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">L</text>
+                            <circle cx="440" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="440" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">M</text>
+                            <circle cx="520" cy="215" r="16" fill="#dbe4f0"/>
+                            <text x="520" y="220" fill="#9aa8bd" font-size="11" text-anchor="middle">N</text>
+                            <!-- O: tujuan sebenarnya, tak terjangkau -->
+                            <circle cx="600" cy="215" r="19" class="node-ghost"/>
+                            <text x="600" y="220" fill="#c62828" font-size="11" text-anchor="middle" font-weight="700">O</text>
+                            <text x="600" y="240" class="ghost-label" text-anchor="middle">tujuan, tak terjangkau</text>
+                            <!-- batas kedalaman -->
+                            <line x1="8" y1="180" x2="632" y2="180" stroke="#c62828" stroke-width="1.5" stroke-dasharray="6 4"/>
+                            <text x="612" y="176" fill="#c62828" font-size="10.5" font-weight="700">batas ℓ = 2</text>
+                            <!-- depth labels -->
+                            <text x="8" y="40"  fill="#888" font-size="11">d=0</text>
+                            <text x="8" y="100" fill="#888" font-size="11">d=1</text>
+                            <text x="8" y="160" fill="#888" font-size="11">d=2</text>
+                            <text x="8" y="220" fill="#888" font-size="11">d=3</text>
+                        </svg>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-dot" style="background:#e65100;"></div>Sedang diuji</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#7986cb;"></div>Di lintasan aktif</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#90a4ae;"></div>Cutoff / selesai</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#1565c0;"></div>Belum dikunjungi</div>
+                        <div class="legend-item"><div class="legend-dot" style="background:#dbe4f0; border:1px solid #9aa8bd;"></div>Tak terjangkau ℓ</div>
+                    </div>
+                    <div class="stepper-controls">
+                        <button type="button" class="ts-btn ts-prev"><i class="fa-solid fa-backward-step"></i> Sebelumnya</button>
+                        <button type="button" class="ts-btn ts-play"><i class="fa-solid fa-play"></i> Jalankan</button>
+                        <button type="button" class="ts-btn ts-next">Berikutnya <i class="fa-solid fa-forward-step"></i></button>
+                        <button type="button" class="ts-btn ts-reset"><i class="fa-solid fa-rotate-left"></i> Ulangi</button>
+                        <span class="ts-counter">Langkah 0 / 6</span>
+                    </div>
+                    <div class="step-box show">
+                        <strong>Status:</strong> <span class="ts-note"></span>
+                    </div>
+                </div>
+
+                <h3>Sifat DLS</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#e65100;"><i class="fa-solid fa-triangle-exclamation"></i> Jika ℓ ≥ d</div>
+                        <p>Hanya lengkap kalau batas ℓ cukup dalam untuk menjangkau solusi.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#c62828;"><i class="fa-solid fa-xmark"></i> Tidak</div>
+                        <p>Sama seperti DFS, solusi pertama yang ditemukan belum tentu terpendek.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#e65100;">
+                        <h5>Waktu</h5>
+                        <div class="val O-bad">O(b<sup>ℓ</sup>)</div>
+                        <p>Bergantung pada batas ℓ, bukan pada kedalaman solusi sebenarnya.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Ruang</h5>
+                        <div class="val O-good">O(b·ℓ)</div>
+                        <p>Tetap hemat memori seperti DFS — hanya satu lintasan aktif.</p>
+                    </div>
+                </div>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kekurangan utama DLS:</strong>
+                    <p style="margin-top:6px;">Pemilihan batas <em>ℓ</em> sangat kritis dan harus ditebak <em>sebelum</em> pencarian dimulai. Jika <em>ℓ &lt; d</em> (terlalu dangkal), seperti animasi di atas, solusi tidak akan pernah ditemukan walau benar-benar ada — hasilnya <em>cutoff</em>, bukan <em>failure</em> sejati. Jika <em>ℓ &gg; d</em>, DLS boros komputasi karena tetap menjelajahi cabang-cabang yang jauh melampaui kedalaman solusi. Solusi: jalankan DLS berulang dengan ℓ yang terus bertambah — itulah ide di balik IDS (Bagian 9).</p>
+                </div>
+
+                <h3>Coba Sendiri: DLS di Peta Romania <span class="badge badge-new">Interaktif</span></h3>
+                <p>Pilih batas ℓ lalu tekan <strong>Langkah</strong>. Dengan ℓ = 2 tujuan tidak ditemukan (<em>cutoff</em>), sedangkan dengan ℓ = 3 tujuan ditemukan. DLS tidak memakai <em>explored set</em>; siklus dicegah dengan memeriksa lintasan dari akar ke simpul yang sedang diekspansi.</p>
+                <div data-viz="search" data-algo="dls" data-algos="dls,dfs,bfs,ids,ucs"></div>
+
+                <h3>Pseudocode DLS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">DLS</span>(problem, limit) <span class="kw">returns</span> node | failure | cutoff
+    <span class="kw">return</span> <span class="fn">DLS-RECURSIVE</span>(<span class="cl">Node</span>(problem.initial), problem, limit)
+
+<span class="kw">function</span> <span class="fn">DLS-RECURSIVE</span>(node, problem, limit) <span class="kw">returns</span> node | failure | cutoff
+    <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+    <span class="kw">if</span> limit == <span class="nm">0</span>:               <span class="kw">return</span> <span class="st">"cutoff"</span>  <span class="cm">-- batas kedalaman tercapai</span>
+    cutoff_occurred ← <span class="kw">False</span>
+    <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+        result ← <span class="fn">DLS-RECURSIVE</span>(child, problem, limit - <span class="nm">1</span>)
+        <span class="kw">if</span> result == <span class="st">"cutoff"</span>: cutoff_occurred ← <span class="kw">True</span>
+        <span class="kw">elif</span> result <span class="kw">is not</span> failure: <span class="kw">return</span> result
+    <span class="kw">if</span> cutoff_occurred: <span class="kw">return</span> <span class="st">"cutoff"</span>
+    <span class="kw">return</span> failure</code></pre>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- Kegiatan: Latihan Manual -->
+            <!-- ============================================================ -->
+            <section id="kegiatan-manual">
+                <h2>Kegiatan Mahasiswa: Latihan Manual BFS, DFS &amp; DLS <span class="badge badge-new">Kegiatan</span></h2>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tujuan:</strong>
+                    <p style="margin-top:6px;">Memastikan Anda benar-benar memahami cara kerja BFS, DFS, dan DLS — bukan sekadar menonton animasinya — dengan menelusurinya <strong>sendiri, dengan tulisan tangan di kertas</strong>, pada sebuah pohon baru yang mirip dengan contoh di Bagian 6–8 tetapi bentuknya berbeda.</p>
+                </div>
+
+                <h3>Pohon Soal</h3>
+                <p>Salin pohon berikut ke kertas Anda (boleh digambar ulang persis seperti ini, lingkaran dan garis saja sudah cukup). Simpul diberi nomor 1–13. Perhatikan bahwa pohon ini <strong>tidak beraturan</strong>: beberapa simpul punya 3 anak, beberapa 1 anak, ada juga yang tidak punya anak sama sekali — beda dengan pohon biner rapi pada materi di atas.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="560" height="230" viewBox="0 0 560 230">
+                        <!-- edges -->
+                        <line x1="280" y1="30" x2="140" y2="90" class="edge"/>
+                        <line x1="280" y1="30" x2="280" y2="90" class="edge"/>
+                        <line x1="280" y1="30" x2="440" y2="90" class="edge"/>
+                        <line x1="140" y1="90" x2="90"  y2="150" class="edge"/>
+                        <line x1="140" y1="90" x2="190" y2="150" class="edge"/>
+                        <line x1="280" y1="90" x2="280" y2="150" class="edge"/>
+                        <line x1="440" y1="90" x2="440" y2="150" class="edge"/>
+                        <line x1="90"  y1="150" x2="60"  y2="205" class="edge"/>
+                        <line x1="90"  y1="150" x2="120" y2="205" class="edge"/>
+                        <line x1="280" y1="150" x2="250" y2="205" class="edge"/>
+                        <line x1="280" y1="150" x2="310" y2="205" class="edge"/>
+                        <line x1="440" y1="150" x2="440" y2="205" class="edge"/>
+                        <!-- d0 -->
+                        <circle cx="280" cy="30" r="20" class="node-default"/>
+                        <text x="280" y="35" class="node-text" text-anchor="middle">1</text>
+                        <!-- d1 -->
+                        <circle cx="140" cy="90" r="20" class="node-default"/>
+                        <text x="140" y="95" class="node-text" text-anchor="middle">2</text>
+                        <circle cx="280" cy="90" r="20" class="node-default"/>
+                        <text x="280" y="95" class="node-text" text-anchor="middle">3</text>
+                        <circle cx="440" cy="90" r="20" class="node-default"/>
+                        <text x="440" y="95" class="node-text" text-anchor="middle">4</text>
+                        <!-- d2 -->
+                        <circle cx="90"  cy="150" r="19" class="node-default"/>
+                        <text x="90"  y="155" class="node-text" text-anchor="middle">5</text>
+                        <circle cx="190" cy="150" r="19" class="node-default"/>
+                        <text x="190" y="155" class="node-text" text-anchor="middle">6</text>
+                        <circle cx="280" cy="150" r="19" class="node-default"/>
+                        <text x="280" y="155" class="node-text" text-anchor="middle">7</text>
+                        <circle cx="440" cy="150" r="19" class="node-default"/>
+                        <text x="440" y="155" class="node-text" text-anchor="middle">8</text>
+                        <!-- d3 -->
+                        <circle cx="60"  cy="205" r="18" class="node-default"/>
+                        <text x="60"  y="210" class="node-text" text-anchor="middle" font-size="12">9</text>
+                        <circle cx="120" cy="205" r="18" class="node-default"/>
+                        <text x="120" y="210" class="node-text" text-anchor="middle" font-size="12">10</text>
+                        <circle cx="250" cy="205" r="18" class="node-default"/>
+                        <text x="250" y="210" class="node-text" text-anchor="middle" font-size="12">11</text>
+                        <circle cx="310" cy="205" r="18" class="node-goal"/>
+                        <text x="310" y="210" class="node-text" text-anchor="middle" font-size="12">12</text>
+                        <circle cx="440" cy="205" r="18" class="node-default"/>
+                        <text x="440" y="210" class="node-text" text-anchor="middle" font-size="12">13</text>
+                        <!-- depth labels -->
+                        <text x="8" y="35"  fill="#888" font-size="11">d=0</text>
+                        <text x="8" y="95"  fill="#888" font-size="11">d=1</text>
+                        <text x="8" y="155" fill="#888" font-size="11">d=2</text>
+                        <text x="8" y="210" fill="#888" font-size="11">d=3</text>
+                    </svg>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Keadaan awal = simpul <strong>1</strong>. Keadaan tujuan = simpul <strong>12</strong> (hijau). Aturan urutan anak: selalu dari <strong>kiri ke kanan</strong> sesuai gambar (mis. anak-anak simpul 1 diperiksa dengan urutan 2, 3, 4).</p>
+
+                <h3>Instruksi Pengerjaan</h3>
+                <p>Kerjakan ketiga tugas berikut <strong>di kertas, dengan tulisan tangan</strong>. Untuk tiap algoritma, gambar ulang pohon di atas (atau cukup daftar simpulnya), lalu buat tabel jejak seperti pada tabel "Jejak Ekspansi" di Bagian 6–8, dengan kolom: <em>Langkah</em>, <em>Simpul Diekspansi/Diuji</em>, <em>Frontier atau Lintasan Aktif</em>, dan <em>Explored/Dead</em>. Tulis juga kesimpulan akhirnya (solusi yang ditemukan, atau cutoff).</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan BFS</strong>
+                            <p>Gunakan antrian FIFO seperti Bagian 6. Catat isi frontier setelah tiap ekspansi sampai simpul 12 ditemukan. Uji tujuan dilakukan saat anak dibangkitkan (sama seperti animasi BFS di atas) — tandai persis di simpul mana 12 pertama kali diuji dan ditemukan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan DFS</strong>
+                            <p>Turun ke anak paling kiri dulu, backtrack ketika buntu, seperti Bagian 7. Tulis urutan lengkap simpul yang dikunjungi sampai 12 ditemukan. Hitung berapa banyak simpul yang sempat dikunjungi sebelum 12 ditemukan — apakah DFS "boros" di sini seperti pada animasi F di Bagian 7, atau justru lebih hemat? Jelaskan alasannya berdasarkan letak simpul 12 di pohon.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Telusuri dengan DLS, ℓ = 2</strong>
+                            <p>Ulangi penelusuran DFS, tetapi kali ini simpul pada kedalaman ℓ = 2 tidak boleh diekspansi lebih lanjut (dianggap daun). Tentukan: apakah hasilnya <em>solusi ditemukan</em> atau <em>cutoff</em>? Jelaskan dengan satu kalimat mengapa hasilnya seperti itu, dikaitkan dengan kedalaman simpul 12.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Pengumpulan:</strong>
+                    <p style="margin-top:6px;">Kerjakan di kertas (bukan diketik), foto hasil ketiga tugas dengan jelas dan terbaca, lalu kumpulkan sesuai instruksi dan tenggat waktu yang disampaikan dosen pengampu di kelas/eLearning. Setelah selesai mengerjakan, cocokkan jawaban Anda dengan kunci di bawah — <strong>buka kunci hanya setelah selesai mengerjakan sendiri</strong>, agar latihan ini benar-benar melatih pemahaman Anda.</p>
+                </div>
+
+                <h3>Kunci Jawaban</h3>
+                <details class="kunci">
+                    <summary>Buka kunci jawaban BFS, DFS, DLS (ℓ=2)</summary>
+                    <p style="margin-top:8px; font-weight:600;">BFS:</p>
+                    <ul>
+                        <li>Langkah 1: ekspansi 1 → frontier [2, 3, 4], explored {1}</li>
+                        <li>Langkah 2: ekspansi 2 → frontier [3, 4, 5, 6], explored {1, 2}</li>
+                        <li>Langkah 3: ekspansi 3 → anak-anaknya hanya 7, bukan tujuan → frontier [4, 5, 6, 7], explored {1, 2, 3}</li>
+                        <li>Langkah 4: ekspansi 4 → anaknya 8, bukan tujuan → frontier [5, 6, 7, 8], explored {1, 2, 3, 4}</li>
+                        <li>Langkah 5: ekspansi 5 → anak-anaknya 9 dan 10, keduanya bukan tujuan → frontier [6, 7, 8, 9, 10]</li>
+                        <li>Langkah 6: ekspansi 6 → 6 tidak punya anak → frontier tetap [7, 8, 9, 10]</li>
+                        <li>Langkah 7: ekspansi 7 → anak-anaknya 11 dan <strong>12</strong>. 11 diuji bukan tujuan → masuk frontier. 12 diuji: tujuan! BFS berhenti. <strong>Solusi: 1 → 3 → 7 → 12</strong> (3 langkah).</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">DFS:</p>
+                    <ul>
+                        <li>Urutan kunjungan: 1 → 2 → 5 → 9 (buntu, backtrack) → 10 (buntu, backtrack, 5 selesai) → 6 (buntu, backtrack, 2 selesai) → 3 → 7 → 11 (buntu, backtrack) → <strong>12 (tujuan!)</strong></li>
+                        <li><strong>Solusi: 1 → 3 → 7 → 12</strong>, sama seperti BFS — tetapi DFS sempat mengunjungi 5 simpul tambahan (2, 5, 9, 10, 6) di subtree simpul 2 yang sama sekali tidak mengarah ke solusi, sebelum akhirnya turun ke simpul 3.</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">DLS (ℓ = 2):</p>
+                    <ul>
+                        <li>Urutan kunjungan (hanya sampai d=2): 1 (d0) → 2 (d1) → 5 (d2, cutoff — 9,10 tidak dibangkitkan) → 6 (d2, cutoff) → 3 (d1) → 7 (d2, cutoff — 11,12 tidak dibangkitkan) → 4 (d1) → 8 (d2, cutoff — 13 tidak dibangkitkan).</li>
+                        <li><strong>Hasil: cutoff — tujuan TIDAK ditemukan</strong>, karena simpul 12 berada di kedalaman 3, sedangkan ℓ hanya mengizinkan penelusuran sampai kedalaman 2. Ini persis pola yang sama dengan animasi DLS di Bagian 8.</li>
+                    </ul>
+                </details>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 9. IDS -->
             <!-- ============================================================ -->
             <section id="ids">
-                <h2>8. Iterative Deepening Search (IDS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>9. Iterative Deepening Search (IDS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>IDS menggabungkan keunggulan BFS (kelengkapan, optimalitas) dengan keunggulan DFS (hemat memori) dengan cara menjalankan DLS berulang kali dengan batas kedalaman yang terus meningkat: <em>ℓ = 0, 1, 2, 3, …</em></p>
-
-                <h3>Pseudocode IDS</h3>
-                <pre><code><span class="kw">function</span> <span class="fn">ITERATIVE-DEEPENING-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
-    <span class="kw">for</span> depth <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, ∞):
-        result ← <span class="fn">DLS</span>(problem, limit=depth)
-        <span class="kw">if</span> result != <span class="st">"cutoff"</span>:
-            <span class="kw">return</span> result  <span class="cm">-- bisa berupa solusi atau failure</span></code></pre>
 
                 <h3>Ilustrasi IDS: Iterasi demi Iterasi</h3>
                 <div class="demo-box" style="padding:15px;">
@@ -1640,13 +2036,20 @@ Tujuan tercapai dalam 6 langkah.</pre>
                 <div class="success-box">
                     <strong><i class="fa-solid fa-circle-check"></i> IDS adalah algoritma pencarian buta yang direkomendasikan secara umum</strong> karena menggabungkan kelengkapan dan optimalitas BFS dengan efisiensi memori DFS. Untuk ruang keadaan besar tanpa informasi heuristik, IDS adalah pilihan pertama.
                 </div>
+
+                <h3>Pseudocode IDS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">ITERATIVE-DEEPENING-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
+    <span class="kw">for</span> depth <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">0</span>, ∞):
+        result ← <span class="fn">DLS</span>(problem, limit=depth)
+        <span class="kw">if</span> result != <span class="st">"cutoff"</span>:
+            <span class="kw">return</span> result  <span class="cm">-- bisa berupa solusi atau failure</span></code></pre>
             </section>
 
             <!-- ============================================================ -->
             <!-- 9. UCS -->
             <!-- ============================================================ -->
             <section id="ucs">
-                <h2>9. Uniform Cost Search (UCS) <span class="badge badge-algo">Algoritma</span></h2>
+                <h2>10. Uniform Cost Search (UCS) <span class="badge badge-algo">Algoritma</span></h2>
 
                 <p>UCS memperluas BFS untuk menangani <strong>biaya langkah yang berbeda-beda</strong>. UCS mengekspansi simpul berdasarkan <strong>biaya lintasan terendah</strong> <em>g(n)</em> menggunakan <strong>antrian prioritas</strong>.</p>
 
@@ -1654,26 +2057,6 @@ Tujuan tercapai dalam 6 langkah.</pre>
                     <strong><i class="fa-solid fa-lightbulb"></i> Hubungan dengan BFS:</strong>
                     <p style="margin-top:6px;">Jika semua biaya langkah bernilai 1, UCS identik dengan BFS. UCS adalah generalisasi BFS untuk biaya tidak seragam.</p>
                 </div>
-
-                <h3>Pseudocode UCS</h3>
-                <pre><code><span class="kw">function</span> <span class="fn">UNIFORM-COST-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
-    node     ← <span class="cl">Node</span>(problem.initial, path_cost=<span class="nm">0</span>)
-    frontier ← <span class="fn">PriorityQueue</span>(key=<span class="kw">lambda</span> n: n.path_cost)
-    frontier.<span class="fn">insert</span>(node)
-    explored ← <span class="fn">set</span>()
-
-    <span class="kw">loop</span>:
-        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
-        node ← frontier.<span class="fn">pop_min</span>()       <span class="cm">-- ambil simpul dengan g(n) terkecil</span>
-        <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
-        explored.<span class="fn">add</span>(node.state)
-
-        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
-            <span class="kw">if</span> child.state <span class="kw">not in</span> explored:
-                <span class="kw">if</span> child.state <span class="kw">not in</span> frontier:
-                    frontier.<span class="fn">insert</span>(child)
-                <span class="kw">elif</span> frontier[child.state].path_cost &gt; child.path_cost:
-                    frontier.<span class="fn">replace</span>(child)  <span class="cm">-- update jika lebih murah</span></code></pre>
 
                 <h3>Penelusuran UCS — Contoh Graf Romania (Arad → Bucharest)</h3>
                 <table class="trace-table">
@@ -1730,13 +2113,150 @@ Tujuan tercapai dalam 6 langkah.</pre>
                     <strong><i class="fa-solid fa-triangle-exclamation"></i> Uji Tujuan di UCS:</strong>
                     <p style="margin-top:6px;">Pada UCS, uji tujuan dilakukan <strong>saat simpul diekspansi</strong> (diambil dari frontier), bukan saat dibangkitkan. Ini penting untuk memastikan optimalitas — kita harus yakin tidak ada lintasan yang lebih murah.</p>
                 </div>
+
+                <h3>Pseudocode UCS</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">UNIFORM-COST-SEARCH</span>(problem) <span class="kw">returns</span> node | failure
+    node     ← <span class="cl">Node</span>(problem.initial, path_cost=<span class="nm">0</span>)
+    frontier ← <span class="fn">PriorityQueue</span>(key=<span class="kw">lambda</span> n: n.path_cost)
+    frontier.<span class="fn">insert</span>(node)
+    explored ← <span class="fn">set</span>()
+
+    <span class="kw">loop</span>:
+        <span class="kw">if</span> frontier.is_empty(): <span class="kw">return</span> failure
+        node ← frontier.<span class="fn">pop_min</span>()       <span class="cm">-- ambil simpul dengan g(n) terkecil</span>
+        <span class="kw">if</span> problem.is_goal(node.state): <span class="kw">return</span> node
+        explored.<span class="fn">add</span>(node.state)
+
+        <span class="kw">for</span> child <span class="kw">in</span> node.<span class="fn">expand</span>(problem):
+            <span class="kw">if</span> child.state <span class="kw">not in</span> explored:
+                <span class="kw">if</span> child.state <span class="kw">not in</span> frontier:
+                    frontier.<span class="fn">insert</span>(child)
+                <span class="kw">elif</span> frontier[child.state].path_cost &gt; child.path_cost:
+                    frontier.<span class="fn">replace</span>(child)  <span class="cm">-- update jika lebih murah</span></code></pre>
             </section>
 
             <!-- ============================================================ -->
-            <!-- 10. Perbandingan -->
+            <!-- Kegiatan: Latihan Manual IDS & UCS -->
+            <!-- ============================================================ -->
+            <section id="kegiatan-ids-ucs">
+                <h2>Kegiatan Mahasiswa: Latihan Manual IDS &amp; UCS <span class="badge badge-new">Kegiatan</span></h2>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-pen-ruler"></i> Tujuan:</strong>
+                    <p style="margin-top:6px;">Melatih IDS dan UCS dengan tulisan tangan di kertas, seperti kegiatan BFS/DFS/DLS sebelumnya — IDS memakai pohon yang sama, UCS memakai graf berbobot yang baru.</p>
+                </div>
+
+                <h3>Bagian A: IDS pada Pohon yang Sama</h3>
+                <p>Gunakan <strong>pohon soal yang sama</strong> dengan Kegiatan BFS/DFS/DLS sebelumnya (13 simpul, keadaan awal = 1, tujuan = 12, urutan anak selalu kiri ke kanan). Jika perlu, gambar ulang pohonnya di kertas — lihat kembali diagramnya di Bagian Kegiatan sebelumnya.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan IDS: ulangi DLS dengan ℓ = 0, 1, 2, 3, …</strong>
+                            <p>Untuk tiap nilai ℓ, telusuri pohon dengan DLS (sama seperti Bagian 8) dan catat: simpul mana saja yang diuji, urutannya, dan hasil akhirnya (cutoff atau ditemukan). Buat tabel dengan kolom <em>Iterasi (ℓ)</em>, <em>Simpul Diuji (urut)</em>, <em>Jumlah Pengujian</em>, <em>Status</em> — persis seperti tabel "Iterasi demi Iterasi" di Bagian 9. Berhenti begitu simpul 12 ditemukan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Hitung overhead-nya</strong>
+                            <p>Jumlahkan total pengujian simpul dari <em>semua</em> iterasi (termasuk yang cutoff). Bandingkan dengan jumlah pengujian pada latihan BFS dan DFS Anda sebelumnya pada pohon yang sama. Iterasi mana yang paling boros? Kenapa overhead ini tetap dianggap kecil dibanding manfaat hemat memori O(b·ℓ) yang diberikan IDS?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Bagian B: UCS pada Graf Berbobot Baru</h3>
+                <p>UCS butuh <strong>biaya langkah yang berbeda-beda</strong>, jadi kita pakai graf baru (bukan pohon) dengan bobot di setiap sisi. Salin graf berikut ke kertas Anda. Keadaan awal = <strong>S</strong>, keadaan tujuan = <strong>G</strong>. Graf ini tidak berarah — setiap sisi bisa dilewati dua arah dengan bobot yang sama.</p>
+                <div class="tree-svg-wrap">
+                    <svg width="480" height="260" viewBox="0 0 480 260">
+                        <!-- edges -->
+                        <line x1="50" y1="130" x2="180" y2="60"  class="edge"/>
+                        <line x1="50" y1="130" x2="180" y2="200" class="edge"/>
+                        <line x1="180" y1="60"  x2="320" y2="60"  class="edge"/>
+                        <line x1="180" y1="60"  x2="320" y2="200" class="edge"/>
+                        <line x1="180" y1="200" x2="320" y2="200" class="edge"/>
+                        <line x1="180" y1="200" x2="430" y2="130" class="edge"/>
+                        <line x1="320" y1="60"  x2="430" y2="130" class="edge"/>
+                        <line x1="320" y1="200" x2="430" y2="130" class="edge"/>
+                        <!-- edge weights -->
+                        <text x="98"  y="85"  class="edge-cost" text-anchor="middle">2</text>
+                        <text x="98"  y="182" class="edge-cost" text-anchor="middle">5</text>
+                        <text x="250" y="52"  class="edge-cost" text-anchor="middle">4</text>
+                        <text x="273" y="125" class="edge-cost" text-anchor="middle">7</text>
+                        <text x="250" y="217" class="edge-cost" text-anchor="middle">2</text>
+                        <text x="290" y="150" class="edge-cost" text-anchor="middle">9</text>
+                        <text x="388" y="85"  class="edge-cost" text-anchor="middle">3</text>
+                        <text x="388" y="182" class="edge-cost" text-anchor="middle">4</text>
+                        <!-- nodes -->
+                        <circle data-node="S" cx="50"  cy="130" r="22" class="node-default"/>
+                        <text x="50"  y="135" class="node-text" text-anchor="middle">S</text>
+                        <circle data-node="A" cx="180" cy="60"  r="22" class="node-default"/>
+                        <text x="180" y="65"  class="node-text" text-anchor="middle">A</text>
+                        <circle data-node="B" cx="180" cy="200" r="22" class="node-default"/>
+                        <text x="180" y="205" class="node-text" text-anchor="middle">B</text>
+                        <circle data-node="C" cx="320" cy="60"  r="22" class="node-default"/>
+                        <text x="320" y="65"  class="node-text" text-anchor="middle">C</text>
+                        <circle data-node="D" cx="320" cy="200" r="22" class="node-default"/>
+                        <text x="320" y="205" class="node-text" text-anchor="middle">D</text>
+                        <circle data-node="G" cx="430" cy="130" r="22" class="node-goal"/>
+                        <text x="430" y="135" class="node-text" text-anchor="middle">G</text>
+                    </svg>
+                </div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan UCS dari S ke G</strong>
+                            <p>Gunakan antrian prioritas berdasar g(n) seperti Bagian 10. Buat tabel dengan kolom <em>Langkah</em>, <em>Node Diekspansi</em>, <em>g(n)</em>, <em>Frontier setelah ekspansi (urut g)</em> — persis seperti tabel Romania di Bagian 10. Uji tujuan dilakukan <strong>saat simpul diekspansi</strong> (diambil dari frontier), bukan saat dibangkitkan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Perhatikan pembaruan frontier</strong>
+                            <p>Setidaknya dua kali dalam penelusuran ini, sebuah simpul yang sudah ada di frontier akan ditemukan lagi lewat lintasan lain. Catat setiap kejadian itu: apakah nilai g(n)-nya diperbarui (karena lintasan baru lebih murah), atau tetap dipertahankan (karena lintasan baru lebih mahal)? Tulis biaya total solusi akhir dan lintasannya.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-camera"></i> Pengumpulan:</strong>
+                    <p style="margin-top:6px;">Sama seperti kegiatan sebelumnya: kerjakan di kertas, foto hasilnya, kumpulkan sesuai instruksi dosen. Buka kunci jawaban di bawah hanya setelah selesai mengerjakan sendiri.</p>
+                </div>
+
+                <h3>Kunci Jawaban</h3>
+                <details class="kunci">
+                    <summary>Buka kunci jawaban IDS dan UCS</summary>
+                    <p style="margin-top:8px; font-weight:600;">Bagian A — IDS (pohon 13 simpul, tujuan = 12):</p>
+                    <ul>
+                        <li>ℓ = 0: uji {1} → cutoff (1 punya anak, tapi limit langsung 0). Jumlah pengujian: 1.</li>
+                        <li>ℓ = 1: uji {1, 2, 3, 4} → cutoff. Jumlah pengujian: 4.</li>
+                        <li>ℓ = 2: uji {1, 2, 5, 6, 3, 7, 4, 8} → cutoff. Jumlah pengujian: 8.</li>
+                        <li>ℓ = 3: uji {1, 2, 5, 9, 10, 6, 3, 7, 11, <strong>12</strong>} → <strong>ditemukan!</strong> Urutannya sama persis dengan DFS biasa pada Kegiatan sebelumnya (masuk akal: begitu ℓ ≥ kedalaman pohon, DLS berperilaku sama seperti DFS tanpa batas). Jumlah pengujian: 10.</li>
+                        <li><strong>Solusi: 1 → 3 → 7 → 12</strong> (sama seperti BFS dan DFS). Total pengujian kumulatif seluruh iterasi = 1 + 4 + 8 + 10 = <strong>23</strong>. Ini lebih banyak daripada BFS (yang langsung berhenti begitu 12 diuji pada "putaran" pertama, tanpa mengulang simpul dangkal berkali-kali), tetapi jauh lebih hemat memori — IDS tidak pernah menyimpan lebih dari satu lintasan aktif (O(b·ℓ)), sedangkan BFS menyimpan seluruh frontier tiap level (O(b<sup>d+1</sup>)). Untuk pohon kecil ini bedanya tidak terasa, tapi pada ruang keadaan raksasa, penghematan memori itulah yang membuat IDS tetap bisa berjalan sementara BFS kehabisan RAM.</li>
+                    </ul>
+                    <p style="margin-top:10px; font-weight:600;">Bagian B — UCS (graf S→G):</p>
+                    <table class="trace-table" style="margin-top:8px;">
+                        <thead>
+                            <tr><th>Langkah</th><th>Node Diekspansi</th><th>g(n)</th><th>Frontier setelah ekspansi (urut g)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>S</td><td>0</td><td>A(2), B(5)</td></tr>
+                            <tr><td>2</td><td>A</td><td>2</td><td>B(5), C(6), D(9)</td></tr>
+                            <tr><td>3</td><td>B</td><td>5</td><td>C(6), D(7) — diperbarui dari 9, G(14)</td></tr>
+                            <tr><td>4</td><td>C</td><td>6</td><td>D(7), G(9) — diperbarui dari 14</td></tr>
+                            <tr><td>5</td><td>D</td><td>7</td><td>G(9) — <em>dicoba</em> diperbarui ke 11 lewat D, tetapi 11 &gt; 9 sehingga <strong>ditolak</strong></td></tr>
+                            <tr class="tr-goal"><td>6</td><td><strong>G</strong></td><td><strong>9</strong></td><td>Diambil dari frontier, lolos uji tujuan. <strong>Solusi optimal: S → A → C → G (biaya 9)</strong></td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top:8px;">Dua pembaruan frontier terjadi pada G: dari 14 (lewat B) menjadi 9 (lewat C) pada langkah 4 — diperbarui karena lebih murah. Lalu pada langkah 5, lintasan lewat D menawarkan g = 11, tetapi ditolak karena lebih mahal dari 9 yang sudah tercatat. Jalur S → B → D → G (11) dan S → B → G (14) sama-sama valid tetapi lebih mahal daripada S → A → C → G (9), sehingga UCS mengabaikannya.</p>
+                </details>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 11. Perbandingan -->
             <!-- ============================================================ -->
             <section id="perbandingan">
-                <h2>10. Perbandingan Algoritma Pencarian Buta <span class="badge">Ringkasan</span></h2>
+                <h2>11. Perbandingan Algoritma Pencarian Buta <span class="badge">Ringkasan</span></h2>
 
                 <table>
                     <thead>
@@ -1882,7 +2402,7 @@ Tujuan tercapai dalam 6 langkah.</pre>
             <!-- 11. Rangkuman -->
             <!-- ============================================================ -->
             <section id="rangkuman">
-                <h2>11. Rangkuman Pertemuan 3 &amp; 4</h2>
+                <h2>12. Rangkuman Pertemuan 3 &amp; 4</h2>
 
                 <div class="success-box">
                     <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
@@ -1954,6 +2474,74 @@ Tujuan tercapai dalam 6 langkah.</pre>
             document.querySelector('.sidebar').classList.remove('active');
             document.querySelector('.sidebar-overlay').classList.remove('active');
         }
+
+        // ---- Animasi pohon langkah-demi-langkah (BFS/DFS/DLS) ----
+        function initTreeStepper(root) {
+            const dataEl = root.querySelector('.ts-data');
+            if (!dataEl) return;
+            const steps = JSON.parse(dataEl.textContent);
+            const nodes = Array.from(root.querySelectorAll('[data-node]'));
+            const traceId = root.dataset.trace;
+            const traceRows = traceId ? Array.from(document.querySelectorAll('[data-trace-row="' + traceId + '"]')) : [];
+            const noteEl = root.querySelector('.ts-note');
+            const counterEl = root.querySelector('.ts-counter');
+            const prevBtn = root.querySelector('.ts-prev');
+            const nextBtn = root.querySelector('.ts-next');
+            const playBtn = root.querySelector('.ts-play');
+            const resetBtn = root.querySelector('.ts-reset');
+            let i = 0;
+            let timer = null;
+
+            function stop() {
+                if (timer) {
+                    clearInterval(timer);
+                    timer = null;
+                    playBtn.classList.remove('playing');
+                    playBtn.innerHTML = '<i class="fa-solid fa-play"></i> Jalankan';
+                }
+            }
+
+            function render() {
+                const step = steps[i];
+                nodes.forEach(n => {
+                    const id = n.dataset.node;
+                    let cls = 'node-default';
+                    if (step.dead && step.dead.includes(id)) cls = 'node-dead';
+                    if (step.visited && step.visited.includes(id)) cls = 'node-visited';
+                    if (step.explored && step.explored.includes(id)) cls = 'node-visited';
+                    if (step.frontier && step.frontier.includes(id)) cls = 'node-frontier';
+                    if (step.current === id) cls = 'node-current';
+                    if (step.goal === id) cls = 'node-goal';
+                    n.setAttribute('class', cls);
+                });
+                if (noteEl) noteEl.innerHTML = step.note || '';
+                if (counterEl) counterEl.textContent = 'Langkah ' + i + ' / ' + (steps.length - 1);
+                if (prevBtn) prevBtn.disabled = i === 0;
+                if (nextBtn) nextBtn.disabled = i === steps.length - 1;
+                if (playBtn) playBtn.disabled = i === steps.length - 1;
+                traceRows.forEach((r, idx) => {
+                    r.classList.toggle('tr-current', idx === i && !step.goal && !step.cutoff);
+                    r.classList.toggle('tr-goal', idx === i && !!step.goal);
+                    r.classList.toggle('tr-cutoff', idx === i && !!step.cutoff);
+                });
+            }
+
+            if (prevBtn) prevBtn.addEventListener('click', () => { stop(); if (i > 0) { i--; render(); } });
+            if (nextBtn) nextBtn.addEventListener('click', () => { stop(); if (i < steps.length - 1) { i++; render(); } });
+            if (resetBtn) resetBtn.addEventListener('click', () => { stop(); i = 0; render(); });
+            if (playBtn) playBtn.addEventListener('click', () => {
+                if (timer) { stop(); return; }
+                playBtn.classList.add('playing');
+                playBtn.innerHTML = '<i class="fa-solid fa-pause"></i> Jeda';
+                timer = setInterval(() => {
+                    if (i >= steps.length - 1) { stop(); return; }
+                    i++; render();
+                }, 1600);
+            });
+
+            render();
+        }
+        document.querySelectorAll('.tree-stepper').forEach(initTreeStepper);
 
         // ---- Tombol "Salin kode" untuk blok kode yang bisa dijalankan (pre[data-copy]) ----
         // navigator.clipboard hanya tersedia di konteks aman (https/localhost); selain itu pakai execCommand.
