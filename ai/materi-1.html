@@ -54,6 +54,10 @@
             </ul> -->
         </nav>
 
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
         <!-- Konten Utama -->
         <main class="content">
 
@@ -2137,6 +2141,17 @@ label ← model.<span class="fn">prediksi</span>(citra)                   <span 
             document.querySelector('.sidebar').classList.remove('active');
             document.querySelector('.sidebar-overlay').classList.remove('active');
         }
+
+        // ---- Perkecil/perbesar sidebar (desktop), diingat lewat localStorage ----
+        function toggleSidebarCollapse() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('ai-sidebar-collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('ai-sidebar-collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        } catch (e) {}
 
         // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
         document.body.classList.add('materi-tab');

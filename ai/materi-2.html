@@ -222,6 +222,10 @@
             </ul>
         </nav>
 
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
         <main class="content">
 
             <!-- ============================================================ -->
@@ -2723,6 +2727,17 @@ Solusi: S -&gt; A -&gt; M -&gt; C -&gt; G</pre>
             document.querySelector('.sidebar').classList.remove('active');
             document.querySelector('.sidebar-overlay').classList.remove('active');
         }
+
+        // ---- Perkecil/perbesar sidebar (desktop), diingat lewat localStorage ----
+        function toggleSidebarCollapse() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('ai-sidebar-collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('ai-sidebar-collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        } catch (e) {}
 
         // ---- Animasi pohon langkah-demi-langkah (BFS/DFS/DLS) ----
         function initTreeStepper(root) {
