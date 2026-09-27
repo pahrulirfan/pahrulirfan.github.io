@@ -15,6 +15,11 @@
  *   data-viz="grid-lab"        lab heuristik berbasis grid (data-heuristic, data-weight)
  *   data-viz="vacuum"          dunia penyedot debu     (data-agents="reflex" | "reflex,model" | "hunter")
  *   data-viz="state-space"     penjelajah ruang keadaan (data-problem="vacuum" | "jug" | "river" | "puzzle")
+ *   data-viz="sg-graph"        graf latihan S–G: GBFS, A*, simple/steepest HC (data-algo, data-algos)
+ *   data-viz="puzzle-tree"     pohon 8-puzzle langkah demi langkah (data-cases="h1,h2,h3" | data-case="astar" | "sthc")
+ *   data-viz="puzzle-lab"      8-puzzle yang bisa dimainkan, nilai h₁ h₂ h₃ h* langsung terlihat
+ *   data-viz="hill-land"       lanskap hill climbing satu dimensi (data-mode, data-start)
+ *   data-viz="sld-line"        kasus jalur terpendek: jarak garis lurus vs jarak jalan (data-goal)
  */
 (function () {
     'use strict';
@@ -645,13 +650,384 @@
     }
 
     /* =====================================================================
+     * 3c. MESIN PENCARIAN HEURISTIK — graf latihan S–G, 8-puzzle, lanskap HC
+     *     (materi lama "04. AI_B_2022_Heuristik": hlm. 19–25, 34, 38–39, 44–56)
+     * ===================================================================== */
+    // Graf latihan S–G. Posisi diukur dari gambar halaman 34 (piksel).
+    const SG = {
+        pos: {
+            S: [1255, 410], B: [1338, 410], D: [1406, 410], E: [1536, 410], G: [1723, 410],
+            C: [1456, 262], H: [1515, 315], I: [1668, 315], A: [1210, 485], F: [1579, 492], J: [1680, 492]
+        },
+        h: { S: 20, A: 21, B: 15, C: 8, D: 14, E: 5, F: 4, G: 0, H: 6, I: 3, J: 2 },
+        edges: [
+            ['S', 'B', 8], ['B', 'D', 2], ['D', 'E', 12], ['E', 'G', 8], ['S', 'C', 12],
+            ['C', 'H', 4], ['D', 'H', 5], ['H', 'I', 6], ['I', 'G', 6], ['E', 'I', 6],
+            ['S', 'A', 4], ['E', 'F', 6], ['F', 'J', 6], ['J', 'G', 2], ['A', 'G', 22]
+        ],
+        start: 'S', goal: 'G'
+    };
+    SG.adj = {};
+    SG.edges.forEach(([a, b, c]) => {
+        (SG.adj[a] = SG.adj[a] || {})[b] = c;
+        (SG.adj[b] = SG.adj[b] || {})[a] = c;
+    });
+    SG.neighbors = (n, order) => {
+        const ns = Object.keys(SG.adj[n]).sort();
+        return order === 'desc' ? ns.reverse() : ns;
+    };
+    SG.cost = path => path.slice(1).reduce((s, n, i) => s + SG.adj[path[i]][n], 0);
+
+    const SG_ALGOS = {
+        greedy:   'Greedy Best First Search — f(n) = h(n)',
+        astar:    'A* — f(n) = g(n) + h(n)',
+        simple:   'Simple Hill Climbing',
+        steepest: 'Steepest-Ascent Hill Climbing'
+    };
+
+    function sgRun(algo, order) {
+        const h = SG.h, start = SG.start, goal = SG.goal;
+        const steps = [];
+        const b = s => '<b>' + s + '</b>';
+        const pathTo = (parent, n) => { const p = []; for (; n; n = parent[n]) p.unshift(n); return p; };
+
+        /* ---------- Hill climbing: hanya satu keadaan sekarang, tanpa Open ---------- */
+        if (algo === 'simple' || algo === 'steepest') {
+            const path = [start];
+            const snap = (kind, msg, tried, extra) => steps.push(Object.assign({
+                kind, msg, current: path[path.length - 1], path: path.slice(), tried: tried || [],
+                open: [], closed: []
+            }, extra || {}));
+            snap('init', 'Mulai dari keadaan awal ' + b(start) + ' (h = ' + h[start] + '). Hill climbing hanya ' +
+                'mengingat <em>satu</em> keadaan sekarang: tidak ada Open dan tidak ada Closed.');
+            for (let guard = 0; guard < 20; guard++) {
+                const cur = path[path.length - 1];
+                const ns = SG.neighbors(cur, order);
+                let next = null;
+                const tried = [];
+                if (algo === 'simple') {
+                    for (const m of ns) {
+                        const ok = h[m] < h[cur];
+                        tried.push({ n: m, ok, pick: ok });
+                        if (ok) { next = m; break; }
+                    }
+                } else {
+                    ns.forEach(m => tried.push({ n: m, ok: h[m] < h[cur], pick: false }));
+                    next = ns.reduce((a, m) => (h[m] < h[a] ? m : a), ns[0]);
+                    if (h[next] < h[cur]) tried.find(t => t.n === next).pick = true;
+                    else next = null;
+                }
+                const list = tried.map(t => b(t.n) + ' (h=' + h[t.n] + (t.pick ? ', dipilih' : t.ok ? '' : ', tidak lebih baik') + ')').join(', ');
+                if (!next) {
+                    snap('fail', 'Dari ' + b(cur) + ' (h = ' + h[cur] + ') ' +
+                        (algo === 'simple' ? 'semua operator sudah dicoba: ' : 'semua suksesor dinilai: ') + list +
+                        '. Tidak ada yang lebih baik, jadi pencarian <em>berhenti</em> di optimum lokal.', tried, { found: false });
+                    return steps;
+                }
+                path.push(next);
+                const how = algo === 'simple'
+                    ? 'Coba operator satu per satu (' + (order === 'desc' ? 'urutan Z→A' : 'urutan abjad') + '): ' + list +
+                      '. Tetangga <em>pertama</em> yang lebih baik langsung diambil'
+                        + (tried.length < ns.length ? ', sisanya tidak diperiksa' : '') + '.'
+                    : 'Nilai <em>semua</em> suksesor: ' + list + '. Ambil yang terbaik (h terkecil).';
+                if (next === goal) {
+                    snap('goal', 'Dari ' + b(cur) + ' (h = ' + h[cur] + '). ' + how + ' ' + b(goal) +
+                        ' adalah tujuan, proses berhenti.', tried, { found: true, cost: SG.cost(path) });
+                    return steps;
+                }
+                snap('move', 'Dari ' + b(cur) + ' (h = ' + h[cur] + '). ' + how + ' Keadaan sekarang menjadi ' +
+                    b(next) + ' (h = ' + h[next] + ').', tried);
+            }
+            return steps;
+        }
+
+        /* ---------- GBFS & A*: daftar Open diurutkan ulang setiap langkah ---------- */
+        const astar = algo === 'astar';
+        const g = { [start]: 0 }, parent = { [start]: null };
+        let open = [start];
+        const closed = [];
+        const f = n => astar ? g[n] + h[n] : h[n];
+        const fTxt = n => astar ? 'f = ' + g[n] + ' + ' + h[n] + ' = ' + f(n) : 'h = ' + h[n];
+        const snap = (kind, current, msg, extra) => steps.push(Object.assign({
+            kind, current, msg,
+            open: open.map(n => ({ n, g: g[n], h: h[n], f: f(n) })),
+            closed: closed.slice(),
+            tree: Object.keys(parent).filter(n => parent[n]).map(n => [parent[n], n])
+        }, extra || {}));
+        snap('init', null, 'Open = [' + b(start) + '], Closed = [ ]. Open selalu diurutkan menurut ' +
+            (astar ? 'f(n) = g(n) + h(n)' : 'h(n)') + ', kepalanya yang terkecil.');
+        let no = 0;
+        while (open.length) {
+            const n = open.shift();
+            no++;
+            if (n === goal) {
+                const path = pathTo(parent, n);
+                snap('goal', n, 'Ambil kepala Open: ' + b(n) + ' (' + fTxt(n) + '). Ini tujuan, proses berhenti. ' +
+                    'Uji tujuan dilakukan saat simpul <em>diambil</em> dari Open, bukan saat dibangkitkan.',
+                    { found: true, path, cost: g[n] });
+                return steps;
+            }
+            closed.push(n);
+            const added = [], updated = [], reopened = [], skipped = [];
+            for (const m of SG.neighbors(n)) {
+                const g2 = g[n] + SG.adj[n][m];
+                if (astar) {
+                    if (g[m] === undefined || g2 < g[m]) {
+                        const old = g[m];
+                        g[m] = g2;
+                        parent[m] = n;
+                        const ci = closed.indexOf(m);
+                        if (ci >= 0) { closed.splice(ci, 1); reopened.push(b(m) + ': g ' + old + ' → ' + g2); }
+                        else if (open.includes(m)) updated.push(b(m) + ': g ' + old + ' → ' + g2);
+                        else added.push(b(m) + ' (' + fTxt(m) + ')');
+                        if (!open.includes(m)) open.push(m);
+                    } else skipped.push(m);
+                } else if (!closed.includes(m) && !open.includes(m)) {
+                    g[m] = g2;
+                    parent[m] = n;
+                    open.push(m);
+                    added.push(b(m) + ' (h = ' + h[m] + ')');
+                } else skipped.push(m);
+            }
+            open.sort((x, y) => f(x) - f(y));
+            snap('expand', n, 'Langkah ' + no + ': ambil kepala Open ' + b(n) + ' (' + fTxt(n) + '), pindahkan ke Closed, lalu bangkitkan anaknya. ' +
+                (added.length ? 'Masuk Open: ' + added.join(', ') + '. ' : '') +
+                (updated.length ? 'Diperbarui karena lintasan lebih murah: ' + updated.join('; ') + '. ' : '') +
+                (reopened.length ? '<em>Dibuka kembali</em> dari Closed karena lintasan lebih murah: ' + reopened.join('; ') + '. ' : '') +
+                (skipped.length ? 'Dilewati (sudah di Open/Closed' + (astar ? ' dengan g sama atau lebih murah' : '') + '): ' + skipped.map(b).join(', ') + '. ' : '') +
+                'Open diurutkan ulang.', { reopened: reopened.length > 0 });
+        }
+        snap('fail', null, 'Open kosong: tujuan tidak ditemukan.', { found: false });
+        return steps;
+    }
+
+    // Jalur termurah S→G (Dijkstra kecil) sebagai pembanding hasil.
+    function sgOptimal() {
+        const dist = { [SG.start]: 0 }, done = new Set();
+        const nodes = Object.keys(SG.adj);
+        while (done.size < nodes.length) {
+            let u = null;
+            nodes.forEach(n => { if (!done.has(n) && dist[n] !== undefined && (u === null || dist[n] < dist[u])) u = n; });
+            if (u === null) break;
+            done.add(u);
+            Object.keys(SG.adj[u]).forEach(v => {
+                const d = dist[u] + SG.adj[u][v];
+                if (dist[v] === undefined || d < dist[v]) dist[v] = d;
+            });
+        }
+        return dist[SG.goal];
+    }
+
+    /* ---------- 8-puzzle ---------- */
+    const PZ_DIR = { kiri: [0, -1], kanan: [0, 1], atas: [-1, 0], bawah: [1, 0] };
+    function pzMove(s, dir) {
+        const i = s.indexOf(0), r = Math.floor(i / 3), c = i % 3;
+        const r2 = r + PZ_DIR[dir][0], c2 = c + PZ_DIR[dir][1];
+        if (r2 < 0 || r2 > 2 || c2 < 0 || c2 > 2) return null;
+        const t = s.slice(), j = r2 * 3 + c2;
+        t[i] = t[j]; t[j] = 0;
+        return t;
+    }
+    const PZ_H = {
+        benar:     { label: 'h₁ = banyak ubin di posisi benar', best: 'max', f: (s, g) => s.filter((v, i) => v && v === g[i]).length },
+        salah:     { label: 'h₂ = banyak ubin di posisi salah', best: 'min', f: (s, g) => s.filter((v, i) => v && v !== g[i]).length },
+        manhattan: { label: 'h₃ = total gerakan (jarak Manhattan)', best: 'min', f: (s, g) => s.reduce((t, v, i) => {
+            if (!v) return t;
+            const j = g.indexOf(v);
+            return t + Math.abs(Math.floor(i / 3) - Math.floor(j / 3)) + Math.abs(i % 3 - j % 3);
+        }, 0) },
+        salahBlank: { label: 'h = banyak posisi salah (blank ikut dihitung)', best: 'min', f: (s, g) => s.filter((v, i) => v !== g[i]).length }
+    };
+    const PZ_A = [1, 2, 3, 7, 8, 4, 6, 0, 5], PZ_A_GOAL = [1, 2, 3, 8, 0, 4, 7, 6, 5];
+    const PZ_B_GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+    const PZ_CASES = {
+        h1:    { mode: 'hc', hName: 'h₁', start: PZ_A, goal: PZ_A_GOAL, h: 'benar', dirs: ['kiri', 'kanan', 'atas', 'bawah'], showAll: true },
+        h2:    { mode: 'hc', hName: 'h₂', start: PZ_A, goal: PZ_A_GOAL, h: 'salah', dirs: ['kiri', 'kanan', 'atas', 'bawah'], showAll: true },
+        h3:    { mode: 'hc', hName: 'h₃', start: PZ_A, goal: PZ_A_GOAL, h: 'manhattan', dirs: ['kiri', 'kanan', 'atas', 'bawah'], showAll: true },
+        astar: { mode: 'astar', start: [1, 2, 0, 4, 5, 3, 7, 8, 6], goal: PZ_B_GOAL, h: 'salahBlank', dirs: ['bawah', 'kiri', 'atas', 'kanan'] },
+        sthc:  { mode: 'hc', start: [1, 2, 3, 4, 8, 0, 7, 6, 5], goal: PZ_B_GOAL, h: 'manhattan', dirs: ['atas', 'kiri', 'bawah', 'kanan'], showAll: false }
+    };
+    const pzKey = s => s.join('');
+    const pzTxt = s => '{' + s.map(v => v || '_').join(',') + '}';
+
+    // Menghasilkan rekaman langkah berisi pohon yang tumbuh sedikit demi sedikit.
+    function pzRun(caseName) {
+        const C = PZ_CASES[caseName], H = PZ_H[C.h];
+        const hv = s => H.f(s, C.goal);
+        const better = (a, b) => (H.best === 'max' ? a > b : a < b);
+        const isGoal = s => pzKey(s) === pzKey(C.goal);
+        const nodes = [];
+        const add = (state, parent, move, status) => {
+            const n = { id: nodes.length, state, parent, move, status: status || 'normal',
+                g: parent === null ? 0 : nodes[parent].g + 1, children: [] };
+            n.h = state ? hv(state) : null;
+            n.f = n.h === null ? null : n.g + n.h;
+            nodes.push(n);
+            if (parent !== null) nodes[parent].children.push(n.id);
+            return n;
+        };
+        const steps = [];
+        steps.nodes = nodes;   // pohon akhir; setiap langkah hanya menampilkan simpul id < count
+        const snap = (kind, msg, extra) => steps.push(Object.assign({
+            kind, msg, count: nodes.length,
+            marks: nodes.map(n => ({ status: n.status, chosen: !!n.chosen, current: !!n.current, open: !!n.open }))
+        }, extra || {}));
+        const clearCur = () => nodes.forEach(n => { n.current = false; });
+        const b = s => '<b>' + s + '</b>';
+        const valTxt = n => C.mode === 'astar' ? 'f = ' + n.g + ' + ' + n.h + ' = ' + n.f : (C.hName || 'h') + ' = ' + n.h;
+        const root = add(C.start.slice(), null, null);
+        root.current = true;
+
+        if (C.mode === 'hc') {
+            const seen = new Set([pzKey(root.state)]);
+            snap('init', 'Keadaan awal: ' + valTxt(root) + '. Tujuan: ' + (C.hName || 'h') + ' ' +
+                (H.best === 'max' ? '= 8 (makin besar makin baik).' : '= 0 (makin kecil makin baik).'));
+            let cur = root;
+            for (let guard = 0; guard < 12 && !isGoal(cur.state); guard++) {
+                const kids = [];
+                C.dirs.forEach(d => {
+                    const t = pzMove(cur.state, d);
+                    if (!t) { if (C.showAll) kids.push(add(null, cur.id, d, 'invalid')); return; }
+                    if (seen.has(pzKey(t))) { if (C.showAll) kids.push(add(t, cur.id, d, 'back')); return; }
+                    kids.push(add(t, cur.id, d));
+                });
+                clearCur(); cur.current = true;
+                const cands = kids.filter(k => k.status === 'normal');
+                const desc = kids.map(k => k.status === 'invalid' ? b(k.move) + ': tidak valid (keluar papan)'
+                    : k.status === 'back' ? b(k.move) + ': kembali ke keadaan sebelumnya (' + valTxt(k) + '), diabaikan'
+                    : b(k.move) + ': ' + valTxt(k)).join('; ');
+                snap('expand', 'Bangkitkan semua anak dari simpul yang disorot. ' + desc + '.');
+                let best = null;
+                cands.forEach(k => { if (!best || better(k.h, best.h)) best = k; });
+                if (!best || !better(best.h, cur.h)) {
+                    snap('fail', 'Tidak ada anak yang lebih baik dari ' + valTxt(cur) + '. Hill climbing terjebak.', { found: false });
+                    return steps;
+                }
+                best.chosen = true;
+                clearCur(); best.current = true;
+                seen.add(pzKey(best.state));
+                cur = best;
+                snap(isGoal(best.state) ? 'goal' : 'choose', 'Pilih anak ' + b(best.move) + ' karena nilainya paling ' +
+                    (H.best === 'max' ? 'besar' : 'kecil') + ' (' + valTxt(best) + ').' +
+                    (isGoal(best.state) ? ' Keadaan ini sama dengan tujuan, proses berhenti.' : ''),
+                    isGoal(best.state) ? { found: true, depth: best.g } : null);
+            }
+            return steps;
+        }
+
+        // A*: Open berisi simpul daun yang belum diekspansi, diurutkan menurut f.
+        const closed = new Set();
+        root.open = true;
+        const openList = () => nodes.filter(n => n.open).sort((x, y) => x.f - y.f || x.id - y.id);
+        const openTxt = () => openList().map(n => pzTxt(n.state) + ' f=' + n.f).join(', ');
+        snap('init', 'Open = [awal, ' + valTxt(root) + ']. g(n) = kedalaman simpul, h(n) = banyak posisi yang masih salah.',
+            { open: openTxt() });
+        for (let guard = 0; guard < 12; guard++) {
+            const n = openList()[0];
+            n.open = false;
+            clearCur(); n.current = true;
+            if (isGoal(n.state)) {
+                n.chosen = true;
+                snap('goal', 'Ambil simpul Open dengan f terkecil: ' + pzTxt(n.state) + ' (' + valTxt(n) +
+                    '). Ini tujuan, proses berhenti. Solusinya ' + n.g + ' gerakan.', { found: true, depth: n.g, open: openTxt() });
+                return steps;
+            }
+            closed.add(pzKey(n.state));
+            n.chosen = true;
+            const desc = [];
+            C.dirs.forEach(d => {
+                const t = pzMove(n.state, d);
+                if (!t) return;
+                if (closed.has(pzKey(t))) {
+                    const k = add(t, n.id, d, 'back');
+                    desc.push(b(d) + ': sama dengan simpul di Closed (' + valTxt(k) + '), tidak dimasukkan ke Open');
+                    return;
+                }
+                const k = add(t, n.id, d);
+                k.open = true;
+                desc.push(b(d) + ': ' + valTxt(k));
+            });
+            snap('expand', 'Ambil simpul Open dengan f terkecil (' + valTxt(n) + '), pindahkan ke Closed, lalu geser blank ke setiap arah yang mungkin. ' +
+                desc.join('; ') + '.', { open: openTxt() });
+        }
+        return steps;
+    }
+
+    /* ---------- Lanskap hill climbing satu dimensi ---------- */
+    // Nilai fungsi objektif di x = 0..60. Ada shoulder, maksimum global, maksimum lokal,
+    // dan dataran ("flat" local maximum), seperti gambar halaman 44.
+    const LAND = (() => {
+        const v = [];
+        const seg = (x0, x1, y0, y1) => { for (let x = x0; x <= x1; x++) v[x] = Math.round(y0 + (y1 - y0) * (x - x0) / Math.max(1, x1 - x0)); };
+        seg(0, 8, 8, 32);      // naik
+        seg(9, 13, 32, 32);    // shoulder (datar, lalu naik lagi)
+        seg(14, 20, 38, 92);   // naik ke maksimum global
+        seg(21, 30, 84, 22);   // turun
+        seg(31, 36, 28, 58);   // naik ke maksimum lokal
+        seg(37, 42, 52, 30);   // turun
+        seg(43, 45, 36, 46);   // naik
+        seg(46, 50, 46, 46);   // dataran di puncak ("flat" local maximum)
+        seg(51, 60, 40, 6);    // turun
+        return v;
+    })();
+
+    function landRun(x0, mode) {
+        const v = LAND, N = v.length, steps = [];
+        const gmax = Math.max.apply(null, v);
+        const trail = [x0];
+        const classify = x => {
+            if (v[x] === gmax) return ['global', 'maksimum global'];
+            const flatL = x > 0 && v[x - 1] === v[x], flatR = x < N - 1 && v[x + 1] === v[x];
+            if (flatL || flatR) {
+                // cari ujung dataran: bila di salah satu ujung masih ada tanjakan, ini shoulder
+                let l = x, r = x;
+                while (l > 0 && v[l - 1] === v[x]) l--;
+                while (r < N - 1 && v[r + 1] === v[x]) r++;
+                const up = (l > 0 && v[l - 1] > v[x]) || (r < N - 1 && v[r + 1] > v[x]);
+                return up ? ['shoulder', 'shoulder (dataran yang sebenarnya masih bisa naik)'] : ['flat', 'dataran di puncak ("flat" local maximum)'];
+            }
+            return ['local', 'maksimum lokal'];
+        };
+        steps.push({ x: x0, trail: trail.slice(), kind: 'init', msg: 'Keadaan awal x = ' + x0 + ', nilai f = ' + v[x0] + '. Tetangga hanya dua: satu langkah ke kiri dan satu langkah ke kanan.' });
+        let x = x0;
+        for (let guard = 0; guard < 80; guard++) {
+            const L = x > 0 ? x - 1 : null, R = x < N - 1 ? x + 1 : null;
+            const txt = n => n === null ? '—' : 'f(' + n + ') = ' + v[n];
+            let nx = null, how;
+            if (mode === 'simple') {
+                // operator dicoba berurutan: kiri dulu, baru kanan
+                if (L !== null && v[L] > v[x]) { nx = L; how = 'Coba kiri: ' + txt(L) + ' lebih baik, langsung diambil (kanan tidak diperiksa).'; }
+                else if (R !== null && v[R] > v[x]) { nx = R; how = 'Coba kiri: ' + txt(L) + ' tidak lebih baik. Coba kanan: ' + txt(R) + ' lebih baik, diambil.'; }
+                else how = 'Kiri ' + txt(L) + ', kanan ' + txt(R) + ': tidak ada yang lebih baik dari f = ' + v[x] + '.';
+            } else {
+                const cands = [L, R].filter(n => n !== null && v[n] > v[x]);
+                if (cands.length) nx = cands.reduce((a, n) => (v[n] > v[a] ? n : a));
+                how = 'Nilai semua tetangga: kiri ' + txt(L) + ', kanan ' + txt(R) + '. ' +
+                    (nx === null ? 'Tidak ada yang lebih baik dari f = ' + v[x] + '.' : 'Ambil yang terbaik: x = ' + nx + '.');
+            }
+            if (nx === null) {
+                const [cls, name] = classify(x);
+                steps.push({ x, trail: trail.slice(), kind: cls === 'global' ? 'goal' : 'fail', stop: cls,
+                    msg: how + ' Hill climbing <b>berhenti</b> di ' + name + ', f = ' + v[x] + '.' +
+                        (cls === 'global' ? '' : ' Puncak tertinggi (f = ' + gmax + ') tidak tercapai.') });
+                return steps;
+            }
+            x = nx;
+            trail.push(x);
+            steps.push({ x, trail: trail.slice(), kind: 'move', msg: how + ' Pindah ke x = ' + x + ' (f = ' + v[x] + ').' });
+        }
+        return steps;
+    }
+
+    /* =====================================================================
      * Ekspor untuk pengujian di Node.js
      * ===================================================================== */
     const core = {
         ROMANIA, ALGOS, runSearch, shortestCost,
         GRID_H, GRID_DEFAULT, gridFromLayout, gridSearch, gridTrueCost, gridHeuristic,
         GAME_TREES, specValue, reorderSpec, buildGameTree, runGame,
-        tttWinner, tttOpenLines, tttDecide
+        tttWinner, tttOpenLines, tttDecide,
+        SG, sgRun, sgOptimal, PZ_CASES, PZ_H, pzMove, pzRun, LAND, landRun
     };
     if (typeof module !== 'undefined' && module.exports) { module.exports = core; return; }
 
@@ -2034,6 +2410,545 @@
     }
 
     /* =====================================================================
+     * 12b. PENCARIAN HEURISTIK — graf S–G, pohon 8-puzzle, lab 8-puzzle,
+     *      lanskap hill climbing, dan jarak garis lurus
+     * ===================================================================== */
+    // Tombol langkah: sengaja tanpa "Jalankan" agar mahasiswa menelusuri satu per satu.
+    const STEP_CONTROLS =
+        '<div class="viz-controls">' +
+        '<button type="button" class="viz-btn secondary" data-role="reset">' + ICON('rotate-left') + ' Ulang</button>' +
+        '<button type="button" class="viz-btn secondary" data-role="prev">' + ICON('backward-step') + ' Langkah sebelumnya</button>' +
+        '<button type="button" class="viz-btn" data-role="next">Langkah berikutnya ' + ICON('forward-step') + '</button>' +
+        '</div>';
+    function bindSteps($, get, set, count) {
+        $('reset').addEventListener('click', () => set(0));
+        $('prev').addEventListener('click', () => { if (get() > 0) set(get() - 1); });
+        $('next').addEventListener('click', () => { if (get() < count() - 1) set(get() + 1); });
+    }
+    const chips = (arr, fn, cls) => arr.length
+        ? arr.map(x => '<span class="vz-chip' + (cls ? ' ' + cls : '') + '">' + fn(x) + '</span>').join('')
+        : '<span class="vz-chip empty">(kosong)</span>';
+
+    /* ---------- Graf latihan S–G ---------- */
+    const SGX = n => 58 + (SG.pos[n][0] - 1210) * 1.3;
+    const SGY = n => 46 + (SG.pos[n][1] - 262) * 1.3;
+    const SG_BOTTOM = 46 + (522 - 262) * 1.3;
+    const SG_HOFF = { S: [-26, -26], B: [0, -31], D: [0, 38], E: [-30, -26], G: [32, -26], C: [-32, -16],
+        H: [30, -22], I: [0, -31], A: [-32, -18], F: [0, -31], J: [0, -31] };
+
+    function sgSVG(o) {
+        // o: { status: {n: cls}, tree: [[a,b]], path: [..], ring: {n: cls} }
+        const R = 16, key = (a, b) => (a < b ? a + b : b + a);
+        const tree = new Set((o.tree || []).map(([a, b]) => key(a, b)));
+        const path = new Set();
+        (o.path || []).forEach((n, i, p) => { if (i) path.add(key(p[i - 1], n)); });
+        let edges = '', labels = '', nodes = '';
+        SG.edges.forEach(([a, b, c]) => {
+            const k = key(a, b), cls = 'sg-edge' + (path.has(k) ? ' path' : tree.has(k) ? ' tree' : '');
+            let d, lx, ly;
+            if (k === 'AG') {
+                const xk = SGX('G') + R + 26;
+                d = 'M' + SGX('A') + ',' + (SGY('A') + R) + ' V' + SG_BOTTOM + ' H' + xk + ' V' + SGY('G') + ' H' + (SGX('G') + R);
+                lx = (SGX('A') + xk) / 2; ly = SG_BOTTOM - 6;
+            } else {
+                const x1 = SGX(a), y1 = SGY(a), x2 = SGX(b), y2 = SGY(b);
+                d = 'M' + x1 + ',' + y1 + ' L' + x2 + ',' + y2;
+                const L = Math.hypot(x2 - x1, y2 - y1);
+                let nx = -(y2 - y1) / L, ny = (x2 - x1) / L;
+                if (ny > 0 || (Math.abs(ny) < 1e-6 && nx < 0)) { nx = -nx; ny = -ny; }
+                lx = (x1 + x2) / 2 + nx * 11; ly = (y1 + y2) / 2 + ny * 11 + 4;
+            }
+            edges += '<path class="' + cls + '" d="' + d + '"/>';
+            labels += '<text class="sg-cost" x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) + '" text-anchor="middle">' + c + '</text>';
+        });
+        Object.keys(SG.pos).forEach(n => {
+            const x = SGX(n), y = SGY(n), cls = 'sg-node ' + ((o.status || {})[n] || '');
+            const ring = (o.ring || {})[n];
+            if (ring) nodes += '<circle class="sg-ring ' + ring + '" cx="' + x + '" cy="' + y + '" r="' + (R + 6) + '"/>';
+            nodes += '<g class="' + cls + '">' + (n === 'S' || n === 'G'
+                ? '<rect x="' + (x - R) + '" y="' + (y - R) + '" width="' + 2 * R + '" height="' + 2 * R + '" rx="3"/>'
+                : '<circle cx="' + x + '" cy="' + y + '" r="' + R + '"/>') +
+                '<text x="' + x + '" y="' + (y + 5) + '" text-anchor="middle">' + n + '</text></g>';
+            const [dx, dy] = SG_HOFF[n];
+            labels += '<text class="sg-h" x="' + (x + dx) + '" y="' + (y + dy + 4) + '" text-anchor="middle">h=' + SG.h[n] + '</text>';
+        });
+        const sx = SGX('S') - R;
+        return '<svg class="sg-svg" viewBox="0 0 780 400" role="img" aria-label="Graf latihan S sampai G dengan bobot sisi dan nilai h">' +
+            '<defs><marker id="sg-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">' +
+            '<path d="M0,0 L10,5 L0,10 z" fill="#1a2a4a"/></marker></defs>' +
+            edges + '<line x1="' + (sx - 34) + '" y1="' + SGY('S') + '" x2="' + (sx - 3) + '" y2="' + SGY('S') +
+            '" stroke="#1a2a4a" stroke-width="2" marker-end="url(#sg-arr)"/>' + labels + nodes + '</svg>';
+    }
+
+    function initSgGraph(root) {
+        const algos = (root.dataset.algos || 'greedy,astar,simple,steepest').split(',').map(s => s.trim());
+        let algo = root.dataset.algo || algos[0], order = 'asc';
+        let steps = [], idx = 0;
+        const optimal = sgOptimal();
+        root.classList.add('viz', 'viz-sg');
+        root.innerHTML =
+            '<div class="viz-toolbar">' +
+            (algos.length > 1 ? '<label>Metode <select data-role="algo">' + optionList(algos.map(a => [a, SG_ALGOS[a]]), algo) + '</select></label>'
+                : '<label>Metode: ' + SG_ALGOS[algo] + '</label>') +
+            '<label data-role="order-wrap">Urutan operator <select data-role="order">' +
+            optionList([['asc', 'abjad (A → Z)'], ['desc', 'terbalik (Z → A)']], order) + '</select></label>' +
+            '</div>' +
+            '<div class="viz-body">' +
+            '<div class="viz-stage"><div data-role="graph"></div><div class="viz-legend" data-role="legend"></div></div>' +
+            '<div class="viz-panel">' +
+            '<div class="viz-step"><span data-role="step"></span></div>' +
+            '<div class="viz-msg" data-role="msg" aria-live="polite"></div>' +
+            '<div class="viz-block"><h6 data-role="t1"></h6><div class="viz-chips" data-role="c1"></div></div>' +
+            '<div class="viz-block"><h6 data-role="t2"></h6><div class="viz-chips" data-role="c2"></div></div>' +
+            '<div class="viz-result" data-role="result" hidden></div>' +
+            '</div></div>' + STEP_CONTROLS;
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+        const hc = () => algo === 'simple' || algo === 'steepest';
+
+        function compute() {
+            steps = sgRun(algo, order);
+            idx = 0;
+            $('order-wrap').hidden = algo !== 'simple';
+            $('legend').innerHTML = hc()
+                ? '<span><i class="vz-dot" style="background:#e65100"></i>Keadaan sekarang</span>' +
+                  '<span><i class="vz-ring sg-ok"></i>Dicoba, dipilih</span>' +
+                  '<span><i class="vz-ring sg-bad"></i>Dicoba, tidak lebih baik</span>' +
+                  '<span><i class="vz-dot" style="background:#2e7d32"></i>Jalur yang dilalui</span>' +
+                  '<span class="vz-h-key">h=… = jarak garis lurus ke G</span>'
+                : '<span><i class="vz-dot" style="background:#f9a825"></i>Di Open</span>' +
+                  '<span><i class="vz-dot" style="background:#e65100"></i>Sedang diambil</span>' +
+                  '<span><i class="vz-dot" style="background:#7986cb"></i>Di Closed</span>' +
+                  '<span><i class="vz-dot" style="background:#2e7d32"></i>Jalur solusi</span>' +
+                  '<span class="vz-h-key">h=… = jarak garis lurus ke G</span>';
+            render();
+        }
+
+        function render() {
+            const s = steps[idx], last = idx === steps.length - 1;
+            const status = {}, ring = {};
+            if (hc()) {
+                s.path.forEach(n => { status[n] = 'path'; });
+                status[s.current] = s.kind === 'goal' ? 'path' : 'cur';
+                s.tried.forEach(t => { ring[t.n] = t.pick ? 'sg-ok' : 'sg-bad'; });
+                $('graph').innerHTML = sgSVG({ status, ring, path: s.path });
+                $('t1').textContent = 'Keadaan sekarang';
+                $('c1').innerHTML = chips([s.current], n => n + '<small>h=' + SG.h[n] + '</small>', 'cur');
+                $('t2').textContent = 'Jalur yang sudah dilalui';
+                $('c2').innerHTML = chips(s.path, n => n, 'path');
+            } else {
+                s.closed.forEach(n => { status[n] = 'closed'; });
+                s.open.forEach(o => { status[o.n] = 'open'; });
+                if (s.current) status[s.current] = 'cur';
+                if (s.path) s.path.forEach(n => { status[n] = 'path'; });
+                $('graph').innerHTML = sgSVG({ status, tree: s.tree, path: s.path });
+                $('t1').textContent = 'Open — diurutkan menurut ' + (algo === 'astar' ? 'f(n) = g(n) + h(n)' : 'h(n)') + ', kepala di kiri';
+                $('c1').innerHTML = chips(s.open, o => o.n + '<small>' + (algo === 'astar' ? 'f=' + o.g + '+' + o.h + '=' + o.f : 'h=' + o.h) + '</small>', 'frontier');
+                $('t2').textContent = 'Closed — sudah diekspansi';
+                $('c2').innerHTML = chips(s.closed, n => n);
+            }
+            $('step').textContent = 'Langkah ' + idx + ' dari ' + (steps.length - 1);
+            const msg = $('msg');
+            msg.className = 'viz-msg' + (s.kind === 'goal' ? ' goal' : s.kind === 'fail' ? ' fail' : '');
+            msg.innerHTML = s.msg;
+            const res = $('result');
+            res.hidden = !last;
+            if (last) {
+                const path = s.path;
+                if (s.found) {
+                    const cost = SG.cost(path), ok = cost === optimal;
+                    res.className = 'viz-result ' + (ok ? 'ok' : 'warn');
+                    res.innerHTML = ICON(ok ? 'circle-check' : 'triangle-exclamation') + ' <span>Jalur: <b>' + path.join(' → ') +
+                        '</b><br>Biaya: <b>' + cost + '</b> — ' + (ok ? 'optimal.' : '<b>tidak optimal</b> (jalur termurah ' + optimal + ').') + '</span>';
+                } else {
+                    res.className = 'viz-result bad';
+                    res.innerHTML = ICON('circle-xmark') + ' <span>Tujuan tidak tercapai.</span>';
+                }
+            }
+            $('prev').disabled = idx === 0;
+            $('next').disabled = last;
+        }
+
+        if (algos.length > 1) $('algo').addEventListener('change', e => { algo = e.target.value; compute(); });
+        $('order').addEventListener('change', e => { order = e.target.value; compute(); });
+        bindSteps($, () => idx, i => { idx = i; render(); }, () => steps.length);
+        compute();
+    }
+
+    /* ---------- Pohon 8-puzzle ---------- */
+    const PZ_CASE_LABEL = {
+        h1: 'h₁ = ubin di posisi benar (pilih terbesar)',
+        h2: 'h₂ = ubin di posisi salah (pilih terkecil)',
+        h3: 'h₃ = total gerakan / Manhattan (pilih terkecil)',
+        astar: 'A*: f(n) = g(n) + h(n)',
+        sthc: 'Steepest-Ascent HC, h = jarak Manhattan'
+    };
+    function pzBoardSVG(state, goal, x, y, cell, color, blankWrong) {
+        let out = '';
+        for (let i = 0; i < 9; i++) {
+            const v = state[i], cx = x + (i % 3) * cell, cy = y + Math.floor(i / 3) * cell;
+            const wrong = v ? v !== goal[i] : blankWrong && goal[i] !== 0;
+            const cls = v ? 'pt-tile' + (color ? (wrong ? ' wrong' : ' right') : '') : 'pt-blank' + (color && wrong ? ' wrong' : '');
+            out += '<rect class="' + cls + '" x="' + cx + '" y="' + cy + '" width="' + (cell - 2) + '" height="' + (cell - 2) + '" rx="2"/>';
+            if (v) out += '<text class="pt-num" x="' + (cx + (cell - 2) / 2) + '" y="' + (cy + cell / 2 + 3) + '" text-anchor="middle">' + v + '</text>';
+        }
+        return out;
+    }
+
+    function initPuzzleTree(root) {
+        const cases = (root.dataset.cases || root.dataset.case || 'h1').split(',').map(s => s.trim());
+        let cname = cases[0], color = true, steps = [], idx = 0, nodes = [];
+        root.classList.add('viz', 'viz-pt');
+        root.innerHTML =
+            '<div class="viz-toolbar">' +
+            (cases.length > 1 ? '<label>Fungsi heuristik <select data-role="case">' + optionList(cases.map(c => [c, PZ_CASE_LABEL[c]]), cname) + '</select></label>'
+                : '<label>' + PZ_CASE_LABEL[cname] + '</label>') +
+            '<label class="vz-check"><input type="checkbox" data-role="color" checked> Warnai ubin yang salah posisi</label>' +
+            '</div>' +
+            '<div class="viz-stage pt-stage"><div class="pt-scroll" data-role="tree"></div>' +
+            '<div class="viz-legend">' +
+            '<span><i class="vz-dot sq" style="background:#1565c0"></i>Ubin di posisi benar</span>' +
+            '<span><i class="vz-dot sq" style="background:#c62828"></i>Ubin di posisi salah</span>' +
+            '<span><i class="vz-dot sq" style="background:#fff;box-shadow:inset 0 0 0 2px #e65100"></i>Simpul yang sedang dibahas</span>' +
+            '<span><i class="vz-line"></i>Langkah yang dipilih</span>' +
+            '</div></div>' +
+            '<div class="viz-panel pt-panel">' +
+            '<div class="viz-step"><span data-role="step"></span></div>' +
+            '<div class="viz-msg" data-role="msg" aria-live="polite"></div>' +
+            '<div class="viz-block" data-role="open-wrap" hidden><h6>Open — diurutkan menurut f(n)</h6><div class="viz-chips" data-role="open"></div></div>' +
+            '<div class="viz-result" data-role="result" hidden></div>' +
+            '</div>' + STEP_CONTROLS;
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+
+        function compute() {
+            steps = pzRun(cname);
+            nodes = steps.nodes;   // posisi dihitung dari pohon akhir agar simpul tidak berpindah antarlangkah
+            idx = 0;
+            render();
+        }
+
+        function render() {
+            const C = PZ_CASES[cname], s = steps[idx], last = idx === steps.length - 1;
+            const cell = 17, bw = cell * 3, slot = 78, levelH = 118, top = 34, left = 12;
+            // tata letak: daun berurutan, induk di tengah anak-anaknya
+            let leaf = 0;
+            const pos = {};
+            (function place(id) {
+                const n = nodes[id];
+                if (!n.children.length) { pos[id] = [left + leaf * slot + slot / 2, top + n.g * levelH]; leaf++; return; }
+                n.children.forEach(place);
+                const xs = n.children.map(c => pos[c][0]);
+                pos[id] = [(Math.min.apply(null, xs) + Math.max.apply(null, xs)) / 2, top + n.g * levelH];
+            })(0);
+            const goalW = 100;
+            const W = Math.max(left * 2 + leaf * slot + goalW, 360);
+            const depth = Math.max.apply(null, nodes.map(n => n.g));
+            const Hh = top + depth * levelH + bw + 48;
+            const shift = goalW;   // sisakan ruang di kiri untuk papan tujuan
+            let edges = '', body = '';
+            const vis = id => id < s.count;
+            nodes.forEach(n => {
+                if (!vis(n.id) || n.parent === null) return;
+                const [x1, y1] = pos[n.parent], [x2, y2] = pos[n.id];
+                const m = s.marks[n.id];
+                edges += '<line class="pt-edge' + (m.chosen ? ' chosen' : '') + '" x1="' + (x1 + shift) + '" y1="' + (y1 + bw + 25) +
+                    '" x2="' + (x2 + shift) + '" y2="' + (y2 - 17) + '"/>';
+            });
+            nodes.forEach(n => {
+                if (!vis(n.id)) return;
+                const m = s.marks[n.id];
+                const [cx, y] = pos[n.id], x = cx + shift - bw / 2;
+                const isG = n.state && pzKey(n.state) === pzKey(C.goal);
+                const cls = ['pt-node', m.status, m.current ? 'current' : '', m.chosen ? 'chosen' : '', m.open ? 'open' : '',
+                    isG && (m.chosen || m.current) ? 'goal' : ''].join(' ');
+                body += '<g class="' + cls + '">';
+                if (n.move) body += '<text class="pt-move" x="' + (cx + shift) + '" y="' + (y - 6) + '" text-anchor="middle">' + n.move + '</text>';
+                body += '<rect class="pt-frame" x="' + (x - 4) + '" y="' + (y - 1) + '" width="' + (bw + 6) + '" height="' + (bw + 6) + '" rx="5"/>';
+                if (m.status === 'invalid') {
+                    body += '<text class="pt-x" x="' + (cx + shift) + '" y="' + (y + bw / 2 + 8) + '" text-anchor="middle">×</text>' +
+                        '<text class="pt-val" x="' + (cx + shift) + '" y="' + (y + bw + 18) + '" text-anchor="middle">tidak valid</text>';
+                } else {
+                    body += pzBoardSVG(n.state, C.goal, x + 1, y + 2, cell, color, C.h === 'salahBlank');
+                    const v = C.mode === 'astar' ? 'f=' + n.g + '+' + n.h + '=' + (n.g + n.h) : (C.hName || 'h') + '=' + n.h;
+                    body += '<text class="pt-val" x="' + (cx + shift) + '" y="' + (y + bw + 18) + '" text-anchor="middle">' + v + '</text>';
+                    if (m.status === 'back') body += '<text class="pt-val" x="' + (cx + shift) + '" y="' + (y + bw + 31) + '" text-anchor="middle">(' +
+                        (C.mode === 'astar' ? 'sudah di Closed' : 'kembali ke induk') + ')</text>';
+                }
+                body += '</g>';
+            });
+            const goalBox = '<text class="pt-move" x="' + (12 + bw / 2) + '" y="' + (top - 6) + '" text-anchor="middle">Tujuan</text>' +
+                '<rect class="pt-goalframe" x="' + 8 + '" y="' + (top - 1) + '" width="' + (bw + 6) + '" height="' + (bw + 6) + '" rx="5"/>' +
+                pzBoardSVG(C.goal, C.goal, 12, top + 2, cell, false, false);
+            $('tree').innerHTML = '<svg class="pt-svg" width="' + (W + shift - goalW + 20) + '" height="' + Hh + '" viewBox="0 0 ' + (W + shift - goalW + 20) + ' ' + Hh + '">' +
+                goalBox + edges + body + '</svg>';
+            $('step').textContent = 'Langkah ' + idx + ' dari ' + (steps.length - 1);
+            const msg = $('msg');
+            msg.className = 'viz-msg' + (s.kind === 'goal' ? ' goal' : s.kind === 'fail' ? ' fail' : '');
+            msg.innerHTML = s.msg;
+            $('open-wrap').hidden = C.mode !== 'astar';
+            if (C.mode === 'astar') {
+                const list = (s.open || '').split(', ').filter(Boolean);
+                $('open').innerHTML = chips(list, t => t.replace(/ f=(\d+)/, '<small>f=$1</small>'), 'frontier');
+            }
+            const res = $('result');
+            res.hidden = !last;
+            if (last) {
+                res.className = 'viz-result ' + (s.found ? 'ok' : 'bad');
+                res.innerHTML = s.found ? ICON('circle-check') + ' <span>Tujuan tercapai dalam <b>' + s.depth + ' gerakan</b>.</span>'
+                    : ICON('circle-xmark') + ' <span>Terjebak sebelum mencapai tujuan.</span>';
+            }
+            $('prev').disabled = idx === 0;
+            $('next').disabled = last;
+        }
+
+        if (cases.length > 1) $('case').addEventListener('change', e => { cname = e.target.value; compute(); });
+        $('color').addEventListener('change', e => { color = e.target.checked; render(); });
+        bindSteps($, () => idx, i => { idx = i; render(); }, () => steps.length);
+        compute();
+    }
+
+    /* ---------- Lab 8-puzzle: geser ubin, lihat h berubah ---------- */
+    const PZ_EXACT = {};
+    function pzExact(goal) {
+        // BFS dari tujuan ke seluruh 181.440 keadaan yang terjangkau; dihitung sekali per tujuan.
+        const gk = pzKey(goal);
+        if (PZ_EXACT[gk]) return PZ_EXACT[gk];
+        const enc = s => s.reduce((a, v) => a * 9 + v, 0);
+        const dist = new Map([[enc(goal), 0]]);
+        let frontier = [goal];
+        for (let d = 0; frontier.length; d++) {
+            const next = [];
+            frontier.forEach(s => ['kiri', 'kanan', 'atas', 'bawah'].forEach(dir => {
+                const t = pzMove(s, dir);
+                if (!t) return;
+                const k = enc(t);
+                if (!dist.has(k)) { dist.set(k, d + 1); next.push(t); }
+            }));
+            frontier = next;
+        }
+        PZ_EXACT[gk] = s => dist.get(enc(s));
+        return PZ_EXACT[gk];
+    }
+
+    function initPuzzleLab(root) {
+        const GOALS = { a: PZ_A_GOAL, b: PZ_B_GOAL };
+        const STARTS = { a: PZ_A, b: [1, 2, 3, 4, 8, 0, 7, 6, 5] };
+        let gname = 'a', state = STARTS.a.slice(), moves = 0;
+        root.classList.add('viz', 'viz-pl');
+        root.innerHTML =
+            '<div class="viz-toolbar">' +
+            '<label>Susunan tujuan <select data-role="goal">' + optionList([['a', '1 2 3 / 8 _ 4 / 7 6 5 (hlm. 18)'], ['b', '1 2 3 / 4 5 6 / 7 8 _ (hlm. 38)']], gname) + '</select></label>' +
+            '<button type="button" class="viz-btn secondary" data-role="init">' + ICON('rotate-left') + ' Keadaan awal materi</button>' +
+            '<button type="button" class="viz-btn secondary" data-role="shuffle">' + ICON('shuffle') + ' Acak</button>' +
+            '</div>' +
+            '<div class="viz-body">' +
+            '<div class="viz-stage pl-stage">' +
+            '<div class="pl-boards"><figure><figcaption>Keadaan sekarang <small data-role="moves"></small></figcaption><div class="pl-board" data-role="board"></div></figure>' +
+            '<figure><figcaption>Tujuan</figcaption><div class="ss-board small goal" data-role="goalboard"></div></figure></div>' +
+            '<p class="viz-note">Klik ubin yang bersebelahan dengan kotak kosong untuk menggesernya. Ubin merah berada di posisi yang salah.</p>' +
+            '</div>' +
+            '<div class="viz-panel">' +
+            '<div class="viz-block"><h6>Nilai heuristik keadaan sekarang</h6><div class="pl-hs" data-role="hs"></div></div>' +
+            '<div class="viz-block"><h6>Anak (successor) dan nilainya</h6><div data-role="succ"></div></div>' +
+            '<div class="viz-result" data-role="result" hidden></div>' +
+            '</div></div>';
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+        const HS = [['benar', 'h₁', 'ubin benar', 'max'], ['salah', 'h₂', 'ubin salah', 'min'], ['manhattan', 'h₃', 'Manhattan', 'min']];
+
+        function render() {
+            const goal = GOALS[gname], exact = pzExact(goal);
+            $('board').innerHTML = state.map((v, i) => v
+                ? '<button type="button" class="pl-tile' + (v !== goal[i] ? ' wrong' : '') + '" data-i="' + i + '">' + v + '</button>'
+                : '<span class="pl-blank"></span>').join('');
+            $('goalboard').innerHTML = goal.map(v => '<span' + (v ? '' : ' class="blank"') + '>' + (v || '') + '</span>').join('');
+            $('moves').textContent = '(' + moves + ' gerakan)';
+            const hstar = exact(state);
+            $('hs').innerHTML = HS.map(([k, n, t]) => '<div><b>' + n + ' = ' + PZ_H[k].f(state, goal) + '</b><small>' + t + '</small></div>').join('') +
+                '<div class="star"><b>h* = ' + hstar + '</b><small>gerakan minimum sebenarnya</small></div>';
+            const succ = ['kiri', 'kanan', 'atas', 'bawah'].map(d => [d, pzMove(state, d)]).filter(x => x[1]);
+            const best = HS.map(([k, , , dir]) => {
+                const vals = succ.map(x => PZ_H[k].f(x[1], goal));
+                return dir === 'max' ? Math.max.apply(null, vals) : Math.min.apply(null, vals);
+            });
+            $('succ').innerHTML = '<table class="pl-table"><thead><tr><th>Blank digeser</th><th>h₁</th><th>h₂</th><th>h₃</th><th>h*</th></tr></thead><tbody>' +
+                succ.map(([d, t]) => '<tr><td>' + d + '</td>' + HS.map(([k], j) => {
+                    const v = PZ_H[k].f(t, goal);
+                    return '<td' + (v === best[j] ? ' class="best"' : '') + '>' + v + '</td>';
+                }).join('') + '<td>' + exact(t) + '</td></tr>').join('') + '</tbody></table>' +
+                '<p class="viz-note">Sel hijau = pilihan terbaik menurut heuristik itu (h₁ terbesar, h₂ dan h₃ terkecil). Bandingkan dengan kolom h*: heuristik yang admissible tidak pernah melebihi h*.</p>';
+            const res = $('result');
+            res.hidden = hstar !== 0;
+            res.className = 'viz-result ok';
+            res.innerHTML = ICON('circle-check') + ' <span>Tujuan tercapai dalam ' + moves + ' gerakan.</span>';
+        }
+
+        $('board').addEventListener('click', e => {
+            const btn = e.target.closest('.pl-tile');
+            if (!btn) return;
+            const i = +btn.dataset.i, z = state.indexOf(0);
+            if (Math.abs(i - z) === 3 || (Math.abs(i - z) === 1 && Math.floor(i / 3) === Math.floor(z / 3))) {
+                state[z] = state[i]; state[i] = 0; moves++;
+                render();
+            }
+        });
+        $('goal').addEventListener('change', e => { gname = e.target.value; state = STARTS[gname].slice(); moves = 0; render(); });
+        $('init').addEventListener('click', () => { state = STARTS[gname].slice(); moves = 0; render(); });
+        $('shuffle').addEventListener('click', () => {
+            state = GOALS[gname].slice();
+            let prev = null;
+            for (let k = 0; k < 24; k++) {
+                const opts = ['kiri', 'kanan', 'atas', 'bawah'].map(d => pzMove(state, d)).filter(t => t && (!prev || pzKey(t) !== pzKey(prev)));
+                prev = state;
+                state = opts[Math.floor(Math.random() * opts.length)];
+            }
+            moves = 0;
+            render();
+        });
+        render();
+    }
+
+    /* ---------- Lanskap hill climbing ---------- */
+    function initHillLand(root) {
+        let mode = root.dataset.mode || 'simple', x0 = +(root.dataset.start || 40), steps = [], idx = 0;
+        const N = LAND.length, W = 640, Hh = 270, padL = 34, padB = 34, padT = 30;
+        const X = x => padL + x * (W - padL - 14) / (N - 1);
+        const Y = v => Hh - padB - v * (Hh - padB - padT) / 100;
+        root.classList.add('viz', 'viz-land');
+        root.innerHTML =
+            '<div class="viz-toolbar">' +
+            '<label>Metode <select data-role="mode">' + optionList([['simple', 'Simple HC (coba kiri dulu)'], ['steepest', 'Steepest-Ascent HC']], mode) + '</select></label>' +
+            '<label>Posisi awal x <input type="range" min="0" max="' + (N - 1) + '" value="' + x0 + '" data-role="x0"> <b data-role="x0v"></b></label>' +
+            '<button type="button" class="viz-btn secondary" data-role="rand">' + ICON('dice') + ' Posisi acak</button>' +
+            '</div>' +
+            '<div class="viz-body">' +
+            '<div class="viz-stage"><div data-role="svg"></div>' +
+            '<p class="viz-note">Klik pada kurva untuk memilih posisi awal. Sumbu tegak = nilai fungsi objektif (makin tinggi makin baik), sumbu datar = ruang keadaan.</p></div>' +
+            '<div class="viz-panel">' +
+            '<div class="viz-step"><span data-role="step"></span></div>' +
+            '<div class="viz-msg" data-role="msg" aria-live="polite"></div>' +
+            '<div class="viz-result" data-role="result" hidden></div>' +
+            '</div></div>' + STEP_CONTROLS;
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+        let pathD = '';
+        LAND.forEach((v, x) => { pathD += (x ? ' L' : 'M') + X(x).toFixed(1) + ',' + Y(v).toFixed(1); });
+        const area = pathD + ' L' + X(N - 1) + ',' + Y(0) + ' L' + X(0) + ',' + Y(0) + ' Z';
+        const note = (x, v, t, cls, dy) => '<text class="land-lbl ' + (cls || '') + '" x="' + X(x) + '" y="' + (Y(v) - (dy || 10)) + '" text-anchor="middle">' + t + '</text>';
+        const staticSvg = '<path class="land-area" d="' + area + '"/><path class="land-line" d="' + pathD + '"/>' +
+            '<line class="land-axis" x1="' + padL + '" y1="' + Y(0) + '" x2="' + (W - 8) + '" y2="' + Y(0) + '"/>' +
+            '<line class="land-axis" x1="' + padL + '" y1="' + Y(0) + '" x2="' + padL + '" y2="' + (padT - 12) + '"/>' +
+            '<text class="land-ax" x="' + (padL + 4) + '" y="' + (padT - 16) + '">fungsi objektif</text>' +
+            '<text class="land-ax" x="' + (W - 10) + '" y="' + (Y(0) + 22) + '" text-anchor="end">ruang keadaan →</text>' +
+            note(20, 92, 'maksimum global', 'good', 34) + note(36, 58, 'maksimum lokal', 'bad', 34) +
+            note(48, 46, '"flat" local maximum', 'bad', 34) + note(11, 32, 'shoulder', '', 34);
+
+        function compute() {
+            steps = landRun(x0, mode);
+            idx = 0;
+            $('x0').value = x0;
+            $('x0v').textContent = x0;
+            render();
+        }
+        function render() {
+            const s = steps[idx], last = idx === steps.length - 1;
+            const trail = s.trail.map(x => '<circle class="land-trail" cx="' + X(x) + '" cy="' + Y(LAND[x]) + '" r="3.5"/>').join('');
+            const nb = [s.x - 1, s.x + 1].filter(x => x >= 0 && x < N).map(x =>
+                '<circle class="land-nb" cx="' + X(x) + '" cy="' + Y(LAND[x]) + '" r="5"/>').join('');
+            const cx = X(s.x), cy = Y(LAND[s.x]);
+            $('svg').innerHTML = '<svg class="land-svg" viewBox="0 0 ' + W + ' ' + Hh + '" role="img" aria-label="Lanskap ruang keadaan untuk hill climbing">' +
+                staticSvg + '<circle class="land-start" cx="' + X(x0) + '" cy="' + Y(LAND[x0]) + '" r="8"/>' + trail + (last ? '' : nb) +
+                '<g class="land-climber' + (s.kind === 'goal' ? ' goal' : s.kind === 'fail' ? ' stuck' : '') + '">' +
+                '<line x1="' + cx + '" y1="' + cy + '" x2="' + cx + '" y2="' + (cy - 26) + '"/>' +
+                '<path d="M' + cx + ',' + (cy - 26) + ' l14,5 l-14,5 z"/><circle cx="' + cx + '" cy="' + cy + '" r="6"/></g>' +
+                '<rect class="land-hit" x="0" y="0" width="' + W + '" height="' + Hh + '"/></svg>';
+            $('step').textContent = 'Langkah ' + idx + ' dari ' + (steps.length - 1);
+            const msg = $('msg');
+            msg.className = 'viz-msg' + (s.kind === 'goal' ? ' goal' : s.kind === 'fail' ? ' fail' : '');
+            msg.innerHTML = s.msg;
+            const res = $('result');
+            res.hidden = !last;
+            if (last) {
+                res.className = 'viz-result ' + (s.kind === 'goal' ? 'ok' : 'warn');
+                res.innerHTML = ICON(s.kind === 'goal' ? 'circle-check' : 'triangle-exclamation') + ' <span>' +
+                    (s.kind === 'goal' ? 'Beruntung: posisi awal ini berada di lereng puncak tertinggi.'
+                        : 'Terjebak. Coba posisi awal lain, atau ganti metode, lalu bandingkan tempat berhentinya.') + '</span>';
+            }
+            $('prev').disabled = idx === 0;
+            $('next').disabled = last;
+        }
+        $('mode').addEventListener('change', e => { mode = e.target.value; compute(); });
+        $('x0').addEventListener('input', e => { x0 = +e.target.value; compute(); });
+        $('rand').addEventListener('click', () => { x0 = Math.floor(Math.random() * N); compute(); });
+        $('svg').addEventListener('click', e => {
+            const svg = $('svg').querySelector('svg');
+            const r = svg.getBoundingClientRect();
+            const px = (e.clientX - r.left) * W / r.width;
+            x0 = Math.max(0, Math.min(N - 1, Math.round((px - padL) * (N - 1) / (W - padL - 14))));
+            compute();
+        });
+        bindSteps($, () => idx, i => { idx = i; render(); }, () => steps.length);
+        compute();
+    }
+
+    /* ---------- Kasus jalur terpendek: jarak garis lurus vs jarak jalan ---------- */
+    function initSldLine(root) {
+        const PTS = { A: [20, 10], B: [35, 10], C: [55, 10], D: [65, 10] };
+        const CHAIN = ['A', 'B', 'C', 'D'], ROAD = [16, 100, 10];
+        let goal = root.dataset.goal || 'D';
+        const W = 660, Hh = 300;
+        const X = v => 40 + (v - 15) * (W - 60) / 56;
+        const Y = v => Hh - 40 - (v - 7) * 18;
+        root.classList.add('viz', 'viz-sld');
+        root.innerHTML =
+            '<div class="viz-toolbar"><label>Tujuan <select data-role="goal">' + optionList(CHAIN.map(c => [c, c + ' (' + PTS[c].join(',') + ')']), goal) + '</select></label></div>' +
+            '<div class="viz-stage"><div data-role="svg"></div></div>' +
+            '<div data-role="table"></div>';
+        const $ = r => root.querySelector('[data-role="' + r + '"]');
+        const roadDist = (a, b) => {
+            let i = CHAIN.indexOf(a), j = CHAIN.indexOf(b);
+            if (i > j) [i, j] = [j, i];
+            return ROAD.slice(i, j).reduce((s, c) => s + c, 0);
+        };
+        function render() {
+            let grid = '';
+            for (let v = 16; v <= 70; v += 2) grid += '<line class="sld-grid" x1="' + X(v) + '" y1="' + Y(7) + '" x2="' + X(v) + '" y2="' + Y(19) + '"/>' +
+                '<text class="sld-tick" x="' + X(v) + '" y="' + (Y(7) + 14) + '" text-anchor="middle">' + v + '</text>';
+            for (let v = 7; v <= 19; v++) grid += '<line class="sld-grid" x1="' + X(15) + '" y1="' + Y(v) + '" x2="' + X(71) + '" y2="' + Y(v) + '"/>' +
+                '<text class="sld-tick" x="' + (X(15) - 5) + '" y="' + (Y(v) + 3) + '" text-anchor="end">' + v + '</text>';
+            const y10 = Y(10);
+            const roads = '<path class="sld-road" d="M' + X(20) + ',' + y10 + ' Q' + X(27.5) + ',' + Y(13.6) + ' ' + X(35) + ',' + y10 + '"/>' +
+                '<text class="sld-cost" x="' + X(27.5) + '" y="' + (Y(11.8) - 4) + '" text-anchor="middle">16</text>' +
+                '<path class="sld-road" d="M' + X(35) + ',' + y10 + ' C' + X(33) + ',' + Y(20) + ' ' + X(42) + ',' + Y(19.5) + ' ' + X(55) + ',' + y10 + '"/>' +
+                '<text class="sld-cost" x="' + X(39) + '" y="' + Y(17.8) + '" text-anchor="middle">100</text>' +
+                '<line class="sld-road" x1="' + X(55) + '" y1="' + y10 + '" x2="' + X(65) + '" y2="' + y10 + '"/>' +
+                '<text class="sld-cost" x="' + X(60) + '" y="' + (y10 - 7) + '" text-anchor="middle">10</text>';
+            // garis ukur jarak lurus ke tujuan, disusun bertingkat di bawah sumbu y = 10
+            let dims = '', k = 0;
+            CHAIN.forEach(c => {
+                if (c === goal) return;
+                const yy = Y(9.2) + k * 14; k++;
+                const d = Math.hypot(PTS[c][0] - PTS[goal][0], PTS[c][1] - PTS[goal][1]);
+                dims += '<line class="sld-dim" x1="' + X(PTS[c][0]) + '" y1="' + yy + '" x2="' + X(PTS[goal][0]) + '" y2="' + yy + '"/>' +
+                    '<text class="sld-dimtxt" x="' + ((X(PTS[c][0]) + X(PTS[goal][0])) / 2) + '" y="' + (yy - 2) + '" text-anchor="middle">h(' + c + ') = ' + d + '</text>';
+            });
+            let nodes = '';
+            CHAIN.forEach(c => {
+                nodes += '<circle class="sld-node' + (c === goal ? ' goal' : '') + '" cx="' + X(PTS[c][0]) + '" cy="' + y10 + '" r="11"/>' +
+                    '<text class="sld-lbl" x="' + X(PTS[c][0]) + '" y="' + (y10 + 4) + '" text-anchor="middle">' + c + '</text>';
+            });
+            $('svg').innerHTML = '<svg class="sld-svg" viewBox="0 0 ' + W + ' ' + Hh + '" role="img" aria-label="Empat kota pada garis y = 10 dengan jalan berkelok">' +
+                grid + roads + dims + nodes + '</svg>';
+            const [gx, gy] = PTS[goal];
+            $('table').innerHTML = '<table class="sld-table"><thead><tr><th>Simpul</th><th>Koordinat</th><th>h = jarak garis lurus ke ' + goal + '</th><th>Jarak jalan sebenarnya</th><th>h ≤ jarak jalan?</th></tr></thead><tbody>' +
+                CHAIN.map(c => {
+                    const [x, y] = PTS[c], d = Math.hypot(x - gx, y - gy), r = roadDist(c, goal);
+                    return '<tr><td><b>' + c + '</b></td><td>(' + x + ', ' + y + ')</td><td>√((' + gy + ' − ' + y + ')² + (' + gx + ' − ' + x + ')²) = <b>' + d + '</b></td>' +
+                        '<td>' + r + '</td><td>' + (d <= r ? ICON('check') + ' ya' : ICON('xmark') + ' tidak') + '</td></tr>';
+                }).join('') + '</tbody></table>';
+        }
+        $('goal').addEventListener('change', e => { goal = e.target.value; render(); });
+        render();
+    }
+
+    /* =====================================================================
      * 13. INISIALISASI
      * ===================================================================== */
     const INIT = {
@@ -2044,7 +2959,12 @@
         'vacuum': initVacuum,
         'game-tree': initGameTree,
         'tictactoe': initTicTacToe,
-        'state-space': initStateSpace
+        'state-space': initStateSpace,
+        'sg-graph': initSgGraph,
+        'puzzle-tree': initPuzzleTree,
+        'puzzle-lab': initPuzzleLab,
+        'hill-land': initHillLand,
+        'sld-line': initSldLine
     };
     function boot() {
         document.querySelectorAll('[data-viz]').forEach(el => {
