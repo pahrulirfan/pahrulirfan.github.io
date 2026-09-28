@@ -2604,6 +2604,7 @@
                 : '<label>' + PZ_CASE_LABEL[cname] + '</label>') +
             '<label class="vz-check"><input type="checkbox" data-role="color" checked> Warnai ubin yang salah posisi</label>' +
             '</div>' +
+            '<div class="viz-body">' +
             '<div class="viz-stage pt-stage"><div class="pt-scroll" data-role="tree"></div>' +
             '<div class="viz-legend">' +
             '<span><i class="vz-dot sq" style="background:#1565c0"></i>Ubin di posisi benar</span>' +
@@ -2616,7 +2617,7 @@
             '<div class="viz-msg" data-role="msg" aria-live="polite"></div>' +
             '<div class="viz-block" data-role="open-wrap" hidden><h6>Open — diurutkan menurut f(n)</h6><div class="viz-chips" data-role="open"></div></div>' +
             '<div class="viz-result" data-role="result" hidden></div>' +
-            '</div>' + STEP_CONTROLS;
+            '</div></div>' + STEP_CONTROLS;
         const $ = r => root.querySelector('[data-role="' + r + '"]');
 
         function compute() {
