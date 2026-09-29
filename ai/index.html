@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kecerdasan Buatan — MKL1303131</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f1e35;
+            color: #e0e8f0;
+            min-height: 100vh;
+        }
+
+        /* ---- Hero ---- */
+        .hero {
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            padding: 60px 30px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234fc3f7' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(79, 195, 247, 0.2);
+            border: 1px solid rgba(79, 195, 247, 0.4);
+            color: #4fc3f7;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 18px;
+        }
+
+        .hero h1 {
+            font-size: 2.8em;
+            color: white;
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .hero h1 span { color: #4fc3f7; }
+
+        .hero p {
+            font-size: 1.05em;
+            color: #b0c4de;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.7;
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .hero-meta-item {
+            text-align: center;
+        }
+
+        .hero-meta-item .num {
+            display: block;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: #4fc3f7;
+        }
+
+        .hero-meta-item .lbl {
+            font-size: 0.8em;
+            color: #7fa8c0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ---- Content ---- */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px 60px;
+        }
+
+        /* ---- Section title ---- */
+        .section-title {
+            color: #4fc3f7;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(79, 195, 247, 0.2);
+        }
+
+        /* ---- Materi cards ---- */
+        .materi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 22px;
+            margin-bottom: 50px;
+        }
+
+        .materi-card {
+            background: #1a2a4a;
+            border-radius: 14px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.4s ease forwards;
+            opacity: 0;
+        }
+
+        .materi-card:nth-child(1) { animation-delay: 0.05s; }
+        .materi-card:nth-child(2) { animation-delay: 0.12s; }
+        .materi-card:nth-child(3) { animation-delay: 0.19s; }
+        .materi-card:nth-child(4) { animation-delay: 0.26s; }
+        .materi-card:nth-child(5) { animation-delay: 0.33s; }
+        .materi-card:nth-child(6) { animation-delay: 0.40s; }
+        .materi-card:nth-child(7) { animation-delay: 0.47s; }
+        .materi-card:nth-child(8) { animation-delay: 0.54s; }
+
+        .materi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1565c0, #4fc3f7);
+            border-radius: 14px 14px 0 0;
+        }
+
+        .materi-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.4);
+            border-color: rgba(79, 195, 247, 0.3);
+        }
+
+        .materi-card.locked {
+            opacity: 0.5;
+            cursor: default;
+            pointer-events: none;
+        }
+        .materi-card.locked::before {
+            background: #334;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .card-meta { flex: 1; }
+
+        .card-week {
+            font-size: 0.75em;
+            color: #4fc3f7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 3px;
+        }
+
+        .card-title {
+            font-size: 1em;
+            font-weight: 700;
+            color: #e0e8f0;
+        }
+
+        .card-desc {
+            font-size: 0.88em;
+            color: #7fa8c0;
+            line-height: 1.6;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            font-size: 0.72em;
+            padding: 3px 10px;
+            border-radius: 10px;
+            background: rgba(21, 101, 192, 0.3);
+            color: #90caf9;
+            border: 1px solid rgba(21, 101, 192, 0.4);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .card-cpmk {
+            font-size: 0.78em;
+            color: #546e7a;
+        }
+
+        .card-arrow {
+            color: #4fc3f7;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+
+        .materi-card:hover .card-arrow { transform: translateX(5px); }
+
+        .badge-status {
+            font-size: 0.7em;
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .status-ready  { background: rgba(46,125,50,0.2); color: #81c784; border: 1px solid rgba(46,125,50,0.3); }
+        .status-coming { background: rgba(84,110,122,0.2); color: #90a4ae; border: 1px solid rgba(84,110,122,0.3); }
+
+        /* ---- Info box ---- */
+        .info-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        .info-card {
+            background: #1a2a4a;
+            border-radius: 12px;
+            padding: 20px 22px;
+            border: 1px solid rgba(79, 195, 247, 0.1);
+        }
+
+        .info-card h3 {
+            color: #4fc3f7;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 12px;
+        }
+
+        .info-card ul {
+            list-style: none;
+            margin: 0;
+        }
+
+        .info-card ul li {
+            color: #b0c4de;
+            font-size: 0.9em;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.06);
+            display: flex;
+            gap: 8px;
+        }
+
+        .info-card ul li:last-child { border-bottom: none; }
+
+        .info-card ul li .dot {
+            color: #4fc3f7;
+            flex-shrink: 0;
+        }
+
+        /* ---- CPMK table ---- */
+        .cpmk-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 50px;
+            font-size: 0.88em;
+        }
+        .cpmk-table th {
+            background: #1a2a4a;
+            color: #4fc3f7;
+            padding: 12px 14px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid rgba(79, 195, 247, 0.2);
+        }
+        .cpmk-table td {
+            padding: 11px 14px;
+            border-bottom: 1px solid rgba(79, 195, 247, 0.07);
+            color: #b0c4de;
+            vertical-align: top;
+        }
+        .cpmk-table tr:hover td { background: rgba(21,101,192,0.08); }
+        .cpmk-table td:first-child { color: #4fc3f7; font-weight: 700; white-space: nowrap; }
+
+        /* ---- Footer ---- */
+        .page-footer {
+            background: #0a1628;
+            text-align: center;
+            padding: 24px;
+            font-size: 0.85em;
+            color: #546e7a;
+            border-top: 1px solid rgba(79,195,247,0.08);
+        }
+        .page-footer a { color: #4fc3f7; text-decoration: none; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* ---- Animations ---- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.8em; }
+            .hero-meta { gap: 20px; }
+            .materi-grid { grid-template-columns: 1fr; }
+            .info-section { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-badge">MKL1303131 · Semester III</div>
+        <h1>🤖 Kecerdasan <span>Buatan</span></h1>
+        <p>Materi perkuliahan Artificial Intelligence — Program Studi S-1 Teknik Informatika, Universitas Mataram</p>
+        <div class="hero-meta">
+            <div class="hero-meta-item">
+                <span class="num">3</span>
+                <span class="lbl">SKS</span>
+            </div>
+            <div class="hero-meta-item">
+                <span class="num">16</span>
+                <span class="lbl">Pertemuan</span>
+            </div>
+            <div class="hero-meta-item">
+                <span class="num">8</span>
+                <span class="lbl">Sub-CPMK</span>
+            </div>
+            <div class="hero-meta-item">
+                <span class="num">4</span>
+                <span class="lbl">CPMK</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <!-- ---- Daftar Materi ---- -->
+        <p class="section-title">📚 Daftar Materi Kuliah</p>
+
+        <div class="materi-grid">
+
+            <!-- Materi 1 -->
+            <a href="materi-1.html" class="materi-card">
+                <div class="card-header">
+                    <div class="card-icon">🤖</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 1 &amp; 2 · Sub-CPMK1</div>
+                        <div class="card-title">Pengantar Kecerdasan Buatan</div>
+                    </div>
+                    <span class="badge-status status-ready">✓ Siap</span>
+                </div>
+                <div class="card-desc">Definisi dan cakupan AI, sejarah perkembangan, Uji Turing, perbedaan AI Klasik vs Modern, agen cerdas, kerangka PEAS, dan klasifikasi lingkungan tugas.</div>
+                <div class="card-tags">
+                    <span class="tag">Uji Turing</span>
+                    <span class="tag">Agen Cerdas</span>
+                    <span class="tag">PEAS</span>
+                    <span class="tag">Lingkungan</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 10%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- Materi 2 -->
+            <a href="materi-2.html" class="materi-card">
+                <div class="card-header">
+                    <div class="card-icon">🔍</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 3 &amp; 4 · Sub-CPMK2</div>
+                        <div class="card-title">Ruang Keadaan &amp; Pencarian Buta</div>
+                    </div>
+                    <span class="badge-status status-ready">✓ Siap</span>
+                </div>
+                <div class="card-desc">Formulasi masalah sebagai ruang keadaan, pohon vs graf pencarian, BFS, DFS, Depth-Limited Search, Iterative Deepening Search, dan Uniform Cost Search.</div>
+                <div class="card-tags">
+                    <span class="tag">BFS</span>
+                    <span class="tag">DFS</span>
+                    <span class="tag">IDS</span>
+                    <span class="tag">UCS</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 13%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- Materi 3 -->
+            <a href="materi-3.html" class="materi-card">
+                <div class="card-header">
+                    <div class="card-icon">🧭</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 5 &amp; 6 · Sub-CPMK3</div>
+                        <div class="card-title">Pencarian Heuristik &amp; Algoritma A*</div>
+                    </div>
+                    <span class="badge-status status-ready">✓ Siap</span>
+                </div>
+                <div class="card-desc">Fungsi evaluasi g, h, f — Greedy Best-First Search, Algoritma A*, sifat admissible dan konsisten, merancang heuristik, dominasi heuristik.</div>
+                <div class="card-tags">
+                    <span class="tag">Heuristik</span>
+                    <span class="tag">A*</span>
+                    <span class="tag">Admissible</span>
+                    <span class="tag">Konsisten</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 15%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- Materi 4 -->
+            <a href="materi-4.html" class="materi-card">
+                <div class="card-header">
+                    <div class="card-icon">🎮</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 7 · Sub-CPMK4</div>
+                        <div class="card-title">Pencarian dengan Lawan</div>
+                    </div>
+                    <span class="badge-status status-ready">✓ Siap</span>
+                </div>
+                <div class="card-desc">Permainan dua pemain berjumlah nol, pohon permainan, algoritma Minimax, pemangkasan Alfa-Beta, fungsi evaluasi, dan batas kedalaman.</div>
+                <div class="card-tags">
+                    <span class="tag">Minimax</span>
+                    <span class="tag">Alpha-Beta</span>
+                    <span class="tag">Game Tree</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 8%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </a>
+
+            <!-- Materi 5 -->
+            <div class="materi-card locked">
+                <div class="card-header">
+                    <div class="card-icon" style="background:#334;">📚</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 9 &amp; 10 · Sub-CPMK5</div>
+                        <div class="card-title">Representasi Pengetahuan &amp; Sistem Pakar</div>
+                    </div>
+                    <span class="badge-status status-coming">🔒 Segera</span>
+                </div>
+                <div class="card-desc">Logika proposisi, logika predikat, kaidah produksi, arsitektur sistem pakar, perantaian maju dan mundur, fasilitas penjelasan.</div>
+                <div class="card-tags">
+                    <span class="tag">Logika</span>
+                    <span class="tag">Sistem Pakar</span>
+                    <span class="tag">Forward Chaining</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 15%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- Materi 6 -->
+            <div class="materi-card locked">
+                <div class="card-header">
+                    <div class="card-icon" style="background:#334;">📊</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 11 · Sub-CPMK6</div>
+                        <div class="card-title">Penalaran dalam Ketidakpastian</div>
+                    </div>
+                    <span class="badge-status status-coming">🔒 Segera</span>
+                </div>
+                <div class="card-desc">Probabilitas bersyarat, Teorema Bayes, asumsi kebebasan bersyarat, faktor kepastian (Certainty Factor), penggabungan CF pada kaidah berantai.</div>
+                <div class="card-tags">
+                    <span class="tag">Bayes</span>
+                    <span class="tag">Certainty Factor</span>
+                    <span class="tag">Probabilitas</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 8%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- Materi 7 -->
+            <div class="materi-card locked">
+                <div class="card-header">
+                    <div class="card-icon" style="background:#334;">〜</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 12 &amp; 13 · Sub-CPMK7</div>
+                        <div class="card-title">Logika Fuzzy &amp; Sistem Inferensi Fuzzy</div>
+                    </div>
+                    <span class="badge-status status-coming">🔒 Segera</span>
+                </div>
+                <div class="card-desc">Himpunan fuzzy, fungsi keanggotaan, operasi himpunan fuzzy, variabel linguistik, model Mamdani, model Sugeno, defuzzifikasi.</div>
+                <div class="card-tags">
+                    <span class="tag">Fuzzy Set</span>
+                    <span class="tag">Mamdani</span>
+                    <span class="tag">Sugeno</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 12%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+            <!-- Materi 8 -->
+            <div class="materi-card locked">
+                <div class="card-header">
+                    <div class="card-icon" style="background:#334;">🧬</div>
+                    <div class="card-meta">
+                        <div class="card-week">Pertemuan 14 &amp; 15 · Sub-CPMK8</div>
+                        <div class="card-title">Optimasi &amp; Algoritma Evolusioner</div>
+                    </div>
+                    <span class="badge-status status-coming">🔒 Segera</span>
+                </div>
+                <div class="card-desc">Perumusan masalah optimasi, Algoritma Genetika (GA), Particle Swarm Optimization (PSO), penyetelan parameter, batas keberlakuan solusi.</div>
+                <div class="card-tags">
+                    <span class="tag">Genetic Algorithm</span>
+                    <span class="tag">PSO</span>
+                    <span class="tag">Optimasi</span>
+                </div>
+                <div class="card-footer">
+                    <span class="card-cpmk">Bobot: 19%</span>
+                    <span class="card-arrow">→</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ---- Info Section ---- -->
+        <p class="section-title">ℹ️ Informasi Mata Kuliah</p>
+        <div class="info-section">
+            <div class="info-card">
+                <h3>🎯 Komponen Penilaian</h3>
+                <ul>
+                    <li><span class="dot">▸</span> Partisipasi kelas — 8%</li>
+                    <li><span class="dot">▸</span> Tugas RTM I (Minggu 2–4) — 5%</li>
+                    <li><span class="dot">▸</span> Tugas RTM II (Minggu 4–6) — 9%</li>
+                    <li><span class="dot">▸</span> Kuis 1 (Minggu 7, materi 1–6) — 5%</li>
+                    <li><span class="dot">▸</span> UTS (Minggu 8) — 22%</li>
+                    <li><span class="dot">▸</span> Tugas RTM III (Minggu 9–11) — 7%</li>
+                    <li><span class="dot">▸</span> Kuis 2 (Minggu 13, materi 9–12) — 5%</li>
+                    <li><span class="dot">▸</span> Tugas RTM IV (Minggu 12–14) — 7%</li>
+                    <li><span class="dot">▸</span> UAS — Proyek + Presentasi — 32%</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>📖 Referensi Utama</h3>
+                <ul>
+                    <li><span class="dot">▸</span> Russell &amp; Norvig — AIMA 4th ed. (2021)</li>
+                    <li><span class="dot">▸</span> Poole &amp; Mackworth — Foundations of Computational Agents (2023)</li>
+                    <li><span class="dot">▸</span> Negnevitsky — A Guide to Intelligent Systems (2011)</li>
+                    <li><span class="dot">▸</span> Suyanto — AI: Searching, Reasoning, Planning (2014)</li>
+                    <li><span class="dot">▸</span> Turing (1950) — Computing Machinery and Intelligence</li>
+                    <li><span class="dot">▸</span> Hart, Nilsson &amp; Raphael (1968) — Makalah asli A*</li>
+                    <li><span class="dot">▸</span> Zadeh (1965) — Fuzzy Sets</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>⚙️ Ketentuan Praktikum</h3>
+                <ul>
+                    <li><span class="dot">▸</span> Bahasa pemrograman: Python</li>
+                    <li><span class="dot">▸</span> Algoritma wajib ditulis sendiri</li>
+                    <li><span class="dot">▸</span> Pustaka (NetworkX, scikit-fuzzy) hanya untuk pembanding</li>
+                    <li><span class="dot">▸</span> Kelompok max 3 orang dengan pembagian peran tertulis</li>
+                    <li><span class="dot">▸</span> Data: terbuka, dikumpulkan sendiri, atau sintetis</li>
+                    <li><span class="dot">▸</span> Laporan wajib cantumkan batas keberlakuan solusi</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <h3>👨‍🏫 Pengampu</h3>
+                <ul>
+                    <li><span class="dot">▸</span> Pahrul Irfan, S.Kom., M.Kom.</li>
+                    <li><span class="dot">▸</span> Halil Akhyar, S.T., M.InfTech.</li>
+                </ul>
+                <h3 style="margin-top:16px;">🔗 Tautan</h3>
+                <ul>
+                    <li><span class="dot">▸</span> <a href="https://berajah-if.unram.ac.id" target="_blank" style="color:#4fc3f7;">eLearning BERAJAH</a></li>
+                    <li><span class="dot">▸</span> <a href="https://networkx.org" target="_blank" style="color:#4fc3f7;">NetworkX Docs</a></li>
+                    <li><span class="dot">▸</span> <a href="https://scikit-fuzzy.readthedocs.io" target="_blank" style="color:#4fc3f7;">scikit-fuzzy Docs</a></li>
+                    <li><span class="dot">▸</span> <a href="https://deap.readthedocs.io" target="_blank" style="color:#4fc3f7;">DEAP Docs (GA/PSO)</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ---- CPMK Table ---- -->
+        <p class="section-title">📊 Capaian Pembelajaran Mata Kuliah (CPMK)</p>
+        <table class="cpmk-table">
+            <thead>
+                <tr>
+                    <th>Kode</th>
+                    <th>Deskripsi</th>
+                    <th>Bobot</th>
+                    <th>Pertemuan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Sub-CPMK1</td>
+                    <td>Cakupan AI, Uji Turing, AI Klasik vs Modern, kerangka PEAS, klasifikasi lingkungan, jenis agen</td>
+                    <td>10%</td>
+                    <td>1–2</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK2</td>
+                    <td>Ruang keadaan, BFS, DFS, DLS, IDS, UCS — analisis kelengkapan, optimalitas, kompleksitas</td>
+                    <td>13%</td>
+                    <td>3–4</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK3</td>
+                    <td>Pencarian heuristik: Greedy BFS dan A*, fungsi g/h/f, admissible, konsisten, dominasi</td>
+                    <td>15%</td>
+                    <td>5–6</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK4</td>
+                    <td>Minimax, pemangkasan Alfa-Beta, fungsi evaluasi, pengaruh urutan simpul</td>
+                    <td>8%</td>
+                    <td>7</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK5</td>
+                    <td>Logika proposisi/predikat, kaidah produksi, sistem pakar, forward/backward chaining</td>
+                    <td>15%</td>
+                    <td>9–10</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK6</td>
+                    <td>Probabilitas bersyarat, Teorema Bayes, Certainty Factor, penalaran di bawah ketidakpastian</td>
+                    <td>8%</td>
+                    <td>11</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK7</td>
+                    <td>Himpunan fuzzy, FIS Mamdani dan Sugeno, fuzzifikasi, defuzzifikasi, uji kepekaan</td>
+                    <td>12%</td>
+                    <td>12–13</td>
+                </tr>
+                <tr>
+                    <td>Sub-CPMK8</td>
+                    <td>Optimasi: Algoritma Genetika, PSO, fungsi tujuan, penyetelan parameter</td>
+                    <td>19%</td>
+                    <td>14–15</td>
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="page-footer">
+        <p>Kecerdasan Buatan · MKL1303131 · S-1 Teknik Informatika · Universitas Mataram · 2026</p>
+        <p style="margin-top:6px;">Pahrul Irfan, S.Kom., M.Kom. &amp; Halil Akhyar, S.T., M.InfTech. ·
+           <a href="https://berajah-if.unram.ac.id" target="_blank">eLearning BERAJAH</a></p>
+    </div>
+
+</body>
+</html>

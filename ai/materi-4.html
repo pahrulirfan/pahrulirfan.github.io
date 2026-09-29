@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi 4 — Pencarian dengan Lawan: Minimax &amp; Alfa-Beta</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=20260927a">
+    <style>
+        /* ---- Kartu sifat algoritma (sama dengan materi-2/3) ---- */
+        .cplx-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 14px;
+            margin: 15px 0;
+        }
+        .cplx-card {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.09);
+            border-top: 4px solid #1565c0;
+            text-align: center;
+        }
+        .cplx-card h5 { color: #1a2a4a; margin-bottom: 8px; font-size: 1em; }
+        .cplx-card .val { font-family: 'Consolas', monospace; font-size: 1.2em; font-weight: 700; margin: 4px 0; }
+        .cplx-card p { font-size: 0.82em; color: #666; margin: 0; text-align: center; }
+
+        /* ---- Tabel penelusuran ---- */
+        .trace-table { font-size: 0.88em; }
+        .trace-table td:first-child { font-weight: 700; color: #1565c0; }
+        .trace-table .tr-cut  td { background: #fce4ec; }
+        .trace-table .tr-goal td { background: #e8f5e9; }
+
+        /* ---- Rumus ---- */
+        .formula {
+            background: #fff;
+            border: 1px solid #d6e2f3;
+            border-left: 4px solid #1565c0;
+            border-radius: 0 8px 8px 0;
+            padding: 14px 18px;
+            margin: 15px 0;
+            overflow-x: auto;
+            white-space: pre;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.92em;
+            line-height: 1.9;
+            color: #1a2a4a;
+        }
+
+        /* ---- Langkah pembuktian ---- */
+        .proof-step {
+            display: flex; gap: 12px; align-items: flex-start;
+            padding: 12px 15px; margin-bottom: 8px;
+            background: #f5f8ff; border-radius: 8px;
+            border-left: 4px solid #1565c0;
+        }
+        .proof-body strong { color: #1a2a4a; display: block; margin-bottom: 3px; }
+        .proof-body p { color: #555; font-size: 0.9em; margin: 0; text-align: left; }
+
+        /* ---- Papan tic-tac-toe mini dan pohon permainannya ---- */
+        .tt-board {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 22px);
+            grid-template-rows: repeat(3, 22px);
+            gap: 2px;
+            padding: 2px;
+            background: #90a4ae;
+            border-radius: 5px;
+            flex-shrink: 0;
+        }
+        .tt-board span {
+            display: flex; align-items: center; justify-content: center;
+            background: #fff; border-radius: 2px;
+            font: 800 14px 'Segoe UI', sans-serif;
+        }
+        .tt-board span.x { color: #1565c0; }
+        .tt-board span.o { color: #c62828; }
+        .tt-board span.win { background: #c8e6c9; }
+        .tt-board span.new { box-shadow: inset 0 0 0 2px #f9a825; }
+        .tt-board.lg { grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(3, 34px); }
+        .tt-board.lg span { font-size: 20px; }
+        .tt-tree { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+        .tt-root { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .tt-branches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; }
+        .tt-branch {
+            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            background: #fff; border: 1px solid #e3e8f0; border-radius: 10px; padding: 12px 6px;
+        }
+        .tt-branch.chosen { border: 2px solid #2e7d32; }
+        .tt-sub { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+        .tt-leafcol { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .tt-move { font-size: 0.76em; font-weight: 600; color: #5a7a9a; }
+        .tt-tag { font-size: 0.75em; font-weight: 700; padding: 2px 9px; border-radius: 10px; color: #fff; }
+        .tt-tag.max { background: #1565c0; }
+        .tt-tag.min { background: #6a1b9a; }
+        .tt-val { font-size: 0.78em; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #eceff1; color: #37474f; }
+        .tt-val.pos { background: #e8f5e9; color: #1b5e20; }
+        .tt-val.neg { background: #fce4ec; color: #8e1b1b; }
+        .tt-eval-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin: 12px 0; }
+        .tt-eval-item { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 0.82em; color: #444; text-align: center; }
+
+        @media (max-width: 700px) {
+            .tt-branches { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .cplx-grid { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Pertemuan 7</h1>
+        <p>Sub-CPMK4 · Pencarian dengan Lawan: Minimax &amp; Pemangkasan Alfa-Beta</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#cpmk" class="active">0. Capaian</a></li>
+                <li><a href="#permainan">1. Permainan sebagai Masalah Pencarian</a></li>
+                <li><a href="#pohon">2. Pohon Permainan &amp; Utilitas</a></li>
+                <li><a href="#minimax">3. Algoritma Minimax</a></li>
+                <li><a href="#alfabeta">4. Pemangkasan Alfa-Beta</a></li>
+                <li><a href="#urutan">5. Urutan Pembangkitan Simpul</a></li>
+                <li><a href="#evaluasi">6. Batas Kedalaman &amp; Fungsi Evaluasi</a></li>
+                <li><a href="#tictactoe">7. Melawan Agen Minimax</a></li>
+                <li><a href="#batas">8. Batas Pendekatan</a></li>
+                <li><a href="#rangkuman">9. Rangkuman</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- CPMK -->
+            <!-- ============================================================ -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran <span class="badge">Sub-CPMK4</span></h2>
+                <div class="success-box">
+                    <strong>Kemampuan Akhir yang Diharapkan:</strong>
+                    <p style="margin-top:8px;">Mahasiswa mampu <strong>menerapkan algoritma minimax dan pemangkasan alfa-beta</strong> pada permainan dua pemain berjumlah nol, serta <strong>menganalisis pengaruh urutan pembangkitan simpul dan kedalaman pencarian</strong> terhadap jumlah simpul yang diperiksa. <em>(C3/C4)</em></p>
+                </div>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-sitemap"></i></div>
+                        <h4>4.1 Pohon Permainan</h4>
+                        <p>Memodelkan permainan sebagai pohon permainan beserta fungsi utilitasnya.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                        <h4>4.2 Nilai Minimax</h4>
+                        <p>Menghitung nilai minimax secara manual dan menentukan langkah terbaik.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-scissors"></i></div>
+                        <h4>4.3 Pemangkasan Alfa-Beta</h4>
+                        <p>Menerapkan alfa-beta dan menandai cabang yang terpangkas.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <h4>4.4 Nilai Tetap Sama</h4>
+                        <p>Menjelaskan mengapa pemangkasan tidak mengubah nilai minimax.</p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon"><i class="fa-solid fa-arrow-down-wide-short"></i></div>
+                        <h4>4.5 Urutan Simpul</h4>
+                        <p>Menunjukkan pengaruh urutan pembangkitan simpul terhadap pemangkasan.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-ruler-combined"></i></div>
+                        <h4>4.6 Fungsi Evaluasi</h4>
+                        <p>Merancang fungsi evaluasi untuk pencarian berbatas kedalaman.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Permainan sebagai masalah pencarian -->
+            <!-- ============================================================ -->
+            <section id="permainan">
+                <h2>1. Permainan sebagai Masalah Pencarian <span class="badge">Dasar</span></h2>
+
+                <p>Pada Pertemuan 3–6, agen mencari urutan aksi di lingkungan yang hanya berubah karena aksinya sendiri. Dalam <strong>permainan</strong> ada agen lain — <strong>lawan</strong> — yang juga memilih aksi, dan tujuannya bertentangan dengan tujuan kita. Hasil sebuah langkah bergantung pada jawaban lawan, sehingga yang dicari bukan lagi satu lintasan menuju tujuan, melainkan <strong>strategi</strong>: "jika lawan melakukan ini, saya melakukan itu".</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Intuisi:</strong>
+                    <p style="margin-top:6px;">Pemain catur yang baik berpikir, "Kalau saya majukan kuda, dia pasti memakan pion saya. Kalau saya majukan benteng, dia terpaksa bertahan." Ia menelusuri beberapa langkah ke depan dengan <em>asumsi bahwa lawan juga bermain sebaik mungkin</em>. Asumsi inilah yang dirumuskan secara formal oleh algoritma minimax.</p>
+                </div>
+
+                <h3>Jenis-jenis Permainan</h3>
+                <table>
+                    <thead>
+                        <tr><th></th><th><i class="fa-solid fa-chess-knight"></i> Deterministik</th><th><i class="fa-solid fa-dice"></i> Ada unsur peluang</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Informasi sempurna</strong><br><span style="font-size:0.85em;color:#777;">semua keadaan terlihat</span></td>
+                            <td>Catur, go, dam, tic-tac-toe, congklak <i class="fa-solid fa-check" style="color:#2e7d32;"></i></td>
+                            <td>Backgammon, monopoli</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Informasi tidak sempurna</strong><br><span style="font-size:0.85em;color:#777;">sebagian keadaan tersembunyi</span></td>
+                            <td>Kapal perang (<em>battleship</em>), stratego</td>
+                            <td>Poker, bridge, kartu remi</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Pertemuan ini membahas kotak bertanda centang: permainan <strong>dua pemain, bergiliran, deterministik, informasi sempurna,</strong> dan <strong>berjumlah nol</strong>. Ular tangga tidak masuk daftar sama sekali: pemain tidak pernah mengambil keputusan, sehingga tidak ada yang perlu "dipikirkan" oleh agen.</p>
+
+                <h3>Berjumlah Nol (<em>Zero-Sum</em>)</h3>
+                <p>Sebuah permainan <strong>berjumlah nol</strong> jika keuntungan satu pemain selalu merupakan kerugian pemain lain — total utilitas kedua pemain selalu sama di setiap akhir permainan. Pada catur: menang = 1, kalah = 0, seri = ½ untuk masing-masing, jadi totalnya selalu 1. Akibatnya cukup satu angka untuk menilai sebuah posisi: angka yang <strong>dimaksimalkan</strong> oleh satu pemain dan <strong>diminimalkan</strong> oleh pemain lainnya. Karena itu kedua pemain diberi nama <strong>MAX</strong> (kita, yang jalan duluan) dan <strong>MIN</strong> (lawan).</p>
+
+                <h3>Formulasi Formal Permainan</h3>
+                <p>Seperti masalah pencarian pada Pertemuan 3, permainan juga dirumuskan dengan beberapa komponen. Perbedaannya: ada fungsi giliran, dan "biaya lintasan" diganti <em>utilitas</em> yang hanya diberikan di akhir permainan.</p>
+                <table>
+                    <thead>
+                        <tr><th>Komponen</th><th>Arti</th><th>Contoh: Tic-Tac-Toe</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>S<sub>0</sub></code></td><td>Keadaan awal</td><td>Papan 3×3 kosong</td></tr>
+                        <tr><td><code>TO-MOVE(s)</code></td><td>Pemain yang mendapat giliran di keadaan <em>s</em></td><td>X jika jumlah X = jumlah O, selain itu O</td></tr>
+                        <tr><td><code>ACTIONS(s)</code></td><td>Langkah legal di keadaan <em>s</em></td><td>Semua petak yang masih kosong</td></tr>
+                        <tr><td><code>RESULT(s, a)</code></td><td>Model transisi: keadaan setelah langkah <em>a</em></td><td>Papan dengan tanda pemain di petak <em>a</em></td></tr>
+                        <tr><td><code>IS-TERMINAL(s)</code></td><td>Uji terminal: apakah permainan selesai?</td><td>Ada tiga tanda segaris, atau papan penuh</td></tr>
+                        <tr><td><code>UTILITY(s, p)</code></td><td>Nilai akhir keadaan terminal <em>s</em> bagi pemain <em>p</em></td><td>+1 jika X menang, −1 jika O menang, 0 jika seri (dilihat dari X)</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Beda utama dengan pencarian biasa:</strong>
+                    <p style="margin-top:6px;">Agen hanya mengendalikan <em>separuh</em> langkah. Setelah ia memilih, lawan yang memilih. Karena itu "solusi" permainan berupa <strong>strategi</strong> — pilihan langkah untuk setiap kemungkinan jawaban lawan — bukan satu urutan aksi seperti rute Arad → Bucharest.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Pohon permainan -->
+            <!-- ============================================================ -->
+            <section id="pohon">
+                <h2>2. Pohon Permainan &amp; Fungsi Utilitas <span class="badge badge-algo">Inti</span></h2>
+
+                <p><strong>Pohon permainan</strong> adalah pohon pencarian yang simpulnya berupa keadaan permainan dan sisinya berupa langkah. Akarnya adalah posisi saat ini. Tingkatan pohon bergantian antara giliran MAX dan giliran MIN. Satu tingkat disebut satu <strong>ply</strong> (setengah langkah); satu "langkah penuh" dalam bahasa sehari-hari (kita jalan, lawan membalas) sama dengan dua ply.</p>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-caret-up"></i></div>
+                        <h4>Simpul MAX (segitiga ke atas)</h4>
+                        <p>Giliran kita. MAX memilih anak yang nilainya <strong>terbesar</strong>.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-caret-down"></i></div>
+                        <h4>Simpul MIN (segitiga ke bawah)</h4>
+                        <p>Giliran lawan. MIN memilih anak yang nilainya <strong>terkecil</strong> — terburuk bagi MAX.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-square"></i></div>
+                        <h4>Simpul Terminal (daun)</h4>
+                        <p>Permainan selesai. Nilainya diberikan oleh <strong>fungsi utilitas</strong>, selalu dari sudut pandang MAX.</p>
+                    </div>
+                </div>
+
+                <h3>Contoh: Pohon Tic-Tac-Toe yang Lengkap</h3>
+                <p>Ambil posisi berikut: X mendapat giliran dan hanya tersisa tiga petak kosong (petak 7, 8, dan 9 — petak diberi nomor 1–9 dari kiri atas ke kanan bawah). Karena pohonnya kecil, seluruh kemungkinan dapat ditulis lengkap sampai akhir permainan. Petak berbingkai kuning adalah langkah terakhir; petak hijau adalah tiga tanda segaris.</p>
+
+                <div class="demo-box">
+                    <h5>Pohon permainan lengkap dari posisi X O X / X O O / _ _ _</h5>
+                    <div class="tt-tree">
+                        <div class="tt-root">
+                            <span class="tt-tag max">MAX (giliran X) — nilai +1</span>
+                            <div class="tt-board lg" data-b="XOXXOO..."></div>
+                        </div>
+                        <div class="tt-branches">
+                            <div class="tt-branch chosen">
+                                <span class="tt-move">X ke petak 7</span>
+                                <div class="tt-board" data-b="XOXXOOX.." data-new="6" data-win="0,3,6"></div>
+                                <span class="tt-val pos">Terminal: X menang → +1</span>
+                                <span class="tt-move" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> dipilih MAX</span>
+                            </div>
+                            <div class="tt-branch">
+                                <span class="tt-move">X ke petak 8</span>
+                                <div class="tt-board" data-b="XOXXOO.X." data-new="7"></div>
+                                <span class="tt-tag min">MIN (giliran O) — nilai 0</span>
+                                <div class="tt-sub">
+                                    <div class="tt-leafcol">
+                                        <span class="tt-move">O ke 7</span>
+                                        <div class="tt-board" data-b="XOXXOOOX." data-new="6"></div>
+                                        <span class="tt-move">X ke 9</span>
+                                        <div class="tt-board" data-b="XOXXOOOXX" data-new="8"></div>
+                                        <span class="tt-val">Seri → 0</span>
+                                    </div>
+                                    <div class="tt-leafcol">
+                                        <span class="tt-move">O ke 9</span>
+                                        <div class="tt-board" data-b="XOXXOO.XO" data-new="8"></div>
+                                        <span class="tt-move">X ke 7</span>
+                                        <div class="tt-board" data-b="XOXXOOXXO" data-new="6" data-win="0,3,6"></div>
+                                        <span class="tt-val pos">X menang → +1</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tt-branch">
+                                <span class="tt-move">X ke petak 9</span>
+                                <div class="tt-board" data-b="XOXXOO..X" data-new="8"></div>
+                                <span class="tt-tag min">MIN (giliran O) — nilai −1</span>
+                                <div class="tt-sub">
+                                    <div class="tt-leafcol">
+                                        <span class="tt-move">O ke 7</span>
+                                        <div class="tt-board" data-b="XOXXOOO.X" data-new="6"></div>
+                                        <span class="tt-move">X ke 8</span>
+                                        <div class="tt-board" data-b="XOXXOOOXX" data-new="7"></div>
+                                        <span class="tt-val">Seri → 0</span>
+                                    </div>
+                                    <div class="tt-leafcol">
+                                        <span class="tt-move">O ke 8</span>
+                                        <div class="tt-board" data-b="XOXXOO.OX" data-new="7" data-win="1,4,7"></div>
+                                        <span class="tt-val neg">O menang → −1</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Cara membaca pohon di atas dari bawah ke atas:</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Daun diberi nilai utilitas.</strong><p>X menang = +1, seri = 0, O menang = −1. Perhatikan bahwa daun bisa berada di kedalaman berbeda: "X ke petak 7" langsung mengakhiri permainan.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Simpul MIN mengambil nilai terkecil anaknya.</strong><p>Setelah "X ke 8", O memilih antara 0 dan +1 → memilih 0. Setelah "X ke 9", O memilih antara 0 dan −1 → memilih −1 (O langsung menang di petak 8).</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Simpul MAX mengambil nilai terbesar anaknya.</strong><p>max(+1, 0, −1) = +1. X memilih petak 7 dan menang. Langkah "X ke 9" terlihat wajar, tetapi membiarkan O menyelesaikan kolom tengah.</p></div>
+                    </div>
+                </div>
+
+                <h3>Pohon Abstrak yang Dipakai Buku</h3>
+                <p>Untuk berlatih menghitung, posisi permainan sering diganti simbol. Pohon berikut adalah contoh klasik Russell &amp; Norvig: MAX di akar <strong>A</strong> punya tiga langkah (ke B, C, D), MIN di tiap simpul itu juga punya tiga langkah, dan angka di kotak adalah utilitas daun bagi MAX. Pohon inilah yang dipakai pada Bagian 3–5.</p>
+                <div data-viz="game-tree" data-tree="buku" data-static="true"></div>
+
+                <h3>Seberapa Besar Pohon Permainan?</h3>
+                <table>
+                    <thead>
+                        <tr><th>Permainan</th><th>Faktor cabang rata-rata (b)</th><th>Ukuran</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Tic-tac-toe</td><td>≤ 9, terus menurun</td><td>Paling banyak 9! = 362.880 urutan langkah; 255.168 permainan berbeda; 5.478 posisi legal</td></tr>
+                        <tr><td>Catur</td><td>± 35</td><td>Pohon permainan ± 10<sup>154</sup> simpul (± 35<sup>100</sup>); ± 10<sup>40</sup> posisi berbeda</td></tr>
+                        <tr><td>Go 19×19</td><td>± 250 (361 di awal)</td><td>± 2 × 10<sup>170</sup> posisi legal</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Tic-tac-toe masih bisa ditelusuri habis — agen di Bagian 7 memeriksa 549.946 simpul untuk langkah pertama. Catur dan go tidak mungkin; di situlah pemangkasan alfa-beta (Bagian 4) dan fungsi evaluasi (Bagian 6) berperan.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Minimax -->
+            <!-- ============================================================ -->
+            <section id="minimax">
+                <h2>3. Algoritma Minimax <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p><strong>Nilai minimax</strong> sebuah keadaan adalah utilitas yang akan diperoleh MAX jika <em>kedua</em> pemain bermain optimal dari keadaan itu sampai permainan selesai. MAX berusaha menuju keadaan bernilai tinggi, MIN berusaha menuju keadaan bernilai rendah.</p>
+
+                <div class="formula">MINIMAX(s) =
+    UTILITY(s, MAX)                              jika IS-TERMINAL(s)
+    max<sub>a ∈ ACTIONS(s)</sub> MINIMAX(RESULT(s, a))       jika TO-MOVE(s) = MAX
+    min<sub>a ∈ ACTIONS(s)</sub> MINIMAX(RESULT(s, a))       jika TO-MOVE(s) = MIN</div>
+
+                <h3>Menghitung Manual pada Pohon Contoh</h3>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Simpul MIN B:</strong><p>min(3, 12, 8) = <strong>3</strong></p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Simpul MIN C:</strong><p>min(2, 4, 6) = <strong>2</strong></p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Simpul MIN D:</strong><p>min(14, 5, 2) = <strong>2</strong></p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content"><strong>Akar MAX A:</strong><p>max(3, 2, 2) = <strong>3</strong> → langkah terbaik MAX adalah ke <strong>B</strong>. Walaupun D memuat daun terbesar (14), MIN tidak akan pernah membiarkan MAX mendapatkannya.</p></div>
+                    </div>
+                </div>
+
+                <h3>Pseudocode Minimax</h3>
+                <p>Minimax menghitung nilai tersebut dengan penelusuran mendalam (DFS) secara rekursif: turun sampai daun, lalu nilai "dinaikkan" (<em>backed up</em>) ke atas.</p>
+                <pre><code><span class="kw">function</span> <span class="fn">MINIMAX-SEARCH</span>(game, state) <span class="kw">returns</span> aksi
+    value, move ← <span class="fn">MAX-VALUE</span>(game, state)
+    <span class="kw">return</span> move
+
+<span class="kw">function</span> <span class="fn">MAX-VALUE</span>(game, state) <span class="kw">returns</span> (utilitas, aksi)
+    <span class="kw">if</span> game.<span class="fn">IS-TERMINAL</span>(state) <span class="kw">then return</span> game.<span class="fn">UTILITY</span>(state, MAX), null
+    v ← −∞
+    <span class="kw">for each</span> a <span class="kw">in</span> game.<span class="fn">ACTIONS</span>(state) <span class="kw">do</span>
+        v2, a2 ← <span class="fn">MIN-VALUE</span>(game, game.<span class="fn">RESULT</span>(state, a))
+        <span class="kw">if</span> v2 &gt; v <span class="kw">then</span> v, move ← v2, a
+    <span class="kw">return</span> v, move
+
+<span class="kw">function</span> <span class="fn">MIN-VALUE</span>(game, state) <span class="kw">returns</span> (utilitas, aksi)
+    <span class="kw">if</span> game.<span class="fn">IS-TERMINAL</span>(state) <span class="kw">then return</span> game.<span class="fn">UTILITY</span>(state, MAX), null
+    v ← +∞
+    <span class="kw">for each</span> a <span class="kw">in</span> game.<span class="fn">ACTIONS</span>(state) <span class="kw">do</span>
+        v2, a2 ← <span class="fn">MAX-VALUE</span>(game, game.<span class="fn">RESULT</span>(state, a))
+        <span class="kw">if</span> v2 &lt; v <span class="kw">then</span> v, move ← v2, a
+    <span class="kw">return</span> v, move</code></pre>
+
+                <h3>Coba Sendiri: Minimax Langkah demi Langkah <span class="badge badge-new">Interaktif</span></h3>
+                <p>Tekan <strong>Langkah</strong> untuk mengikuti rekursi: simpul jingga sedang diproses, simpul krem sedang menunggu nilai dari anaknya, dan panel "Tumpukan rekursi" menunjukkan lintasan dari akar ke simpul yang sedang dikunjungi. Minimax selalu memeriksa <em>semua</em> daun. Pilih pohon lain atau tekan <strong>Acak nilai daun</strong> untuk berlatih: hitung dulu nilai akarnya di kertas, lalu cocokkan.</p>
+                <div data-viz="game-tree" data-tree="buku" data-algo="minimax"></div>
+
+                <h3>Sifat Minimax</h3>
+                <div class="cplx-grid">
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Kelengkapan</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya</div>
+                        <p>Jika pohon permainan terhingga.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Optimalitas</h5>
+                        <div class="val" style="color:#2e7d32;"><i class="fa-solid fa-check"></i> Ya*</div>
+                        <p>Melawan lawan yang juga bermain optimal.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#c62828;">
+                        <h5>Waktu</h5>
+                        <div class="val O-bad">O(b<sup>m</sup>)</div>
+                        <p>m = kedalaman maksimum pohon. Semua simpul diperiksa.</p>
+                    </div>
+                    <div class="cplx-card" style="border-top-color:#2e7d32;">
+                        <h5>Ruang</h5>
+                        <div class="val O-good">O(b·m)</div>
+                        <p>Seperti DFS: hanya satu lintasan aktif beserta saudaranya.</p>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-circle-question"></i> Bagaimana jika lawan tidak bermain optimal?</strong>
+                    <p style="margin-top:6px;">Nilai minimax adalah <em>jaminan terendah</em> bagi MAX: apa pun yang dilakukan MIN, MAX akan memperoleh setidaknya nilai itu. Jika MIN berbuat salah, hasil MAX hanya bisa sama atau lebih baik. Namun strategi minimax tidak memanfaatkan kelemahan lawan — melawan lawan yang ceroboh, strategi lain bisa saja menghasilkan kemenangan lebih besar.</p>
+                </div>
+
+                <h3>Implementasi Python: Minimax untuk Tic-Tac-Toe</h3>
+                <pre><code>GARIS = [(<span class="nm">0</span>, <span class="nm">1</span>, <span class="nm">2</span>), (<span class="nm">3</span>, <span class="nm">4</span>, <span class="nm">5</span>), (<span class="nm">6</span>, <span class="nm">7</span>, <span class="nm">8</span>),   <span class="cm"># baris</span>
+         (<span class="nm">0</span>, <span class="nm">3</span>, <span class="nm">6</span>), (<span class="nm">1</span>, <span class="nm">4</span>, <span class="nm">7</span>), (<span class="nm">2</span>, <span class="nm">5</span>, <span class="nm">8</span>),   <span class="cm"># kolom</span>
+         (<span class="nm">0</span>, <span class="nm">4</span>, <span class="nm">8</span>), (<span class="nm">2</span>, <span class="nm">4</span>, <span class="nm">6</span>)]              <span class="cm"># diagonal</span>
+
+<span class="kw">def</span> <span class="fn">pemenang</span>(papan):
+    <span class="kw">for</span> a, b, c <span class="kw">in</span> GARIS:
+        <span class="kw">if</span> papan[a] <span class="kw">and</span> papan[a] == papan[b] == papan[c]:
+            <span class="kw">return</span> papan[a]
+    <span class="kw">return</span> <span class="kw">None</span>
+
+<span class="kw">def</span> <span class="fn">terminal</span>(papan):
+    <span class="kw">return</span> <span class="fn">pemenang</span>(papan) <span class="kw">is not</span> <span class="kw">None</span> <span class="kw">or</span> <span class="fn">all</span>(papan)
+
+<span class="kw">def</span> <span class="fn">utilitas</span>(papan):
+    <span class="st">"""+1 jika X menang, -1 jika O menang, 0 jika seri (sudut pandang X = MAX)."""</span>
+    w = <span class="fn">pemenang</span>(papan)
+    <span class="kw">return</span> <span class="nm">1</span> <span class="kw">if</span> w == <span class="st">'X'</span> <span class="kw">else</span> -<span class="nm">1</span> <span class="kw">if</span> w == <span class="st">'O'</span> <span class="kw">else</span> <span class="nm">0</span>
+
+<span class="kw">def</span> <span class="fn">aksi</span>(papan):
+    <span class="kw">return</span> [i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">9</span>) <span class="kw">if</span> <span class="kw">not</span> papan[i]]
+
+<span class="kw">def</span> <span class="fn">hasil</span>(papan, i, pemain):
+    baru = <span class="fn">list</span>(papan)
+    baru[i] = pemain
+    <span class="kw">return</span> baru
+
+<span class="kw">def</span> <span class="fn">minimax</span>(papan, pemain):
+    <span class="st">"""Nilai minimax papan jika 'pemain' mendapat giliran."""</span>
+    <span class="kw">if</span> <span class="fn">terminal</span>(papan):
+        <span class="kw">return</span> <span class="fn">utilitas</span>(papan)
+    lawan = <span class="st">'O'</span> <span class="kw">if</span> pemain == <span class="st">'X'</span> <span class="kw">else</span> <span class="st">'X'</span>
+    nilai = [<span class="fn">minimax</span>(<span class="fn">hasil</span>(papan, i, pemain), lawan) <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">aksi</span>(papan)]
+    <span class="kw">return</span> <span class="fn">max</span>(nilai) <span class="kw">if</span> pemain == <span class="st">'X'</span> <span class="kw">else</span> <span class="fn">min</span>(nilai)
+
+<span class="kw">def</span> <span class="fn">langkah_terbaik</span>(papan, pemain):
+    lawan = <span class="st">'O'</span> <span class="kw">if</span> pemain == <span class="st">'X'</span> <span class="kw">else</span> <span class="st">'X'</span>
+    pilih = <span class="fn">max</span> <span class="kw">if</span> pemain == <span class="st">'X'</span> <span class="kw">else</span> <span class="fn">min</span>
+    <span class="kw">return</span> <span class="fn">pilih</span>(<span class="fn">aksi</span>(papan), key=<span class="kw">lambda</span> i: <span class="fn">minimax</span>(<span class="fn">hasil</span>(papan, i, pemain), lawan))
+
+
+<span class="cm"># Posisi contoh Bagian 2 (None = kosong)</span>
+papan = [<span class="st">'X'</span>, <span class="st">'O'</span>, <span class="st">'X'</span>,
+         <span class="st">'X'</span>, <span class="st">'O'</span>, <span class="st">'O'</span>,
+         <span class="kw">None</span>, <span class="kw">None</span>, <span class="kw">None</span>]
+<span class="fn">print</span>(<span class="fn">minimax</span>(papan, <span class="st">'X'</span>))          <span class="cm"># 1</span>
+<span class="fn">print</span>(<span class="fn">langkah_terbaik</span>(papan, <span class="st">'X'</span>))  <span class="cm"># 6 → petak ke-7, X langsung menang</span></code></pre>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. Alfa-beta -->
+            <!-- ============================================================ -->
+            <section id="alfabeta">
+                <h2>4. Pemangkasan Alfa-Beta <span class="badge badge-algo">Algoritma</span></h2>
+
+                <p>Minimax memeriksa seluruh pohon. <strong>Pemangkasan alfa-beta</strong> menghasilkan nilai akar dan langkah yang <em>persis sama</em>, tetapi melewati cabang yang terbukti tidak mungkin memengaruhi keputusan. Kuncinya adalah dua batas yang dibawa sepanjang penelusuran:</p>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon" style="font-family:'Consolas',monospace; font-weight:700;">α</div>
+                        <h4>Alfa — jaminan MAX</h4>
+                        <p>Nilai <strong>terbaik (terbesar)</strong> yang sudah dijamin bagi MAX di sepanjang lintasan dari akar. Awalnya −∞. Hanya diperbarui di simpul MAX.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon" style="font-family:'Consolas',monospace; font-weight:700;">β</div>
+                        <h4>Beta — jaminan MIN</h4>
+                        <p>Nilai <strong>terbaik (terkecil)</strong> yang sudah dijamin bagi MIN di sepanjang lintasan dari akar. Awalnya +∞. Hanya diperbarui di simpul MIN.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-scissors"></i></div>
+                        <h4>Aturan pangkas</h4>
+                        <p>Di simpul MIN: pangkas sisa anak jika v ≤ α. Di simpul MAX: pangkas sisa anak jika v ≥ β.</p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Analogi:</strong>
+                    <p style="margin-top:6px;">Anda sudah memegang tawaran kerja bergaji 5 juta (itulah α). Di perusahaan kedua, pewawancara berkata di awal, "Gaji di sini paling tinggi 4 juta." Anda tidak perlu mendengar sisa rincian tunjangannya — apa pun isinya, tawaran itu pasti kalah dari yang sudah Anda pegang. Begitu pula alfa-beta: begitu terbukti sebuah simpul tidak mungkin lebih baik dari pilihan yang sudah ada, sisa anaknya tidak perlu diperiksa.</p>
+                </div>
+
+                <h3>Pseudocode Alfa-Beta</h3>
+                <pre><code><span class="kw">function</span> <span class="fn">ALPHA-BETA-SEARCH</span>(game, state) <span class="kw">returns</span> aksi
+    value, move ← <span class="fn">MAX-VALUE</span>(game, state, −∞, +∞)
+    <span class="kw">return</span> move
+
+<span class="kw">function</span> <span class="fn">MAX-VALUE</span>(game, state, α, β) <span class="kw">returns</span> (utilitas, aksi)
+    <span class="kw">if</span> game.<span class="fn">IS-TERMINAL</span>(state) <span class="kw">then return</span> game.<span class="fn">UTILITY</span>(state, MAX), null
+    v ← −∞
+    <span class="kw">for each</span> a <span class="kw">in</span> game.<span class="fn">ACTIONS</span>(state) <span class="kw">do</span>
+        v2, a2 ← <span class="fn">MIN-VALUE</span>(game, game.<span class="fn">RESULT</span>(state, a), α, β)
+        <span class="kw">if</span> v2 &gt; v <span class="kw">then</span>
+            v, move ← v2, a
+            α ← <span class="fn">MAX</span>(α, v)
+        <span class="kw">if</span> v ≥ β <span class="kw">then return</span> v, move     <span class="cm">-- pangkas: MIN tidak akan membiarkan sampai ke sini</span>
+    <span class="kw">return</span> v, move
+
+<span class="kw">function</span> <span class="fn">MIN-VALUE</span>(game, state, α, β) <span class="kw">returns</span> (utilitas, aksi)
+    <span class="kw">if</span> game.<span class="fn">IS-TERMINAL</span>(state) <span class="kw">then return</span> game.<span class="fn">UTILITY</span>(state, MAX), null
+    v ← +∞
+    <span class="kw">for each</span> a <span class="kw">in</span> game.<span class="fn">ACTIONS</span>(state) <span class="kw">do</span>
+        v2, a2 ← <span class="fn">MAX-VALUE</span>(game, game.<span class="fn">RESULT</span>(state, a), α, β)
+        <span class="kw">if</span> v2 &lt; v <span class="kw">then</span>
+            v, move ← v2, a
+            β ← <span class="fn">MIN</span>(β, v)
+        <span class="kw">if</span> v ≤ α <span class="kw">then return</span> v, move     <span class="cm">-- pangkas: MAX sudah punya pilihan yang lebih baik</span>
+    <span class="kw">return</span> v, move</code></pre>
+
+                <h3>Penelusuran Alfa-Beta pada Pohon Contoh</h3>
+                <table class="trace-table">
+                    <thead>
+                        <tr><th>No</th><th>Simpul</th><th>Kejadian</th><th>α</th><th>β</th><th>v</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>A (MAX)</td><td>Mulai di akar</td><td>−∞</td><td>+∞</td><td>−∞</td></tr>
+                        <tr><td>2</td><td>B (MIN)</td><td>Turun ke B, membawa α dan β dari A</td><td>−∞</td><td>+∞</td><td>+∞</td></tr>
+                        <tr><td>3</td><td>B</td><td>Daun B1 = 3 → v = 3, perbarui β</td><td>−∞</td><td>3</td><td>3</td></tr>
+                        <tr><td>4</td><td>B</td><td>Daun B2 = 12, B3 = 8 → v tetap 3; B selesai</td><td>−∞</td><td>3</td><td>3</td></tr>
+                        <tr><td>5</td><td>A</td><td>Nilai B = 3 → v = 3, perbarui α</td><td>3</td><td>+∞</td><td>3</td></tr>
+                        <tr><td>6</td><td>C (MIN)</td><td>Turun ke C, membawa α = 3</td><td>3</td><td>+∞</td><td>+∞</td></tr>
+                        <tr class="tr-cut"><td>7</td><td>C</td><td>Daun C1 = 2 → v = 2 ≤ α = 3 → <strong>pangkas C2 dan C3</strong> <i class="fa-solid fa-scissors" style="color:#c62828;"></i></td><td>3</td><td>2</td><td>2</td></tr>
+                        <tr><td>8</td><td>A</td><td>Nilai C = 2 → v = max(3, 2) = 3</td><td>3</td><td>+∞</td><td>3</td></tr>
+                        <tr><td>9</td><td>D (MIN)</td><td>Daun D1 = 14 → β = 14; D2 = 5 → β = 5</td><td>3</td><td>5</td><td>5</td></tr>
+                        <tr><td>10</td><td>D</td><td>Daun D3 = 2 → v = 2, perbarui β; v ≤ α, tetapi D tidak punya sisa anak</td><td>3</td><td>2</td><td>2</td></tr>
+                        <tr class="tr-goal"><td>11</td><td>A</td><td>Nilai D = 2 → v tetap 3. <strong>Hasil: nilai akar 3, langkah ke B</strong> — hanya 7 dari 9 daun dievaluasi</td><td>3</td><td>+∞</td><td>3</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Coba Sendiri: Alfa-Beta Langkah demi Langkah <span class="badge badge-new">Interaktif</span></h3>
+                <p>Nilai α dan β tampil berwarna jingga di atas setiap simpul yang sedang atau sudah dikunjungi. Cabang yang dipangkas diberi tanda <strong style="color:#c62828;">×</strong> dan daunnya dicoret. Cocokkan dengan tabel di atas, lalu coba pohon <em>3 ply</em> untuk melihat pemangkasan di tingkat yang lebih dalam — termasuk pemangkasan di simpul MAX (saat v ≥ β).</p>
+                <div data-viz="game-tree" data-tree="buku" data-algo="alfabeta"></div>
+
+                <h3>Mengapa Pemangkasan Tidak Mengubah Nilai Minimax?</h3>
+                <p>Pada pohon contoh, misalkan dua daun C yang dipangkas bernilai sembarang <em>x</em> dan <em>y</em>. Nilai akar tetap dapat dihitung tanpa mengetahuinya:</p>
+                <div class="formula">MINIMAX(A) = max( min(3, 12, 8), min(2, x, y), min(14, 5, 2) )
+            = max( 3, z, 2 )        dengan z = min(2, x, y) ≤ 2
+            = 3                     berapa pun nilai x dan y</div>
+                <p>Secara umum:</p>
+                <div class="proof-step">
+                    <div class="proof-icon"><span class="step-num">1</span></div>
+                    <div class="proof-body"><strong>Sebuah simpul dipangkas hanya jika nilainya sudah terbukti berada di luar jendela [α, β].</strong><p>Di simpul MIN C, begitu ada anak bernilai 2, nilai C paling tinggi 2 — padahal MAX di atasnya sudah dijamin mendapat 3.</p></div>
+                </div>
+                <div class="proof-step">
+                    <div class="proof-icon"><span class="step-num">2</span></div>
+                    <div class="proof-body"><strong>Nilai di luar jendela tidak dapat mengubah pilihan pemain di atasnya.</strong><p>MAX memilih nilai terbesar; C bernilai ≤ 2 &lt; 3, jadi C tidak akan pernah dipilih, apa pun nilai pastinya.</p></div>
+                </div>
+                <div class="proof-step">
+                    <div class="proof-icon"><span class="step-num">3</span></div>
+                    <div class="proof-body"><strong>Karena itu nilai akar dan langkah yang dipilih identik dengan minimax.</strong><p>Yang berubah hanya nilai simpul yang dipangkas: alfa-beta mengembalikan <em>batas</em> (misalnya "C ≤ 2"), bukan nilai persisnya. Batas itu cukup untuk keputusan di akar.</p></div>
+                </div>
+
+                <h3>Implementasi Python: Alfa-Beta</h3>
+                <p>Memakai fungsi <code>terminal</code>, <code>utilitas</code>, <code>aksi</code>, dan <code>hasil</code> dari Bagian 3:</p>
+                <pre><code><span class="kw">import</span> math
+
+<span class="kw">def</span> <span class="fn">alfabeta</span>(papan, pemain, alfa=-math.inf, beta=math.inf):
+    <span class="kw">if</span> <span class="fn">terminal</span>(papan):
+        <span class="kw">return</span> <span class="fn">utilitas</span>(papan)
+    lawan = <span class="st">'O'</span> <span class="kw">if</span> pemain == <span class="st">'X'</span> <span class="kw">else</span> <span class="st">'X'</span>
+    <span class="kw">if</span> pemain == <span class="st">'X'</span>:                              <span class="cm"># simpul MAX</span>
+        v = -math.inf
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">aksi</span>(papan):
+            v = <span class="fn">max</span>(v, <span class="fn">alfabeta</span>(<span class="fn">hasil</span>(papan, i, pemain), lawan, alfa, beta))
+            <span class="kw">if</span> v &gt;= beta:
+                <span class="kw">return</span> v                            <span class="cm"># pangkas sisa anak</span>
+            alfa = <span class="fn">max</span>(alfa, v)
+        <span class="kw">return</span> v
+    <span class="kw">else</span>:                                          <span class="cm"># simpul MIN</span>
+        v = math.inf
+        <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">aksi</span>(papan):
+            v = <span class="fn">min</span>(v, <span class="fn">alfabeta</span>(<span class="fn">hasil</span>(papan, i, pemain), lawan, alfa, beta))
+            <span class="kw">if</span> v &lt;= alfa:
+                <span class="kw">return</span> v                            <span class="cm"># pangkas sisa anak</span>
+            beta = <span class="fn">min</span>(beta, v)
+        <span class="kw">return</span> v
+
+<span class="fn">print</span>(<span class="fn">alfabeta</span>([<span class="kw">None</span>] * <span class="nm">9</span>, <span class="st">'X'</span>))   <span class="cm"># 0 → tic-tac-toe berakhir seri jika kedua pihak sempurna</span></code></pre>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 5. Urutan pembangkitan simpul -->
+            <!-- ============================================================ -->
+            <section id="urutan">
+                <h2>5. Pengaruh Urutan Pembangkitan Simpul <span class="badge">Analisis</span></h2>
+
+                <p>Seberapa banyak yang dipangkas sangat bergantung pada <strong>urutan anak diperiksa</strong>. Lihat lagi pohon contoh: C terpangkas setelah satu daun karena daun terkecilnya (2) kebetulan diperiksa pertama. D tidak terpangkas sama sekali karena daun 2-nya justru berada paling akhir. Seandainya urutan anak D dibalik menjadi 2, 5, 14, maka D pun terpangkas setelah satu daun.</p>
+
+                <table>
+                    <thead>
+                        <tr><th>Urutan anak</th><th>Kompleksitas waktu</th><th>Faktor cabang efektif</th><th>Artinya</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Terburuk</strong> (langkah terbaik diperiksa terakhir)</td><td><span class="complexity-badge O-bad">O(b<sup>m</sup>)</span></td><td>b</td><td>Tidak ada yang terpangkas — sama dengan minimax.</td></tr>
+                        <tr><td><strong>Acak</strong></td><td><span class="complexity-badge O-ok">± O(b<sup>3m/4</sup>)</span></td><td>± b<sup>3/4</sup></td><td>Sebagian cabang terpangkas.</td></tr>
+                        <tr><td><strong>Sempurna</strong> (langkah terbaik diperiksa pertama)</td><td><span class="complexity-badge O-good">O(b<sup>m/2</sup>)</span></td><td>√b</td><td>Dengan waktu yang sama, kedalaman pencarian bisa <strong>dua kali lipat</strong>.</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Contoh catur: b ≈ 35. Dengan urutan sempurna, faktor cabang efektifnya turun menjadi √35 ≈ 6. Dengan anggaran waktu yang sama, program yang tadinya hanya melihat 4 ply ke depan kini dapat melihat 8 ply.</p>
+
+                <h3>Coba Sendiri: Ubah Urutan Anak <span class="badge badge-new">Interaktif</span></h3>
+                <p>Pohon di bawah memiliki 27 daun. Grafik batang di panel kanan membandingkan jumlah daun yang dievaluasi: minimax selalu 27, alfa-beta dengan urutan asli 18, dengan urutan <em>terbaik dulu</em> hanya 11, dan dengan urutan <em>terburuk dulu</em> kembali 27. Ubah pilihan <strong>Urutan anak</strong>, jalankan, dan perhatikan di mana pemangkasan terjadi. Nilai akar selalu sama.</p>
+                <div data-viz="game-tree" data-tree="ply3b3" data-algo="alfabeta" data-order="asli"></div>
+                <p style="font-size:0.9em; color:#555;">Efek yang sama terlihat pada tic-tac-toe di Bagian 7: dari papan kosong, alfa-beta memeriksa 20.866 simpul jika langkah dicoba urut petak 1–9, tetapi hanya 7.865 simpul jika dicoba dari tengah, lalu sudut, lalu sisi. Minimax memeriksa 549.946 simpul dalam kedua kasus.</p>
+
+                <h3>Cara Mendekati Urutan yang Baik</h3>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-chess"></i></div>
+                        <h4>Heuristik domain</h4>
+                        <p>Pada catur: coba langkah memakan bidak lebih dulu, lalu langkah yang mengancam, lalu langkah maju, terakhir langkah mundur.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
+                        <h4><em>Killer move</em></h4>
+                        <p>Langkah yang pernah menyebabkan pemangkasan di cabang lain dicoba lebih dulu, karena kemungkinan besar akan memangkas lagi.</p>
+                    </div>
+                    <div class="card card-teal">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4><em>Iterative deepening</em></h4>
+                        <p>Cari dulu sedalam 1 ply, lalu 2, 3, ... Hasil pencarian yang lebih dangkal dipakai untuk mengurutkan langkah pada pencarian berikutnya.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-table"></i></div>
+                        <h4>Tabel transposisi</h4>
+                        <p>Posisi yang sama dapat dicapai lewat urutan langkah berbeda. Nilainya disimpan agar tidak dihitung ulang — mirip <em>explored set</em> pada Pertemuan 3.</p>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Urutan sempurna tidak mungkin diketahui di muka.</strong>
+                    <p style="margin-top:6px;">Seandainya kita sudah tahu langkah terbaik, kita tidak perlu mencari lagi. Heuristik pengurutan hanya <em>mendekati</em> urutan sempurna — dan dalam praktik, pendekatan itu sudah cukup untuk mendekati batas O(b<sup>m/2</sup>).</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 6. Batas kedalaman & fungsi evaluasi -->
+            <!-- ============================================================ -->
+            <section id="evaluasi">
+                <h2>6. Pembatasan Kedalaman &amp; Fungsi Evaluasi <span class="badge badge-tip">Teknik</span></h2>
+
+                <p>Walaupun sudah memakai alfa-beta, pohon catur tetap terlalu dalam untuk ditelusuri sampai akhir permainan. Gagasan Claude Shannon (1950): <strong>hentikan pencarian pada kedalaman tertentu</strong>, lalu nilai posisi yang belum selesai itu dengan <strong>fungsi evaluasi</strong> — taksiran utilitas yang dapat dihitung cepat.</p>
+
+                <div class="formula">H-MINIMAX(s, d) =
+    EVAL(s, MAX)                                         jika IS-CUTOFF(s, d)
+    max<sub>a ∈ ACTIONS(s)</sub> H-MINIMAX(RESULT(s, a), d + 1)         jika TO-MOVE(s) = MAX
+    min<sub>a ∈ ACTIONS(s)</sub> H-MINIMAX(RESULT(s, a), d + 1)         jika TO-MOVE(s) = MIN</div>
+                <p style="font-size:0.9em; color:#555;">Dibanding minimax: uji terminal diganti <code>IS-CUTOFF</code> (terminal <em>atau</em> kedalaman d sudah mencapai batas), dan utilitas diganti <code>EVAL</code>. Pada keadaan terminal, EVAL tetap memakai utilitas sebenarnya.</p>
+
+                <h3>Syarat Fungsi Evaluasi yang Baik</h3>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content"><strong>Konsisten dengan utilitas di keadaan terminal</strong><p>Menang harus dinilai lebih tinggi dari seri, dan seri lebih tinggi dari kalah.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content"><strong>Cepat dihitung</strong><p>Fungsi ini dipanggil di setiap daun pencarian, bisa jutaan kali per langkah. Fungsi yang lambat justru mengurangi kedalaman yang terjangkau.</p></div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content"><strong>Berkorelasi kuat dengan peluang menang</strong><p>Posisi yang dinilai lebih tinggi seharusnya memang lebih sering berakhir dengan kemenangan.</p></div>
+                    </div>
+                </div>
+
+                <h3>Fungsi Evaluasi Linear Berbobot</h3>
+                <p>Bentuk yang paling umum adalah jumlah berbobot dari beberapa <strong>fitur</strong> posisi:</p>
+                <div class="formula">EVAL(s) = w<sub>1</sub>·f<sub>1</sub>(s) + w<sub>2</sub>·f<sub>2</sub>(s) + … + w<sub>n</sub>·f<sub>n</sub>(s)</div>
+                <table>
+                    <thead><tr><th>Fitur catur</th><th>Contoh bobot</th><th>Cara menghitung f(s)</th></tr></thead>
+                    <tbody>
+                        <tr><td>Selisih pion</td><td>1</td><td>jumlah pion putih − jumlah pion hitam</td></tr>
+                        <tr><td>Selisih kuda dan gajah</td><td>3</td><td>jumlah kuda + gajah putih − milik hitam</td></tr>
+                        <tr><td>Selisih benteng</td><td>5</td><td>jumlah benteng putih − jumlah benteng hitam</td></tr>
+                        <tr><td>Selisih menteri</td><td>9</td><td>jumlah menteri putih − jumlah menteri hitam</td></tr>
+                        <tr><td>Fitur posisi lain</td><td>lebih kecil</td><td>struktur pion, keamanan raja, mobilitas, penguasaan petak tengah</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Bobot seperti ini awalnya berasal dari pengalaman pemain catur. Program modern menyetel bobotnya secara otomatis dari data permainan — jembatan ke mata kuliah Pembelajaran Mesin.</p>
+
+                <h3>Contoh: Fungsi Evaluasi Tic-Tac-Toe</h3>
+                <p>Sebuah garis (baris, kolom, atau diagonal) disebut <strong>terbuka</strong> bagi X jika belum ada O di garis itu — X masih mungkin menang lewat garis tersebut. Fungsi evaluasi sederhana:</p>
+                <div class="formula">EVAL(s) = (garis yang masih terbuka bagi X) − (garis yang masih terbuka bagi O)</div>
+                <div class="tt-eval-row">
+                    <div class="tt-eval-item"><div class="tt-board lg" data-b="....X...." data-new="4"></div>X di tengah<br>X: 8 garis, O: 4 garis<br><strong>EVAL = +4</strong></div>
+                    <div class="tt-eval-item"><div class="tt-board lg" data-b="X........" data-new="0"></div>X di sudut<br>X: 8 garis, O: 5 garis<br><strong>EVAL = +3</strong></div>
+                    <div class="tt-eval-item"><div class="tt-board lg" data-b=".X......." data-new="1"></div>X di sisi<br>X: 8 garis, O: 6 garis<br><strong>EVAL = +2</strong></div>
+                    <div class="tt-eval-item"><div class="tt-board lg" data-b="O...X...." data-new="0"></div>X tengah, O sudut<br>X: 5 garis, O: 4 garis<br><strong>EVAL = +1</strong></div>
+                </div>
+                <p>Fungsi ini "tahu" bahwa petak tengah paling berharga karena dilalui empat garis, sedangkan sudut tiga garis dan sisi dua garis. Agen dengan batas kedalaman 1 ply akan selalu membuka permainan di tengah. Namun fungsi ini tidak melihat ancaman: ia tidak membedakan garis yang sudah berisi dua tanda dari garis yang masih kosong.</p>
+
+                <h3>Masalah pada Pencarian Berbatas Kedalaman</h3>
+                <div class="card-grid">
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-mountain-sun"></i></div>
+                        <h4>Efek horizon</h4>
+                        <p>Ancaman yang tidak terhindarkan "didorong" ke luar batas kedalaman dengan langkah penunda, sehingga agen mengira bahayanya sudah hilang — padahal hanya tertunda.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-wave-square"></i></div>
+                        <h4>Posisi tidak tenang</h4>
+                        <p>Memotong pencarian di tengah pertukaran bidak menghasilkan evaluasi yang menyesatkan. Solusinya <em>quiescence search</em>: pencarian diperpanjang khusus untuk posisi yang belum tenang.</p>
+                    </div>
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-sliders"></i></div>
+                        <h4>Memilih batas kedalaman</h4>
+                        <p>Dalam praktik, batas dipilih dari anggaran waktu: jalankan <em>iterative deepening</em>, dan pakai hasil dari kedalaman terdalam yang sempat selesai saat waktu habis.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 7. Tic-tac-toe -->
+            <!-- ============================================================ -->
+            <section id="tictactoe">
+                <h2>7. Coba Melawan Agen Minimax <span class="badge badge-new">Interaktif</span></h2>
+
+                <p>Agen di bawah memakai alfa-beta pada pohon permainan tic-tac-toe. Setelah setiap langkahnya, panel kanan menampilkan nilai setiap petak yang ia pertimbangkan beserta jumlah simpul yang diperiksa minimax dan alfa-beta untuk keputusan yang sama.</p>
+                <ul>
+                    <li><strong>Tanpa batas kedalaman:</strong> agen menelusuri pohon sampai akhir permainan dan tidak pernah kalah. Hasil terbaik yang bisa Anda capai adalah seri.</li>
+                    <li><strong>Batas 1 ply:</strong> agen hanya melihat langkahnya sendiri, lalu memakai fungsi evaluasi dari Bagian 6. Ia tidak melihat ancaman Anda — coba kalahkan.</li>
+                    <li><strong>Batas 2 ply:</strong> agen kini melihat balasan Anda dan akan memblok ancaman langsung. Bisakah Anda tetap menang dengan membuat dua ancaman sekaligus (<em>garpu</em>)?</li>
+                    <li>Ubah <strong>Urutan langkah</strong> dan bandingkan jumlah simpul alfa-beta: langkah yang dipilih tetap sama, tetapi pekerjaannya berbeda (Bagian 5).</li>
+                </ul>
+                <div data-viz="tictactoe"></div>
+
+                <h3>Kerangka Kode Permainan</h3>
+                <p>Kerangka berikut memisahkan <em>aturan permainan</em> dari <em>algoritma pencarian</em>, mengikuti komponen formal pada Bagian 1. Dengan begitu, algoritma alfa-beta yang sama dapat dipakai untuk permainan apa pun — cukup tulis kelas permainan baru dan fungsi evaluasinya.</p>
+                <pre><code><span class="kw">import</span> math
+
+<span class="kw">class</span> <span class="cl">Permainan</span>:
+    <span class="st">"""Antarmuka permainan dua pemain berjumlah nol."""</span>
+    <span class="kw">def</span> <span class="fn">giliran</span>(self, s): ...           <span class="cm"># TO-MOVE(s): 'MAX' atau 'MIN'</span>
+    <span class="kw">def</span> <span class="fn">aksi</span>(self, s): ...              <span class="cm"># ACTIONS(s)</span>
+    <span class="kw">def</span> <span class="fn">hasil</span>(self, s, a): ...          <span class="cm"># RESULT(s, a)</span>
+    <span class="kw">def</span> <span class="fn">terminal</span>(self, s): ...          <span class="cm"># IS-TERMINAL(s)</span>
+    <span class="kw">def</span> <span class="fn">utilitas</span>(self, s): ...          <span class="cm"># UTILITY(s, MAX)</span>
+
+
+<span class="kw">def</span> <span class="fn">alfabeta_berbatas</span>(game, s, batas, evaluasi, d=<span class="nm">0</span>, alfa=-math.inf, beta=math.inf):
+    <span class="st">"""Nilai H-MINIMAX dengan pemangkasan alfa-beta dan batas kedalaman."""</span>
+    <span class="kw">if</span> game.<span class="fn">terminal</span>(s):
+        <span class="kw">return</span> game.<span class="fn">utilitas</span>(s)
+    <span class="kw">if</span> d == batas:
+        <span class="kw">return</span> <span class="fn">evaluasi</span>(s)                   <span class="cm"># IS-CUTOFF: taksir dengan EVAL</span>
+    <span class="kw">if</span> game.<span class="fn">giliran</span>(s) == <span class="st">'MAX'</span>:
+        v = -math.inf
+        <span class="kw">for</span> a <span class="kw">in</span> game.<span class="fn">aksi</span>(s):
+            v = <span class="fn">max</span>(v, <span class="fn">alfabeta_berbatas</span>(game, game.<span class="fn">hasil</span>(s, a), batas, evaluasi, d + <span class="nm">1</span>, alfa, beta))
+            <span class="kw">if</span> v &gt;= beta:
+                <span class="kw">return</span> v
+            alfa = <span class="fn">max</span>(alfa, v)
+        <span class="kw">return</span> v
+    v = math.inf
+    <span class="kw">for</span> a <span class="kw">in</span> game.<span class="fn">aksi</span>(s):
+        v = <span class="fn">min</span>(v, <span class="fn">alfabeta_berbatas</span>(game, game.<span class="fn">hasil</span>(s, a), batas, evaluasi, d + <span class="nm">1</span>, alfa, beta))
+        <span class="kw">if</span> v &lt;= alfa:
+            <span class="kw">return</span> v
+        beta = <span class="fn">min</span>(beta, v)
+    <span class="kw">return</span> v
+
+
+<span class="kw">def</span> <span class="fn">pilih_langkah</span>(game, s, batas, evaluasi):
+    <span class="st">"""Dipanggil oleh MAX: kembalikan langkah dengan nilai H-MINIMAX terbesar."""</span>
+    <span class="kw">return</span> <span class="fn">max</span>(game.<span class="fn">aksi</span>(s),
+               key=<span class="kw">lambda</span> a: <span class="fn">alfabeta_berbatas</span>(game, game.<span class="fn">hasil</span>(s, a), batas, evaluasi, d=<span class="nm">1</span>))</code></pre>
+                <div class="viz-link">
+                    <i class="fa-solid fa-laptop-code"></i>
+                    <div><p><strong>Jalankan langsung di browser:</strong> notebook <a href="https://aimacode.github.io/aima-python/lite/lab/index.html?path=games.ipynb" target="_blank" rel="noopener">games.ipynb di JupyterLite</a> dari pustaka <a href="https://github.com/aimacode/aima-python" target="_blank" rel="noopener">aima-python</a> menjalankan minimax dan alfa-beta pada tic-tac-toe tanpa perlu memasang Python. Di sana fungsi yang setara bernama <code>minmax_decision</code>, <code>alpha_beta_search</code>, dan <code>alpha_beta_cutoff_search</code> (versi berbatas kedalaman dengan parameter <code>d</code> dan <code>eval_fn</code>).</p></div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-trophy"></i> Bekal turnamen kelas</strong>
+                    <p style="margin-top:6px;">Pada sesi luring, kerangka ini menjadi dasar turnamen kelas: yang menentukan kekuatan agen bukan algoritmanya — semua memakai alfa-beta yang sama — melainkan <strong>fungsi evaluasi</strong>, <strong>urutan langkah</strong>, dan <strong>batas kedalaman</strong> yang Anda rancang.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 8. Batas pendekatan -->
+            <!-- ============================================================ -->
+            <section id="batas">
+                <h2>8. Batas Pendekatan pada Faktor Cabang Besar <span class="badge badge-new">Pelengkap</span></h2>
+
+                <p>Kedalaman yang terjangkau oleh alfa-beta dalam waktu tertentu kira-kira <em>log</em> dari jumlah simpul yang sanggup diperiksa, dengan basis faktor cabang efektif. Makin besar faktor cabangnya, makin dangkal pencariannya.</p>
+
+                <table>
+                    <thead><tr><th>Permainan</th><th>Faktor cabang</th><th>Keadaan terkini</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Tic-tac-toe</strong></td><td>≤ 9</td><td>Terpecahkan: selalu seri jika kedua pihak bermain sempurna. Minimax penuh sudah cukup.</td></tr>
+                        <tr><td><strong>Dam (checkers)</strong></td><td>lebih kecil dari catur</td><td>Terpecahkan pada 2007 oleh tim Jonathan Schaeffer: juga berakhir seri jika kedua pihak sempurna.</td></tr>
+                        <tr><td><strong>Catur</strong></td><td>± 35</td><td>Deep Blue mengalahkan juara dunia Garry Kasparov pada 1997 dengan alfa-beta, fungsi evaluasi yang rumit, dan perangkat keras khusus. Belum terpecahkan.</td></tr>
+                        <tr><td><strong>Go 19×19</strong></td><td>± 250</td><td>Alfa-beta tidak berdaya: faktor cabang terlalu besar dan fungsi evaluasi sulit dirancang. AlphaGo (2016) mengalahkan Lee Sedol 4–1 dengan <em>Monte Carlo Tree Search</em> dan jaringan saraf.</td></tr>
+                    </tbody>
+                </table>
+
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kapan minimax dan alfa-beta tidak lagi cocok:</strong>
+                    <ul style="margin-top:6px;">
+                        <li><strong>Faktor cabang sangat besar</strong> — bahkan √b tetap terlalu besar (go: √250 ≈ 16).</li>
+                        <li><strong>Fungsi evaluasi sulit dirancang</strong> — pada go, nilai sebuah batu bergantung pada pola yang luas, tidak bisa dihitung seperti material catur.</li>
+                        <li><strong>Ada unsur peluang</strong> (backgammon, monopoli) — simpul MIN/MAX perlu ditambah <em>simpul peluang</em> (<em>expectiminimax</em>).</li>
+                        <li><strong>Informasi tidak sempurna</strong> (poker, bridge) — agen tidak tahu keadaan sebenarnya, sehingga pohon harus dibangun atas <em>keadaan kepercayaan</em> (belief state).</li>
+                    </ul>
+                    <p style="margin-top:6px;">Topik-topik tersebut berada di luar cakupan mata kuliah ini. Pendekatan berbasis sampel dan pembelajaran (MCTS, <em>reinforcement learning</em>) dibahas pada mata kuliah Pembelajaran Mesin.</p>
+                </div>
+
+                <div class="viz-link">
+                    <i class="fa-solid fa-up-right-from-square"></i>
+                    <div><p><strong>Eksplorasi lanjutan:</strong> <a href="https://jsurrea.github.io/aima-visualizations/chapter-06/" target="_blank" rel="noopener">AIMA Visualizations — Adversarial Search and Games</a> (di situs itu bernomor Bab 6), bagian <em>Minimax / Alpha-Beta / MCTS</em> untuk membandingkan alfa-beta dengan Monte Carlo Tree Search, serta bagian <em>Stochastic Games</em>, <em>Partially Observable</em>, dan <em>Limitations</em> (bahasa Inggris).</p></div>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 9. Rangkuman -->
+            <!-- ============================================================ -->
+            <section id="rangkuman">
+                <h2>9. Rangkuman Pertemuan 7</h2>
+
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
+                    <ul style="margin-top:10px;">
+                        <li>Permainan dua pemain berjumlah nol dirumuskan dengan S<sub>0</sub>, TO-MOVE, ACTIONS, RESULT, IS-TERMINAL, dan UTILITY. Solusinya berupa <strong>strategi</strong>, bukan lintasan.</li>
+                        <li><strong>Pohon permainan</strong> bergantian antara simpul MAX dan MIN; satu tingkat = satu ply. Utilitas daun selalu dilihat dari sudut pandang MAX.</li>
+                        <li><strong>Minimax</strong> menaikkan nilai dari daun: MIN mengambil nilai terkecil, MAX mengambil nilai terbesar. Lengkap dan optimal melawan lawan optimal, dengan waktu O(b<sup>m</sup>) dan ruang O(b·m).</li>
+                        <li><strong>Alfa-beta</strong> membawa α (jaminan MAX) dan β (jaminan MIN), lalu memangkas sisa anak saat v ≤ α di simpul MIN atau v ≥ β di simpul MAX.</li>
+                        <li>Pemangkasan <strong>tidak mengubah</strong> nilai akar maupun langkah yang dipilih, karena yang dipangkas hanya simpul yang nilainya terbukti tidak akan pernah dipilih.</li>
+                        <li><strong>Urutan pembangkitan simpul</strong> menentukan efektivitas alfa-beta: dari O(b<sup>m</sup>) pada urutan terburuk sampai O(b<sup>m/2</sup>) pada urutan sempurna.</li>
+                        <li>Untuk permainan besar, pencarian dihentikan pada <strong>batas kedalaman</strong> dan posisinya dinilai dengan <strong>fungsi evaluasi</strong> — biasanya jumlah berbobot fitur. Waspadai efek horizon.</li>
+                    </ul>
+                </div>
+
+                <h3>Latihan Mandiri</h3>
+                <p>Kerjakan di kertas terlebih dahulu, lalu periksa pemahaman Anda dengan simulasi di Bagian 3–5.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Pohon 2 ply: akar MAX dengan tiga simpul MIN B, C, D. Daun B = (5, 3, 9), C = (6, 8, 7), D = (2, 4, 1).</strong>
+                            <p>Hitung nilai minimax setiap simpul dan tentukan langkah terbaik MAX.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Jalankan alfa-beta pada pohon soal 1 dengan urutan anak dari kiri ke kanan.</strong>
+                            <p>Tuliskan nilai α, β, dan v setiap kali berubah, tandai daun yang dipangkas, lalu hitung berapa daun yang dievaluasi.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Susun ulang anak-anak pada pohon soal 1 agar pemangkasan sebanyak mungkin.</strong>
+                            <p>Berapa daun yang kini dievaluasi? Jelaskan mengapa urutan itu merupakan urutan terbaik.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Rancang fungsi evaluasi untuk <em>Connect Four</em> atau congklak.</strong>
+                            <p>Sebutkan fitur-fitur yang dipakai beserta bobotnya, lalu periksa ketiga syarat fungsi evaluasi yang baik pada Bagian 6.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <strong>Mengapa agen tic-tac-toe dengan batas 1 ply di Bagian 7 dapat dikalahkan, padahal agen tanpa batas tidak?</strong>
+                            <p>Kaitkan jawaban Anda dengan fungsi evaluasi yang dipakai dan dengan efek horizon.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Persiapan Pertemuan Berikutnya</h3>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-book"></i> Minggu 8 — Evaluasi Tengah Semester:</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Cakupan: materi Minggu 1–7 — pemodelan persoalan sebagai ruang keadaan, penelusuran algoritma pencarian secara manual, dan analisis sifat algoritma.</li>
+                        <li>Latih kembali penelusuran BFS, DFS, IDS, UCS, Greedy, A*, minimax, dan alfa-beta dengan simulasi di Materi 2, 3, dan 4.</li>
+                    </ul>
+                    <strong style="display:block; margin-top:10px;"><i class="fa-solid fa-book"></i> Minggu 9 — Representasi Pengetahuan &amp; Sistem Pakar:</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Baca Russell &amp; Norvig (2021) Bab 7–8: <em>Logical Agents</em> dan <em>First-Order Logic</em>.</li>
+                        <li>Ulang kembali tabel kebenaran dan operator logika (¬, ∧, ∨, ⇒, ⇔).</li>
+                    </ul>
+                </div>
+
+                <h3>Referensi Utama</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Referensi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 5: <em>Adversarial Search and Games</em></td></tr>
+                        <tr><td>2</td><td>Poole, D. L., &amp; Mackworth, A. K. (2023). <em>Artificial Intelligence: Foundations of Computational Agents</em> (3rd ed.). Cambridge University Press.</td></tr>
+                        <tr><td>3</td><td>Luger, G. F. (2009). <em>Artificial Intelligence: Structures and Strategies for Complex Problem Solving</em> (6th ed.). Addison-Wesley. — Bab 4: heuristik dalam permainan, minimax, dan alfa-beta</td></tr>
+                        <tr><td>4</td><td>Suyanto. (2014). <em>Artificial Intelligence: Searching, Reasoning, Planning, dan Learning</em> (Edisi Revisi). Informatika.</td></tr>
+                        <tr><td>5</td><td>Shannon, C. E. (1950). Programming a Computer for Playing Chess. <em>Philosophical Magazine</em>, 41(314), 256–275. <em>(gagasan fungsi evaluasi dan pencarian berbatas kedalaman)</em></td></tr>
+                        <tr><td>6</td><td>Knuth, D. E., &amp; Moore, R. W. (1975). An Analysis of Alpha-Beta Pruning. <em>Artificial Intelligence</em>, 6(4), 293–326.</td></tr>
+                        <tr><td>7</td><td>Urrea, S. (2026). <em>AIMA Visualizations — AI: A Modern Approach, 4th Edition</em> [perangkat lunak, lisensi MIT]. <a href="https://jsurrea.github.io/aima-visualizations/" target="_blank" rel="noopener">jsurrea.github.io/aima-visualizations</a> — sumber ide simulasi interaktif pada materi ini</td></tr>
+                        <tr><td>8</td><td>aima-python contributors. <em>aima-python: Python implementation of algorithms from Russell &amp; Norvig's AIMA</em> [perangkat lunak, lisensi MIT]. <a href="https://github.com/aimacode/aima-python" target="_blank" rel="noopener">github.com/aimacode/aima-python</a></td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script src="aima-viz.js?v=20260927a"></script>
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Perkecil/perbesar sidebar (desktop), diingat lewat localStorage ----
+        function toggleSidebarCollapse() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('ai-sidebar-collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('ai-sidebar-collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        } catch (e) {}
+
+        // ---- Papan tic-tac-toe mini: data-b = 9 karakter ('.' = kosong) ----
+        document.querySelectorAll('.tt-board[data-b]').forEach(el => {
+            const win = (el.dataset.win || '').split(',').filter(Boolean).map(Number);
+            const fresh = el.dataset.new === undefined ? -1 : Number(el.dataset.new);
+            el.innerHTML = el.dataset.b.split('').map((ch, i) => {
+                const cls = [ch === 'X' ? 'x' : ch === 'O' ? 'o' : '', win.includes(i) ? 'win' : '', i === fresh ? 'new' : ''].join(' ').trim();
+                return '<span' + (cls ? ' class="' + cls + '"' : '') + '>' + (ch === '.' ? '' : ch) + '</span>';
+            }).join('');
+            el.setAttribute('role', 'img');
+            el.setAttribute('aria-label', 'Papan tic-tac-toe: ' + el.dataset.b.replace(/\./g, '_').replace(/(...)(?=.)/g, '$1 / '));
+        });
+
+        // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal materi';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir materi';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>
