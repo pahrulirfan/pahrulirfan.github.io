@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pertemuan 3: Modul & Pemrograman Asinkron - Pemrograman Web Lanjut</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         header {
             background: #7d3a9c !important;
@@ -206,7 +207,7 @@
                 <li><a href="#promise">4. Promise</a></li>
                 <li><a href="#async-await">5. async / await</a></li>
                 <li><a href="#fetch">6. fetch &amp; Layanan Luar</a></li>
-                <li><a href="#galat">7. Penanganan Galat Asinkron</a></li>
+                <li><a href="#galat">7. Penanganan Error Asinkron</a></li>
                 <li><a href="#paralel">8. Berurutan vs Serentak</a></li>
                 <li><a href="#koding">9. Praktik</a></li>
                 <li><a href="#cpmk">10. Capaian Pembelajaran</a></li>
@@ -215,22 +216,26 @@
             
         </nav>
 
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
         <!-- Konten Utama -->
         <main class="content">
 
             <!-- Section 1 -->
             <section id="modul">
-                <h2>1. Modul: Memecah Program Jadi Banyak Berkas <span class="badge">Indikator 2.1</span></h2>
+                <h2>1. Modul: Memecah Program Jadi Banyak File <span class="badge">Indikator 2.1</span></h2>
 
                 <h3>Mengapa Perlu Modul?</h3>
-                <p>Di Pertemuan 1&ndash;2, semua kode masih muat dalam satu berkas. Begitu proyek bertambah besar, cara itu berhenti bekerja: berkas jadi ribuan baris, nama fungsi bentrok, dan tidak ada yang tahu bagian mana yang boleh diubah tanpa merusak yang lain.</p>
-                <p><strong>Modul</strong> adalah cara memecah program menjadi beberapa berkas, di mana setiap berkas hanya membuka sebagian isinya untuk dipakai berkas lain. Konsep ini sudah kalian kenal di PHP lewat <code>require</code>, <code>include</code>, dan autoload Composer &mdash; hanya sintaks dan aturannya yang berbeda.</p>
+                <p>Di Pertemuan 1&ndash;2, semua kode masih muat dalam satu file. Begitu proyek bertambah besar, cara itu berhenti bekerja: file jadi ribuan baris, nama fungsi bentrok, dan tidak ada yang tahu bagian mana yang boleh diubah tanpa merusak yang lain.</p>
+                <p><strong>Modul</strong> adalah cara memecah program menjadi beberapa file, di mana setiap file hanya membuka sebagian isinya untuk dipakai file lain. Konsep ini sudah kalian kenal di PHP lewat <code>require</code>, <code>include</code>, dan autoload Composer &mdash; hanya sintaks dan aturannya yang berbeda.</p>
 
                 <div class="info-box">
                     <strong>Apa yang berubah dibanding PHP:</strong>
                     <ul>
-                        <li>Di PHP, <code>include</code> menempelkan <em>seluruh isi</em> berkas. Di JavaScript, kalian memilih <strong>apa saja yang boleh keluar</strong> (<code>export</code>) dan <strong>apa yang mau diambil</strong> (<code>import</code>).</li>
-                        <li>Semua yang tidak di-<code>export</code> bersifat <strong>privat</strong> bagi berkas itu &mdash; tidak bisa disentuh dari luar.</li>
+                        <li>Di PHP, <code>include</code> menempelkan <em>seluruh isi</em> file. Di JavaScript, kalian memilih <strong>apa saja yang boleh keluar</strong> (<code>export</code>) dan <strong>apa yang mau diambil</strong> (<code>import</code>).</li>
+                        <li>Semua yang tidak di-<code>export</code> bersifat <strong>privat</strong> bagi file itu &mdash; tidak bisa disentuh dari luar.</li>
                         <li>Satu modul hanya dijalankan <strong>sekali</strong>, walaupun di-import dari banyak tempat.</li>
                     </ul>
                 </div>
@@ -260,7 +265,7 @@
                         <td><code>"type": "module"</code> di package.json</td>
                     </tr>
                     <tr>
-                        <td>Ekstensi berkas</td>
+                        <td>Ekstensi file</td>
                         <td>Boleh dihilangkan</td>
                         <td><strong>Wajib ditulis</strong> (<code>./util.js</code>)</td>
                     </tr>
@@ -286,14 +291,51 @@
                 </div>
 
                 <h3>1.2 Mengaktifkan ESM</h3>
+                <p>Kita mulai dari proyek kosong. Proyek ini akan dipakai terus sampai akhir bagian 1, jadi buat satu kali saja. Langkahnya sama dengan Pertemuan 1:</p>
+
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-modul
+<span class="prompt">$</span> cd latihan-modul
+<span class="prompt">$</span> npm init -y
+<span class="out">Wrote to .../latihan-modul/package.json</span></div>
+
+                <p>Sekarang buat file <code>index.js</code> (lewat editor atau terminal) yang langsung memakai sintaks <code>import</code> (<code>node:os</code> adalah modul bawaan Node, tidak perlu dipasang):</p>
+
+                <pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> { <span class="variable">platform</span> } <span class="keyword">from</span> <span class="string">'node:os'</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'ESM aktif, berjalan di'</span>, <span class="function">platform</span>());</code></pre>
+
+                <p>Jalankan. <strong>Error di sini memang disengaja</strong>, supaya kalian mengenali gejalanya:</p>
+
+                <div class="terminal"><span class="prompt">$</span> node index.js
+<span class="out">SyntaxError: Cannot use import statement outside a module</span></div>
+
+                <p>Penyebabnya: hasil <code>npm init -y</code> belum menyatakan sistem modul yang dipakai, sehingga Node menganggap semua file <code>.js</code> sebagai CommonJS, dan CommonJS tidak mengenal <code>import</code>. Buka <code>package.json</code> lalu tambahkan (atau ubah) kunci <code>"type"</code> menjadi <code>"module"</code>:</p>
+
                 <pre><code><span class="comment">// package.json</span>
 {
   <span class="string">"name"</span>: <span class="string">"latihan-modul"</span>,
+  <span class="string">"version"</span>: <span class="string">"1.0.0"</span>,
   <span class="string">"type"</span>: <span class="string">"module"</span>,      <span class="comment">// ← baris ini yang menentukan</span>
   <span class="string">"main"</span>: <span class="string">"index.js"</span>
 }</code></pre>
 
-                <p>Tanpa baris itu, Node menganggap semua <code>.js</code> sebagai CommonJS dan <code>import</code> akan menghasilkan galat <code>Cannot use import statement outside a module</code>.</p>
+                <p>Kalau lebih suka lewat terminal, satu perintah ini setara dengan mengedit filenya:</p>
+
+                <div class="terminal"><span class="prompt">$</span> npm pkg set type=module</div>
+
+                <p>Jalankan lagi:</p>
+
+                <div class="terminal"><span class="prompt">$</span> node index.js
+<span class="out">ESM aktif, berjalan di darwin</span></div>
+
+                <p>Kata terakhir bergantung komputer kalian: <code>darwin</code> (macOS), <code>win32</code> (Windows), atau <code>linux</code>. Yang penting tidak ada error lagi.</p>
+
+                <div class="info-box">
+                    <strong>Catatan:</strong> versi Node yang sangat baru kadang menebak sendiri bahwa sebuah file memakai ESM, sehingga error di atas tidak muncul. Jangan mengandalkan tebakan itu. Selalu tulis <code>"type": "module"</code> agar proyek berjalan sama di semua komputer dan server.
+                </div>
+
+                <p>Dua bagian berikutnya memakai proyek <code>latihan-modul</code> ini: file-file baru (<code>hitung.js</code>, <code>mahasiswa.js</code>) dibuat di folder yang sama dengan <code>index.js</code>.</p>
 
                 <h3>1.3 Named Export &mdash; Mengeluarkan Banyak Hal</h3>
                 <pre><code><span class="comment">// hitung.js</span>
@@ -347,12 +389,12 @@
                     <ul>
                         <li><code>import { x } from './a.js'</code> &rarr; mengambil <strong>named export</strong> bernama <code>x</code></li>
                         <li><code>import x from './a.js'</code> &rarr; mengambil <strong>default export</strong>, namanya bebas</li>
-                        <li>Kalau salah, nilainya jadi <code>undefined</code> tanpa pesan galat yang jelas</li>
+                        <li>Kalau salah, nilainya jadi <code>undefined</code> tanpa pesan error yang jelas</li>
                     </ul>
                 </div>
 
                 <h3>1.5 Modul Bawaan Node.js</h3>
-                <p>Node menyediakan modul bawaan untuk berkas, jalur, HTTP, dan lainnya. Sejak Node modern, tulis dengan awalan <code>node:</code> agar jelas bahwa itu modul bawaan, bukan paket dari npm.</p>
+                <p>Node menyediakan modul bawaan untuk file, jalur, HTTP, dan lainnya. Sejak Node modern, tulis dengan awalan <code>node:</code> agar jelas bahwa itu modul bawaan, bukan paket dari npm.</p>
 
                 <pre><code><span class="keyword">import</span> { <span class="variable">readFile</span>, <span class="variable">writeFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
 <span class="keyword">import</span> <span class="variable">path</span> <span class="keyword">from</span> <span class="string">'node:path'</span>;
@@ -375,13 +417,13 @@
                         <td><code>node_modules/</code></td>
                     </tr>
                     <tr>
-                        <td>Berkas sendiri</td>
+                        <td>File sendiri</td>
                         <td><code>import { f } from './util.js'</code></td>
                         <td>Proyek kalian &mdash; <strong>wajib pakai <code>./</code> dan ekstensi</strong></td>
                     </tr>
                 </table>
 
-                <h3>1.6 Menata Berkas Proyek</h3>
+                <h3>1.6 Menata File Proyek</h3>
                 <p>Struktur berikut adalah yang akan kita pakai saat membangun API di Minggu 4. Mulai membiasakan diri sejak sekarang:</p>
 
                 <pre><code>latihan-modul/
@@ -390,12 +432,12 @@
 ├── data/
 │   └── transaksi.json
 └── src/
-    ├── baca-data.js      <span class="comment">// urusan membaca berkas</span>
+    ├── baca-data.js      <span class="comment">// urusan membaca file</span>
     ├── hitung.js         <span class="comment">// urusan perhitungan</span>
     └── laporan.js        <span class="comment">// urusan menyusun laporan</span></code></pre>
 
                 <div class="success-box">
-                    <strong>Titik periksa Section 1:</strong> program Pertemuan 2 (laporan penjualan) sudah dipecah menjadi minimal tiga berkas di dalam <code>src/</code>, dan <code>index.js</code> hanya berisi pemanggilannya. Perilaku programnya tetap sama persis.
+                    <strong>Titik periksa Section 1:</strong> program Pertemuan 2 (laporan penjualan) sudah dipecah menjadi minimal tiga file di dalam <code>src/</code>, dan <code>index.js</code> hanya berisi pemanggilannya. Perilaku programnya tetap sama persis.
                 </div>
             </section>
 
@@ -439,7 +481,7 @@ echo "Selesai";</code></pre>
                         <th>Sinkron (murni hitungan)</th>
                     </tr>
                     <tr>
-                        <td>Membaca / menulis berkas</td>
+                        <td>Membaca / menulis file</td>
                         <td><code>map</code>, <code>filter</code>, <code>reduce</code></td>
                     </tr>
                     <tr>
@@ -462,7 +504,147 @@ echo "Selesai";</code></pre>
 
                 <p>Polanya sederhana: <strong>kalau harus menunggu sesuatu di luar proses Node &mdash; disk, jaringan, basis data &mdash; operasinya asinkron.</strong></p>
 
-                <h3>2.4 Urutan Eksekusi yang Mengejutkan</h3>
+                <h3>2.4 Praktik: Menghitung vs Memanggil API</h3>
+                <p>Teorinya sudah cukup. Sekarang kita buktikan sendiri perbedaan sinkron dan asinkron lewat dua pekerjaan nyata: <strong>menghitung</strong> (murni kerja CPU, sinkron) dan <strong>memanggil API dari luar</strong> (menunggu jaringan, asinkron). Kita buat proyek baru bernama <code>latihan-sinkron</code>.</p>
+
+                <h4>Langkah 0: Buat proyek</h4>
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-sinkron
+<span class="prompt">$</span> cd latihan-sinkron
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                <p>Baris terakhir mengaktifkan ESM (lihat 1.2). Tidak ada paket yang perlu dipasang: <code>fetch</code> sudah bawaan Node.js (versi 18 ke atas), dan API yang dipanggil adalah <code>jsonplaceholder.typicode.com</code>, layanan contoh gratis yang mengembalikan data pengguna palsu. Kalian butuh koneksi internet untuk langkah 2 sampai 4.</p>
+
+                <h4>Langkah 1: Menghitung (sinkron)</h4>
+                <p>Buat file <code>hitung-sinkron.js</code>. Fungsi <code>fibonacci</code> sengaja ditulis dengan cara lambat supaya terasa berat di CPU:</p>
+                <pre><code><span class="comment">// hitung-sinkron.js</span>
+<span class="keyword">function</span> <span class="function">fibonacci</span>(<span class="variable">n</span>) {
+    <span class="keyword">return</span> <span class="variable">n</span> &lt; <span class="number">2</span> ? <span class="variable">n</span> : <span class="function">fibonacci</span>(<span class="variable">n</span> - <span class="number">1</span>) + <span class="function">fibonacci</span>(<span class="variable">n</span> - <span class="number">2</span>);
+}
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'1. Mulai menghitung...'</span>);
+<span class="keyword">const</span> <span class="variable">mulai</span> = <span class="variable">Date</span>.<span class="function">now</span>();
+
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="function">fibonacci</span>(<span class="number">40</span>);   <span class="comment">// baris ini MENAHAN program sampai selesai</span>
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'2. Hasil:'</span>, <span class="variable">hasil</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`3. Selesai dalam ${Date.now() - mulai} ms`</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node hitung-sinkron.js
+<span class="out">1. Mulai menghitung...
+2. Hasil: 102334155
+3. Selesai dalam 818 ms</span></div>
+
+                <p>Lamanya berbeda di tiap komputer, tetapi <strong>urutannya pasti sama</strong>: baris <code>2</code> dan <code>3</code> tidak akan tercetak sebelum <code>fibonacci(40)</code> selesai. Itulah sinkron: kode menunggu, dan selama menunggu tidak ada pekerjaan lain yang berjalan. Menghitung memakai CPU itu sendiri, jadi tidak ada yang bisa "dititipkan" ke pihak lain.</p>
+
+                <h4>Langkah 2: Memanggil API tanpa menunggu</h4>
+                <p>Buat file <code>api-tanpa-await.js</code>. Kita sengaja <em>lupa</em> menunggu hasil <code>fetch</code>:</p>
+                <pre><code><span class="comment">// api-tanpa-await.js</span>
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">hasil</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Baris setelah fetch sudah jalan'</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node api-tanpa-await.js
+<span class="out">Promise { &lt;pending&gt; }
+Baris setelah fetch sudah jalan</span></div>
+
+                <p>Yang tercetak bukan data pengguna, melainkan <code>Promise { &lt;pending&gt; }</code> &mdash; semacam "struk pesanan": permintaan sudah dikirim, tetapi jawabannya belum datang. Perhatikan juga baris berikutnya <strong>langsung berjalan</strong> tanpa menunggu API. Itulah asinkron: pekerjaan lambat dititipkan, kode terus lanjut.</p>
+
+                <h4>Langkah 3: Memanggil API dengan menunggu hasilnya</h4>
+                <p>Buat file <code>api-asinkron.js</code>. Kali ini kita tambahkan <code>await</code> agar baris berikutnya menunggu jawaban API:</p>
+                <pre><code><span class="comment">// api-asinkron.js</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'1. Mulai memanggil API...'</span>);
+<span class="keyword">const</span> <span class="variable">mulai</span> = <span class="variable">Date</span>.<span class="function">now</span>();
+
+<span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>);
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'2. Nama pengguna:'</span>, <span class="variable">user</span>.<span class="variable">name</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`3. Selesai dalam ${Date.now() - mulai} ms`</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node api-asinkron.js
+<span class="out">1. Mulai memanggil API...
+2. Nama pengguna: Leanne Graham
+3. Selesai dalam 1005 ms</span></div>
+
+                <p>Hasilnya sekarang data asli. Cara kerja <code>await</code> dibahas lengkap di bagian 5; untuk sekarang cukup ingat bahwa <code>await</code> artinya "tunggu hasil ini sebelum lanjut <em>di fungsi ini</em>", tetapi <strong>Node sendiri tidak diam</strong> selama menunggu. Buktinya ada di langkah berikut.</p>
+
+                <h4>Langkah 4: Bukti siapa yang membuat program macet</h4>
+                <p>Buat file <code>denyut.js</code>. Program ini menyalakan "denyut jantung": sebuah timer yang mencetak <code>tik</code> setiap 200 ms selama program hidup. Lalu ia memanggil API (asinkron) dan sesudahnya menghitung (sinkron). Kalau denyutnya berhenti, berarti Node sedang macet.</p>
+                <pre><code><span class="comment">// denyut.js</span>
+<span class="keyword">function</span> <span class="function">fibonacci</span>(<span class="variable">n</span>) {
+    <span class="keyword">return</span> <span class="variable">n</span> &lt; <span class="number">2</span> ? <span class="variable">n</span> : <span class="function">fibonacci</span>(<span class="variable">n</span> - <span class="number">1</span>) + <span class="function">fibonacci</span>(<span class="variable">n</span> - <span class="number">2</span>);
+}
+
+<span class="keyword">const</span> <span class="variable">mulai</span> = <span class="variable">Date</span>.<span class="function">now</span>();
+<span class="keyword">const</span> <span class="variable">lewat</span> = () =&gt; <span class="string">`${Date.now() - mulai} ms`</span>;
+
+<span class="comment">// "Denyut jantung": mencetak tanda setiap 200 ms selama program hidup</span>
+<span class="keyword">const</span> <span class="variable">denyut</span> = <span class="function">setInterval</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`   tik  (${lewat()})`</span>), <span class="number">200</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'A. Panggil API (asinkron)...'</span>);
+<span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>);
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`B. API selesai: ${user.name}`</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'C. Mulai menghitung (sinkron)...'</span>);
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="function">fibonacci</span>(<span class="number">40</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`D. Hitungan selesai: ${hasil}`</span>);
+
+<span class="function">setTimeout</span>(() =&gt; <span class="function">clearInterval</span>(<span class="variable">denyut</span>), <span class="number">450</span>);   <span class="comment">// beri waktu untuk tik terakhir</span></code></pre>
+                <div class="terminal"><span class="prompt">$</span> node denyut.js
+<span class="out">A. Panggil API (asinkron)...
+   tik  (200 ms)
+   tik  (402 ms)
+   tik  (603 ms)
+   tik  (804 ms)
+   tik  (1008 ms)
+   tik  (1210 ms)
+B. API selesai: Leanne Graham
+C. Mulai menghitung (sinkron)...
+D. Hitungan selesai: 102334155
+   tik  (2126 ms)
+   tik  (2326 ms)
+   tik  (2528 ms)</span></div>
+
+                <p>Baca outputnya dari atas:</p>
+                <ul>
+                    <li><strong>A &rarr; B (menunggu API):</strong> denyut tetap berjalan, <code>tik</code> muncul terus tiap 200 ms. Node <em>tidak macet</em>; ia bebas mengerjakan hal lain sambil menunggu jaringan.</li>
+                    <li><strong>C &rarr; D (menghitung):</strong> denyut <strong>berhenti total</strong>. Antara <code>tik (1210 ms)</code> dan <code>tik (2126 ms)</code> ada jeda hampir satu detik tanpa satu pun <code>tik</code>, padahal timernya dijadwalkan tiap 200 ms. Selama <code>fibonacci</code> berjalan, event loop terblokir.</li>
+                    <li>Begitu hitungan selesai, barulah <code>tik</code> yang tertunda bisa berjalan lagi.</li>
+                </ul>
+
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>Menghitung (<code>fibonacci</code>)</th>
+                        <th>Memanggil API (<code>fetch</code>)</th>
+                    </tr>
+                    <tr>
+                        <td>Jenis</td>
+                        <td><strong>Sinkron</strong></td>
+                        <td><strong>Asinkron</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Waktu habis untuk</td>
+                        <td>Bekerja (CPU sibuk)</td>
+                        <td>Menunggu (jaringan)</td>
+                    </tr>
+                    <tr>
+                        <td>Saat berjalan</td>
+                        <td>Node <strong>macet</strong>, tidak bisa melayani yang lain</td>
+                        <td>Node <strong>bebas</strong>, bisa mengerjakan yang lain</td>
+                    </tr>
+                    <tr>
+                        <td>Hasil tersedia</td>
+                        <td>Langsung di baris berikutnya</td>
+                        <td>Nanti, lewat Promise (<code>await</code>)</td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Kesalahan umum:</strong> mengira <code>async</code> / <code>await</code> bisa mempercepat perhitungan berat. Tidak bisa. <code>await</code> hanya membantu ketika pekerjaannya <em>menunggu</em> sesuatu di luar (API, basis data, file). Kalau pekerjaannya menghitung, CPU tetap sibuk dan server tetap macet. Di server sungguhan, itu berarti <strong>semua pengunjung</strong> ikut tertahan selama hitungan berjalan.
+                </div>
+
+                <h3>2.5 Urutan Eksekusi yang Mengejutkan</h3>
                 <p>Contoh klasik yang wajib bisa kalian jelaskan:</p>
 
                 <pre><code><span class="variable">console</span>.<span class="function">log</span>(<span class="string">'1. Mulai'</span>);
@@ -487,7 +669,7 @@ echo "Selesai";</code></pre>
                     <strong>Mengapa urutannya begitu?</strong> Node menjalankan seluruh kode sinkron sampai habis dulu (<code>1</code> dan <code>4</code>). Baru setelah itu ia memeriksa antrean pekerjaan tertunda. Antrean <em>microtask</em> (Promise) diperiksa lebih dulu daripada antrean <em>macrotask</em> (timer) &mdash; itu sebabnya <code>3</code> mendahului <code>2</code>, walaupun timernya 0 detik.
                 </div>
 
-                <h3>2.5 Event Loop</h3>
+                <h3>2.6 Event Loop</h3>
                 <p>Mekanisme yang mengatur giliran itu disebut <strong>event loop</strong>. Gambaran sederhananya:</p>
 
                 <div class="loop-diagram">
@@ -541,23 +723,58 @@ echo "Selesai";</code></pre>
 <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Baris ini jalan LEBIH DULU'</span>);   <span class="comment">// ← perhatikan!</span></code></pre>
 
                 <div class="info-box">
-                    <strong>Konvensi "error-first":</strong> argumen <strong>pertama</strong> callback selalu galat (<code>null</code> kalau tidak ada masalah), argumen kedua barulah hasilnya. Pola ini dipakai konsisten di seluruh API lama Node.js.
+                    <strong>Konvensi "error-first":</strong> argumen <strong>pertama</strong> callback selalu error (<code>null</code> kalau tidak ada masalah), argumen kedua barulah hasilnya. Pola ini dipakai konsisten di seluruh API lama Node.js.
                 </div>
 
                 <div class="success-box">
-                    <strong>Coba di <code>latihan-async</code>.</strong> Buat <code>data.json</code> ini sekali saja di folder proyek &mdash; dipakai lagi, persis sama, di:
-                    <ul>
-                        <li><strong>Section 4.3</strong> (Memakai Promise)</li>
-                        <li><strong>Section 5.3</strong> (Bentuk-bentuk Penulisan async/await)</li>
-                        <li><strong>Section 7.1</strong> (try/catch dengan await)</li>
-                    </ul>
+                    <strong>Coba di <code>latihan-async</code>.</strong> Proyek ini dipakai berulang di Section 3 sampai 7, jadi buat sekali saja.
+
+                    <h4>Langkah 0: Buat proyek</h4>
+                    <div class="terminal"><span class="prompt">$</span> mkdir latihan-async
+<span class="prompt">$</span> cd latihan-async
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                    <h4>Langkah 1: Kenali dulu <code>data.json</code></h4>
+                    <p><code>readFile</code> butuh sesuatu untuk dibaca, jadi kita siapkan sebuah file data. <code>data.json</code> adalah file teks berformat <strong>JSON</strong> yang bertindak seperti "database mini": isinya <strong>array</strong> (tanda <code>[ ]</code>) berisi tiga <strong>object</strong> (tanda <code>{ }</code>), dan setiap object adalah satu baris transaksi penjualan, seperti data laporan penjualan di Pertemuan 2.</p>
+                    <table>
+                        <tr>
+                            <th>Kunci</th>
+                            <th>Artinya</th>
+                            <th>Contoh</th>
+                        </tr>
+                        <tr>
+                            <td><code>produk</code></td>
+                            <td>Nama barang yang dijual</td>
+                            <td><code>"Buku Tulis"</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>qty</code></td>
+                            <td>Jumlah yang terjual</td>
+                            <td><code>3</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>harga</code></td>
+                            <td>Harga satuan (rupiah)</td>
+                            <td><code>5000</code></td>
+                        </tr>
+                    </table>
+                    <p>Total penjualannya: 3&times;5000 + 10&times;2000 + 5&times;3000 = <strong>50000</strong>. Angka ini akan muncul lagi di beberapa contoh, jadi kalian bisa memeriksa apakah hasil kode sudah benar. Simpan file ini di folder <code>latihan-async</code>, sejajar dengan file <code>.js</code>, karena <code>'data.json'</code> dibaca relatif terhadap folder tempat <code>node</code> dijalankan. Isinya tidak perlu diubah, sebab yang kita pelajari adalah <em>cara membacanya</em>, bukan datanya.</p>
                     <pre><code><span class="comment">// data.json</span>
 [
   { <span class="string">"produk"</span>: <span class="string">"Buku Tulis"</span>, <span class="string">"qty"</span>: <span class="number">3</span>, <span class="string">"harga"</span>: <span class="number">5000</span> },
   { <span class="string">"produk"</span>: <span class="string">"Pulpen"</span>, <span class="string">"qty"</span>: <span class="number">10</span>, <span class="string">"harga"</span>: <span class="number">2000</span> },
   { <span class="string">"produk"</span>: <span class="string">"Penggaris"</span>, <span class="string">"qty"</span>: <span class="number">5</span>, <span class="string">"harga"</span>: <span class="number">3000</span> }
 ]</code></pre>
-                    Lalu buat <code>31-callback.js</code> berisi kode <code>readFile</code> di atas (ganti <code>import fs from 'node:fs'</code> dan panggil seperti contohnya):
+                    <p>File ini dipakai lagi, persis sama, di:</p>
+                    <ul>
+                        <li><strong>Section 3.3</strong> (Praktik Callback Hell)</li>
+                        <li><strong>Section 4.1</strong> (Promise Pertama) dan <strong>4.3</strong> (Menyambung Beberapa Langkah)</li>
+                        <li><strong>Section 7.1</strong> (try/catch dengan await)</li>
+                    </ul>
+
+                    <h4>Langkah 2: Baca dengan callback</h4>
+                    Buat <code>31-callback.js</code> berisi kode <code>readFile</code> di atas (ganti <code>import fs from 'node:fs'</code> dan panggil seperti contohnya):
                     <div class="terminal"><span class="prompt">$</span> node 31-callback.js
 <span class="out">Baris ini jalan LEBIH DULU
 [
@@ -565,7 +782,7 @@ echo "Selesai";</code></pre>
   { "produk": "Pulpen", "qty": 10, "harga": 2000 },
   { "produk": "Penggaris", "qty": 5, "harga": 3000 }
 ]</span></div>
-                    Perhatikan urutannya: baris terakhir kode (<code>console.log('Baris ini jalan LEBIH DULU')</code>) malah tercetak <strong>lebih dulu</strong> &mdash; <code>readFile</code> tidak menunggu, ia menitipkan pekerjaannya dan baru kembali setelah isi berkas selesai dibaca.
+                    Perhatikan urutannya: baris terakhir kode (<code>console.log('Baris ini jalan LEBIH DULU')</code>) malah tercetak <strong>lebih dulu</strong> &mdash; <code>readFile</code> tidak menunggu, ia menitipkan pekerjaannya dan baru kembali setelah isi file selesai dibaca.
                 </div>
 
                 <h3>3.2 Masalahnya: Callback Hell</h3>
@@ -602,12 +819,12 @@ echo "Selesai";</code></pre>
                         <td>Alur logika terkubur di dalam kurung berlapis</td>
                     </tr>
                     <tr>
-                        <td>Penanganan galat berulang</td>
+                        <td>Penanganan error berulang</td>
                         <td><code>if (err)</code> harus ditulis di setiap tingkat</td>
                     </tr>
                     <tr>
                         <td>Tidak bisa dibungkus <code>try/catch</code></td>
-                        <td>Galat di dalam callback tidak tertangkap oleh <code>try</code> di luarnya</td>
+                        <td>Error di dalam callback tidak tertangkap oleh <code>try</code> di luarnya</td>
                     </tr>
                     <tr>
                         <td>Sulit dijalankan serentak</td>
@@ -618,104 +835,356 @@ echo "Selesai";</code></pre>
                 <div class="success-box">
                     <strong>Kabar baiknya:</strong> kalian tidak perlu menulis kode seperti itu. Semua yang kita pakai di mata kuliah ini &mdash; <code>fs/promises</code>, <code>fetch</code>, Prisma &mdash; sudah berbasis Promise. Callback dibahas agar kalian bisa <strong>membaca</strong> kode lama dan memahami <strong>mengapa</strong> Promise diciptakan.
                 </div>
+
+                <h3>3.3 Praktik: Callback Hell dengan File Nyata</h3>
+                <p>Contoh <code>ambilUser</code> di 3.2 hanya gambaran. Sekarang kita buktikan dengan operasi file sungguhan, di proyek <code>latihan-async</code> dan memakai <code>data.json</code> yang sudah kalian buat di 3.1. Tugasnya empat langkah, dan <strong>setiap langkah butuh yang sebelumnya selesai</strong>:</p>
+                <ol>
+                    <li>Baca <code>data.json</code>, lalu hitung total penjualannya.</li>
+                    <li>Tulis total itu ke file baru <code>laporan.txt</code>.</li>
+                    <li>Baca kembali <code>laporan.txt</code> untuk memastikan isinya tersimpan.</li>
+                    <li>Catat hasilnya ke <code>log.txt</code>.</li>
+                </ol>
+
+                <h4>Langkah 1: Versi callback &mdash; <code>32-callback-hell.js</code></h4>
+                <pre><code><span class="comment">// 32-callback-hell.js</span>
+<span class="keyword">import</span> <span class="variable">fs</span> <span class="keyword">from</span> <span class="string">'node:fs'</span>;
+
+<span class="comment">// Tugas: baca data.json → hitung total → tulis laporan.txt</span>
+<span class="comment">//        → baca laporan.txt (cek isinya) → catat ke log.txt</span>
+<span class="variable">fs</span>.<span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>, (<span class="variable">err</span>, <span class="variable">isi</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal baca data.json:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+
+    <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
+    <span class="keyword">const</span> <span class="variable">total</span> = <span class="variable">data</span>.<span class="function">reduce</span>((<span class="variable">jumlah</span>, <span class="variable">item</span>) =&gt; <span class="variable">jumlah</span> + <span class="variable">item</span>.<span class="variable">qty</span> * <span class="variable">item</span>.<span class="variable">harga</span>, <span class="number">0</span>);
+
+    <span class="variable">fs</span>.<span class="function">writeFile</span>(<span class="string">'laporan.txt'</span>, <span class="string">`Total penjualan: Rp${total}\n`</span>, (<span class="variable">err</span>) =&gt; {
+        <span class="keyword">if</span> (<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal tulis laporan.txt:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+
+        <span class="variable">fs</span>.<span class="function">readFile</span>(<span class="string">'laporan.txt'</span>, <span class="string">'utf-8'</span>, (<span class="variable">err</span>, <span class="variable">laporan</span>) =&gt; {
+            <span class="keyword">if</span> (<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal baca laporan.txt:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+
+            <span class="variable">fs</span>.<span class="function">appendFile</span>(<span class="string">'log.txt'</span>, <span class="string">`Laporan dibuat: ${laporan}`</span>, (<span class="variable">err</span>) =&gt; {
+                <span class="keyword">if</span> (<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal tulis log.txt:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+
+                <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Selesai. Isi laporan.txt:'</span>, <span class="variable">laporan</span>);   <span class="comment">// ← akhirnya sampai juga</span>
+            });
+        });
+    });
+});</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 32-callback-hell.js
+<span class="out">Selesai. Isi laporan.txt: Total penjualan: Rp50000
+</span></div>
+                <p>Di folder proyek sekarang muncul dua file baru, <code>laporan.txt</code> dan <code>log.txt</code>. Hasilnya benar (50000, sama seperti hitungan di 3.1), tetapi lihat bentuk kodenya: hanya empat operasi, namun sudah <strong>empat tingkat menjorok</strong>. Setiap tingkat punya <code>if (err)</code> sendiri, dan hasil akhirnya baru bisa dipakai di tingkat paling dalam. Bayangkan kalau tugasnya sepuluh langkah.</p>
+
+                <h4>Langkah 2: Lihat error ditangani di tiap tingkat</h4>
+                <p>Ubah nama <code>data.json</code> sementara (misalnya jadi <code>data2.json</code>), lalu jalankan lagi:</p>
+                <div class="terminal"><span class="prompt">$</span> node 32-callback-hell.js
+<span class="out">Gagal baca data.json: ENOENT: no such file or directory, open 'data.json'</span></div>
+                <p>Program berhenti dengan pesan rapi karena kita sudah menulis <code>if (err)</code> di tingkat pertama. Kembalikan nama file-nya sebelum lanjut. Kalau salah satu <code>if (err)</code> terlupa, error di tingkat itu akan lolos diam-diam.</p>
+
+                <h4>Langkah 3: <code>try/catch</code> tidak berlaku &mdash; <code>33-callback-trycatch.js</code></h4>
+                <p>Kebiasaan yang kalian bawa dari PHP adalah membungkus kode berisiko dengan <code>try/catch</code>. Coba di sini, dengan file yang memang tidak ada dan <code>err</code> yang sengaja tidak dicek:</p>
+                <pre><code><span class="comment">// 33-callback-trycatch.js</span>
+<span class="keyword">import</span> <span class="variable">fs</span> <span class="keyword">from</span> <span class="string">'node:fs'</span>;
+
+<span class="keyword">try</span> {
+    <span class="variable">fs</span>.<span class="function">readFile</span>(<span class="string">'tidak-ada.json'</span>, <span class="string">'utf-8'</span>, (<span class="variable">err</span>, <span class="variable">isi</span>) =&gt; {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">isi</span>.<span class="variable">length</span>);   <span class="comment">// lupa cek err → isi undefined → TypeError</span>
+    });
+} <span class="keyword">catch</span> (<span class="variable">e</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Tertangkap try/catch:'</span>, <span class="variable">e</span>.<span class="variable">message</span>);   <span class="comment">// tidak pernah jalan</span>
+}
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Baris terakhir sudah jalan'</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 33-callback-trycatch.js
+<span class="out">Baris terakhir sudah jalan
+
+.../33-callback-trycatch.js:6
+        console.log(isi.length);   // lupa cek err → isi undefined → TypeError
+                        ^
+
+TypeError: Cannot read properties of undefined (reading 'length')
+    at ReadFileContext.callback (.../33-callback-trycatch.js:6:25)
+    ...</span></div>
+                <p>Perhatikan dua hal:</p>
+                <ul>
+                    <li><code>Baris terakhir sudah jalan</code> tercetak <strong>lebih dulu</strong>, dan <code>Tertangkap try/catch</code> tidak pernah muncul. Blok <code>try</code> sudah selesai dijalankan sebelum <code>readFile</code> selesai membaca; callback-nya dipanggil belakangan, di luar jangkauan <code>try</code>.</li>
+                    <li>Error yang terjadi di dalam callback tidak bisa ditangkap dari luar, sehingga <strong>seluruh program mati</strong> (kode keluar 1). Di server sungguhan, satu callback yang lupa cek <code>err</code> bisa menjatuhkan layanan untuk semua pengunjung.</li>
+                </ul>
+
+                <div class="info-box">
+                    <strong>Rangkuman:</strong> callback membuat kode bersarang, penanganan error berulang, dan <code>try/catch</code> tidak bisa dipakai. Di Section 4 alur yang sama (<code>32-callback-hell.js</code>) kita tulis ulang dengan Promise, lalu di Section 5 dengan <code>async/await</code>, sehingga kembali rata seperti kode sinkron dan bisa dibungkus <code>try/catch</code> lagi.
+                </div>
             </section>
 
             <!-- Section 4 -->
             <section id="promise">
                 <h2>4. Promise <span class="badge">Indikator 2.2</span></h2>
 
-                <h3>4.1 Apa itu Promise?</h3>
-                <p><strong>Promise</strong> adalah objek yang mewakili <strong>hasil yang belum ada sekarang, tetapi akan ada nanti</strong> &mdash; entah berhasil, entah gagal.</p>
+                <p>Di Section 3 kita melihat callback membuat kode bersarang dan sulit ditangani error-nya. <strong>Promise</strong> adalah cara yang lebih rapi untuk pekerjaan yang sama.</p>
 
                 <div class="info-box">
-                    <strong>Analogi nomor antrean:</strong> saat memesan di restoran cepat saji, kalian tidak langsung menerima makanan, melainkan <strong>nomor antrean</strong>. Nomor itu bukan makanan, tetapi janji bahwa makanan akan datang. Kalian bisa memegangnya, duduk, mengerjakan hal lain. Nanti nomor itu dipanggil &mdash; entah membawa makanan (berhasil), entah kabar bahwa stok habis (gagal).
+                    <strong>Apa itu Promise, singkatnya:</strong> sebuah Promise adalah <strong>"janji hasil"</strong>. Saat kita menjalankan pekerjaan yang lambat (membaca file, memanggil API), Node tidak memberikan hasilnya langsung, melainkan sebuah Promise: objek yang berarti <em>"hasilnya belum ada, tapi pasti kukabari nanti, entah berhasil entah gagal"</em>. Kita tinggal memberi tahu apa yang harus dilakukan untuk masing-masing kemungkinan:
+                    <ul>
+                        <li><code>.then(...)</code> &rarr; kalau <strong>berhasil</strong>, lakukan ini.</li>
+                        <li><code>.catch(...)</code> &rarr; kalau <strong>gagal</strong>, lakukan ini.</li>
+                    </ul>
+                    Itu saja inti Promise. Sekarang kita coba langsung; penjelasan lengkapnya (tiga keadaan Promise, analogi, dan cara kerjanya) ada di 4.2 setelah kalian melihat hasilnya.
                 </div>
 
-                <h3>4.2 Tiga Keadaan Promise</h3>
+                <h3>4.1 Coba Dulu: Promise Pertama</h3>
+
+                <h4>Langkah 0: Siapkan proyek</h4>
+                <p>Kita memakai proyek <code>latihan-async</code> dan <code>data.json</code> dari Section 3.1. Kalau belum punya, buat dulu lalu isi <code>data.json</code> seperti di 3.1:</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-async
+<span class="prompt">$</span> cd latihan-async
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                <h4>Langkah 1: Buat <code>41-promise-dasar.js</code></h4>
+                <p>Kali ini kita mengimpor dari <code>'node:fs/promises'</code>. Itu <code>fs</code> versi Promise: tidak perlu callback lagi.</p>
+                <pre><code><span class="comment">// 41-promise-dasar.js</span>
+<span class="keyword">import</span> { <span class="variable">readFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
+
+<span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>)
+    .<span class="function">then</span>(<span class="variable">isi</span> =&gt; {
+        <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Berhasil: ada ${data.length} baris data`</span>);
+    })
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+    })
+    .<span class="function">finally</span>(() =&gt; {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Selesai, berhasil atau tidak'</span>);
+    });
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Baris ini jalan lebih dulu'</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 41-promise-dasar.js
+<span class="out">Baris ini jalan lebih dulu
+Berhasil: ada 3 baris data
+Selesai, berhasil atau tidak</span></div>
+
+                <h4>Langkah 2: Coba dibuat gagal</h4>
+                <p>Ganti <code>'data.json'</code> menjadi <code>'tidak-ada.json'</code> (file yang memang tidak ada), lalu jalankan lagi:</p>
+                <div class="terminal"><span class="prompt">$</span> node 41-promise-dasar.js
+<span class="out">Baris ini jalan lebih dulu
+Gagal: ENOENT: no such file or directory, open 'tidak-ada.json'
+Selesai, berhasil atau tidak</span></div>
+
+                <h4>Apa yang baru saja terjadi?</h4>
+                <table>
+                    <tr>
+                        <th>Bagian kode</th>
+                        <th>Artinya</th>
+                    </tr>
+                    <tr>
+                        <td><code>readFile(...)</code></td>
+                        <td>Mulai membaca file, lalu <strong>langsung</strong> mengembalikan sebuah Promise (belum ada isinya)</td>
+                    </tr>
+                    <tr>
+                        <td><code>.then(...)</code></td>
+                        <td>Dijalankan <strong>kalau berhasil</strong>. Isi file masuk lewat <code>isi</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>.catch(...)</code></td>
+                        <td>Dijalankan <strong>kalau gagal</strong>. Penyebabnya masuk lewat <code>err</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>.finally(...)</code></td>
+                        <td>Dijalankan <strong>selalu</strong>, berhasil maupun gagal</td>
+                    </tr>
+                </table>
+                <p>Perhatikan juga bahwa <code>Baris ini jalan lebih dulu</code> tercetak paling awal, persis seperti di Section 3: <code>readFile</code> tidak menunggu, ia menitipkan pekerjaannya. Bedanya, kita tidak lagi menulis callback bersarang.</p>
+
+                <h3>4.2 Jadi, Apa Itu Promise?</h3>
+                <p>Sekarang istilahnya jadi mudah. <strong>Promise</strong> adalah objek yang mewakili <strong>hasil yang belum ada sekarang, tetapi akan ada nanti</strong>, entah berhasil entah gagal. Itu yang dikembalikan <code>readFile</code> tadi.</p>
+
+                <div class="info-box">
+                    <strong>Analogi nomor antrean:</strong> saat memesan di restoran cepat saji, kalian tidak langsung menerima makanan, melainkan <strong>nomor antrean</strong>. Nomor itu bukan makanan, tetapi janji bahwa makanan akan datang. Kalian bisa duduk dan mengerjakan hal lain. Nanti nomor itu dipanggil: membawa makanan (berhasil) atau kabar bahwa stok habis (gagal).
+                </div>
+
+                <p>Sebuah Promise selalu berada di salah satu dari tiga keadaan:</p>
                 <table>
                     <tr>
                         <th>Keadaan</th>
                         <th>Artinya</th>
+                        <th>Pada percobaan tadi</th>
                         <th>Ditangani oleh</th>
                     </tr>
                     <tr>
                         <td><strong>pending</strong></td>
                         <td>Masih diproses, hasil belum ada</td>
+                        <td>Saat <code>Baris ini jalan lebih dulu</code> tercetak</td>
                         <td>&mdash;</td>
                     </tr>
                     <tr>
                         <td><strong>fulfilled</strong></td>
                         <td>Selesai, ada nilainya</td>
+                        <td>File <code>data.json</code> berhasil dibaca</td>
                         <td><code>.then()</code> / <code>await</code></td>
                     </tr>
                     <tr>
                         <td><strong>rejected</strong></td>
                         <td>Gagal, ada alasannya</td>
+                        <td>File <code>tidak-ada.json</code> tidak ditemukan</td>
                         <td><code>.catch()</code> / <code>try...catch</code></td>
                     </tr>
                 </table>
                 <p>Sekali berpindah dari <em>pending</em>, keadaan Promise <strong>tidak bisa berubah lagi</strong>.</p>
 
-                <h3>4.3 Memakai Promise</h3>
-                <pre><code><span class="keyword">import</span> { <span class="variable">readFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
+                <h3>4.3 Menyambung Beberapa Langkah</h3>
+                <p>Kekuatan Promise terlihat saat ada beberapa langkah berurutan. Kita kerjakan tugas yang <strong>persis sama</strong> dengan <code>32-callback-hell.js</code> di Section 3.3 (baca <code>data.json</code>, tulis <code>laporan.txt</code>, baca lagi, catat ke <code>log.txt</code>). Buat <code>43-promise-rantai.js</code>:</p>
+                <pre><code><span class="comment">// 43-promise-rantai.js</span>
+<span class="keyword">import</span> { <span class="variable">readFile</span>, <span class="variable">writeFile</span>, <span class="variable">appendFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
 
 <span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>)
-    .<span class="function">then</span>(<span class="variable">isi</span> <span class="operator">=&gt;</span> {
-        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Berhasil'</span>);
-        <span class="keyword">return</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);      <span class="comment">// nilai ini masuk ke .then berikutnya</span>
+    .<span class="function">then</span>(<span class="variable">isi</span> =&gt; {
+        <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
+        <span class="keyword">const</span> <span class="variable">total</span> = <span class="variable">data</span>.<span class="function">reduce</span>((<span class="variable">jumlah</span>, <span class="variable">item</span>) =&gt; <span class="variable">jumlah</span> + <span class="variable">item</span>.<span class="variable">qty</span> * <span class="variable">item</span>.<span class="variable">harga</span>, <span class="number">0</span>);
+        <span class="keyword">return</span> <span class="function">writeFile</span>(<span class="string">'laporan.txt'</span>, <span class="string">`Total penjualan: Rp${total}\n`</span>);   <span class="comment">// return → .then berikutnya menunggu</span>
     })
-    .<span class="function">then</span>(<span class="variable">data</span> <span class="operator">=&gt;</span> {
-        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${data.length} baris`</span>);
+    .<span class="function">then</span>(() =&gt; <span class="function">readFile</span>(<span class="string">'laporan.txt'</span>, <span class="string">'utf-8'</span>))
+    .<span class="function">then</span>(<span class="variable">laporan</span> =&gt; {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Isi laporan.txt:'</span>, <span class="variable">laporan</span>);
+        <span class="keyword">return</span> <span class="function">appendFile</span>(<span class="string">'log.txt'</span>, <span class="string">`Laporan dibuat: ${laporan}`</span>);
     })
-    .<span class="function">catch</span>(<span class="variable">err</span> <span class="operator">=&gt;</span> {
-        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);   <span class="comment">// menangkap galat dari SEMUA .then di atas</span>
-    })
-    .<span class="function">finally</span>(() <span class="operator">=&gt;</span> {
-        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Selesai, berhasil atau tidak'</span>);
-    });</code></pre>
+    .<span class="function">then</span>(() =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Selesai, log.txt diperbarui'</span>))
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>));</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 43-promise-rantai.js
+<span class="out">Isi laporan.txt: Total penjualan: Rp50000
 
-                <div class="success-box">
-                    <strong>Keunggulan dibanding callback:</strong> rantai <code>.then()</code> tetap <strong>rata</strong>, tidak menjorok ke kanan, dan cukup <strong>satu</strong> <code>.catch()</code> di ujung untuk menangani galat dari seluruh rantai.
+Selesai, log.txt diperbarui</span></div>
+
+                <p>Hasilnya sama dengan versi callback. Bandingkan bentuknya:</p>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>Callback (<code>32-callback-hell.js</code>)</th>
+                        <th>Promise (<code>43-promise-rantai.js</code>)</th>
+                    </tr>
+                    <tr>
+                        <td>Bentuk kode</td>
+                        <td>Menjorok 4 tingkat</td>
+                        <td>Rata, satu rantai</td>
+                    </tr>
+                    <tr>
+                        <td>Penanganan error</td>
+                        <td><code>if (err)</code> di setiap tingkat</td>
+                        <td>Satu <code>.catch()</code> di ujung</td>
+                    </tr>
+                </table>
+
+                <p>Dua hal yang perlu dipahami dari kode itu:</p>
+                <ul>
+                    <li><strong><code>return</code> membuat langkah berikutnya menunggu.</strong> Dengan <code>return writeFile(...)</code>, <code>.then()</code> sesudahnya baru jalan setelah file selesai ditulis.</li>
+                    <li><strong>Satu <code>.catch()</code> cukup.</strong> Kalau <code>data.json</code> hilang, atau <code>JSON.parse</code> gagal, atau penulisan gagal, semua <code>.then()</code> sisanya dilewati dan error langsung jatuh ke <code>.catch()</code> di ujung. Coba ubah nama <code>data.json</code> sementara untuk melihatnya: yang tercetak hanya <code>Gagal: ENOENT...</code>.</li>
+                </ul>
+
+                <h3>4.4 Jebakan: Lupa <code>return</code></h3>
+                <p>Kesalahan paling umum pemula. Di contoh ini <code>writeFile</code> sengaja diarahkan ke folder yang tidak ada, dan kata <code>return</code> dihilangkan. Buat <code>44-lupa-return.js</code>:</p>
+                <pre><code><span class="comment">// 44-lupa-return.js</span>
+<span class="keyword">import</span> { <span class="variable">readFile</span>, <span class="variable">writeFile</span> } <span class="keyword">from</span> <span class="string">'node:fs/promises'</span>;
+
+<span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>)
+    .<span class="function">then</span>(<span class="variable">isi</span> =&gt; {
+        <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
+        <span class="function">writeFile</span>(<span class="string">'/folder/tidak/ada/laporan.txt'</span>, <span class="string">`${data.length} baris\n`</span>);   <span class="comment">// lupa return!</span>
+    })
+    .<span class="function">then</span>(<span class="variable">hasil</span> =&gt; {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Nilai dari .then sebelumnya:'</span>, <span class="variable">hasil</span>);
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Lanjut seolah-olah semuanya beres'</span>);
+    })
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>));</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 44-lupa-return.js
+<span class="out">Nilai dari .then sebelumnya: undefined
+Lanjut seolah-olah semuanya beres
+
+Error: ENOENT: no such file or directory, open '/folder/tidak/ada/laporan.txt'
+    ...</span></div>
+                <p>Tanpa <code>return</code>, rantai <strong>tidak menunggu</strong> <code>writeFile</code>. <code>.then()</code> berikutnya langsung jalan dengan nilai <code>undefined</code> dan mengaku semuanya beres. Lebih buruk lagi, error dari <code>writeFile</code> lolos dari rantai sehingga <code>.catch()</code> tidak menangkapnya, dan <strong>program mati</strong>.</p>
+
+                <div class="warning-box">
+                    <strong>Aturannya:</strong> di dalam <code>.then()</code>, kalau kalian memulai operasi asinkron, <strong>selalu <code>return</code> Promise-nya</strong>.
                 </div>
 
-                <div class="success-box">
-                    <strong>Coba di <code>latihan-async</code>.</strong> Pakai <code>data.json</code> yang sama dari Section 3.1. Buat <code>43-promise.js</code> berisi kode di atas:
-                    <div class="terminal"><span class="prompt">$</span> node 43-promise.js
-<span class="out">Berhasil
-3 baris
-Selesai, berhasil atau tidak</span></div>
-                    <strong>Coba juga:</strong> ganti nama berkas jadi <code>'tidak-ada.json'</code> yang memang tidak ada, jalankan lagi &mdash; perhatikan yang tercetak hanya <code>Gagal: ...</code> dan <code>Selesai, berhasil atau tidak</code>, blok <code>.then()</code> dilewati semua.
-                </div>
+                <h3>4.5 Membuat Promise Sendiri</h3>
+                <p>Sebagian besar waktu kalian hanya <em>memakai</em> Promise yang sudah disediakan pustaka (seperti <code>fs/promises</code> dan <code>fetch</code>). Membuat sendiri diperlukan saat ada API lama yang hanya mendukung callback.</p>
 
-                <h3>4.4 Membuat Promise Sendiri</h3>
-                <p>Sebagian besar waktu kalian hanya <em>memakai</em> Promise yang sudah disediakan pustaka. Membuat sendiri diperlukan saat membungkus API lama berbasis callback:</p>
+                <h4>Contoh 1: Membungkus callback &mdash; <code>45-bungkus-callback.js</code></h4>
+                <pre><code><span class="comment">// 45-bungkus-callback.js</span>
+<span class="keyword">import</span> <span class="variable">fs</span> <span class="keyword">from</span> <span class="string">'node:fs'</span>;
 
-                <pre><code><span class="keyword">function</span> <span class="function">tunggu</span>(<span class="variable">detik</span>) {
-    <span class="keyword">return</span> <span class="keyword">new</span> <span class="variable">Promise</span>((<span class="variable">resolve</span>, <span class="variable">reject</span>) <span class="operator">=&gt;</span> {
-        <span class="keyword">if</span> (<span class="variable">detik</span> <span class="operator">&lt;</span> <span class="number">0</span>) {
-            <span class="function">reject</span>(<span class="keyword">new</span> <span class="function">Error</span>(<span class="string">'Detik tidak boleh negatif'</span>));
-            <span class="keyword">return</span>;
-        }
-        <span class="function">setTimeout</span>(() <span class="operator">=&gt;</span> <span class="function">resolve</span>(<span class="string">`Selesai setelah ${detik} detik`</span>), <span class="variable">detik</span> * <span class="number">1000</span>);
+<span class="comment">// Membungkus API callback lama menjadi Promise</span>
+<span class="keyword">function</span> <span class="function">bacaFile</span>(<span class="variable">nama</span>) {
+    <span class="keyword">return</span> <span class="keyword">new</span> <span class="function">Promise</span>((<span class="variable">resolve</span>, <span class="variable">reject</span>) =&gt; {
+        <span class="variable">fs</span>.<span class="function">readFile</span>(<span class="variable">nama</span>, <span class="string">'utf-8'</span>, (<span class="variable">err</span>, <span class="variable">isi</span>) =&gt; {
+            <span class="keyword">if</span> (<span class="variable">err</span>) {
+                <span class="function">reject</span>(<span class="variable">err</span>);        <span class="comment">// gagal → promise rejected</span>
+            } <span class="keyword">else</span> {
+                <span class="function">resolve</span>(<span class="variable">isi</span>);       <span class="comment">// berhasil → promise fulfilled</span>
+            }
+        });
     });
 }
 
-<span class="function">tunggu</span>(<span class="number">2</span>)
-    .<span class="function">then</span>(<span class="variable">pesan</span> <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>))
-    .<span class="function">catch</span>(<span class="variable">err</span> <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>.<span class="variable">message</span>));</code></pre>
+<span class="function">bacaFile</span>(<span class="string">'data.json'</span>)
+    .<span class="function">then</span>(<span class="variable">isi</span> =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Berhasil, panjang teks:'</span>, <span class="variable">isi</span>.<span class="variable">length</span>))
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>));</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 45-bungkus-callback.js
+<span class="out">Berhasil, panjang teks: 164</span></div>
+                <p>Angka <code>164</code> bergantung pada isi dan spasi <code>data.json</code> kalian, jadi boleh berbeda. Coba juga dengan <code>'tidak-ada.json'</code> dan kalian akan melihat <code>Gagal: ENOENT...</code>.</p>
 
                 <table>
                     <tr>
                         <th>Fungsi</th>
                         <th>Dipanggil ketika</th>
                         <th>Keadaan menjadi</th>
+                        <th>Diterima oleh</th>
                     </tr>
-                    <tr><td><code>resolve(nilai)</code></td><td>Operasi berhasil</td><td>fulfilled</td></tr>
-                    <tr><td><code>reject(error)</code></td><td>Operasi gagal</td><td>rejected</td></tr>
+                    <tr><td><code>resolve(nilai)</code></td><td>Operasi berhasil</td><td>fulfilled</td><td><code>.then()</code></td></tr>
+                    <tr><td><code>reject(error)</code></td><td>Operasi gagal</td><td>rejected</td><td><code>.catch()</code></td></tr>
                 </table>
+
+                <h4>Contoh 2: Menunggu beberapa detik &mdash; <code>45-tunggu.js</code></h4>
+                <p>Fungsi <code>tunggu</code> ini akan dipakai lagi di Section 8:</p>
+                <pre><code><span class="comment">// 45-tunggu.js</span>
+<span class="keyword">function</span> <span class="function">tunggu</span>(<span class="variable">detik</span>) {
+    <span class="keyword">return</span> <span class="keyword">new</span> <span class="function">Promise</span>((<span class="variable">resolve</span>, <span class="variable">reject</span>) =&gt; {
+        <span class="keyword">if</span> (<span class="variable">detik</span> &lt; <span class="number">0</span>) {
+            <span class="function">reject</span>(<span class="keyword">new</span> <span class="function">Error</span>(<span class="string">'Detik tidak boleh negatif'</span>));
+            <span class="keyword">return</span>;
+        }
+        <span class="function">setTimeout</span>(() =&gt; <span class="function">resolve</span>(<span class="string">`Selesai setelah ${detik} detik`</span>), <span class="variable">detik</span> * <span class="number">1000</span>);
+    });
+}
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Mulai menunggu...'</span>);
+
+<span class="function">tunggu</span>(<span class="number">2</span>)
+    .<span class="function">then</span>(<span class="variable">pesan</span> =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>))
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>.<span class="variable">message</span>));
+
+<span class="function">tunggu</span>(-<span class="number">1</span>)
+    .<span class="function">then</span>(<span class="variable">pesan</span> =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">pesan</span>))
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>));</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 45-tunggu.js
+<span class="out">Mulai menunggu...
+Gagal: Detik tidak boleh negatif
+Selesai setelah 2 detik</span></div>
+                <p><code>tunggu(-1)</code> ditolak seketika, sedangkan <code>tunggu(2)</code> baru selesai dua detik kemudian. Itu sebabnya pesan <code>Gagal</code> tercetak lebih dulu.</p>
 
                 <div class="warning-box">
                     <strong>Selalu <code>reject(new Error(...))</code>, bukan <code>reject('teks')</code>.</strong> Objek <code>Error</code> membawa <em>stack trace</em> yang menunjukkan baris penyebab masalah. Menolak dengan string biasa membuat pelacakan bug jauh lebih sulit.
+                </div>
+
+                <div class="success-box">
+                    <strong>Yang perlu diingat dari Section 4:</strong>
+                    <ul>
+                        <li>Promise = hasil yang datang nanti (pending &rarr; fulfilled atau rejected).</li>
+                        <li><code>.then()</code> untuk berhasil, <code>.catch()</code> untuk gagal, <code>.finally()</code> selalu jalan.</li>
+                        <li>Menyambung langkah: <code>return</code> Promise di dalam <code>.then()</code>.</li>
+                        <li>Membuat sendiri: <code>new Promise</code> dengan <code>resolve</code> dan <code>reject(new Error(...))</code>.</li>
+                    </ul>
                 </div>
 
                 <div class="interactive-demo">
@@ -731,76 +1200,143 @@ Selesai, berhasil atau tidak</span></div>
             <section id="async-await">
                 <h2>5. async / await <span class="badge badge-important">Indikator 2.3</span></h2>
 
-                <p><code>async/await</code> adalah cara menulis Promise yang <strong>terlihat seperti kode sinkron biasa</strong>. Di baliknya tetap Promise &mdash; hanya sintaksnya yang jauh lebih mudah dibaca. Ini adalah gaya penulisan yang akan kita pakai sepanjang semester.</p>
+                <p><code>async/await</code> adalah cara menulis Promise yang <strong>terlihat seperti kode biasa</strong>, baris demi baris. Di baliknya tetap Promise, hanya sintaksnya jauh lebih mudah dibaca. Ini gaya yang akan kita pakai sepanjang semester.</p>
 
-                <h3>5.1 Dua Aturan Dasar</h3>
+                <div class="info-box">
+                    <strong>Apa itu async/await, singkatnya:</strong>
+                    <ul>
+                        <li><code>async</code> &rarr; ditulis di depan fungsi sebagai tanda <em>"isi fungsi ini punya pekerjaan asinkron"</em>. Fungsi itu selalu mengembalikan Promise.</li>
+                        <li><code>await</code> &rarr; ditulis di depan pekerjaan asinkron sebagai perintah <em>"tunggu hasilnya di sini, baru lanjut ke baris berikutnya"</em>.</li>
+                    </ul>
+                    <strong>Ingat selalu bedanya sinkron dan asinkron:</strong>
+                    <ul>
+                        <li><strong>Sinkron</strong> &mdash; hasil <strong>langsung ada</strong> di baris berikutnya. Contoh: <code>2 + 3</code>, <code>JSON.parse</code>, <code>map</code>. <strong>Tidak butuh</strong> <code>await</code>.</li>
+                        <li><strong>Asinkron</strong> &mdash; hasil <strong>datang nanti</strong>, yang kita terima dulu hanya Promise. Contoh: <code>fetch</code>, <code>readFile</code>, kueri basis data. <strong>Butuh</strong> <code>await</code>.</li>
+                    </ul>
+                    <strong>Pertanyaan pengujinya:</strong> <em>"Apakah pekerjaan ini menunggu sesuatu di luar Node (jaringan, disk, basis data)?"</em> Ya &rarr; asinkron &rarr; pakai <code>await</code>. Tidak &rarr; sinkron &rarr; tanpa <code>await</code>.
+                    <br>Cara mengingat: <strong><code>async</code> = titip, <code>await</code> = ambil hasilnya.</strong>
+                </div>
+
+                <h3>5.1 Coba Dulu: Sinkron vs Asinkron dengan API</h3>
+
+                <h4>Langkah 0: Buat proyek</h4>
+                <p>Proyek baru bernama <code>latihan-await</code>. Kita memakai API dari luar, <code>jsonplaceholder.typicode.com</code> (layanan contoh gratis), jadi kalian butuh koneksi internet. Tidak ada paket yang perlu dipasang.</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-await
+<span class="prompt">$</span> cd latihan-await
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                <h4>Langkah 1: Bandingkan sinkron dan asinkron &mdash; <code>51-sinkron-vs-async.js</code></h4>
+                <p>Satu file, dua jenis fungsi: <code>tambah</code> yang sinkron (hitungan biasa) dan <code>ambilUser</code> yang asinkron (memanggil API). Perhatikan apa yang didapat dari masing-masing:</p>
+                <pre><code><span class="comment">// 51-sinkron-vs-async.js</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="comment">// SINKRON: hasil langsung ada di baris berikutnya</span>
+<span class="keyword">function</span> <span class="function">tambah</span>(<span class="variable">a</span>, <span class="variable">b</span>) {
+    <span class="keyword">return</span> <span class="variable">a</span> + <span class="variable">b</span>;
+}
+
+<span class="comment">// ASINKRON: menunggu jaringan, jadi ditandai async</span>
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilUser</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`${BASE}/users/${id}`</span>);
+    <span class="keyword">return</span> <span class="variable">respons</span>.<span class="function">json</span>();
+}
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Sinkron (tambah)   :'</span>, <span class="function">tambah</span>(<span class="number">2</span>, <span class="number">3</span>));
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Async TANPA await  :'</span>, <span class="function">ambilUser</span>(<span class="number">1</span>));
+
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="function">ambilUser</span>(<span class="number">1</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Async DENGAN await :'</span>, <span class="variable">user</span>.<span class="variable">name</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 51-sinkron-vs-async.js
+<span class="out">Sinkron (tambah)   : 5
+Async TANPA await  : Promise { &lt;pending&gt; }
+Async DENGAN await : Leanne Graham</span></div>
+
+                <p>Tiga baris ini adalah inti Section 5:</p>
+                <table>
+                    <tr>
+                        <th>Baris</th>
+                        <th>Jenis</th>
+                        <th>Yang didapat</th>
+                    </tr>
+                    <tr>
+                        <td><code>tambah(2, 3)</code></td>
+                        <td><strong>Sinkron</strong></td>
+                        <td><code>5</code>, hasil langsung</td>
+                    </tr>
+                    <tr>
+                        <td><code>ambilUser(1)</code> tanpa <code>await</code></td>
+                        <td><strong>Asinkron</strong></td>
+                        <td><code>Promise { &lt;pending&gt; }</code>, baru "nomor antrean"</td>
+                    </tr>
+                    <tr>
+                        <td><code>await ambilUser(1)</code></td>
+                        <td><strong>Asinkron</strong></td>
+                        <td><code>Leanne Graham</code>, data asli</td>
+                    </tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Kesalahan nomor satu mahasiswa:</strong> lupa menulis <code>await</code> pada pekerjaan asinkron. Gejalanya selalu sama: yang tercetak <code>Promise { &lt;pending&gt; }</code> atau <code>undefined</code>, bukan datanya. Kalau kalian melihat itu di terminal, periksa dulu apakah ada <code>await</code> yang hilang.
+                </div>
+
+                <h4>Langkah 2: Beberapa langkah berurutan &mdash; <code>52-async-await-api.js</code></h4>
+                <p>Sekarang kita ambil sebuah post, lalu penulisnya. Penulis baru bisa diminta setelah <code>userId</code> dari post diketahui, jadi dua langkah ini harus berurutan:</p>
+                <pre><code><span class="comment">// 52-async-await-api.js</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilJson</span>(<span class="variable">url</span>) {
+    <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="variable">url</span>);
+    <span class="keyword">if</span> (!<span class="variable">respons</span>.<span class="variable">ok</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">`HTTP ${respons.status}`</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">respons</span>.<span class="function">json</span>();
+}
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">tampilkanPost</span>(<span class="variable">id</span>) {
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> <span class="variable">post</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts/${id}`</span>);           <span class="comment">// 1. tunggu post</span>
+        <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/${post.userId}`</span>);  <span class="comment">// 2. tunggu penulisnya</span>
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`"${post.title}" oleh ${user.name}`</span>);
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">`Post ${id} gagal diambil:`</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+    }
+}
+
+<span class="keyword">await</span> <span class="function">tampilkanPost</span>(<span class="number">1</span>);
+<span class="keyword">await</span> <span class="function">tampilkanPost</span>(<span class="number">9999</span>);   <span class="comment">// tidak ada → 404</span></code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 52-async-await-api.js
+<span class="out">"sunt aut facere repellat provident occaecati excepturi optio reprehenderit" oleh Leanne Graham
+Post 9999 gagal diambil: HTTP 404</span></div>
+
+                <p>Baca kodenya dari atas ke bawah: hampir sama seperti kode PHP yang biasa kalian tulis. Tidak ada callback, tidak ada <code>.then()</code>. Baris kedua (<code>Post 9999 ...</code>) sengaja dibuat gagal, dan <code>try/catch</code> biasa menangkapnya. Di Section 3 hal itu tidak mungkin dilakukan dengan callback.</p>
+
+                <h3>5.2 Jadi, Apa Itu async/await?</h3>
+                <p>Setelah melihat hasilnya, dua aturannya jadi mudah:</p>
                 <table>
                     <tr>
                         <th>Kata kunci</th>
                         <th>Aturannya</th>
+                        <th>Di percobaan tadi</th>
                     </tr>
                     <tr>
                         <td><code>async</code></td>
                         <td>Ditulis di depan fungsi. Fungsi itu <strong>selalu</strong> mengembalikan Promise, apa pun isinya</td>
+                        <td><code>async function ambilUser</code></td>
                     </tr>
                     <tr>
                         <td><code>await</code></td>
-                        <td>Menunggu Promise selesai lalu mengambil nilainya. Hanya boleh di dalam fungsi <code>async</code> &mdash; atau di baris paling luar berkas ESM (<em>top-level await</em>)</td>
+                        <td>Menunggu Promise selesai lalu mengambil nilainya. Hanya boleh di dalam fungsi <code>async</code>, atau di baris paling luar file ESM (<em>top-level await</em>)</td>
+                        <td><code>await ambilUser(1)</code></td>
                     </tr>
                 </table>
 
-                <h3>5.2 Perbandingan Langsung</h3>
-                <p>Kode yang sama, ditulis dengan tiga gaya berbeda:</p>
-
-                <pre><code><span class="comment">// ❌ Callback — menjorok ke kanan</span>
-<span class="variable">fs</span>.<span class="function">readFile</span>(<span class="string">'a.json'</span>, <span class="string">'utf-8'</span>, (<span class="variable">err</span>, <span class="variable">isi</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">if</span> (<span class="variable">err</span>) <span class="keyword">return</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>);
-    <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">data</span>.<span class="variable">length</span>);
-});
-
-<span class="comment">// 🙂 Promise — rata, tapi masih berlapis .then</span>
-<span class="function">readFile</span>(<span class="string">'a.json'</span>, <span class="string">'utf-8'</span>)
-    .<span class="function">then</span>(<span class="variable">isi</span> <span class="operator">=&gt;</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>))
-    .<span class="function">then</span>(<span class="variable">data</span> <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">data</span>.<span class="variable">length</span>))
-    .<span class="function">catch</span>(<span class="variable">err</span> <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>));
-
-<span class="comment">// ✅ async/await — terbaca seperti kode biasa</span>
-<span class="keyword">try</span> {
-    <span class="keyword">const</span> <span class="variable">isi</span> = <span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'a.json'</span>, <span class="string">'utf-8'</span>);
-    <span class="keyword">const</span> <span class="variable">data</span> = <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">data</span>.<span class="variable">length</span>);
-} <span class="keyword">catch</span> (<span class="variable">err</span>) {
-    <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>);
-}</code></pre>
-
                 <div class="success-box">
-                    <strong>Perhatikan versi ketiga.</strong> Bentuknya persis seperti kode PHP yang kalian tulis selama ini &mdash; baris demi baris, dengan <code>try/catch</code> yang normal. Padahal di baliknya tetap asinkron dan tidak memblokir event loop. Inilah sebabnya <code>async/await</code> menjadi gaya baku JavaScript modern.
+                    <strong><code>await</code> menunggu, tetapi Node tidak diam.</strong> Kode di dalam fungsi <code>async</code> berhenti sejenak di baris <code>await</code>, sementara Node bebas melayani pekerjaan lain (ingat percobaan <code>denyut.js</code> di Section 2.4: <code>tik</code> tetap berjalan saat menunggu API). Itu yang membedakan <code>await</code> dari kode sinkron yang benar-benar membuat semuanya macet.
                 </div>
 
-                <h3>5.3 Bentuk-bentuk Penulisan</h3>
-                <p><em>(Empat bentuk di bawah semuanya membaca <code>data.json</code> yang sama dari Section 3.1 &mdash; ganti salah satu jadi berkas nyata kalau mau mencobanya sendiri.)</em></p>
-                <pre><code><span class="comment">// Fungsi biasa</span>
-<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilData</span>() {
-    <span class="keyword">const</span> <span class="variable">isi</span> = <span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>);
-    <span class="keyword">return</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
-}
-
-<span class="comment">// Arrow function</span>
-<span class="keyword">const</span> <span class="function">ambilData2</span> = <span class="keyword">async</span> () <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">isi</span> = <span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>);
-    <span class="keyword">return</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);
-};
-
-<span class="comment">// Metode dalam class / object</span>
-<span class="keyword">const</span> <span class="variable">layanan</span> = {
-    <span class="keyword">async</span> <span class="function">ambil</span>() { <span class="comment">/* ... */</span> }
-};
-
-<span class="comment">// Top-level await — hanya di berkas ESM</span>
-<span class="keyword">const</span> <span class="variable">data</span> = <span class="keyword">await</span> <span class="function">ambilData</span>();</code></pre>
-
-                <h3>5.4 Fungsi async Selalu Mengembalikan Promise</h3>
+                <p>Fungsi <code>async</code> selalu membungkus <code>return</code>-nya dalam Promise, itu sebabnya <code>ambilUser(1)</code> tanpa <code>await</code> tadi menghasilkan Promise:</p>
                 <pre><code><span class="keyword">async</span> <span class="keyword">function</span> <span class="function">angka</span>() {
     <span class="keyword">return</span> <span class="number">42</span>;                    <span class="comment">// terlihat seperti angka biasa</span>
 }
@@ -808,30 +1344,134 @@ Selesai, berhasil atau tidak</span></div>
 <span class="variable">console</span>.<span class="function">log</span>(<span class="function">angka</span>());              <span class="comment">// Promise { 42 }  ← bukan 42!</span>
 <span class="variable">console</span>.<span class="function">log</span>(<span class="keyword">await</span> <span class="function">angka</span>());        <span class="comment">// 42              ← harus di-await</span></code></pre>
 
-                <div class="warning-box">
-                    <strong>Kesalahan nomor satu mahasiswa:</strong> lupa menulis <code>await</code>. Gejalanya khas &mdash; yang tercetak adalah <code>Promise { &lt;pending&gt; }</code> atau <code>undefined</code>, bukan datanya. Kalau kalian melihat itu di terminal, periksa dulu apakah ada <code>await</code> yang hilang.
-                </div>
+                <h3>5.3 Perbandingan: Promise vs async/await</h3>
+                <p>Kode <code>52-async-await-api.js</code> tadi, kalau ditulis dengan <code>.then()</code> (<code>53-promise-versi.js</code>), hasilnya persis sama:</p>
+                <pre><code><span class="comment">// 53-promise-versi.js  (hasil sama dengan 52, ditulis dengan .then)</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
 
-                <h3>5.5 await di Dalam Perulangan</h3>
-                <p>Ini jebakan yang sangat sering terjadi. <code>map()</code>, <code>filter()</code>, dan <code>forEach()</code> <strong>tidak menunggu</strong> fungsi async di dalamnya:</p>
-
-                <pre><code><span class="comment">// ❌ SALAH — forEach tidak menunggu apa pun</span>
-<span class="variable">daftarId</span>.<span class="function">forEach</span>(<span class="keyword">async</span> (<span class="variable">id</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">data</span> = <span class="keyword">await</span> <span class="function">ambil</span>(<span class="variable">id</span>);
-    <span class="variable">hasil</span>.<span class="function">push</span>(<span class="variable">data</span>);
-});
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">hasil</span>);        <span class="comment">// [] — kosong, karena belum ada yang selesai</span>
-
-<span class="comment">// ✅ BENAR (berurutan) — pakai for...of</span>
-<span class="keyword">for</span> (<span class="keyword">const</span> <span class="variable">id</span> <span class="keyword">of</span> <span class="variable">daftarId</span>) {
-    <span class="keyword">const</span> <span class="variable">data</span> = <span class="keyword">await</span> <span class="function">ambil</span>(<span class="variable">id</span>);
-    <span class="variable">hasil</span>.<span class="function">push</span>(<span class="variable">data</span>);
+<span class="keyword">function</span> <span class="function">ambilJson</span>(<span class="variable">url</span>) {
+    <span class="keyword">return</span> <span class="function">fetch</span>(<span class="variable">url</span>).<span class="function">then</span>(<span class="variable">respons</span> =&gt; {
+        <span class="keyword">if</span> (!<span class="variable">respons</span>.<span class="variable">ok</span>) {
+            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">`HTTP ${respons.status}`</span>);
+        }
+        <span class="keyword">return</span> <span class="variable">respons</span>.<span class="function">json</span>();
+    });
 }
 
-<span class="comment">// ✅ BENAR (serentak) — map menghasilkan array Promise, lalu ditunggu sekaligus</span>
-<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>(<span class="variable">daftarId</span>.<span class="function">map</span>(<span class="variable">id</span> <span class="operator">=&gt;</span> <span class="function">ambil</span>(<span class="variable">id</span>)));</code></pre>
+<span class="keyword">function</span> <span class="function">tampilkanPost</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts/${id}`</span>)
+        .<span class="function">then</span>(<span class="variable">post</span> =&gt; {
+            <span class="keyword">return</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/${post.userId}`</span>)
+                .<span class="function">then</span>(<span class="variable">user</span> =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`"${post.title}" oleh ${user.name}`</span>));
+        })
+        .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">`Post ${id} gagal diambil:`</span>, <span class="variable">err</span>.<span class="variable">message</span>));
+}
 
+<span class="keyword">await</span> <span class="function">tampilkanPost</span>(<span class="number">1</span>);
+<span class="keyword">await</span> <span class="function">tampilkanPost</span>(<span class="number">9999</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 53-promise-versi.js
+<span class="out">"sunt aut facere repellat provident occaecati excepturi optio reprehenderit" oleh Leanne Graham
+Post 9999 gagal diambil: HTTP 404</span></div>
+
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>Promise <code>.then()</code> (53)</th>
+                        <th>async/await (52)</th>
+                    </tr>
+                    <tr>
+                        <td>Bentuk</td>
+                        <td>Berlapis; <code>.then</code> di dalam <code>.then</code> saat butuh data sebelumnya</td>
+                        <td>Rata, baris demi baris</td>
+                    </tr>
+                    <tr>
+                        <td>Menangani error</td>
+                        <td><code>.catch()</code></td>
+                        <td><code>try/catch</code> biasa</td>
+                    </tr>
+                    <tr>
+                        <td>Memakai hasil langkah 1 di langkah 2</td>
+                        <td>Harus bersarang</td>
+                        <td>Cukup variabel biasa (<code>post.userId</code>)</td>
+                    </tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>Bentuk async/await persis seperti kode PHP</strong> yang kalian tulis selama ini, padahal di baliknya tetap asinkron dan tidak memblokir event loop. Inilah sebabnya ia menjadi gaya baku JavaScript modern.
+                </div>
+
+                <h3>5.4 Bentuk-bentuk Penulisan</h3>
+                <p><code>async</code> bisa dipasang di beberapa bentuk fungsi. Ini potongan kode (bukan file baru) yang mengandaikan <code>BASE</code> dan <code>ambilJson</code> dari <code>52-async-await-api.js</code>:</p>
+                <pre><code><span class="comment">// Fungsi biasa</span>
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilUser</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/${id}`</span>);
+}
+
+<span class="comment">// Arrow function</span>
+<span class="keyword">const</span> <span class="variable">ambilPost</span> = <span class="keyword">async</span> (<span class="variable">id</span>) =&gt; <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts/${id}`</span>);
+
+<span class="comment">// Metode dalam object / class</span>
+<span class="keyword">const</span> <span class="variable">layanan</span> = {
+    <span class="keyword">async</span> <span class="function">ambil</span>(<span class="variable">id</span>) {
+        <span class="keyword">return</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/${id}`</span>);
+    }
+};
+
+<span class="comment">// Top-level await: langsung di baris paling luar, hanya di file ESM</span>
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="function">ambilUser</span>(<span class="number">1</span>);</code></pre>
+
+                <h3>5.5 Jebakan: await di Dalam Perulangan</h3>
+                <p><code>map()</code>, <code>filter()</code>, dan <code>forEach()</code> <strong>tidak menunggu</strong> fungsi async di dalamnya. Buat <code>55-perulangan.js</code> untuk melihatnya sendiri:</p>
+                <pre><code><span class="comment">// 55-perulangan.js</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilNama</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`${BASE}/users/${id}`</span>);
+    <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();
+    <span class="keyword">return</span> <span class="variable">user</span>.<span class="variable">name</span>;
+}
+
+<span class="keyword">const</span> <span class="variable">daftarId</span> = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>];
+
+<span class="comment">// ❌ SALAH: forEach tidak menunggu</span>
+<span class="keyword">const</span> <span class="variable">hasilSalah</span> = [];
+<span class="variable">daftarId</span>.<span class="function">forEach</span>(<span class="keyword">async</span> (<span class="variable">id</span>) =&gt; {
+    <span class="variable">hasilSalah</span>.<span class="function">push</span>(<span class="keyword">await</span> <span class="function">ambilNama</span>(<span class="variable">id</span>));
+});
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'forEach     :'</span>, <span class="variable">hasilSalah</span>);
+
+<span class="comment">// ✅ BENAR (berurutan): for...of</span>
+<span class="keyword">const</span> <span class="variable">hasilUrut</span> = [];
+<span class="keyword">for</span> (<span class="keyword">const</span> <span class="variable">id</span> <span class="keyword">of</span> <span class="variable">daftarId</span>) {
+    <span class="variable">hasilUrut</span>.<span class="function">push</span>(<span class="keyword">await</span> <span class="function">ambilNama</span>(<span class="variable">id</span>));
+}
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'for...of    :'</span>, <span class="variable">hasilUrut</span>);
+
+<span class="comment">// ✅ BENAR (serentak): Promise.all + map</span>
+<span class="keyword">const</span> <span class="variable">hasilSerentak</span> = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>(<span class="variable">daftarId</span>.<span class="function">map</span>(<span class="variable">ambilNama</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Promise.all :'</span>, <span class="variable">hasilSerentak</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 55-perulangan.js
+<span class="out">forEach     : []
+for...of    : [ 'Leanne Graham', 'Ervin Howell', 'Clementine Bauch' ]
+Promise.all : [ 'Leanne Graham', 'Ervin Howell', 'Clementine Bauch' ]</span></div>
+
+                <ul>
+                    <li><strong><code>forEach</code> menghasilkan <code>[]</code>.</strong> Ia menjalankan fungsi async-nya tetapi tidak menunggu; saat <code>console.log</code> dijalankan, belum ada satu pun yang selesai.</li>
+                    <li><strong><code>for...of</code></strong> menunggu tiap iterasi, jadi berurutan (satu per satu).</li>
+                    <li><strong><code>Promise.all</code> + <code>map</code></strong> memulai semuanya sekaligus lalu menunggu semuanya, jadi serentak.</li>
+                </ul>
                 <p>Kapan memilih yang mana dibahas tuntas di <a href="#paralel">Section 8</a>.</p>
+
+                <div class="success-box">
+                    <strong>Yang perlu diingat dari Section 5:</strong>
+                    <ul>
+                        <li><strong>Sinkron</strong> = hasil langsung ada, tanpa <code>await</code>. <strong>Asinkron</strong> = hasil datang nanti (Promise), pakai <code>await</code>.</li>
+                        <li><code>async</code> = titip (fungsi selalu mengembalikan Promise). <code>await</code> = ambil hasilnya.</li>
+                        <li>Lupa <code>await</code> &rarr; yang tercetak <code>Promise { &lt;pending&gt; }</code>.</li>
+                        <li>Error ditangani dengan <code>try/catch</code> biasa.</li>
+                        <li><code>forEach</code> tidak menunggu; pakai <code>for...of</code> (berurutan) atau <code>Promise.all</code> (serentak).</li>
+                    </ul>
+                </div>
 
                 <div class="interactive-demo">
                     <h5>Coba Langsung: async/await</h5>
@@ -846,57 +1486,203 @@ Selesai, berhasil atau tidak</span></div>
             <section id="fetch">
                 <h2>6. fetch dan Pemanggilan Layanan Luar <span class="badge">Indikator 2.2</span></h2>
 
-                <p><code>fetch()</code> adalah fungsi bawaan untuk melakukan permintaan HTTP. Sejak Node.js 18 ia tersedia langsung tanpa memasang pustaka apa pun, dan sintaksnya <strong>sama persis</strong> di Node.js maupun di browser &mdash; jadi yang kalian pelajari sekarang akan langsung terpakai lagi di Minggu 11 saat membangun antarmuka React.</p>
+                <p><code>fetch()</code> adalah fungsi bawaan untuk melakukan permintaan HTTP ke server lain. Sejak Node.js 18 ia tersedia langsung tanpa memasang pustaka apa pun, dan sintaksnya <strong>sama persis</strong> di Node.js maupun di browser, jadi yang kalian pelajari sekarang akan langsung terpakai lagi di Minggu 11 saat membangun antarmuka React.</p>
 
-                <h3>6.1 Permintaan GET</h3>
-                <pre><code><span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>);
-<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();
-
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">user</span>.<span class="variable">name</span>);       <span class="comment">// "Leanne Graham"</span></code></pre>
-
-                <div class="warning-box">
-                    <strong>Perhatikan ada DUA <code>await</code>.</strong> Itu bukan salah ketik:
-                    <ul>
-                        <li><code>await fetch(...)</code> &mdash; menunggu <strong>header</strong> tanggapan tiba</li>
-                        <li><code>await respons.json()</code> &mdash; menunggu <strong>badan</strong> tanggapan selesai diunduh dan diurai</li>
-                    </ul>
-                    Melupakan <code>await</code> kedua adalah kesalahan yang sangat sering terjadi &mdash; yang tercetak jadi <code>Promise { &lt;pending&gt; }</code>.
+                <div class="info-box">
+                    <strong>Apa itu fetch, singkatnya:</strong> <code>fetch(url)</code> berarti <em>"tolong ambilkan data dari alamat ini"</em>. Karena harus menunggu jaringan, ia <strong>asinkron</strong>: yang dikembalikan bukan datanya, melainkan sebuah Promise. Pengambilan datanya dua tahap:
+                    <ol>
+                        <li><code>fetch(url)</code> &rarr; Promise yang berisi <strong>respons</strong> (status dan header tiba lebih dulu).</li>
+                        <li><code>respons.json()</code> &rarr; Promise yang berisi <strong>datanya</strong> (isi tanggapan dibaca dan diurai menjadi object).</li>
+                    </ol>
+                    Keduanya asinkron, jadi masing-masing butuh <code>await</code> (atau <code>.then()</code>). Sekarang kita coba langsung.
                 </div>
 
-                <h3>6.2 Memeriksa Status &mdash; Jangan Dilewati</h3>
-                <p>Ini perilaku <code>fetch</code> yang paling sering mengejutkan: <strong><code>fetch</code> tidak menganggap status 404 atau 500 sebagai kegagalan.</strong> Promise-nya tetap <em>fulfilled</em>. Yang membuatnya <em>rejected</em> hanya kegagalan jaringan &mdash; server tidak terjangkau, DNS gagal, koneksi putus.</p>
+                <h3>6.1 Coba Dulu: Proyek latihan-fetch</h3>
 
-                <pre><code><span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://api.contoh.id/tidak-ada'</span>);
+                <h4>Langkah 0: Buat proyek</h4>
+                <p>Proyek baru bernama <code>latihan-fetch</code>. Kita memanggil API contoh gratis <code>jsonplaceholder.typicode.com</code>, jadi kalian butuh koneksi internet. Tidak ada paket yang perlu dipasang.</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-fetch
+<span class="prompt">$</span> cd latihan-fetch
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
 
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">respons</span>.<span class="variable">ok</span>);       <span class="comment">// false</span>
-<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">respons</span>.<span class="variable">status</span>);   <span class="comment">// 404</span>
+                <h4>Langkah 1: Dengan async/await &mdash; <code>61-fetch-dasar.js</code></h4>
+                <pre><code><span class="comment">// 61-fetch-dasar.js</span>
+<span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>);   <span class="comment">// 1. tunggu respons tiba</span>
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();                                             <span class="comment">// 2. tunggu isinya dibaca</span>
 
-<span class="comment">// ❌ Tanpa pemeriksaan: data jadi { error: "Not Found" }</span>
-<span class="comment">//    dan program lanjut seolah-olah tidak terjadi apa-apa</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Nama  :'</span>, <span class="variable">user</span>.<span class="variable">name</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Email :'</span>, <span class="variable">user</span>.<span class="variable">email</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Kota  :'</span>, <span class="variable">user</span>.<span class="variable">address</span>.<span class="variable">city</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 61-fetch-dasar.js
+<span class="out">Nama  : Leanne Graham
+Email : Sincere@april.biz
+Kota  : Gwenborough</span></div>
+                <p>Kodenya dibaca dari atas ke bawah seperti kode biasa. Ada <strong>dua</strong> <code>await</code>, sesuai dua tahap tadi.</p>
 
-<span class="comment">// ✅ Pola yang benar — WAJIB dipakai:</span>
-<span class="keyword">if</span> (<span class="operator">!</span><span class="variable">respons</span>.<span class="variable">ok</span>) {
+                <div class="warning-box">
+                    <strong>Dua <code>await</code> itu bukan salah ketik:</strong>
+                    <ul>
+                        <li><code>await fetch(...)</code> &mdash; menunggu <strong>respons</strong> tiba (status dan header).</li>
+                        <li><code>await respons.json()</code> &mdash; menunggu <strong>isi tanggapan</strong> selesai dibaca dan diurai.</li>
+                    </ul>
+                    Melupakan <code>await</code> kedua adalah kesalahan yang sangat sering terjadi: yang tercetak jadi <code>Promise { &lt;pending&gt; }</code> dan <code>user.name</code> bernilai <code>undefined</code>.
+                </div>
+
+                <h4>Langkah 2: Tanpa async/await (pakai <code>.then()</code>) &mdash; <code>62-fetch-then.js</code></h4>
+                <p>Hasil yang sama, ditulis dengan gaya Promise dari Section 4:</p>
+                <pre><code><span class="comment">// 62-fetch-then.js  (hasil sama dengan 61, tanpa async/await)</span>
+<span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/users/1'</span>)
+    .<span class="function">then</span>(<span class="variable">respons</span> =&gt; <span class="variable">respons</span>.<span class="function">json</span>())
+    .<span class="function">then</span>(<span class="variable">user</span> =&gt; {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Nama  :'</span>, <span class="variable">user</span>.<span class="variable">name</span>);
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Email :'</span>, <span class="variable">user</span>.<span class="variable">email</span>);
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Kota  :'</span>, <span class="variable">user</span>.<span class="variable">address</span>.<span class="variable">city</span>);
+    })
+    .<span class="keyword">catch</span>(<span class="variable">err</span> =&gt; <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>));
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Baris ini jalan lebih dulu'</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 62-fetch-then.js
+<span class="out">Baris ini jalan lebih dulu
+Nama  : Leanne Graham
+Email : Sincere@april.biz
+Kota  : Gwenborough</span></div>
+                <p>Datanya sama, tetapi perhatikan urutan cetaknya: <code>Baris ini jalan lebih dulu</code> tampil <strong>sebelum</strong> datanya. Tanpa <code>await</code>, Node tidak berhenti menunggu; <code>fetch</code> dititipkan dan baris berikutnya langsung jalan. Itulah asinkron yang kita bahas di Section 2.</p>
+
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>async/await (61)</th>
+                        <th>Tanpa async/await (62)</th>
+                    </tr>
+                    <tr>
+                        <td>Bentuk</td>
+                        <td>Baris demi baris</td>
+                        <td>Rantai <code>.then()</code></td>
+                    </tr>
+                    <tr>
+                        <td>Dua tahap fetch</td>
+                        <td>Dua <code>await</code></td>
+                        <td>Dua <code>.then()</code></td>
+                    </tr>
+                    <tr>
+                        <td>Error</td>
+                        <td><code>try/catch</code></td>
+                        <td><code>.catch()</code></td>
+                    </tr>
+                    <tr>
+                        <td>Kode di bawahnya</td>
+                        <td>Menunggu di baris <code>await</code></td>
+                        <td>Langsung jalan, tidak menunggu</td>
+                    </tr>
+                </table>
+                <p>Keduanya benar. Di mata kuliah ini kita memakai gaya <code>async/await</code>; gaya <code>.then()</code> perlu dikenali karena masih banyak ditemukan di tutorial dan kode lama.</p>
+
+                <h3>6.2 Jadi, Apa Itu fetch?</h3>
+                <p>Setelah melihat hasilnya, bagian-bagiannya mudah dipahami. Objek <code>respons</code> yang dikembalikan <code>fetch</code> membawa informasi tentang tanggapan server:</p>
+                <table>
+                    <tr>
+                        <th>Anggota <code>respons</code></th>
+                        <th>Isinya</th>
+                    </tr>
+                    <tr>
+                        <td><code>respons.ok</code></td>
+                        <td><code>true</code> kalau statusnya 200&ndash;299, selain itu <code>false</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>respons.status</code></td>
+                        <td>Kode status HTTP, mis. <code>200</code>, <code>404</code>, <code>500</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>respons.json()</code></td>
+                        <td>Membaca isi sebagai JSON (asinkron, butuh <code>await</code>)</td>
+                    </tr>
+                    <tr>
+                        <td><code>respons.text()</code></td>
+                        <td>Membaca isi sebagai teks biasa (asinkron, butuh <code>await</code>)</td>
+                    </tr>
+                </table>
+
+                <h3>6.3 Memeriksa Status &mdash; Jangan Dilewati</h3>
+                <p>Ini perilaku <code>fetch</code> yang paling sering mengejutkan: <strong><code>fetch</code> tidak menganggap status 404 atau 500 sebagai kegagalan.</strong> Promise-nya tetap <em>fulfilled</em>. Yang membuatnya <em>rejected</em> hanya kegagalan jaringan: server tidak terjangkau, DNS gagal, koneksi putus. Buktikan sendiri dengan <code>63-cek-status.js</code>:</p>
+                <pre><code><span class="comment">// 63-cek-status.js</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="comment">// Kasus 1: server menjawab, tetapi "tidak ditemukan" (404)</span>
+<span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`${BASE}/users/99999`</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'ok     :'</span>, <span class="variable">respons</span>.<span class="variable">ok</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'status :'</span>, <span class="variable">respons</span>.<span class="variable">status</span>);
+
+<span class="comment">// Kasus 2: server tidak terjangkau sama sekali</span>
+<span class="keyword">try</span> {
+    <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://domain-ini-tidak-ada.invalid/'</span>);
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Jaringan gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 63-cek-status.js
+<span class="out">ok     : false
+status : 404
+Jaringan gagal: fetch failed</span></div>
+
+                <ul>
+                    <li><strong>Kasus 1:</strong> server menjawab "tidak ditemukan". Tidak ada error yang dilempar; kita hanya mendapat <code>ok: false</code> dan <code>status: 404</code>. Kalau tidak diperiksa, program lanjut seolah-olah tidak terjadi apa-apa.</li>
+                    <li><strong>Kasus 2:</strong> servernya tidak ada sama sekali. Barulah <code>fetch</code> benar-benar melempar error (<code>fetch failed</code>).</li>
+                </ul>
+
+                <p>Karena itu pola berikut <strong>wajib</strong> dipakai setiap kali memanggil <code>fetch</code>:</p>
+                <pre><code><span class="keyword">if</span> (!<span class="variable">respons</span>.<span class="variable">ok</span>) {
     <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">`HTTP ${respons.status} — ${respons.statusText}`</span>);
 }
 <span class="keyword">const</span> <span class="variable">data</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();</code></pre>
 
-                <h3>6.3 Fungsi Pembantu yang Layak Dipakai Ulang</h3>
-                <pre><code><span class="comment">// src/http.js</span>
+                <h3>6.4 Fungsi Pembantu yang Layak Dipakai Ulang</h3>
+                <p>Menulis pemeriksaan <code>ok</code> di setiap tempat itu melelahkan dan mudah terlupa. Bungkus sekali saja di file modul (ingat Section 1). Buat <code>http.js</code>:</p>
+                <pre><code><span class="comment">// http.js</span>
 <span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilJson</span>(<span class="variable">url</span>, <span class="variable">opsi</span> = {}) {
     <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="variable">url</span>, <span class="variable">opsi</span>);
 
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">respons</span>.<span class="variable">ok</span>) {
+    <span class="keyword">if</span> (!<span class="variable">respons</span>.<span class="variable">ok</span>) {
         <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">`Permintaan gagal: HTTP ${respons.status} pada ${url}`</span>);
     }
     <span class="keyword">return</span> <span class="variable">respons</span>.<span class="function">json</span>();
 }</code></pre>
+                <p>Sekarang pemakainya cukup memanggil <code>ambilJson</code>. Buat <code>64-daftar-pengguna.js</code>:</p>
+                <pre><code><span class="comment">// 64-daftar-pengguna.js</span>
+<span class="keyword">import</span> { <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./http.js'</span>;
 
-                <h3>6.4 Permintaan POST</h3>
-                <pre><code><span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">'https://jsonplaceholder.typicode.com/posts'</span>, {
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="keyword">try</span> {
+    <span class="keyword">const</span> <span class="variable">pengguna</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users`</span>);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Ditemukan ${pengguna.length} pengguna, lima pertama:`</span>);
+
+    <span class="variable">pengguna</span>
+        .<span class="function">slice</span>(<span class="number">0</span>, <span class="number">5</span>)
+        .<span class="function">forEach</span>(<span class="variable">u</span> =&gt; <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${u.id}. ${u.name} (${u.address.city})`</span>));
+
+    <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/99999`</span>);   <span class="comment">// sengaja gagal</span>
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 64-daftar-pengguna.js
+<span class="out">Ditemukan 10 pengguna, lima pertama:
+1. Leanne Graham (Gwenborough)
+2. Ervin Howell (Wisokyburgh)
+3. Clementine Bauch (McKenziehaven)
+4. Patricia Lebsack (South Elvis)
+5. Chelsey Dietrich (Roscoeview)
+Gagal: Permintaan gagal: HTTP 404 pada https://jsonplaceholder.typicode.com/users/99999</span></div>
+                <p>Bagian <code>map</code>/<code>forEach</code> dan <code>slice</code> adalah kode <strong>sinkron</strong> (hasilnya langsung ada), sedangkan <code>ambilJson</code> adalah <strong>asinkron</strong> (butuh <code>await</code>). Pengguna nomor 99999 tidak ada, sehingga <code>ambilJson</code> melempar error yang ditangkap <code>catch</code>. Di proyek akhir (Section 9), file ini ada di <code>src/http.js</code>.</p>
+
+                <h3>6.5 Permintaan POST</h3>
+                <p>Sejauh ini kita hanya <strong>mengambil</strong> data (GET). Untuk <strong>mengirim</strong> data ke server, pakai POST. Buat <code>65-post.js</code>, memakai <code>ambilJson</code> dari <code>http.js</code>:</p>
+                <pre><code><span class="comment">// 65-post.js</span>
+<span class="keyword">import</span> { <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./http.js'</span>;
+
+<span class="comment">// dummyjson.com: API tiruan yang menerima POST (datanya tidak benar-benar disimpan)</span>
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">'https://dummyjson.com/posts/add'</span>, {
     <span class="variable">method</span>: <span class="string">'POST'</span>,
-    <span class="variable">headers</span>: {
-        <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span>
-    },
+    <span class="variable">headers</span>: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
     <span class="variable">body</span>: <span class="variable">JSON</span>.<span class="function">stringify</span>({
         <span class="variable">title</span>: <span class="string">'Judul'</span>,
         <span class="variable">body</span>: <span class="string">'Isi tulisan'</span>,
@@ -904,7 +1690,10 @@ Selesai, berhasil atau tidak</span></div>
     })
 });
 
-<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">respons</span>.<span class="function">json</span>();</code></pre>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">hasil</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 65-post.js
+<span class="out">{ id: 252, title: 'Judul', body: 'Isi tulisan', userId: 1 }</span></div>
+                <p>Server mengembalikan data yang kita kirim, ditambah <code>id</code> baru. Angka <code>id</code> di komputer kalian boleh berbeda, dan data ini tidak benar-benar disimpan karena API-nya hanya tiruan.</p>
 
                 <table>
                     <tr>
@@ -930,15 +1719,45 @@ Selesai, berhasil atau tidak</span></div>
                 </table>
 
                 <div class="warning-box">
-                    <strong>Dua kesalahan klasik pada POST:</strong> mengirim object langsung ke <code>body</code> tanpa <code>JSON.stringify()</code>, dan lupa header <code>Content-Type</code>. Keduanya membuat server menerima badan permintaan kosong &mdash; dan galatnya membingungkan karena permintaannya sendiri "berhasil".
+                    <strong>Dua kesalahan klasik pada POST:</strong> mengirim object langsung ke <code>body</code> tanpa <code>JSON.stringify()</code>, dan lupa header <code>Content-Type</code>. Keduanya membuat server menerima badan permintaan kosong, dan errornya membingungkan karena permintaannya sendiri "berhasil".
                 </div>
 
-                <h3>6.5 Batas Waktu (Timeout)</h3>
-                <p>Secara bawaan, <code>fetch</code> akan menunggu selamanya kalau server tidak menjawab. Pada API produksi hal ini tidak boleh dibiarkan:</p>
+                <h3>6.6 Batas Waktu (Timeout)</h3>
+                <p>Secara bawaan, <code>fetch</code> akan menunggu selamanya kalau server tidak menjawab. Pada API produksi hal ini tidak boleh dibiarkan. Buat <code>66-timeout.js</code>:</p>
+                <pre><code><span class="comment">// 66-timeout.js</span>
+<span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
 
-                <pre><code><span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="variable">url</span>, {
-    <span class="variable">signal</span>: <span class="variable">AbortSignal</span>.<span class="function">timeout</span>(<span class="number">5000</span>)     <span class="comment">// batalkan setelah 5 detik</span>
-});</code></pre>
+<span class="keyword">try</span> {
+    <span class="comment">// 1 ms sengaja terlalu singkat supaya timeout-nya terlihat</span>
+    <span class="keyword">await</span> <span class="function">fetch</span>(<span class="string">`${BASE}/users/1`</span>, { <span class="variable">signal</span>: <span class="variable">AbortSignal</span>.<span class="function">timeout</span>(<span class="number">1</span>) });
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">err</span>.<span class="variable">name</span>, <span class="string">'→'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node 66-timeout.js
+<span class="out">TimeoutError → The operation was aborted due to timeout</span></div>
+                <p>Di contoh ini batasnya sengaja hanya 1 ms agar timeout-nya terlihat. Di kode sungguhan pakai angka yang wajar, misalnya <code>AbortSignal.timeout(5000)</code> untuk 5 detik.</p>
+
+                <h3>Struktur Proyek Akhir</h3>
+                <pre><code>latihan-fetch/
+├── package.json          ("type": "module")
+├── http.js               ← pembungkus fetch yang dipakai ulang
+├── 61-fetch-dasar.js     ← GET dengan async/await
+├── 62-fetch-then.js      ← GET dengan .then() (tanpa async/await)
+├── 63-cek-status.js      ← 404 tidak membuat fetch error
+├── 64-daftar-pengguna.js ← memakai http.js
+├── 65-post.js            ← mengirim data (POST)
+└── 66-timeout.js         ← batas waktu</code></pre>
+
+                <div class="success-box">
+                    <strong>Yang perlu diingat dari Section 6:</strong>
+                    <ul>
+                        <li><code>fetch</code> dan <code>respons.json()</code> sama-sama <strong>asinkron</strong>: dua tahap, dua <code>await</code> (atau dua <code>.then()</code>).</li>
+                        <li>Status 404/500 <strong>tidak</strong> membuat <code>fetch</code> error. Selalu periksa <code>respons.ok</code>.</li>
+                        <li>Bungkus pemeriksaan itu sekali di <code>http.js</code> lalu pakai ulang.</li>
+                        <li>POST: <code>method</code>, header <code>Content-Type</code>, dan <code>body</code> berupa <code>JSON.stringify(...)</code>.</li>
+                        <li>Beri batas waktu dengan <code>AbortSignal.timeout</code>.</li>
+                    </ul>
+                </div>
 
                 <div class="interactive-demo">
                     <h5>Coba Langsung: fetch ke API Publik</h5>
@@ -946,23 +1765,23 @@ Selesai, berhasil atau tidak</span></div>
                     <button onclick="demoFetch('get')">GET satu user</button>
                     <button onclick="demoFetch('list')">GET daftar + olah data</button>
                     <button onclick="demoFetch('404')">Status 404 (tidak throw!)</button>
-                    <button onclick="demoFetch('jaringan')">Galat jaringan</button>
+                    <button onclick="demoFetch('jaringan')">Error jaringan</button>
                     <div class="console-output" id="demo4-out">Klik salah satu tombol...</div>
                 </div>
             </section>
 
             <!-- Section 7 -->
             <section id="galat">
-                <h2>7. Penanganan Galat Asinkron <span class="badge">Indikator 2.4</span></h2>
+                <h2>7. Penanganan Error Asinkron <span class="badge">Indikator 2.4</span></h2>
 
-                <p>Kode asinkron yang tidak menangani galat adalah sumber masalah paling umum pada aplikasi Node.js. Satu Promise yang gagal tanpa penangkap bisa menjatuhkan seluruh proses server &mdash; dan bersamanya, semua pengguna yang sedang dilayani.</p>
+                <p>Kode asinkron yang tidak menangani error adalah sumber masalah paling umum pada aplikasi Node.js. Satu Promise yang gagal tanpa penangkap bisa menjatuhkan seluruh proses server &mdash; dan bersamanya, semua pengguna yang sedang dilayani.</p>
 
                 <h3>7.1 try/catch Bekerja dengan await</h3>
-                <p><em>(Masih memakai <code>data.json</code> yang sama dari Section 3.1. Coba panggil <code>bacaData()</code> dengan nama berkas yang tidak ada untuk melihat jalur <code>catch</code>-nya.)</em></p>
+                <p><em>(Masih memakai <code>data.json</code> yang sama dari Section 3.1. Coba panggil <code>bacaData()</code> dengan nama file yang tidak ada untuk melihat jalur <code>catch</code>-nya.)</em></p>
                 <pre><code><span class="keyword">async</span> <span class="keyword">function</span> <span class="function">bacaData</span>() {
     <span class="keyword">try</span> {
         <span class="keyword">const</span> <span class="variable">isi</span> = <span class="keyword">await</span> <span class="function">readFile</span>(<span class="string">'data.json'</span>, <span class="string">'utf-8'</span>);
-        <span class="keyword">return</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);      <span class="comment">// galat parse juga tertangkap</span>
+        <span class="keyword">return</span> <span class="variable">JSON</span>.<span class="function">parse</span>(<span class="variable">isi</span>);      <span class="comment">// error parse juga tertangkap</span>
     } <span class="keyword">catch</span> (<span class="variable">err</span>) {
         <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal membaca:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
         <span class="keyword">return</span> [];                       <span class="comment">// nilai cadangan yang aman</span>
@@ -972,7 +1791,7 @@ Selesai, berhasil atau tidak</span></div>
 }</code></pre>
 
                 <div class="warning-box">
-                    <strong>Yang tidak bekerja:</strong> <code>try/catch</code> <strong>tidak</strong> menangkap galat dari callback. Kode berikut tetap membuat proses mati:
+                    <strong>Yang tidak bekerja:</strong> <code>try/catch</code> <strong>tidak</strong> menangkap error dari callback. Kode berikut tetap membuat proses mati:
                     <pre><code><span class="keyword">try</span> {
     <span class="variable">fs</span>.<span class="function">readFile</span>(<span class="string">'x.json'</span>, (<span class="variable">err</span>, <span class="variable">isi</span>) <span class="operator">=&gt;</span> {
         <span class="keyword">throw</span> <span class="variable">err</span>;         <span class="comment">// ❌ TIDAK tertangkap di bawah</span>
@@ -983,7 +1802,7 @@ Selesai, berhasil atau tidak</span></div>
                     Alasannya: saat callback dipanggil, blok <code>try</code> sudah lama selesai dijalankan. Ini salah satu alasan kuat memakai Promise dan <code>async/await</code>.
                 </div>
 
-                <h3>7.2 Membedakan Jenis Galat</h3>
+                <h3>7.2 Membedakan Jenis Error</h3>
                 <p>Tidak semua kegagalan sama, dan penanganannya berbeda. Bedakan sejak awal:</p>
 
                 <table>
@@ -994,39 +1813,39 @@ Selesai, berhasil atau tidak</span></div>
                         <th>Penanganan</th>
                     </tr>
                     <tr>
-                        <td>Galat jaringan</td>
+                        <td>Error jaringan</td>
                         <td>Server mati, DNS gagal</td>
                         <td><code>fetch</code> ditolak &rarr; masuk <code>catch</code></td>
                         <td>Coba lagi, atau tampilkan pesan gangguan</td>
                     </tr>
                     <tr>
-                        <td>Galat HTTP 4xx</td>
+                        <td>Error HTTP 4xx</td>
                         <td>404, 401, 422</td>
                         <td><code>respons.ok === false</code></td>
                         <td>Salah dari sisi klien &mdash; perbaiki permintaan</td>
                     </tr>
                     <tr>
-                        <td>Galat HTTP 5xx</td>
+                        <td>Error HTTP 5xx</td>
                         <td>500, 503</td>
                         <td><code>respons.ok === false</code></td>
                         <td>Salah dari sisi server &mdash; coba lagi nanti</td>
                     </tr>
                     <tr>
-                        <td>Galat penguraian</td>
+                        <td>Error penguraian</td>
                         <td>Jawaban bukan JSON yang sah</td>
-                        <td><code>.json()</code> melempar galat</td>
+                        <td><code>.json()</code> melempar error</td>
                         <td>Periksa <code>Content-Type</code></td>
                     </tr>
                     <tr>
-                        <td>Galat logika</td>
+                        <td>Error logika</td>
                         <td>Data ada, tetapi tidak masuk akal</td>
                         <td>Validasi kalian sendiri</td>
-                        <td>Lempar galat kustom</td>
+                        <td>Lempar error kustom</td>
                     </tr>
                 </table>
 
-                <h3>7.3 Galat Kustom</h3>
-                <p>Membuat kelas galat sendiri membuat penanganan di lapisan atas jauh lebih rapi. Pola ini akan langsung terpakai di Minggu 4 untuk penanganan galat terpusat Express:</p>
+                <h3>7.3 Error Kustom</h3>
+                <p>Membuat kelas error sendiri membuat penanganan di lapisan atas jauh lebih rapi. Pola ini akan langsung terpakai di Minggu 4 untuk penanganan error terpusat Express:</p>
 
                 <pre><code><span class="comment">// src/galat.js</span>
 <span class="keyword">export</span> <span class="keyword">class</span> <span class="function">GalatHttp</span> <span class="keyword">extends</span> <span class="variable">Error</span> {
@@ -1064,20 +1883,20 @@ Selesai, berhasil atau tidak</span></div>
 });</code></pre>
 
                 <div class="info-box">
-                    <strong>Aturan praktis penanganan galat:</strong>
+                    <strong>Aturan praktis penanganan error:</strong>
                     <ul>
-                        <li>Tangkap galat di tempat yang <strong>benar-benar bisa melakukan sesuatu</strong> terhadapnya</li>
+                        <li>Tangkap error di tempat yang <strong>benar-benar bisa melakukan sesuatu</strong> terhadapnya</li>
                         <li>Kalau tidak bisa berbuat apa-apa, lempar ulang (<code>throw err</code>) &mdash; jangan ditelan diam-diam</li>
-                        <li><strong>Jangan pernah</strong> menulis <code>catch (e) {}</code> kosong. Galat yang hilang tanpa jejak jauh lebih sulit dilacak daripada aplikasi yang mati dengan pesan jelas</li>
-                        <li>Pesan galat harus menyebut <strong>apa</strong> yang gagal dan <strong>di mana</strong></li>
+                        <li><strong>Jangan pernah</strong> menulis <code>catch (e) {}</code> kosong. Error yang hilang tanpa jejak jauh lebih sulit dilacak daripada aplikasi yang mati dengan pesan jelas</li>
+                        <li>Pesan error harus menyebut <strong>apa</strong> yang gagal dan <strong>di mana</strong></li>
                     </ul>
                 </div>
 
                 <div class="interactive-demo">
-                    <h5>Coba Langsung: Penanganan Galat</h5>
+                    <h5>Coba Langsung: Penanganan Error</h5>
                     <button onclick="demoGalat('tangkap')">try/catch pada await</button>
                     <button onclick="demoGalat('callback')">try/catch pada callback (gagal)</button>
-                    <button onclick="demoGalat('kustom')">Galat kustom</button>
+                    <button onclick="demoGalat('kustom')">Error kustom</button>
                     <button onclick="demoGalat('finally')">finally selalu jalan</button>
                     <div class="console-output" id="demo5-out">Klik salah satu tombol...</div>
                 </div>
@@ -1123,7 +1942,161 @@ Selesai, berhasil atau tidak</span></div>
                     <div style="margin-top:8px;color:#555">Total: <strong>1000 ms</strong> &mdash; ketiganya dimulai bersamaan, <strong>3&times; lebih cepat</strong></div>
                 </div>
 
-                <h3>8.3 Kapan Memilih yang Mana?</h3>
+                <h3>8.3 Praktik: Mengukur Sendiri di Proyek Nyata</h3>
+                <p>Contoh di atas memakai <code>ambil()</code> rekaan. Sekarang kita buktikan dengan permintaan sungguhan ke API, lengkap dari membuat proyek. Buat proyek baru bernama <code>latihan-paralel</code>:</p>
+
+                <h4>Langkah 0: Buat proyek</h4>
+                <div class="terminal"><span class="prompt">$</span> mkdir latihan-paralel
+<span class="prompt">$</span> cd latihan-paralel
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                <h4>Langkah 1: Fungsi bantu <code>ambil.js</code></h4>
+                <p>Semua skrip berikutnya memakai satu fungsi yang sama. Ini sekaligus latihan modul dari bagian 1: fungsi dan konstanta di-<code>export</code>, lalu di-<code>import</code> oleh file lain. Fungsinya juga melempar error kalau server membalas status gagal (misalnya 404), karena <code>fetch</code> sendiri tidak melempar error untuk status tersebut.</p>
+                <pre><code><span class="comment">// ambil.js</span>
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">BASE</span> = <span class="string">'https://jsonplaceholder.typicode.com'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilJson</span>(<span class="variable">url</span>) {
+    <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">fetch</span>(<span class="variable">url</span>);
+    <span class="keyword">if</span> (!<span class="variable">respons</span>.<span class="variable">ok</span>) {
+        <span class="variable">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">`HTTP ${respons.status} untuk ${url}`</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">respons</span>.<span class="function">json</span>();
+}</code></pre>
+
+                <h4>Langkah 2: Berurutan &mdash; <code>berurutan.js</code></h4>
+                <p>Tiga data untuk pengguna nomor 1: profil, daftar post, dan daftar todo. Setiap <code>await</code> menunggu yang sebelumnya selesai:</p>
+                <pre><code><span class="comment">// berurutan.js</span>
+<span class="keyword">import</span> { <span class="variable">BASE</span>, <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./ambil.js'</span>;
+
+<span class="variable">console</span>.<span class="function">time</span>(<span class="string">'berurutan'</span>);
+
+<span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/1`</span>);          <span class="comment">// tunggu selesai...</span>
+<span class="keyword">const</span> <span class="variable">posts</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts?userId=1`</span>);  <span class="comment">// ...baru mulai ini</span>
+<span class="keyword">const</span> <span class="variable">todos</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/todos?userId=1`</span>);  <span class="comment">// ...baru mulai ini</span>
+
+<span class="variable">console</span>.<span class="function">timeEnd</span>(<span class="string">'berurutan'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${user.name} | ${posts.length} post | ${todos.length} todo`</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node berurutan.js
+<span class="out">berurutan: 1.969s
+Leanne Graham | 10 post | 20 todo</span></div>
+
+                <h4>Langkah 3: Serentak &mdash; <code>serentak.js</code></h4>
+                <p>Data yang sama, tetapi ketiga permintaan dikirim sekaligus. Perhatikan <code>Promise.all</code> menerima array janji, dan hasilnya datang sebagai array dengan urutan yang sama seperti yang diminta:</p>
+                <pre><code><span class="comment">// serentak.js</span>
+<span class="keyword">import</span> { <span class="variable">BASE</span>, <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./ambil.js'</span>;
+
+<span class="variable">console</span>.<span class="function">time</span>(<span class="string">'serentak'</span>);
+
+<span class="keyword">const</span> [<span class="variable">user</span>, <span class="variable">posts</span>, <span class="variable">todos</span>] = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>([
+    <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/1`</span>),
+    <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts?userId=1`</span>),
+    <span class="function">ambilJson</span>(<span class="string">`${BASE}/todos?userId=1`</span>),
+]);
+
+<span class="variable">console</span>.<span class="function">timeEnd</span>(<span class="string">'serentak'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${user.name} | ${posts.length} post | ${todos.length} todo`</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node serentak.js
+<span class="out">serentak: 1.210s
+Leanne Graham | 10 post | 20 todo</span></div>
+
+                <p>Datanya identik, tetapi waktunya jauh lebih singkat. Angka di komputer kalian akan berbeda karena bergantung pada koneksi internet; yang perlu dibandingkan adalah <strong>selisih kedua skrip</strong>, bukan angka mutlaknya.</p>
+
+                <div class="info-box">
+                    <strong>Mengapa tidak persis 3&times; lebih cepat?</strong> Pada contoh rekaan di 8.1&ndash;8.2, tiap operasi tepat 1000 ms. Pada jaringan sungguhan, permintaan pertama ke sebuah server menanggung biaya membuka sambungan (DNS dan TLS) yang tidak ikut dipercepat. Prinsipnya tetap sama: waktu serentak mendekati <em>operasi paling lambat</em>, bukan <em>jumlah semuanya</em>.
+                </div>
+
+                <h4>Langkah 4: Ketika harus berurutan &mdash; <code>bergantung.js</code></h4>
+                <p>Serentak tidak selalu bisa. Di sini kita mau menampilkan nama penulis <em>dan</em> komentar dari post nomor 1. Nama penulis baru bisa diminta kalau kita sudah tahu <code>userId</code>-nya, dan <code>userId</code> itu hanya ada di dalam data post. Jadi tahap 1 <strong>wajib</strong> berurutan. Begitu <code>userId</code> diketahui, penulis dan komentar tidak saling bergantung, sehingga tahap 2 boleh serentak:</p>
+                <pre><code><span class="comment">// bergantung.js</span>
+<span class="keyword">import</span> { <span class="variable">BASE</span>, <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./ambil.js'</span>;
+
+<span class="variable">console</span>.<span class="function">time</span>(<span class="string">'total'</span>);
+
+<span class="comment">// Tahap 1: WAJIB berurutan. Kita butuh userId dari post ini.</span>
+<span class="keyword">const</span> <span class="variable">post</span> = <span class="keyword">await</span> <span class="function">ambilJson</span>(<span class="string">`${BASE}/posts/1`</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Post 1 ditulis oleh userId ${post.userId}`</span>);
+
+<span class="comment">// Tahap 2: dua data ini tidak saling bergantung, jadi serentak.</span>
+<span class="keyword">const</span> [<span class="variable">penulis</span>, <span class="variable">komentar</span>] = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>([
+    <span class="function">ambilJson</span>(<span class="string">`${BASE}/users/${post.userId}`</span>),
+    <span class="function">ambilJson</span>(<span class="string">`${BASE}/comments?postId=${post.id}`</span>),
+]);
+
+<span class="variable">console</span>.<span class="function">timeEnd</span>(<span class="string">'total'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Penulis: ${penulis.name}, ${komentar.length} komentar`</span>);</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node bergantung.js
+<span class="out">Post 1 ditulis oleh userId 1
+total: 2.194s
+Penulis: Leanne Graham, 5 komentar</span></div>
+
+                <p>Pola ini paling sering muncul di aplikasi nyata: <strong>berurutan untuk yang bergantung, serentak untuk yang bebas</strong>. Total waktunya dua tahap, bukan tiga permintaan berurutan.</p>
+
+                <h4>Langkah 5: Kalau salah satu gagal &mdash; <code>sebagian-gagal.js</code></h4>
+                <p>Sekarang satu dari tiga permintaan sengaja dibuat gagal (pengguna nomor 99999 tidak ada). Bandingkan <code>Promise.all</code> dengan <code>Promise.allSettled</code> (lihat tabel di 8.5):</p>
+                <pre><code><span class="comment">// sebagian-gagal.js</span>
+<span class="keyword">import</span> { <span class="variable">BASE</span>, <span class="variable">ambilJson</span> } <span class="keyword">from</span> <span class="string">'./ambil.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">daftarUrl</span> = [
+    <span class="string">`${BASE}/users/1`</span>,
+    <span class="string">`${BASE}/users/99999`</span>,   <span class="comment">// tidak ada → HTTP 404</span>
+    <span class="string">`${BASE}/users/3`</span>,
+];
+
+<span class="comment">// Promise.all: satu gagal, semuanya dianggap gagal</span>
+<span class="keyword">try</span> {
+    <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>(<span class="variable">daftarUrl</span>.<span class="function">map</span>(<span class="variable">ambilJson</span>));
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Promise.all     →'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}
+
+<span class="comment">// Promise.allSettled: semua ditunggu, tiap hasil dilaporkan</span>
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">allSettled</span>(<span class="variable">daftarUrl</span>.<span class="function">map</span>(<span class="variable">ambilJson</span>));
+
+<span class="variable">hasil</span>.<span class="function">forEach</span>((<span class="variable">r</span>, <span class="variable">i</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">r</span>.<span class="variable">status</span> === <span class="string">'fulfilled'</span>) {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`allSettled [${i}] → berhasil: ${r.value.name}`</span>);
+    } <span class="keyword">else</span> {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`allSettled [${i}] → gagal: ${r.reason.message}`</span>);
+    }
+});</code></pre>
+                <div class="terminal"><span class="prompt">$</span> node sebagian-gagal.js
+<span class="out">Promise.all     → HTTP 404 untuk https://jsonplaceholder.typicode.com/users/99999
+allSettled [0] → berhasil: Leanne Graham
+allSettled [1] → gagal: HTTP 404 untuk https://jsonplaceholder.typicode.com/users/99999
+allSettled [2] → berhasil: Clementine Bauch</span></div>
+
+                <p><code>Promise.all</code> membuang dua data yang sebenarnya berhasil hanya karena satu yang gagal. <code>Promise.allSettled</code> mengembalikan ketiganya beserta statusnya, jadi kalian bebas memutuskan: tampilkan yang berhasil dan beri tahu yang gagal.</p>
+
+                <table>
+                    <tr>
+                        <th>File</th>
+                        <th>Pola</th>
+                        <th>Pelajaran</th>
+                    </tr>
+                    <tr>
+                        <td><code>berurutan.js</code></td>
+                        <td>3 &times; <code>await</code></td>
+                        <td>Waktu = jumlah semua permintaan</td>
+                    </tr>
+                    <tr>
+                        <td><code>serentak.js</code></td>
+                        <td><code>Promise.all</code></td>
+                        <td>Waktu &asymp; permintaan paling lambat</td>
+                    </tr>
+                    <tr>
+                        <td><code>bergantung.js</code></td>
+                        <td><code>await</code> lalu <code>Promise.all</code></td>
+                        <td>Berurutan hanya untuk yang bergantung</td>
+                    </tr>
+                    <tr>
+                        <td><code>sebagian-gagal.js</code></td>
+                        <td><code>allSettled</code></td>
+                        <td>Satu gagal tidak menggugurkan yang lain</td>
+                    </tr>
+                </table>
+
+                <h3>8.4 Kapan Memilih yang Mana?</h3>
                 <table>
                     <tr>
                         <th>Pakai berurutan kalau...</th>
@@ -1147,7 +2120,7 @@ Selesai, berhasil atau tidak</span></div>
                     <strong>Kesalahan yang sangat sering terjadi:</strong> memakai <code>await</code> berurutan padahal operasinya sama sekali tidak saling bergantung. Kode tetap benar, tetapi aplikasinya berkali-kali lipat lebih lambat &mdash; dan ini <strong>termasuk yang diperiksa saat tinjauan kode</strong>.
                 </div>
 
-                <h3>8.4 Empat Varian Promise</h3>
+                <h3>8.5 Empat Varian Promise</h3>
                 <table>
                     <tr>
                         <th>Metode</th>
@@ -1202,7 +2175,7 @@ Selesai, berhasil atau tidak</span></div>
     <span class="function">tunggu</span>(<span class="number">3000</span>).<span class="function">then</span>(() <span class="operator">=&gt;</span> { <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">'Timeout 3 detik'</span>); })
 ]);</code></pre>
 
-                <h3>8.5 Membatasi Jumlah Permintaan Serentak</h3>
+                <h3>8.6 Membatasi Jumlah Permintaan Serentak</h3>
                 <p><code>Promise.all</code> dengan 1000 URL akan menembakkan 1000 permintaan sekaligus &mdash; server tujuan bisa memblokir kalian. Solusi sederhana: pecah menjadi kelompok kecil.</p>
 
                 <pre><code><span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilBerkelompok</span>(<span class="variable">daftarUrl</span>, <span class="variable">ukuran</span> = <span class="number">5</span>) {
@@ -1231,17 +2204,59 @@ Selesai, berhasil atau tidak</span></div>
             <section id="koding">
                 <h2>9. Praktik: Gabungkan Data Lokal & Direktori Kampus <span class="badge badge-new">Latihan</span></h2>
 
-                <p>Latihan ini menyatukan seluruh Pertemuan 3: modul, <code>fetch</code>, <code>async/await</code>, penanganan galat, dan perbandingan waktu eksekusi. Skenarionya: data mahasiswa yang kalian olah sejak Pertemuan 1&ndash;2 (dari berkas KHS lokal) sekarang perlu dilengkapi email dan kota domisili yang tersimpan di <strong>sistem direktori/SSO kampus</strong> &mdash; layanan terpisah yang hanya bisa diakses lewat API. Karena belum ada direktori kampus sungguhan untuk diajak latihan, kita simulasikan lewat API publik yang bentuk datanya mirip (nama, email, alamat).</p>
+                <p>Latihan ini menyatukan seluruh Pertemuan 3: modul, <code>fetch</code>, <code>async/await</code>, penanganan error, dan perbandingan waktu eksekusi. Skenarionya: data mahasiswa yang kalian olah sejak Pertemuan 1&ndash;2 (dari file KHS lokal) sekarang perlu dilengkapi email dan kota domisili yang tersimpan di <strong>sistem direktori/SSO kampus</strong> &mdash; layanan terpisah yang hanya bisa diakses lewat API. Karena belum ada direktori kampus sungguhan untuk diajak latihan, kita simulasikan lewat API publik yang bentuk datanya mirip (nama, email, alamat).</p>
 
-                <h3>Langkah 1 &mdash; Struktur Proyek</h3>
-                <pre><code>latihan-async/
+                <h3>Langkah 0 &mdash; Buat Proyek</h3>
+                <p>Ini proyek baru bernama <code>proyek-direktori</code>, terpisah dari <code>latihan-async</code> di Section 3 dan 4. Buat foldernya beserta dua subfolder, lalu aktifkan ESM:</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir proyek-direktori
+<span class="prompt">$</span> cd proyek-direktori
+<span class="prompt">$</span> mkdir data src
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module</div>
+
+                <h3>Langkah 1 &mdash; Struktur Proyek dan Data Lokal</h3>
+                <p>Setelah semua file dibuat di langkah-langkah berikut, struktur proyeknya akan seperti ini:</p>
+                <pre><code>proyek-direktori/
 ├── package.json          <span class="comment">// "type": "module"</span>
-├── index.js
+├── index.js              <span class="comment">// titik masuk (Langkah 4)</span>
 ├── data/
-│   └── mahasiswa.json
+│   └── mahasiswa.json    <span class="comment">// data lokal (langkah ini)</span>
 └── src/
-    ├── http.js           <span class="comment">// pembungkus fetch</span>
-    └── gabung.js          <span class="comment">// logika penggabungan data</span></code></pre>
+    ├── http.js           <span class="comment">// pembungkus fetch (Langkah 2)</span>
+    └── gabung.js         <span class="comment">// logika penggabungan data (Langkah 3)</span></code></pre>
+
+                <p>Mulai dari data lokalnya. <code>mahasiswa.json</code> mewakili data mahasiswa yang kalian olah sejak Pertemuan 1&ndash;2 (dari file KHS lokal), dan <strong>di sinilah data itu disimpan</strong>. Buat file <code>data/mahasiswa.json</code> (di dalam folder <code>data</code>) dengan isi berikut:</p>
+                <pre><code><span class="comment">// data/mahasiswa.json</span>
+[
+  { <span class="string">"nim"</span>: <span class="string">"F1D021001"</span>, <span class="string">"nama"</span>: <span class="string">"Andi"</span>, <span class="string">"idPublik"</span>: <span class="number">1</span> },
+  { <span class="string">"nim"</span>: <span class="string">"F1D021002"</span>, <span class="string">"nama"</span>: <span class="string">"Budi"</span>, <span class="string">"idPublik"</span>: <span class="number">2</span> },
+  { <span class="string">"nim"</span>: <span class="string">"F1D021003"</span>, <span class="string">"nama"</span>: <span class="string">"Citra"</span>, <span class="string">"idPublik"</span>: <span class="number">3</span> }
+]</code></pre>
+
+                <p>Ini sebuah array berisi tiga object, satu object per mahasiswa. Kunci-kuncinya:</p>
+                <table>
+                    <tr>
+                        <th>Kunci</th>
+                        <th>Artinya</th>
+                        <th>Dipakai untuk</th>
+                    </tr>
+                    <tr>
+                        <td><code>nim</code></td>
+                        <td>Nomor induk mahasiswa</td>
+                        <td>Identitas mahasiswa</td>
+                    </tr>
+                    <tr>
+                        <td><code>nama</code></td>
+                        <td>Nama mahasiswa</td>
+                        <td>Dicetak di hasil akhir</td>
+                    </tr>
+                    <tr>
+                        <td><code>idPublik</code></td>
+                        <td>Nomor pengguna di API publik (<code>jsonplaceholder</code>) yang menyimulasikan direktori kampus</td>
+                        <td>Dimasukkan ke alamat <code>.../users/<em>idPublik</em></code> untuk mengambil email dan kota</td>
+                    </tr>
+                </table>
+                <p><code>idPublik</code> sengaja hanya bernilai 1 sampai 3 karena API publik itu punya pengguna nomor 1&ndash;10. Kode di <code>src/gabung.js</code> membaca file ini lewat jalur <code>'./data/mahasiswa.json'</code>, yang dihitung dari <strong>folder tempat <code>node</code> dijalankan</strong>, jadi jalankan <code>node index.js</code> dari dalam folder <code>proyek-direktori</code>.</p>
 
                 <h3>Langkah 2 &mdash; Pembungkus fetch (src/http.js)</h3>
                 <pre><code><span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ambilJson</span>(<span class="variable">url</span>, <span class="variable">opsi</span> = {}) {
@@ -1309,12 +2324,12 @@ Selesai, berhasil atau tidak</span></div>
 
                 <p><strong>Hasil (contoh, waktu sesungguhnya tergantung koneksi):</strong></p>
                 <div class="terminal"><span class="prompt">$</span> node index.js
-<span class="out">[berurutan] selesai dalam 1842 ms
+<span class="out">[berurutan] selesai dalam 2021 ms
   Andi — Sincere@april.biz (Gwenborough)
   Budi — Shanna@melissa.tv (Wisokyburgh)
   Citra — Nathan@yesenia.net (McKenziehaven)
 
-[serentak] selesai dalam 612 ms
+[serentak] selesai dalam 1123 ms
   Andi — Sincere@april.biz (Gwenborough)
   Budi — Shanna@melissa.tv (Wisokyburgh)
   Citra — Nathan@yesenia.net (McKenziehaven)</span></div>
@@ -1325,14 +2340,14 @@ Selesai, berhasil atau tidak</span></div>
 
                 <h3>Latihan Mandiri</h3>
                 <ol>
-                    <li>Tambahkan penanganan galat sehingga kalau satu profil gagal diambil (ID tidak ada), mahasiswa lain tetap tampil &mdash; gunakan <code>Promise.allSettled</code>.</li>
+                    <li>Tambahkan penanganan error sehingga kalau satu profil gagal diambil (ID tidak ada), mahasiswa lain tetap tampil &mdash; gunakan <code>Promise.allSettled</code>.</li>
                     <li>Ubah <code>ambilJson</code> agar mencoba ulang (retry) maksimal 2 kali sebelum benar-benar gagal.</li>
-                    <li>Tambahkan fungsi <code>ambilBerkelompok</code> (lihat Section 8.5) dan bandingkan waktunya dengan <code>Promise.all</code> polos untuk 10 data tiruan.</li>
+                    <li>Tambahkan fungsi <code>ambilBerkelompok</code> (lihat Section 8.6) dan bandingkan waktunya dengan <code>Promise.all</code> polos untuk 10 data tiruan.</li>
                     <li>Ukur dan catat: pada berapa jumlah data kira-kira selisih waktu berurutan vs serentak menjadi signifikan bagi pengguna (&gt; 1 detik)?</li>
                 </ol>
 
                 <div class="info-box">
-                    <strong>Menuju Minggu 4:</strong> pola <code>ambilJson</code>, penanganan galat dengan status HTTP, dan fungsi <code>async</code> yang kalian tulis di sini adalah <strong>fondasi langsung</strong> untuk membangun REST API dengan Express. Middleware, route handler, dan penanganan galat terpusat semuanya memakai <code>async/await</code> dengan pola yang sama persis.
+                    <strong>Menuju Minggu 4:</strong> pola <code>ambilJson</code>, penanganan error dengan status HTTP, dan fungsi <code>async</code> yang kalian tulis di sini adalah <strong>fondasi langsung</strong> untuk membangun REST API dengan Express. Middleware, route handler, dan penanganan error terpusat semuanya memakai <code>async/await</code> dengan pola yang sama persis.
                 </div>
             </section>
 
@@ -1340,7 +2355,7 @@ Selesai, berhasil atau tidak</span></div>
             <section id="cpmk">
                 <h2>Capaian Pembelajaran (Sub-CPMK 2)</h2>
 
-                <p><strong>Sub-CPMK 2:</strong> Mahasiswa mampu menggunakan modul dan pola pemrograman asinkron pada JavaScript, mencakup promise, async/await, fetch, dan penanganan galat asinkron. <strong>[C3]</strong></p>
+                <p><strong>Sub-CPMK 2:</strong> Mahasiswa mampu menggunakan modul dan pola pemrograman asinkron pada JavaScript, mencakup promise, async/await, fetch, dan penanganan error asinkron. <strong>[C3]</strong></p>
 
                 <table>
                     <tr>
@@ -1355,7 +2370,7 @@ Selesai, berhasil atau tidak</span></div>
                     </tr>
                     <tr>
                         <td>2.2</td>
-                        <td>Membaca berkas atau memanggil layanan luar secara asinkron</td>
+                        <td>Membaca file atau memanggil layanan luar secara asinkron</td>
                         <td>Section 4, 6</td>
                     </tr>
                     <tr>
@@ -1365,7 +2380,7 @@ Selesai, berhasil atau tidak</span></div>
                     </tr>
                     <tr>
                         <td>2.4</td>
-                        <td>Menangani galat pada operasi asinkron</td>
+                        <td>Menangani error pada operasi asinkron</td>
                         <td>Section 7</td>
                     </tr>
                     <tr>
@@ -1543,7 +2558,7 @@ Selesai, berhasil atau tidak</span></div>
                         `Promise TETAP fulfilled! Data: ${JSON.stringify(data)}\n\n` +
                         `⚠️ Kalau tidak diperiksa respons.ok, program akan\nlanjut jalan seolah berhasil, padahal datanya kosong.`;
                 } else {
-                    out.textContent = 'fetch(\'https://alamat-tidak-ada.invalid\')\n\nMenunggu galat jaringan...';
+                    out.textContent = 'fetch(\'https://alamat-tidak-ada.invalid\')\n\nMenunggu error jaringan...';
                     try {
                         await fetch('https://alamat-benar-benar-tidak-ada-9999.invalid');
                     } catch (err) {
@@ -1552,15 +2567,15 @@ Selesai, berhasil atau tidak</span></div>
                     }
                 }
             } catch (err) {
-                out.textContent += `\n\n❌ Galat: ${err.message}\n(Periksa koneksi internet)`;
+                out.textContent += `\n\n❌ Error: ${err.message}\n(Periksa koneksi internet)`;
             }
         }
 
         // ============================================
-        // DEMO 5 — Penanganan galat
+        // DEMO 5 — Penanganan error
         // ============================================
         async function bacaGagal() {
-            throw new Error('Berkas tidak ditemukan: data.json');
+            throw new Error('File tidak ditemukan: data.json');
         }
 
         async function demoGalat(mode) {
@@ -1576,8 +2591,8 @@ Selesai, berhasil atau tidak</span></div>
                 out.textContent = 'try {\n  setTimeout(() => { throw new Error("x"); }, 100);\n} catch (e) {\n  console.log("tidak akan pernah sampai sini");\n}\n\n';
                 try {
                     setTimeout(() => {
-                        // galat di sini TIDAK tertangkap oleh try/catch di luar
-                        console.log('[demo] galat dalam callback tidak tertangkap try/catch luar');
+                        // error di sini TIDAK tertangkap oleh try/catch di luar
+                        console.log('[demo] error dalam callback tidak tertangkap try/catch luar');
                     }, 100);
                     out.textContent += '❌ try/catch TIDAK berlaku untuk callback.\nSaat callback dipanggil nanti, blok try sudah lama selesai.\n(lihat console browser F12 untuk buktinya)';
                 } catch (e) {
@@ -1600,7 +2615,7 @@ Selesai, berhasil atau tidak</span></div>
                 out.textContent = 'try { ... } catch (e) { ... } finally { console.log("selalu jalan"); }\n\n';
                 try {
                     out.textContent += 'Mencoba operasi...\n';
-                    throw new Error('Contoh galat');
+                    throw new Error('Contoh error');
                 } catch (e) {
                     out.textContent += `catch menangkap: ${e.message}\n`;
                 } finally {
@@ -1721,5 +2736,6 @@ Selesai, berhasil atau tidak</span></div>
             });
         });
     </script>
+    <script src="sidebar-toggle.js"></script>
 </body>
 </html>
