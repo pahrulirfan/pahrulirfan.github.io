@@ -1,0 +1,1550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 4: REST API Dasar dengan Express dan Pengenalan GraphQL - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        header { background: #1d4ed8 !important; }
+        .sidebar h3 { color: #93c5fd !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #93c5fd !important; }
+        .sidebar ul li a.active { background-color: #1d4ed8 !important; }
+        section h2 { border-bottom: 3px solid #1d4ed8 !important; }
+        th { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; }
+        .badge { background: #1d4ed8 !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #93c5fd !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #1d4ed8; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #1e3a8a; margin-bottom: 15px; }
+        .interactive-demo input, .interactive-demo select {
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; margin: 5px; font-size: 1em;
+        }
+        .interactive-demo button {
+            padding: 8px 20px; background: #1d4ed8; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #1e3a8a; }
+        .gql-box {
+            background: #fdf2f8; border-left: 4px solid #e10098; padding: 15px 20px;
+            margin: 15px 0; border-radius: 0 8px 8px 0;
+        }
+        .gql-box > strong:first-child { color: #9d174d; display: block; margin-bottom: 8px; }
+        .gql-box table { margin: 8px 0; }
+        .interactive-demo label { display: inline-block; margin: 4px 12px 4px 4px; cursor: pointer; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #93c5fd; }
+        .terminal .out { color: #8a8f98; }
+
+        /* Diagram alur — CSS, bukan ASCII */
+        .flow-diagram {
+            background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 16px; margin: 12px 0 20px; overflow-x: auto;
+        }
+        .flow-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; min-width: max-content; }
+        .flow-box {
+            color: white; padding: 8px 14px; border-radius: 6px;
+            font-family: 'Consolas', monospace; font-size: 0.85em; font-weight: 600; white-space: nowrap;
+        }
+        .flow-client { background: #64748b; }
+        .flow-server { background: #1d4ed8; }
+        .flow-db { background: #334155; }
+        .flow-arrow { color: #777; font-size: 0.78em; font-family: 'Consolas', monospace; white-space: nowrap; }
+        .flow-return .flow-arrow { color: #1d4ed8; font-weight: 600; }
+        .flow-note { font-size: 0.8em; color: #888; font-style: italic; margin: 2px 0 12px 4px; }
+
+        /* Diagram alur permintaan (Section 1) */
+        .req-flow {
+            display: grid; grid-template-columns: auto minmax(110px, 1fr) auto minmax(70px, 0.6fr) auto;
+            align-items: center; gap: 10px; margin: 12px 0 22px; padding: 24px 18px;
+            background: linear-gradient(180deg, #f8fafc 0%, #eef2f9 100%);
+            border: 1px solid #dbe3ee; border-radius: 12px;
+        }
+        .rf-node {
+            text-align: center; padding: 14px 16px; min-width: 118px; background: #fff;
+            border: 2px solid #cbd5e1; border-radius: 10px; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.07);
+        }
+        .rf-node i { display: block; font-size: 1.7em; margin-bottom: 6px; color: #64748b; }
+        .rf-node strong { display: block; color: #0f172a; }
+        .rf-node span { display: block; margin-top: 2px; font-size: 0.78em; line-height: 1.4; color: #64748b; }
+        .rf-server { border-color: #1d4ed8; box-shadow: 0 3px 10px rgba(29, 78, 216, 0.18); }
+        .rf-server i { color: #1d4ed8; }
+        .rf-db { border-style: dashed; background: transparent; box-shadow: none; }
+        .rf-lane { display: flex; flex-direction: column; gap: 16px; }
+        .rf-msg { text-align: center; font-size: 0.78em; }
+        .rf-msg code { white-space: nowrap; background: rgba(255, 255, 255, 0.85); padding: 1px 7px; border-radius: 4px; color: inherit; }
+        .rf-line { position: relative; height: 2px; margin-top: 7px; background: currentColor; }
+        .rf-line::after { content: ''; position: absolute; top: -4px; border-style: solid; border-color: transparent; }
+        .rf-req { color: #1d4ed8; }
+        .rf-req .rf-line::after { right: -1px; border-width: 5px 0 5px 9px; border-left-color: currentColor; }
+        .rf-res { color: #15803d; }
+        .rf-res .rf-line::after { left: -1px; border-width: 5px 9px 5px 0; border-right-color: currentColor; }
+        .rf-dim { color: #94a3b8; }
+        .rf-dim .rf-msg { color: #94a3b8; }
+        .rf-dim .rf-line { background: none; height: 0; border-top: 2px dashed currentColor; }
+        .rf-dim .rf-line::after { top: -6px; }
+        @media (max-width: 760px) {
+            .req-flow { grid-template-columns: 1fr; justify-items: center; gap: 6px; }
+            .rf-lane { flex-direction: row; gap: 36px; padding: 4px 0; }
+            .rf-msg { display: flex; flex-direction: column; align-items: center; }
+            .rf-line { width: 2px; height: 30px; margin-top: 6px; }
+            .rf-dim .rf-line { width: 0; height: 30px; border-top: 0; border-left: 2px dashed currentColor; }
+            .rf-req .rf-line::after, .rf-dim .rf-req .rf-line::after { top: auto; bottom: -1px; right: auto; left: -4px; border-width: 9px 5px 0 5px; border-color: currentColor transparent transparent transparent; }
+            .rf-res .rf-line::after, .rf-dim .rf-res .rf-line::after { top: -1px; left: -4px; right: auto; border-width: 0 5px 9px 5px; border-color: transparent transparent currentColor transparent; }
+            .rf-dim .rf-line::after { margin-left: -1px; }
+        }
+
+        /* HTTP method badges */
+        .m-get { background:#16a34a; } .m-post { background:#2563eb; }
+        .m-put { background:#d97706; } .m-patch { background:#7c3aed; } .m-delete { background:#dc2626; }
+        .method-badge {
+            display:inline-block; color:white; font-weight:700; font-size:0.78em;
+            padding:2px 8px; border-radius:4px; font-family:'Consolas',monospace; margin-right:6px;
+        }
+        .status-2xx { color:#15803d; font-weight:700; }
+        .status-4xx { color:#b91c1c; font-weight:700; }
+        .status-5xx { color:#7c2d12; font-weight:700; }
+
+        /* Tampilan ilustrasi Postman (CSS, bukan gambar) */
+        .req-mock { border:1px solid #d6dbe4; border-radius:8px; overflow:hidden; margin:12px 0 18px; background:#fff; font-size:0.9em; }
+        .req-cap { padding:6px 14px; background:#eef1f7; color:#64748b; font-size:0.8em; border-bottom:1px solid #e0e5ee; }
+        .req-bar { display:flex; padding:10px 14px; background:#f4f6fa; border-bottom:1px solid #e0e5ee; }
+        .req-method { padding:8px 14px; font-weight:700; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-radius:6px 0 0 6px; }
+        .req-url { flex:1; padding:8px 12px; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-left:none; overflow-x:auto; white-space:nowrap; }
+        .req-send { padding:8px 18px; font-weight:700; color:#fff; background:#ff6c37; border-radius:0 6px 6px 0; }
+        .req-tabs { display:flex; gap:20px; padding:8px 14px 0; border-bottom:1px solid #e0e5ee; color:#64748b; font-size:0.85em; overflow-x:auto; }
+        .req-tabs span { padding-bottom:6px; white-space:nowrap; }
+        .req-tabs .on { color:#0f172a; font-weight:700; border-bottom:2px solid #ff6c37; }
+        .req-pane { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; background:#fafbfd; border-bottom:1px solid #e0e5ee; }
+        .req-res { display:flex; gap:14px; align-items:center; padding:8px 14px; background:#f4f6fa; border-top:1px solid #e0e5ee; border-bottom:1px solid #e0e5ee; font-size:0.85em; color:#475569; }
+        .req-res .st { font-weight:700; }
+        .req-res .s2 { color:#15803d; } .req-res .s4 { color:#b91c1c; } .req-res .s5 { color:#7c2d12; }
+        .req-resbody { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 4: REST API Dasar dengan Express dan Pengenalan GraphQL</h1>
+        <p>Sub-CPMK 3 (bagian 1) &mdash; Minggu 4 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#dari-klien" class="active">1. Dari Klien ke Server</a></li>
+                <li><a href="#prinsip-rest">2. Apa Itu REST?</a></li>
+                <li><a href="#install">3. Memasang &amp; Menjalankan Express</a></li>
+                <li><a href="#studi-kasus">4. Studi Kasus: API Mahasiswa</a></li>
+                <li><a href="#postman">5. Menguji dengan Postman</a></li>
+                <li><a href="#routing">6. Routing dengan Express</a></li>
+                <li><a href="#status-format">7. Kode Status &amp; Format</a></li>
+                <li><a href="#graphql">8. Pengenalan GraphQL</a></li>
+                <li><a href="#latihan">9. Latihan Mandiri</a></li>
+                <li><a href="#cpmk">10. Capaian Pembelajaran</a></li>
+            </ul>
+            <h3>Link Terkait</h3>
+            <ul>
+                <!-- <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-03-modul-asinkron.html">&larr; Pertemuan 3</a></li>
+                <li><a href="materi-05-middleware-error-terpusat.html">Pertemuan 5 &rarr;</a></li> -->
+                <li><a href="https://expressjs.com/en/guide/routing.html" target="_blank">Express &mdash; Routing Guide</a></li>
+                <li><a href="https://www.postman.com/downloads/" target="_blank">Unduh Postman</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <section id="dari-klien">
+                <h2>1. Dari Klien ke Server <span class="badge">Pengantar</span></h2>
+
+                <p>Di Pertemuan 3 kalian memakai <code>fetch()</code> untuk memanggil API milik orang lain (<code>jsonplaceholder.typicode.com</code>). Mulai pertemuan ini, giliran kalian membangun API itu sendiri &mdash; server yang akan dipanggil oleh <code>fetch()</code> orang lain, termasuk antarmuka React yang akan kalian bangun di Pertemuan 11.</p>
+
+                <div class="info-box" style="display:none">
+                    <strong>Peta posisi kita:</strong>
+                    <ul>
+                        <li><strong>Pertemuan 1&ndash;3</strong> &mdash; dasar JavaScript dan cara menunggu hasil asinkron</li>
+                        <li><strong>Pertemuan 4&ndash;5 (sekarang)</strong> &mdash; membangun server yang <em>menjawab</em> permintaan HTTP</li>
+                        <li><strong>Pertemuan 6&ndash;7</strong> &mdash; server itu terhubung ke basis data sungguhan</li>
+                        <li><strong>Pertemuan 9&ndash;10</strong> &mdash; server itu diamankan</li>
+                        <li><strong>Pertemuan 11&ndash;12</strong> &mdash; server itu dipanggil oleh antarmuka React</li>
+                    </ul>
+                </div>
+
+                <h3>Alur Permintaan yang Akan Kalian Bangun</h3>
+                <div class="req-flow">
+                    <div class="rf-node rf-client">
+                        <i class="fa-solid fa-desktop"></i>
+                        <strong>Klien</strong>
+                        <span>Browser atau Postman</span>
+                    </div>
+                    <div class="rf-lane">
+                        <div class="rf-msg rf-req"><code>GET /mahasiswa</code><div class="rf-line"></div></div>
+                        <div class="rf-msg rf-res"><code>200 OK + JSON</code><div class="rf-line"></div></div>
+                    </div>
+                    <div class="rf-node rf-server">
+                        <i class="fa-solid fa-server"></i>
+                        <strong>Express</strong>
+                        <span>Dibangun hari ini</span>
+                    </div>
+                    <div class="rf-lane rf-dim">
+                        <div class="rf-msg rf-req"><code>kueri</code><div class="rf-line"></div></div>
+                        <div class="rf-msg rf-res"><code>data</code><div class="rf-line"></div></div>
+                    </div>
+                    <div class="rf-node rf-db">
+                        <i class="fa-solid fa-database"></i>
+                        <strong>Database</strong>
+                        <span>Pertemuan 6&ndash;7<br>Prisma + PostgreSQL</span>
+                    </div>
+                </div>
+
+                <h3>Urutan Belajar Hari Ini</h3>
+                <table>
+                    <tr><th>Langkah</th><th>Yang dikerjakan</th><th>Section</th></tr>
+                    <tr><td>1</td><td>Memahami apa itu REST</td><td>2</td></tr>
+                    <tr><td>2</td><td>Memasang Express dan menjalankan server pertama</td><td>3</td></tr>
+                    <tr><td>3</td><td>Mengenal studi kasus <strong>API Mahasiswa</strong> yang akan kita bangun</td><td>4</td></tr>
+                    <tr><td>4</td><td>Menguji API dengan <strong>Postman</strong></td><td>5</td></tr>
+                    <tr><td>5</td><td>Membuat rute: parameter jalur, kueri, dan badan permintaan</td><td>6</td></tr>
+                    <tr><td>6</td><td>Memakai kode status dan format tanggapan yang benar</td><td>7</td></tr>
+                    <tr><td>7</td><td>Mengenal <strong>GraphQL</strong> sebagai alternatif REST (pengayaan)</td><td>8</td></tr>
+                    <tr><td>8</td><td>Melengkapi API secara mandiri</td><td>9</td></tr>
+                </table>
+            </section>
+
+            <section id="prinsip-rest">
+                <h2>2. Apa Itu REST? <span class="badge badge-important">Indikator 3.1</span></h2>
+
+                <p><strong>REST</strong> (Representational State Transfer) bukan teknologi, melainkan <strong>kesepakatan gaya penulisan API</strong>. Intinya: setiap URL mewakili sebuah <strong>sumber daya</strong> (resource) &mdash; benda, bukan aksi &mdash; dan metode HTTP yang menentukan aksi apa yang dilakukan terhadap sumber daya itu.</p>
+
+                <div class="info-box">
+                    <strong>REST dalam tiga potong:</strong>
+                    <ul>
+                        <li><strong>URL</strong> menjawab <em>"sumber daya apa?"</em> &mdash; contoh <code>/mahasiswa/1</code></li>
+                        <li><strong>Metode HTTP</strong> menjawab <em>"mau diapakan?"</em> &mdash; contoh <code>GET</code> (ambil), <code>POST</code> (buat)</li>
+                        <li><strong>Kode status + JSON</strong> menjawab <em>"hasilnya bagaimana?"</em> &mdash; contoh <code>200</code> dan data mahasiswa</li>
+                    </ul>
+                </div>
+
+                <p>Satu permintaan dan jawabannya, dalam bentuk mentahnya, terlihat seperti ini:</p>
+                <div class="terminal"><span class="prompt">$</span> GET /mahasiswa/1
+<span class="out">200 OK
+{ "id": 1, "nama": "Andi", "semester": 6 }</span></div>
+                <p>Sisa bagian ini membahas aturan main di balik tiga potong itu. Setelah itu, kita langsung memasang Express dan mempraktikkannya.</p>
+
+                <h3>2.1 Kata Benda, Bukan Kata Kerja</h3>
+                <table>
+                    <tr><th>❌ Gaya lama (RPC-ish)</th><th>✅ Gaya REST</th></tr>
+                    <tr><td><code>/getMahasiswa?id=1</code></td><td><code>GET /mahasiswa/1</code></td></tr>
+                    <tr><td><code>/createMahasiswa</code></td><td><code>POST /mahasiswa</code></td></tr>
+                    <tr><td><code>/updateMahasiswa?id=1</code></td><td><code>PUT /mahasiswa/1</code></td></tr>
+                    <tr><td><code>/deleteMahasiswa?id=1</code></td><td><code>DELETE /mahasiswa/1</code></td></tr>
+                </table>
+                <p>URL menjawab pertanyaan <strong>"sumber daya apa"</strong>. Metode HTTP menjawab <strong>"aksi apa"</strong>. Jangan mencampur keduanya di dalam URL.</p>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>GraphQL tidak punya "kata benda di URL". Semua permintaan masuk ke <strong>satu URL</strong> (<code>/graphql</code>), dan yang dipilih klien adalah <strong>nama operasi</strong> di schema. Karena itu nama operasi GraphQL justru lazim memakai kata kerja untuk perubahan data, misalnya <code>tambahMahasiswa</code>. Detailnya di Section 8.</p>
+                </div>
+
+                <h3>2.2 Lima Metode HTTP Utama (CRUD)</h3>
+                <table>
+                    <tr><th>Metode</th><th>Aksi CRUD</th><th>Contoh</th><th>Badan permintaan?</th><th>Idempoten?</th></tr>
+                    <tr><td><span class="method-badge m-get">GET</span></td><td>Read</td><td><code>GET /mahasiswa</code></td><td>Tidak</td><td>Ya</td></tr>
+                    <tr><td><span class="method-badge m-post">POST</span></td><td>Create</td><td><code>POST /mahasiswa</code></td><td>Ya</td><td><strong>Tidak</strong></td></tr>
+                    <tr><td><span class="method-badge m-put">PUT</span></td><td>Update (ganti semua field)</td><td><code>PUT /mahasiswa/1</code></td><td>Ya</td><td>Ya</td></tr>
+                    <tr><td><span class="method-badge m-patch">PATCH</span></td><td>Update (sebagian field)</td><td><code>PATCH /mahasiswa/1</code></td><td>Ya</td><td>Ya</td></tr>
+                    <tr><td><span class="method-badge m-delete">DELETE</span></td><td>Delete</td><td><code>DELETE /mahasiswa/1</code></td><td>Tidak biasanya</td><td>Ya</td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Idempoten</strong> artinya: memanggil sekali atau sepuluh kali hasilnya <strong>sama</strong>. <code>PUT /mahasiswa/1</code> dengan data yang sama menghasilkan keadaan akhir yang sama walau dipanggil berkali-kali. <code>POST /mahasiswa</code> <strong>tidak</strong> idempoten &mdash; dipanggil dua kali membuat dua data baru.
+                </div>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>GraphQL tidak memakai kelima metode ini untuk membedakan aksi. Semuanya <code>POST /graphql</code>, dan aksinya ditentukan oleh <strong>jenis operasi</strong> di dalam query:</p>
+                    <table>
+                        <tr><th>Jenis operasi</th><th>Fungsinya</th><th>Padanan REST</th></tr>
+                        <tr><td><code>query</code></td><td>Membaca data, tidak mengubah apa pun</td><td><span class="method-badge m-get">GET</span></td></tr>
+                        <tr><td><code>mutation</code></td><td>Mengubah data (tambah, ganti, hapus)</td><td><span class="method-badge m-post">POST</span> <span class="method-badge m-put">PUT</span> <span class="method-badge m-patch">PATCH</span> <span class="method-badge m-delete">DELETE</span></td></tr>
+                    </table>
+                    <p>Akibatnya, sifat idempoten tidak dijamin oleh protokol. Setiap mutation harus dirancang sendiri agar aman dipanggil ulang.</p>
+                </div>
+
+                <h3>2.3 Pola Penamaan URL yang Konsisten</h3>
+                <table>
+                    <tr><th>Pola</th><th>Contoh</th><th>Artinya</th></tr>
+                    <tr><td>Koleksi</td><td><code>GET /mahasiswa</code></td><td>Daftar semua mahasiswa</td></tr>
+                    <tr><td>Satu item</td><td><code>GET /mahasiswa/12</code></td><td>Detail mahasiswa dengan id 12</td></tr>
+                    <tr><td>Sub-koleksi (relasi)</td><td><code>GET /mahasiswa/12/nilai</code></td><td>Daftar nilai milik mahasiswa 12</td></tr>
+                    <tr><td>Jamak, huruf kecil, kebab-case</td><td><code>/mata-kuliah</code>, bukan <code>/MataKuliah</code></td><td>Konsisten dan mudah dibaca</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Aturan yang dipakai di mata kuliah ini:</strong> nama sumber daya selalu <strong>bentuk jamak</strong>, huruf kecil, tanpa kata kerja. Pengecualian: <code>/login</code>, <code>/logout</code>, <code>/register</code> boleh berupa aksi karena bukan mewakili sumber daya CRUD (dibahas di Pertemuan 9).
+                </div>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <table>
+                        <tr><th>Kebutuhan</th><th>REST</th><th>GraphQL</th></tr>
+                        <tr><td>Daftar semua mahasiswa</td><td><code>GET /mahasiswa</code></td><td><code>daftarMahasiswa</code></td></tr>
+                        <tr><td>Satu mahasiswa</td><td><code>GET /mahasiswa/12</code></td><td><code>mahasiswa(id: 12)</code></td></tr>
+                        <tr><td>Disaring per semester</td><td><code>GET /mahasiswa?semester=6</code></td><td><code>daftarMahasiswa(semester: 6)</code></td></tr>
+                        <tr><td>Nilai milik satu mahasiswa</td><td><code>GET /mahasiswa/12/nilai</code> (endpoint kedua)</td><td>field <code>nilai</code> di dalam <code>mahasiswa</code> (satu permintaan)</td></tr>
+                    </table>
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Rancang URL Sumber Daya</h5>
+                    <button onclick="demoResource('list')">Daftar semua kelas</button>
+                    <button onclick="demoResource('detail')">Detail satu kelas</button>
+                    <button onclick="demoResource('nested')">Peserta di kelas tertentu</button>
+                    <button onclick="demoResource('filter')">Kelas aktif semester 6 saja</button>
+                    <div class="console-output" id="demo1-out">Klik salah satu tombol...</div>
+                </div>
+            </section>
+
+            <section id="install">
+                <h2>3. Memasang dan Menjalankan Express <span class="badge badge-new">Praktik</span></h2>
+
+                <p><strong>Express</strong> adalah pustaka untuk membangun server web di Node.js. Ia berperan seperti Laravel: menerima permintaan HTTP, mencocokkannya dengan rute yang terdaftar, lalu menjalankan fungsi yang menjawabnya. Bedanya, Express jauh lebih minimal. Hampir semua hal yang di Laravel sudah tersedia (validasi, ORM, autentikasi) harus ditambahkan sendiri lewat pustaka terpisah.</p>
+
+                <h3>3.1 Persiapan: Periksa Node.js</h3>
+                <div class="terminal"><span class="prompt">$</span> node -v
+<span class="out">v22.22.0</span></div>
+                <p>Versi kalian boleh berbeda, asalkan <strong>18 ke atas</strong>. Kalau perintahnya tidak dikenali atau versinya lebih rendah, pasang Node.js versi LTS terbaru dari <a href="https://nodejs.org" target="_blank">nodejs.org</a> dulu.</p>
+
+                <h3>3.2 Buat Proyek dan Pasang Express</h3>
+                <p>Proyek baru bernama <code>api-mahasiswa</code>. Proyek inilah yang kita kembangkan sepanjang Pertemuan 4 (dan dilanjutkan di Pertemuan 5). Jalankan perintah berikut satu per satu:</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir api-mahasiswa
+<span class="prompt">$</span> cd api-mahasiswa
+<span class="prompt">$</span> npm init -y
+<span class="prompt">$</span> npm pkg set type=module
+<span class="prompt">$</span> npm pkg set scripts.dev="node --watch index.js"
+<span class="prompt">$</span> npm install express</div>
+                <table>
+                    <tr><th>Perintah</th><th>Fungsinya</th></tr>
+                    <tr><td><code>npm init -y</code></td><td>Membuat <code>package.json</code> (KTP proyek)</td></tr>
+                    <tr><td><code>npm pkg set type=module</code></td><td>Mengaktifkan ESM agar boleh memakai <code>import</code> (lihat Pertemuan 3, Section 1.2)</td></tr>
+                    <tr><td><code>npm pkg set scripts.dev=...</code></td><td>Membuat skrip <code>npm run dev</code> yang menjalankan server dengan <code>--watch</code> (dijelaskan di 3.4)</td></tr>
+                    <tr><td><code>npm install express</code></td><td>Mengunduh Express ke folder <code>node_modules</code> dan mencatatnya di <code>dependencies</code></td></tr>
+                </table>
+                <p>Sekarang <code>package.json</code> kalian kira-kira berisi seperti ini (nomor versi Express boleh berbeda):</p>
+                <pre><code>{
+  "name": "api-mahasiswa",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}</code></pre>
+                <div class="info-box">
+                    <strong>Jangan unggah <code>node_modules</code> ke Git.</strong> Foldernya besar dan bisa dibuat ulang kapan saja dengan <code>npm install</code>. Kalau memakai Git, buat file <code>.gitignore</code> yang berisi satu baris: <code>node_modules</code>.
+                </div>
+
+                <h3>3.3 Server Pertama: <code>index.js</code></h3>
+                <p>Buat file <code>index.js</code> di folder <code>api-mahasiswa</code>:</p>
+                <pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> ?? <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
+});</code></pre>
+                <table>
+                    <tr><th>Bagian kode</th><th>Artinya</th></tr>
+                    <tr><td><code>express()</code></td><td>Membuat aplikasi server, kita simpan di <code>app</code></td></tr>
+                    <tr><td><code>app.get('/', handler)</code></td><td>"Kalau ada permintaan <strong>GET</strong> ke alamat <code>/</code>, jalankan fungsi ini." Padanan <code>Route::get</code> di Laravel</td></tr>
+                    <tr><td><code>(req, res)</code></td><td><code>req</code> = permintaan yang masuk, <code>res</code> = alat untuk menjawabnya</td></tr>
+                    <tr><td><code>res.send(...)</code></td><td>Mengirim jawaban berupa teks</td></tr>
+                    <tr><td><code>process.env.PORT ?? 3000</code></td><td>Port diambil dari environment kalau ada, kalau tidak pakai 3000</td></tr>
+                    <tr><td><code>app.listen(PORT, ...)</code></td><td>Mulai "mendengarkan" permintaan di port itu. Fungsi di dalamnya dipanggil setelah server siap, atau membawa <code>err</code> kalau gagal</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Kenapa ada <code>if (err)</code> di <code>listen</code>?</strong> Di Express 5, kalau port sudah dipakai program lain, fungsi itu tetap dipanggil dan membawa error. Tanpa pemeriksaan, yang tercetak justru <code>Server jalan di ...</code> padahal server tidak hidup, dan program berhenti diam-diam. Dengan pemeriksaan di atas, kalian langsung melihat penyebab sebenarnya.
+                </div>
+
+                <h3>3.4 Jalankan dan Buka di Browser</h3>
+                <div class="terminal"><span class="prompt">$</span> npm run dev
+<span class="out">&gt; api-mahasiswa@1.0.0 dev
+&gt; node --watch index.js
+
+Server jalan di http://localhost:3000</span></div>
+                <p>Terminalnya tidak kembali ke prompt. Itu normal: <strong>server sedang hidup</strong> dan menunggu permintaan. Buka browser ke <code>http://localhost:3000</code> dan kalian akan melihat:</p>
+                <div class="terminal"><span class="out">Halo dari Express!</span></div>
+                <p>Coba juga alamat yang tidak terdaftar, misalnya <code>http://localhost:3000/xyz</code>. Express menjawab dengan status <strong>404</strong> dan teks <code>Cannot GET /xyz</code>, karena belum ada rute untuk alamat itu.</p>
+
+                <p>Untuk menghentikan server, tekan <strong>Ctrl + C</strong> di terminal.</p>
+
+                <h4>Apa bedanya <code>npm run dev</code> dan <code>node index.js</code>?</h4>
+                <p>Keduanya menjalankan server yang sama. Bedanya, <code>npm run dev</code> memakai <code>node --watch</code>: setiap kali kalian menyimpan perubahan di file, server <strong>restart sendiri</strong>. Tanpa <code>--watch</code>, setiap ubah kode kalian harus menghentikan dan menjalankan ulang server secara manual. Kalau kalian menyimpan file, terminal menampilkan:</p>
+                <div class="terminal"><span class="out">Restarting 'index.js'
+Server jalan di http://localhost:3000</span></div>
+
+                <h4>Masalah yang sering muncul</h4>
+                <table>
+                    <tr><th>Gejala</th><th>Penyebab</th><th>Solusi</th></tr>
+                    <tr><td><code>Gagal menjalankan server: listen EADDRINUSE: address already in use</code></td><td>Port 3000 sudah dipakai, biasanya server lama yang belum dihentikan</td><td>Hentikan yang lama (Ctrl + C), atau pakai port lain: <code>PORT=3001 npm run dev</code></td></tr>
+                    <tr><td><code>Cannot find package 'express'</code></td><td>Lupa <code>npm install express</code>, atau terminal tidak berada di folder proyek</td><td>Pindah ke folder <code>api-mahasiswa</code>, lalu <code>npm install express</code></td></tr>
+                    <tr><td><code>Cannot use import statement outside a module</code></td><td>Lupa <code>"type": "module"</code> di <code>package.json</code></td><td>Jalankan <code>npm pkg set type=module</code></td></tr>
+                    <tr><td>Browser menampilkan <code>Cannot GET /...</code></td><td>Belum ada rute untuk alamat itu</td><td>Periksa ejaan alamat, atau tambahkan rutenya</td></tr>
+                </table>
+                <p>Di Windows (Command Prompt), mengubah port ditulis <code>set PORT=3001 &amp;&amp; npm run dev</code>.</p>
+
+                <div class="success-box">
+                    <strong>Titik periksa:</strong> server menyala dan <code>http://localhost:3000</code> menampilkan <code>Halo dari Express!</code>. Kalau belum, selesaikan dulu sebelum lanjut.
+                </div>
+            </section>
+
+            <section id="studi-kasus">
+                <h2>4. Studi Kasus: API Mahasiswa <span class="badge badge-new">Praktik</span></h2>
+
+                <p>Server "Halo" tadi belum berguna. Sekarang kita beri tugas nyata. <strong>Skenarionya:</strong> program studi butuh sebuah layanan yang menyimpan dan melayani data mahasiswa. Nantinya aplikasi React (Pertemuan 11) dan aplikasi lain akan memanggil layanan ini lewat HTTP. Kita bangun layanannya bertahap, dimulai dari data yang disimpan di memori (database sungguhan baru masuk di Pertemuan 6).</p>
+
+                <h3>4.1 Merancang Endpoint</h3>
+                <p>Dengan prinsip REST di Section 2, sumber dayanya adalah <code>mahasiswa</code>. Inilah daftar endpoint yang akan kita bangun. Jangan dihafal sekarang: kita buat satu per satu di Section 4 sampai 9.</p>
+                <table>
+                    <tr><th>Metode</th><th>URL</th><th>Fungsinya</th><th>Status berhasil</th><th>Dibuat di</th></tr>
+                    <tr><td><span class="method-badge m-get">GET</span></td><td><code>/mahasiswa</code></td><td>Daftar semua mahasiswa</td><td>200</td><td>Section 4</td></tr>
+                    <tr><td><span class="method-badge m-get">GET</span></td><td><code>/mahasiswa?semester=6</code></td><td>Daftar yang disaring per semester</td><td>200</td><td>Section 6</td></tr>
+                    <tr><td><span class="method-badge m-get">GET</span></td><td><code>/mahasiswa/:id</code></td><td>Detail satu mahasiswa</td><td>200 (404 kalau tidak ada)</td><td>Section 6</td></tr>
+                    <tr><td><span class="method-badge m-post">POST</span></td><td><code>/mahasiswa</code></td><td>Menambah mahasiswa baru</td><td>201</td><td>Section 6</td></tr>
+                    <tr><td><span class="method-badge m-put">PUT</span></td><td><code>/mahasiswa/:id</code></td><td>Mengganti data satu mahasiswa</td><td>200</td><td>Section 9 (latihan)</td></tr>
+                    <tr><td><span class="method-badge m-delete">DELETE</span></td><td><code>/mahasiswa/:id</code></td><td>Menghapus satu mahasiswa</td><td>204</td><td>Section 9 (latihan)</td></tr>
+                </table>
+
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>Rancangan endpoint di atas, kalau dibuat dengan GraphQL, menjadi daftar operasi di schema (dibuat di Section 8.4):</p>
+                    <table>
+                        <tr><th>Endpoint REST</th><th>Operasi GraphQL</th></tr>
+                        <tr><td><code>GET /mahasiswa</code> dan <code>GET /mahasiswa?semester=6</code></td><td><code>query daftarMahasiswa(semester: Int)</code></td></tr>
+                        <tr><td><code>GET /mahasiswa/:id</code></td><td><code>query mahasiswa(id: ID!)</code></td></tr>
+                        <tr><td><code>POST /mahasiswa</code></td><td><code>mutation tambahMahasiswa(...)</code></td></tr>
+                        <tr><td><code>PUT</code> dan <code>DELETE /mahasiswa/:id</code></td><td>mutation lain (<code>hapusMahasiswa</code> menjadi soal di Section 9)</td></tr>
+                    </table>
+                </div>
+
+                <h3>4.2 Siapkan Datanya</h3>
+                <p>Buat folder <code>src/data</code>, lalu file <code>src/data/mahasiswa.js</code>. Isinya sebuah array berisi tiga mahasiswa, dan diekspor supaya bisa dipakai file lain (ingat Pertemuan 3, Section 1):</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir -p src/data</div>
+                <p>Di Windows (Command Prompt), foldernya dibuat dengan <code>mkdir src\data</code>, atau cukup buat lewat editor.</p>
+                <pre><code><span class="comment">// src/data/mahasiswa.js</span>
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">mahasiswa</span> = [
+    { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nim</span>: <span class="string">'F1D021001'</span>, <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">ipk</span>: <span class="number">3</span>.<span class="number">75</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+    { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">nim</span>: <span class="string">'F1D021002'</span>, <span class="variable">nama</span>: <span class="string">'Budi'</span>, <span class="variable">ipk</span>: <span class="number">3</span>.<span class="number">20</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+    { <span class="variable">id</span>: <span class="number">3</span>, <span class="variable">nim</span>: <span class="string">'F1D021003'</span>, <span class="variable">nama</span>: <span class="string">'Citra'</span>, <span class="variable">ipk</span>: <span class="number">3</span>.<span class="number">90</span>, <span class="variable">semester</span>: <span class="number">4</span> }
+];</code></pre>
+                <table>
+                    <tr><th>Field</th><th>Artinya</th></tr>
+                    <tr><td><code>id</code></td><td>Nomor urut unik, dipakai di URL (<code>/mahasiswa/2</code>)</td></tr>
+                    <tr><td><code>nim</code></td><td>Nomor induk mahasiswa</td></tr>
+                    <tr><td><code>nama</code></td><td>Nama mahasiswa</td></tr>
+                    <tr><td><code>ipk</code></td><td>Indeks prestasi kumulatif (0&ndash;4)</td></tr>
+                    <tr><td><code>semester</code></td><td>Semester berjalan, dipakai untuk menyaring daftar</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>Data ini hanya hidup di memori.</strong> Setiap kali server restart (termasuk saat <code>--watch</code> menyimpan perubahan), data yang kalian tambahkan lewat API hilang dan kembali ke tiga mahasiswa di atas. Ini wajar untuk sekarang. Di Pertemuan 6 data dipindahkan ke database.
+                </div>
+
+                <h3>4.3 Endpoint Pertama: Daftar Mahasiswa</h3>
+                <p>Ubah <code>index.js</code> agar mengimpor data itu dan menyediakan <code>GET /mahasiswa</code>. Bagian yang baru adalah baris <code>import</code> dan blok <code>app.get('/mahasiswa', ...)</code>:</p>
+                <pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./src/data/mahasiswa.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="variable">res</span>.<span class="function">json</span>(<span class="variable">mahasiswa</span>);
+});
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> ?? <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
+});</code></pre>
+                <p>Kalau <code>npm run dev</code> masih menyala, server sudah restart otomatis. Buka <code>http://localhost:3000/mahasiswa</code> di browser:</p>
+                <div class="terminal"><span class="out">[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75,"semester":6},{"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2,"semester":6},{"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9,"semester":4}]</span></div>
+                <p><code>res.json(...)</code> mengubah array JavaScript menjadi teks JSON, menambahkan header <code>Content-Type: application/json</code>, dan mengirimnya sebagai jawaban dengan status 200.</p>
+
+                <div class="info-box">
+                    <strong>Masalahnya:</strong> browser hanya bisa mengirim <code>GET</code> lewat address bar. Bagaimana kita menguji <code>POST</code>, <code>PUT</code>, dan <code>DELETE</code>? Untuk itu kita butuh alat khusus: <strong>Postman</strong>, yang dibahas di section berikut.
+                </div>
+            </section>
+
+            <section id="postman">
+                <h2>5. Menguji API dengan Postman <span class="badge badge-new">Praktik</span></h2>
+
+                <p><strong>Postman</strong> adalah aplikasi untuk mengirim permintaan HTTP apa saja ke sebuah server dan melihat jawabannya dengan rapi. Anggap saja sebagai <em>browser khusus untuk developer API</em>: kita memilih metode, menulis alamat, mengisi data yang mau dikirim, menekan <strong>Send</strong>, lalu membaca status dan isi jawabannya.</p>
+
+                <h3>5.1 Kenapa Tidak Cukup dengan Browser?</h3>
+                <table>
+                    <tr><th></th><th>Browser (address bar)</th><th>Postman</th></tr>
+                    <tr><td>Metode HTTP</td><td>Hanya <code>GET</code></td><td><code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code></td></tr>
+                    <tr><td>Mengirim badan JSON</td><td>Tidak bisa</td><td>Bisa</td></tr>
+                    <tr><td>Mengatur header</td><td>Tidak bisa</td><td>Bisa</td></tr>
+                    <tr><td>Melihat kode status</td><td>Tidak langsung terlihat</td><td>Terlihat jelas (<code>200 OK</code>, <code>404 Not Found</code>)</td></tr>
+                    <tr><td>Menyimpan permintaan</td><td>Tidak</td><td>Bisa, dalam <em>Collection</em></td></tr>
+                </table>
+
+                <h3>5.2 Pasang Postman</h3>
+                <ol>
+                    <li>Unduh dari <a href="https://www.postman.com/downloads/" target="_blank">postman.com/downloads</a>, pasang seperti aplikasi biasa. Tersedia juga versi web di browser.</li>
+                    <li>Kalau diminta masuk (<em>sign in</em>), ikuti petunjuk di layar. Untuk latihan ini cukup memakai permintaan tunggal di dalam aplikasi.</li>
+                    <li>Buka Postman dan buat permintaan baru: klik <strong>New</strong> (atau tanda <strong>+</strong> untuk tab baru) lalu pilih <strong>HTTP Request</strong>.</li>
+                </ol>
+                <div class="info-box">
+                    <strong>Tampilan Postman bisa berubah antarversi.</strong> Letak tombol mungkin sedikit berbeda, tetapi istilahnya tetap sama (Method, URL, Params, Headers, Body, Send). Panduan resminya ada di <a href="https://learning.postman.com/docs/getting-started/first-steps/sending-the-first-request/" target="_blank">Postman Learning Center</a>.
+                </div>
+
+                <h3>5.3 Permintaan Pertama: GET</h3>
+                <p>Pastikan server masih menyala (<code>npm run dev</code>). Di tab permintaan baru:</p>
+                <ol>
+                    <li>Pilih metode <strong>GET</strong> di kotak sebelah kiri.</li>
+                    <li>Ketik alamat <code>http://localhost:3000/mahasiswa</code>.</li>
+                    <li>Klik <strong>Send</strong>.</li>
+                </ol>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span class="on">Params</span><span>Headers</span><span>Body</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">[
+  { "id": 1, "nim": "F1D021001", "nama": "Andi", "ipk": 3.75, "semester": 6 },
+  { "id": 2, "nim": "F1D021002", "nama": "Budi", "ipk": 3.2, "semester": 6 },
+  { "id": 3, "nim": "F1D021003", "nama": "Citra", "ipk": 3.9, "semester": 4 }
+]</div></div>
+                <p>Bagian bawah menampilkan jawaban server. Yang harus selalu kalian baca:</p>
+                <table>
+                    <tr><th>Bagian</th><th>Yang dilihat</th></tr>
+                    <tr><td><strong>Status</strong></td><td>Kode hasil, mis. <code>200 OK</code>. Hijau = berhasil, merah = gagal</td></tr>
+                    <tr><td><strong>Body</strong></td><td>Isi jawaban. Pilih tampilan <strong>Pretty</strong> agar JSON tertata rapi</td></tr>
+                    <tr><td><strong>Time / Size</strong></td><td>Lama jawaban datang dan ukurannya</td></tr>
+                </table>
+
+                <h3>5.4 Menyimpan Permintaan di Collection dengan Variabel</h3>
+                <p>Mengetik <code>http://localhost:3000</code> berulang-ulang melelahkan, dan kalau port berubah kalian harus mengedit semuanya. Solusinya: simpan alamat dasar sebagai <strong>variabel</strong>.</p>
+                <ol>
+                    <li>Buat <strong>Collection</strong> baru, beri nama <code>API Mahasiswa</code>, lalu simpan permintaan tadi ke dalamnya (<strong>Save</strong>).</li>
+                    <li>Buka pengaturan collection, tab <strong>Variables</strong>, lalu tambahkan variabel bernama <code>baseUrl</code> dengan nilai <code>http://localhost:3000</code>.</li>
+                    <li>Ubah alamat permintaan menjadi <code>{{baseUrl}}/mahasiswa</code>. Tanda kurung kurawal ganda adalah cara Postman memanggil variabel.</li>
+                </ol>
+                <div class="req-mock"><div class="req-cap">Alamat memakai variabel (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">{{baseUrl}}/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span class="on">Params</span><span>Headers</span><span>Body</span></div></div>
+
+                <h3>5.5 Mengirim Data: POST dengan Body JSON</h3>
+                <p>Endpoint <code>POST /mahasiswa</code> baru kita buat di Section 6, tetapi cara mengirimnya perlu kalian kenal sekarang karena di sinilah kesalahan paling sering terjadi. Langkahnya:</p>
+                <ol>
+                    <li>Ubah metode menjadi <strong>POST</strong> dan alamat menjadi <code>{{baseUrl}}/mahasiswa</code>.</li>
+                    <li>Buka tab <strong>Body</strong>, pilih <strong>raw</strong>, lalu ubah jenis teks di sebelah kanannya dari <em>Text</em> menjadi <strong>JSON</strong>.</li>
+                    <li>Ketik data yang akan dikirim sebagai JSON, lalu klik <strong>Send</strong>.</li>
+                </ol>
+                <div class="req-mock"><div class="req-cap">Tab Body untuk POST (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "nim": "F1D021004",
+  "nama": "Dewi",
+  "ipk": 3.5,
+  "semester": 2
+}</div></div>
+                <div class="warning-box">
+                    <strong>Jangan lupa memilih JSON.</strong> Memilih jenis <strong>JSON</strong> membuat Postman otomatis menambahkan header <code>Content-Type: application/json</code> (bisa dilihat di tab Headers). Kalau terlewat, server tidak tahu bahwa badan permintaan itu JSON dan <code>req.body</code> tidak terbaca. Akibatnya dibahas di Section 6.3.
+                </div>
+
+                <h3>5.6 Padanannya dengan curl</h3>
+                <p>Kalau lebih suka terminal, perintah <code>curl</code> melakukan hal yang sama. Dua perintah ini setara dengan permintaan GET dan POST di atas:</p>
+                <div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa \
+     -H <span class="string">"Content-Type: application/json"</span> \
+     -d <span class="string">'{"nim":"F1D021004","nama":"Dewi"}'</span></div>
+                <table>
+                    <tr><th>Di Postman</th><th>Di curl</th></tr>
+                    <tr><td>Metode (dropdown)</td><td><code>-X POST</code> (untuk GET tidak perlu ditulis)</td></tr>
+                    <tr><td>Tab Headers</td><td><code>-H "Nama: nilai"</code></td></tr>
+                    <tr><td>Tab Body &rarr; raw &rarr; JSON</td><td><code>-d '{...}'</code></td></tr>
+                    <tr><td>Lihat status</td><td>Tambahkan <code>-i</code> agar header dan status ikut tercetak</td></tr>
+                </table>
+                <p>Alat lain yang setara: <strong>Thunder Client</strong> dan <strong>REST Client</strong> (keduanya ekstensi VS Code), atau <strong>Bruno</strong>. Yang penting kalian bisa mengirim <code>POST</code> dengan badan JSON dan membaca kode status jawabannya.</p>
+
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>Postman juga bisa mengirim GraphQL. Pilih <strong>POST</strong> ke <code>/graphql</code>, buka tab Body, lalu pilih tipe <strong>GraphQL</strong> (bukan raw JSON). Contohnya ada di Section 8.7.</p>
+                </div>
+
+                <div class="success-box">
+                    <strong>Yang perlu diingat dari Section 5:</strong>
+                    <ul>
+                        <li>Browser hanya bisa <code>GET</code>; untuk <code>POST</code>/<code>PUT</code>/<code>DELETE</code> pakai Postman (atau curl).</li>
+                        <li>Selalu baca <strong>status</strong> dulu, baru isi jawabannya.</li>
+                        <li>Simpan alamat dasar sebagai variabel <code>{{baseUrl}}</code>.</li>
+                        <li>Kirim data dengan <strong>Body &rarr; raw &rarr; JSON</strong>.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section id="routing">
+                <h2>6. Routing dengan Express <span class="badge badge-important">Indikator 3.2 &amp; 3.3</span></h2>
+
+                <p><strong>Routing</strong> adalah cara menentukan fungsi mana yang menjawab permintaan tertentu, berdasarkan kombinasi <strong>metode HTTP</strong> dan <strong>alamat</strong>. Di Section 3 kita sudah membuat satu rute (<code>GET /</code>). Sekarang kita membuat banyak rute untuk API Mahasiswa.</p>
+
+                <h3>6.1 Mendaftarkan Rute</h3>
+                <pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());     <span class="comment">// wajib, agar req.body bisa dibaca</span>
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* daftar semua */</span> });
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* satu data */</span> });
+<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* buat baru */</span> });
+<span class="variable">app</span>.<span class="function">put</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* ganti semua field */</span> });
+<span class="variable">app</span>.<span class="function">delete</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* hapus */</span> });</code></pre>
+
+                <table>
+                    <tr><th>Padanan Laravel</th><th>Express</th></tr>
+                    <tr><td><code>Route::get('/mahasiswa', [Ctrl::class,'index'])</code></td><td><code>app.get('/mahasiswa', handler)</code></td></tr>
+                    <tr><td><code>{id}</code> pada URL Laravel</td><td><code>:id</code> pada URL Express</td></tr>
+                </table>
+
+                <h3>6.2 Tiga Sumber Data pada Permintaan</h3>
+                <p>Ini <strong>indikator 3.3</strong> &mdash; kesalahan paling sering mahasiswa baru Express adalah bingung membedakan tiga tempat data bisa datang:</p>
+
+                <table>
+                    <tr><th>Sumber</th><th>Diakses lewat</th><th>Contoh URL</th><th>Dipakai untuk</th></tr>
+                    <tr><td><strong>Parameter jalur</strong></td><td><code>req.params</code></td><td><code>/mahasiswa/:id</code></td><td>Mengidentifikasi <strong>satu</strong> sumber daya</td></tr>
+                    <tr><td><strong>Parameter kueri</strong></td><td><code>req.query</code></td><td><code>/mahasiswa?semester=6</code></td><td>Menyaring/mengurutkan <strong>koleksi</strong></td></tr>
+                    <tr><td><strong>Badan permintaan</strong></td><td><code>req.body</code></td><td>Terpisah dari URL, JSON</td><td>Data baru dari POST/PUT/PATCH</td></tr>
+                </table>
+
+                <pre><code><span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">id</span> } = <span class="variable">req</span>.<span class="variable">params</span>;             <span class="comment">// dari /mahasiswa/12  → id = "12" (STRING!)</span>
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">id</span> });
+});
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">query</span>;         <span class="comment">// dari ?semester=6 → juga STRING</span>
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">semester</span> });
+});
+
+<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">nama</span>, <span class="variable">nim</span>, <span class="variable">ipk</span> } = <span class="variable">req</span>.<span class="variable">body</span>;   <span class="comment">// butuh express.json()</span>
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">nama</span>, <span class="variable">nim</span>, <span class="variable">ipk</span> });
+});</code></pre>
+
+                <div class="warning-box">
+                    <strong>Jebakan tipe data:</strong> <code>req.params</code> dan <code>req.query</code> <strong>selalu berupa string</strong>, walau terlihat seperti angka di URL. <code>?semester=6</code> menghasilkan <code>"6"</code>, bukan <code>6</code>. Kalau langsung dibandingkan <code>req.query.semester === 6</code>, hasilnya selalu <code>false</code>. Konversi dulu: <code>Number(req.query.semester)</code>.
+                </div>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <table>
+                        <tr><th>REST</th><th>GraphQL</th></tr>
+                        <tr><td><code>req.params</code> (<code>/mahasiswa/12</code>)</td><td>Argumen wajib, <code>mahasiswa(id: 12)</code>, dibaca lewat <code>args.id</code></td></tr>
+                        <tr><td><code>req.query</code> (<code>?semester=6</code>)</td><td>Argumen opsional, <code>daftarMahasiswa(semester: 6)</code>, dibaca lewat <code>args.semester</code></td></tr>
+                        <tr><td><code>req.body</code> (data dari POST)</td><td>Argumen mutation, atau <strong>variabel</strong> yang dikirim terpisah dari teks query</td></tr>
+                    </table>
+                    <p>Bedanya, argumen GraphQL punya <strong>tipe di schema</strong>. <code>semester: Int</code> sudah diubah menjadi angka sebelum sampai ke resolver, jadi tidak ada jebakan string seperti <code>"6"</code> di atas. Pengecualiannya tipe <code>ID</code>, yang tetap berupa teks.</p>
+                </div>
+
+
+                <h3>6.3 Praktik: Tambah Rute ke API Mahasiswa</h3>
+                <p>Kita lengkapi <code>index.js</code> dengan tiga rute: daftar yang bisa disaring (<code>req.query</code>), detail satu mahasiswa (<code>req.params</code>), dan tambah mahasiswa (<code>req.body</code>). Perhatikan juga baris baru <code>app.use(express.json())</code>:</p>
+                <pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./src/data/mahasiswa.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());   <span class="comment">// wajib, agar req.body bisa dibaca</span>
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="comment">// GET /mahasiswa            → semua</span>
+<span class="comment">// GET /mahasiswa?semester=6 → disaring (req.query)</span>
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> { <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">query</span>;
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="variable">semester</span>
+        ? <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> =&gt; <span class="variable">m</span>.<span class="variable">semester</span> === <span class="function">Number</span>(<span class="variable">semester</span>))
+        : <span class="variable">mahasiswa</span>;
+    <span class="variable">res</span>.<span class="function">json</span>(<span class="variable">hasil</span>);
+});
+
+<span class="comment">// GET /mahasiswa/:id → satu data (req.params)</span>
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">x</span> =&gt; <span class="variable">x</span>.<span class="variable">id</span> === <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
+    <span class="keyword">if</span> (!<span class="variable">m</span>) {
+        <span class="keyword">return</span> <span class="variable">res</span>.<span class="function">status</span>(<span class="number">404</span>).<span class="function">json</span>({ <span class="variable">pesan</span>: <span class="string">'Mahasiswa tidak ditemukan'</span> });
+    }
+    <span class="variable">res</span>.<span class="function">json</span>(<span class="variable">m</span>);
+});
+
+<span class="comment">// POST /mahasiswa → buat baru (req.body)</span>
+<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> { <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">body</span>;
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>(<span class="variable">baru</span>);
+});
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> ?? <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
+});</code></pre>
+                <p>Simpan, lalu uji satu per satu di Postman (atau browser untuk <code>GET</code>):</p>
+
+                <h4>Uji 1: Saring dengan <code>req.query</code></h4>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">{{baseUrl}}/mahasiswa?semester=6</span><span class="req-send">Send</span></div><div class="req-tabs"><span class="on">Params</span><span>Headers</span><span>Body</span></div><div class="req-pane">Key          Value
+semester     6</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">[
+  { "id": 1, "nim": "F1D021001", "nama": "Andi", "ipk": 3.75, "semester": 6 },
+  { "id": 2, "nim": "F1D021002", "nama": "Budi", "ipk": 3.2, "semester": 6 }
+]</div></div>
+                <p>Hanya dua mahasiswa semester 6 yang muncul. Ketik <code>?semester=6</code> langsung di URL, atau isi tab <strong>Params</strong> dan Postman akan menyusun URL-nya sendiri.</p>
+
+                <h4>Uji 2: Detail dengan <code>req.params</code></h4>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">{{baseUrl}}/mahasiswa/2</span><span class="req-send">Send</span></div><div class="req-tabs"><span class="on">Params</span><span>Headers</span><span>Body</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{ "id": 2, "nim": "F1D021002", "nama": "Budi", "ipk": 3.2, "semester": 6 }</div></div>
+                <p>Sekarang id yang tidak ada:</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">{{baseUrl}}/mahasiswa/99</span><span class="req-send">Send</span></div><div class="req-tabs"><span class="on">Params</span><span>Headers</span><span>Body</span></div><div class="req-res"><span>Response</span><span class="st s4">404 Not Found</span></div><div class="req-resbody">{ "pesan": "Mahasiswa tidak ditemukan" }</div></div>
+                <p>Perhatikan: status berubah menjadi <strong>404</strong> karena kita menulis <code>res.status(404)</code>. Pemilihan kode status dibahas lengkap di Section 7.</p>
+
+                <h4>Uji 3: Tambah data dengan <code>req.body</code></h4>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "nim": "F1D021004",
+  "nama": "Dewi",
+  "ipk": 3.5,
+  "semester": 2
+}</div><div class="req-res"><span>Response</span><span class="st s2">201 Created</span></div><div class="req-resbody">{ "id": 4, "nim": "F1D021004", "nama": "Dewi", "ipk": 3.5, "semester": 2 }</div></div>
+                <p>Status <strong>201 Created</strong> menandakan data baru berhasil dibuat. Kirim <code>GET /mahasiswa</code> lagi, dan Dewi sudah ada di daftar (sampai server restart).</p>
+
+                <div class="warning-box">
+                    <strong>Jebakan Postman: lupa memilih JSON.</strong> Kalau <code>POST</code> dikirim tanpa header <code>Content-Type: application/json</code> (misalnya Body dibiarkan <em>Text</em>), <code>express.json()</code> tidak membaca badan permintaannya. Di Express 5, <code>req.body</code> lalu bernilai <code>undefined</code> dan server menjawab <strong>500 Internal Server Error</strong>. Di terminal server muncul:
+                    <div class="terminal"><span class="out">TypeError: Cannot destructure property 'nim' of 'req.body' as it is undefined.</span></div>
+                    Cek tab Headers, pastikan <code>Content-Type</code> bernilai <code>application/json</code>. Di Section 7 kita buat server lebih ramah terhadap kasus ini.
+                </div>
+            </section>
+
+            <section id="status-format">
+                <h2>7. Kode Status HTTP &amp; Format Tanggapan <span class="badge badge-important">Indikator 3.2</span></h2>
+
+                <h3>7.1 Kode Status yang Wajib Dikuasai</h3>
+                <table>
+                    <tr><th>Kode</th><th>Arti</th><th>Kapan dipakai</th></tr>
+                    <tr><td><span class="status-2xx">200 OK</span></td><td>Berhasil</td><td>GET, PUT, PATCH, DELETE yang sukses</td></tr>
+                    <tr><td><span class="status-2xx">201 Created</span></td><td>Berhasil membuat</td><td>POST yang berhasil membuat data baru</td></tr>
+                    <tr><td><span class="status-2xx">204 No Content</span></td><td>Berhasil, tanpa isi</td><td>DELETE yang sukses (tidak perlu kirim data balik)</td></tr>
+                    <tr><td><span class="status-4xx">400 Bad Request</span></td><td>Permintaan tidak valid</td><td>Format data salah, field wajib kosong</td></tr>
+                    <tr><td><span class="status-4xx">401 Unauthorized</span></td><td>Belum login</td><td>Token tidak ada / tidak valid (Pertemuan 9)</td></tr>
+                    <tr><td><span class="status-4xx">403 Forbidden</span></td><td>Dilarang</td><td>Sudah login, tapi tidak punya izin</td></tr>
+                    <tr><td><span class="status-4xx">404 Not Found</span></td><td>Tidak ditemukan</td><td>ID tidak ada di data</td></tr>
+                    <tr><td><span class="status-4xx">409 Conflict</span></td><td>Bentrok</td><td>NIM sudah terdaftar sebelumnya</td></tr>
+                    <tr><td><span class="status-4xx">422 Unprocessable Entity</span></td><td>Gagal validasi</td><td>Format email salah, IPK di luar rentang 0&ndash;4</td></tr>
+                    <tr><td><span class="status-5xx">500 Internal Server Error</span></td><td>Error di server</td><td>Bug, koneksi database putus &mdash; <strong>bukan salah klien</strong></td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Kesalahan pemula paling umum:</strong> mengembalikan <code>200 OK</code> untuk segala sesuatu, termasuk saat data tidak ditemukan atau validasi gagal, lalu menaruh pesan error di dalam <code>body</code>. Klien (termasuk React nanti) sangat bergantung pada kode status yang <strong>benar</strong> untuk memutuskan alur logikanya &mdash; jangan menyembunyikan kegagalan di balik status 200.
+                </div>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>Di GraphQL, status HTTP biasanya <strong>tetap 200</strong> walau query-nya gagal, dan kegagalan dilaporkan di field <code>errors</code> pada isi jawaban. Jadi klien GraphQL memeriksa <code>errors</code>, bukan kode status. Kalau id tidak ditemukan, hasilnya <code>null</code> (bukan 404). Contoh nyatanya ada di Section 8.7.</p>
+                </div>
+
+                <h3>7.2 Format Tanggapan yang Konsisten</h3>
+                <p>Setiap endpoint sebaiknya mengembalikan <strong>bentuk yang seragam</strong>, sehingga klien tidak perlu menebak-nebak struktur tanggapan tiap kali memanggil endpoint berbeda.</p>
+
+                <pre><code><span class="comment">// Berhasil — data langsung, atau dibungkus "data"</span>
+<span class="variable">res</span>.<span class="function">status</span>(<span class="number">200</span>).<span class="function">json</span>({
+    <span class="variable">data</span>: { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nama</span>: <span class="string">"Andi"</span>, <span class="variable">ipk</span>: <span class="number">3.75</span> }
+});
+
+<span class="comment">// Daftar — sertakan metadata paginasi (dipakai lagi di Pertemuan 7)</span>
+<span class="variable">res</span>.<span class="function">status</span>(<span class="number">200</span>).<span class="function">json</span>({
+    <span class="variable">data</span>: [ <span class="comment">/* ... */</span> ],
+    <span class="variable">meta</span>: { <span class="variable">total</span>: <span class="number">42</span>, <span class="variable">halaman</span>: <span class="number">1</span> }
+});
+
+<span class="comment">// Gagal — format konsisten untuk SEMUA error</span>
+<span class="variable">res</span>.<span class="function">status</span>(<span class="number">404</span>).<span class="function">json</span>({
+    <span class="variable">error</span>: {
+        <span class="variable">pesan</span>: <span class="string">"Mahasiswa dengan id 99 tidak ditemukan"</span>,
+        <span class="variable">kode</span>: <span class="string">"MAHASISWA_NOT_FOUND"</span>
+    }
+});</code></pre>
+
+                <div class="success-box">
+                    <strong>Aturan mata kuliah ini:</strong> tanggapan berhasil selalu dibungkus <code>{ data: ... }</code> (dan <code>meta</code> untuk daftar), tanggapan gagal selalu dibungkus <code>{ error: { pesan, kode } }</code>. Konsistensi ini akan sangat memudahkan penanganan error terpusat di Pertemuan 5 dan integrasi React di Pertemuan 12.
+                </div>
+
+                <div class="gql-box">
+                    <strong><i class="fa-solid fa-diagram-project"></i> Padanan di GraphQL</strong>
+                    <p>Format ini kita rancang sendiri. Di GraphQL formatnya sudah ditetapkan spesifikasi: jawaban berisi <code>data</code> yang bentuknya <strong>mengikuti query</strong>, dan <code>errors</code> kalau ada yang gagal. Tidak ada pembungkus <code>meta</code> atau <code>kode</code> buatan sendiri yang perlu disepakati.</p>
+                </div>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Pilih Kode Status yang Tepat</h5>
+                    <button onclick="demoStatus('sukses')">POST berhasil membuat data</button>
+                    <button onclick="demoStatus('notfound')">GET dengan id tidak ada</button>
+                    <button onclick="demoStatus('invalid')">POST dengan data tidak valid</button>
+                    <button onclick="demoStatus('hapus')">DELETE berhasil</button>
+                    <div class="console-output" id="demo2-out">Klik salah satu tombol...</div>
+                </div>
+
+
+                <h3>7.3 Praktik: Rapikan API Mahasiswa</h3>
+                <p>Rute di Section 6 sudah jalan, tetapi tanggapannya belum seragam (kadang array langsung, kadang <code>{ pesan }</code>) dan POST belum divalidasi. Sekarang kita terapkan aturan 7.2. Ganti isi <code>index.js</code> dengan versi berikut. Bagian yang berubah: pembantu <code>kirimError</code>, pembungkus <code>{ data }</code> dan <code>meta</code>, serta validasi pada POST.</p>
+                <pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./src/data/mahasiswa.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
+
+<span class="comment">// Pembantu: semua error memakai bentuk { error: { pesan, kode } }</span>
+<span class="keyword">const</span> <span class="variable">kirimError</span> = (<span class="variable">res</span>, <span class="variable">status</span>, <span class="variable">kode</span>, <span class="variable">pesan</span>) =&gt;
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="variable">status</span>).<span class="function">json</span>({ <span class="variable">error</span>: { <span class="variable">pesan</span>, <span class="variable">kode</span> } });
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="comment">// GET /mahasiswa — daftar, mendukung ?semester=6</span>
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> { <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">query</span>;
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="variable">semester</span>
+        ? <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> =&gt; <span class="variable">m</span>.<span class="variable">semester</span> === <span class="function">Number</span>(<span class="variable">semester</span>))
+        : <span class="variable">mahasiswa</span>;
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span>, <span class="variable">meta</span>: { <span class="variable">total</span>: <span class="variable">hasil</span>.<span class="variable">length</span> } });
+});
+
+<span class="comment">// GET /mahasiswa/:id — satu data, 404 kalau tidak ada</span>
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">x</span> =&gt; <span class="variable">x</span>.<span class="variable">id</span> === <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
+    <span class="keyword">if</span> (!<span class="variable">m</span>) {
+        <span class="keyword">return</span> <span class="function">kirimError</span>(<span class="variable">res</span>, <span class="number">404</span>, <span class="string">'NOT_FOUND'</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>);
+    }
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+});
+
+<span class="comment">// POST /mahasiswa — buat baru, validasi sederhana</span>
+<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) =&gt; {
+    <span class="keyword">const</span> { <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">body</span> ?? {};
+    <span class="keyword">if</span> (!<span class="variable">nim</span> || !<span class="variable">nama</span>) {
+        <span class="keyword">return</span> <span class="function">kirimError</span>(<span class="variable">res</span>, <span class="number">422</span>, <span class="string">'VALIDATION_ERROR'</span>, <span class="string">'nim dan nama wajib diisi'</span>);
+    }
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>: <span class="variable">ipk</span> ?? <span class="number">0</span>, <span class="variable">semester</span>: <span class="variable">semester</span> ?? <span class="number">1</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
+});
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> ?? <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) =&gt; {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
+});</code></pre>
+                <p>Uji ulang di Postman dan perhatikan perubahannya:</p>
+                <table>
+                    <tr><th>Permintaan</th><th>Status</th><th>Isi jawaban</th></tr>
+                    <tr><td><code>GET /mahasiswa</code></td><td><span class="status-2xx">200</span></td><td><code>{ "data": [ ... ], "meta": { "total": 3 } }</code></td></tr>
+                    <tr><td><code>GET /mahasiswa/99</code></td><td><span class="status-4xx">404</span></td><td><code>{ "error": { "pesan": "Mahasiswa tidak ditemukan", "kode": "NOT_FOUND" } }</code></td></tr>
+                    <tr><td><code>POST /mahasiswa</code> (data lengkap)</td><td><span class="status-2xx">201</span></td><td><code>{ "data": { "id": 4, "nim": "F1D021004", ... } }</code></td></tr>
+                    <tr><td><code>POST /mahasiswa</code> (tanpa <code>nim</code>)</td><td><span class="status-4xx">422</span></td><td><code>{ "error": { "pesan": "nim dan nama wajib diisi", "kode": "VALIDATION_ERROR" } }</code></td></tr>
+                    <tr><td><code>POST /mahasiswa</code> (lupa memilih JSON)</td><td><span class="status-4xx">422</span></td><td>sama dengan baris di atas, bukan lagi 500</td></tr>
+                </table>
+                <div class="req-mock"><div class="req-cap">Validasi gagal (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "nama": "Tanpa NIM"
+}</div><div class="req-res"><span>Response</span><span class="st s4">422 Unprocessable Entity</span></div><div class="req-resbody">{
+  "error": {
+    "pesan": "nim dan nama wajib diisi",
+    "kode": "VALIDATION_ERROR"
+  }
+}</div></div>
+                <div class="info-box">
+                    <strong>Kenapa <code>req.body ?? {}</code>?</strong> Kalau badan permintaan tidak terbaca, <code>req.body</code> bernilai <code>undefined</code>. Dengan <code>?? {}</code> kita memberi object kosong sebagai cadangan, sehingga kodenya lanjut ke validasi dan mengembalikan 422 yang jelas, bukan error 500 yang membingungkan.
+                </div>
+
+                <div class="success-box">
+                    <strong>Selesai kalau:</strong> keempat endpoint (daftar, detail, saring, tambah) mengembalikan kode status dan format tanggapan yang benar untuk kondisi berhasil maupun gagal, dan kalian sudah mengujinya di Postman.
+                </div>
+            </section>
+
+            <section id="graphql">
+                <h2>8. Pengenalan GraphQL <span class="badge badge-new">Pengayaan</span></h2>
+
+                <p><strong>GraphQL</strong> adalah cara lain merancang API. Pada REST, <em>server</em> yang menentukan isi jawaban tiap endpoint. Pada GraphQL, <em>klien</em> yang menulis sendiri data apa saja yang diminta, lewat satu endpoint saja. Kita praktikkan langsung di proyek <code>api-mahasiswa</code>: REST yang sudah jadi tetap berjalan, GraphQL ditambahkan di sebelahnya.</p>
+
+                <div class="info-box">
+                    <strong>Cari kotak merah muda &quot;Padanan di GraphQL&quot;</strong> di Section 2, 4, 5, 6, dan 7. Setiap konsep REST yang baru kalian pelajari diberi pasangannya di GraphQL, supaya perbandingannya langsung terlihat.
+                </div>
+
+                <div class="info-box">
+                    <strong>Posisi bagian ini:</strong> pengayaan, bukan bagian indikator 3.1&ndash;3.3. Pertemuan 5 sampai 12 tetap memakai REST. Tujuannya supaya kalian tahu pilihan lain yang banyak dipakai di industri, dan paham kapan masing-masing cocok.
+                </div>
+
+                <h3>8.1 Masalah yang Ingin Diselesaikan</h3>
+                <p>Bayangkan halaman profil mahasiswa yang menampilkan <strong>nama</strong> dan <strong>daftar mata kuliah beserta nilainya</strong>. Dengan REST, data mahasiswa dan data nilai ada di dua endpoint berbeda. Kita buat dulu data nilainya. Buat file <code>src/data/nilai.js</code>:</p>
+                <pre><code><span class="comment">// src/data/nilai.js</span>
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">nilai</span> = [
+    { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">mahasiswaId</span>: <span class="number">1</span>, <span class="variable">matkul</span>: <span class="string">'Pemrograman Web Lanjut'</span>, <span class="variable">huruf</span>: <span class="string">'A'</span> },
+    { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">mahasiswaId</span>: <span class="number">1</span>, <span class="variable">matkul</span>: <span class="string">'Basis Data'</span>, <span class="variable">huruf</span>: <span class="string">'B'</span> },
+    { <span class="variable">id</span>: <span class="number">3</span>, <span class="variable">mahasiswaId</span>: <span class="number">2</span>, <span class="variable">matkul</span>: <span class="string">'Pemrograman Web Lanjut'</span>, <span class="variable">huruf</span>: <span class="string">'B'</span> },
+    { <span class="variable">id</span>: <span class="number">4</span>, <span class="variable">mahasiswaId</span>: <span class="number">3</span>, <span class="variable">matkul</span>: <span class="string">'Basis Data'</span>, <span class="variable">huruf</span>: <span class="string">'A'</span> }
+];</code></pre>
+                <table>
+                    <tr><th>Field</th><th>Artinya</th></tr>
+                    <tr><td><code>id</code></td><td>Nomor urut unik data nilai</td></tr>
+                    <tr><td><code>mahasiswaId</code></td><td><code>id</code> mahasiswa pemilik nilai ini (menghubungkan ke <code>mahasiswa.js</code>). Andi (<code>id</code> 1) punya dua nilai, Budi dan Citra masing-masing satu</td></tr>
+                    <tr><td><code>matkul</code></td><td>Nama mata kuliah</td></tr>
+                    <tr><td><code>huruf</code></td><td>Nilai huruf (A, B, ...)</td></tr>
+                </table>
+                <p>Lalu tambahkan endpoint REST untuk nilai, sesuai pola sub-koleksi di Section 2.3. Di <code>index.js</code>, tambahkan <code>import</code> ini di bagian atas:</p>
+                <pre><code><span class="keyword">import</span> { <span class="variable">nilai</span> } <span class="keyword">from</span> <span class="string">'./src/data/nilai.js'</span>;</code></pre>
+                <p>dan rute ini di bawah <code>GET /mahasiswa/:id</code>:</p>
+                <pre><code><span class="comment">// GET /mahasiswa/:id/nilai — nilai milik satu mahasiswa</span>
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id/nilai'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="variable">nilai</span>.<span class="function">filter</span>(<span class="variable">n</span> <span class="operator">=&gt;</span> <span class="variable">n</span>.<span class="variable">mahasiswaId</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
+});</code></pre>
+                <p>Simpan, lalu panggil kedua endpoint yang dibutuhkan halaman profil Andi:</p>
+                <div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/1
+<span class="out">{"data":{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75,"semester":6}}</span>
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/1/nilai
+<span class="out">{"data":[{"id":1,"mahasiswaId":1,"matkul":"Pemrograman Web Lanjut","huruf":"A"},{"id":2,"mahasiswaId":1,"matkul":"Basis Data","huruf":"B"}]}</span></div>
+
+                <div class="flow-diagram">
+                    <div class="flow-row">
+                        <div class="flow-box flow-client">Halaman profil</div>
+                        <div class="flow-arrow">GET /mahasiswa/1 &rarr;</div>
+                        <div class="flow-box flow-server">Express (REST)</div>
+                        <div class="flow-arrow">&larr; 73 byte</div>
+                    </div>
+                    <div class="flow-row">
+                        <div class="flow-box flow-client">Halaman profil</div>
+                        <div class="flow-arrow">GET /mahasiswa/1/nilai &rarr;</div>
+                        <div class="flow-box flow-server">Express (REST)</div>
+                        <div class="flow-arrow">&larr; 140 byte</div>
+                    </div>
+                    <div class="flow-note">REST: 2 permintaan, 213 byte</div>
+                </div>
+
+                <p>Ada dua hal yang kurang efisien di sini:</p>
+                <table>
+                    <tr><th>Masalah</th><th>Contohnya di atas</th></tr>
+                    <tr><td><strong>Over-fetching</strong> (data berlebih)</td><td>Halaman hanya butuh <code>nama</code>, tetapi <code>GET /mahasiswa/1</code> mengirim juga <code>nim</code>, <code>ipk</code>, dan <code>semester</code></td></tr>
+                    <tr><td><strong>Under-fetching</strong> (data kurang, harus minta lagi)</td><td><code>GET /mahasiswa/1</code> tidak memuat nilai, jadi klien harus memanggil endpoint kedua</td></tr>
+                </table>
+                <p>Di jaringan seluler yang lambat, dua permintaan berurutan terasa. GraphQL dibuat untuk masalah ini.</p>
+
+                <h3>8.2 Apa Itu GraphQL?</h3>
+                <p>GraphQL punya <strong>satu endpoint</strong> (biasanya <code>POST /graphql</code>). Klien mengirim sebuah <strong>query</strong> yang menyebutkan field yang diinginkan, dan server menjawab dengan JSON yang bentuknya persis sama dengan query itu. Tiga istilah yang perlu diingat:</p>
+                <table>
+                    <tr><th>Istilah</th><th>Artinya</th><th>Padanan di REST</th></tr>
+                    <tr><td><strong>Schema</strong></td><td>Daftar tipe data dan operasi yang tersedia. Ini <em>kontrak</em> antara klien dan server</td><td>Tabel rancangan endpoint (Section 4.1)</td></tr>
+                    <tr><td><strong>Query / Mutation</strong></td><td>Query untuk <em>membaca</em> data, mutation untuk <em>mengubah</em> data</td><td><code>GET</code> / <code>POST</code>, <code>PUT</code>, <code>DELETE</code></td></tr>
+                    <tr><td><strong>Resolver</strong></td><td>Fungsi yang mengisi data untuk satu field</td><td>Handler <code>(req, res)</code></td></tr>
+                </table>
+
+                <table>
+                    <tr><th></th><th>REST</th><th>GraphQL</th></tr>
+                    <tr><td>Endpoint</td><td>Banyak URL (<code>/mahasiswa</code>, <code>/mahasiswa/1/nilai</code>, ...)</td><td>Satu URL (<code>/graphql</code>)</td></tr>
+                    <tr><td>Yang menentukan isi jawaban</td><td>Server</td><td>Klien (lewat query)</td></tr>
+                    <tr><td>Aksi</td><td>Ditentukan metode HTTP</td><td>Ditentukan jenis operasi di dalam query (query / mutation)</td></tr>
+                    <tr><td>Kegagalan</td><td>Kode status (404, 422, ...)</td><td>Biasanya tetap status 200, errornya ada di field <code>errors</code> (lihat 8.7)</td></tr>
+                    <tr><td>Cache HTTP</td><td>Mudah, karena tiap URL berbeda</td><td>Lebih sulit, karena semua lewat satu URL</td></tr>
+                </table>
+
+                <h3>8.3 Pasang GraphQL di API Mahasiswa</h3>
+                <p>Kita pakai <strong>GraphQL Yoga</strong>, server GraphQL yang bisa dipasang langsung di Express. Hentikan server dulu (Ctrl + C), lalu pasang dua paket:</p>
+                <div class="terminal"><span class="prompt">$</span> npm install graphql-yoga graphql</div>
+                <table>
+                    <tr><th>Paket</th><th>Fungsinya</th></tr>
+                    <tr><td><code>graphql</code></td><td>Mesin inti GraphQL: membaca query, memeriksa kecocokannya dengan schema, lalu menjalankannya</td></tr>
+                    <tr><td><code>graphql-yoga</code></td><td>Menghubungkan mesin itu ke HTTP, sehingga bisa dipasang sebagai middleware Express. Sudah termasuk halaman uji GraphiQL</td></tr>
+                </table>
+                <div class="info-box">
+                    Pustaka lain yang sering dijumpai adalah <strong>Apollo Server</strong>. Konsepnya sama (schema + resolver), jadi yang kalian pelajari di sini terpakai juga di sana.
+                </div>
+                <div class="warning-box">
+                    <strong>Peringatan <code>npm audit</code>:</strong> setelah <code>npm install</code>, npm bisa menampilkan <em>"high severity vulnerabilities"</em> pada paket turunan milik Yoga. Untuk latihan di laptop sendiri ini tidak menghalangi, tetapi jangan dibiasakan mengabaikannya di proyek sungguhan. Cara membaca dan menangani <code>npm audit</code> dibahas di Pertemuan 10.
+                </div>
+
+                <h3>8.4 Schema: Kontrak API</h3>
+                <p>Buat folder <code>src/graphql</code> dan file <code>schema.js</code>. Bagian atas file ini, <code>typeDefs</code>, adalah schema-nya: daftar tipe data dan operasi yang boleh dipanggil klien. Bagian <code>resolvers</code> di bawahnya dijelaskan di 8.5.</p>
+                <div class="terminal"><span class="prompt">$</span> mkdir -p src/graphql</div>
+                <pre><code><span class="comment">// src/graphql/schema.js</span>
+<span class="keyword">import</span> { <span class="variable">createSchema</span> } <span class="keyword">from</span> <span class="string">'graphql-yoga'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'../data/mahasiswa.js'</span>;
+<span class="keyword">import</span> { <span class="variable">nilai</span> } <span class="keyword">from</span> <span class="string">'../data/nilai.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">typeDefs</span> = <span class="comment">/* GraphQL */</span> <span class="string">`
+    type Mahasiswa {
+        id: ID!
+        nim: String!
+        nama: String!
+        ipk: Float!
+        semester: Int!
+        nilai: [Nilai!]!
+    }
+
+    type Nilai {
+        id: ID!
+        matkul: String!
+        huruf: String!
+    }
+
+    type Query {
+        daftarMahasiswa(semester: Int): [Mahasiswa!]!
+        mahasiswa(id: ID!): Mahasiswa
+    }
+
+    type Mutation {
+        tambahMahasiswa(nim: String!, nama: String!, ipk: Float, semester: Int): Mahasiswa!
+    }
+`</span>;
+
+<span class="keyword">const</span> <span class="variable">resolvers</span> = {
+    <span class="variable">Query</span>: {
+        <span class="variable">daftarMahasiswa</span>: (<span class="variable">parent</span>, <span class="variable">args</span>) <span class="operator">=&gt;</span>
+            <span class="variable">args</span>.<span class="variable">semester</span>
+                <span class="operator">?</span> <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> <span class="operator">===</span> <span class="variable">args</span>.<span class="variable">semester</span>)
+                : <span class="variable">mahasiswa</span>,
+        <span class="variable">mahasiswa</span>: (<span class="variable">parent</span>, <span class="variable">args</span>) <span class="operator">=&gt;</span>
+            <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">id</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">args</span>.<span class="variable">id</span>)) <span class="operator">??</span> <span class="keyword">null</span>
+    },
+    <span class="variable">Mutation</span>: {
+        <span class="variable">tambahMahasiswa</span>: (<span class="variable">parent</span>, <span class="variable">args</span>) <span class="operator">=&gt;</span> {
+            <span class="keyword">const</span> <span class="variable">baru</span> = {
+                <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>,
+                <span class="variable">nim</span>: <span class="variable">args</span>.<span class="variable">nim</span>,
+                <span class="variable">nama</span>: <span class="variable">args</span>.<span class="variable">nama</span>,
+                <span class="variable">ipk</span>: <span class="variable">args</span>.<span class="variable">ipk</span> <span class="operator">??</span> <span class="number">0</span>,
+                <span class="variable">semester</span>: <span class="variable">args</span>.<span class="variable">semester</span> <span class="operator">??</span> <span class="number">1</span>
+            };
+            <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+            <span class="keyword">return</span> <span class="variable">baru</span>;
+        }
+    },
+    <span class="variable">Mahasiswa</span>: {
+        <span class="variable">nilai</span>: (<span class="variable">parent</span>) <span class="operator">=&gt;</span> <span class="variable">nilai</span>.<span class="function">filter</span>(<span class="variable">n</span> <span class="operator">=&gt;</span> <span class="variable">n</span>.<span class="variable">mahasiswaId</span> <span class="operator">===</span> <span class="variable">parent</span>.<span class="variable">id</span>)
+    }
+};
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">schema</span> = <span class="function">createSchema</span>({ <span class="variable">typeDefs</span>, <span class="variable">resolvers</span> });</code></pre>
+                <p>Perhatikan <code>typeDefs</code>-nya dulu. Isinya ditulis dalam bahasa schema GraphQL, bukan JavaScript:</p>
+                <table>
+                    <tr><th>Penulisan</th><th>Artinya</th></tr>
+                    <tr><td><code>type Mahasiswa { ... }</code></td><td>Mendefinisikan bentuk satu jenis data beserta field-nya</td></tr>
+                    <tr><td><code>String</code>, <code>Int</code>, <code>Float</code>, <code>ID</code></td><td>Tipe dasar: teks, bilangan bulat, bilangan desimal, dan pengenal unik (dikirim sebagai teks)</td></tr>
+                    <tr><td><code>nama: String!</code></td><td>Tanda <code>!</code> berarti <strong>wajib ada</strong> (tidak boleh null). Tanpa <code>!</code>, nilainya boleh null</td></tr>
+                    <tr><td><code>nilai: [Nilai!]!</code></td><td>Tanda <code>[ ]</code> berarti <strong>daftar</strong>. Ini daftar berisi <code>Nilai</code> yang wajib ada, dan daftarnya sendiri wajib ada (boleh kosong)</td></tr>
+                    <tr><td><code>type Query</code></td><td>Daftar operasi <strong>baca</strong> yang boleh dipanggil klien. Ini pintu masuk untuk semua query</td></tr>
+                    <tr><td><code>daftarMahasiswa(semester: Int)</code></td><td>Operasi dengan argumen opsional <code>semester</code> (tanpa <code>!</code>), padanan <code>?semester=6</code> di REST</td></tr>
+                    <tr><td><code>mahasiswa(id: ID!): Mahasiswa</code></td><td>Argumen <code>id</code> wajib. Hasilnya <code>Mahasiswa</code> tanpa <code>!</code>, artinya boleh null (kalau id tidak ada)</td></tr>
+                    <tr><td><code>type Mutation</code></td><td>Daftar operasi yang <strong>mengubah</strong> data</td></tr>
+                </table>
+                <p>Perhatikan juga bahwa <code>Mahasiswa</code> punya field <code>nilai</code> bertipe daftar <code>Nilai</code>. Relasi antar data ditulis langsung di schema, dan inilah yang memungkinkan satu query mengambil mahasiswa sekaligus nilainya.</p>
+
+                <h3>8.5 Resolver: Pengisi Data</h3>
+                <p>Schema hanya menyatakan <em>apa</em> yang tersedia. <strong>Resolver</strong> adalah fungsi yang menyatakan <em>bagaimana</em> data diambil, satu fungsi per field. Strukturnya mengikuti schema: <code>Query.daftarMahasiswa</code> mengisi query <code>daftarMahasiswa</code>, dan seterusnya.</p>
+                <table>
+                    <tr><th>Resolver</th><th>Yang dilakukan</th><th>Padanan REST</th></tr>
+                    <tr><td><code>Query.daftarMahasiswa</code></td><td>Mengembalikan semua mahasiswa, atau yang disaring per semester kalau argumen <code>semester</code> ada</td><td><code>GET /mahasiswa?semester=6</code></td></tr>
+                    <tr><td><code>Query.mahasiswa</code></td><td>Mencari satu mahasiswa berdasarkan <code>id</code>. Kalau tidak ada, mengembalikan <code>null</code></td><td><code>GET /mahasiswa/:id</code></td></tr>
+                    <tr><td><code>Mutation.tambahMahasiswa</code></td><td>Membuat mahasiswa baru dan mengembalikannya</td><td><code>POST /mahasiswa</code></td></tr>
+                    <tr><td><code>Mahasiswa.nilai</code></td><td>Mengambil nilai milik satu mahasiswa</td><td><code>GET /mahasiswa/:id/nilai</code></td></tr>
+                </table>
+                <p>Setiap resolver menerima dua parameter pertama:</p>
+                <ul>
+                    <li><code>parent</code> &mdash; data dari tingkat di atasnya. Di <code>Mahasiswa.nilai</code>, <code>parent</code> adalah mahasiswa yang sedang diproses, sehingga kita bisa memakai <code>parent.id</code></li>
+                    <li><code>args</code> &mdash; argumen yang ditulis klien di query, misalnya <code>args.semester</code></li>
+                </ul>
+                <div class="success-box">
+                    <strong>Satu hal penting:</strong> resolver <code>Mahasiswa.nilai</code> hanya dijalankan kalau klien <em>memintanya</em> di query. Kalau klien hanya meminta <code>nama</code>, data nilai tidak diambil sama sekali.
+                </div>
+
+                <h3>8.6 Pasang di Express</h3>
+                <p>Ubah bagian atas <code>index.js</code> agar memasang Yoga di jalur <code>/graphql</code>. Rute REST dari Section 7.3 <strong>tidak diubah</strong> dan tetap berjalan:</p>
+                <pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> { <span class="variable">createYoga</span> } <span class="keyword">from</span> <span class="string">'graphql-yoga'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'./src/data/mahasiswa.js'</span>;
+<span class="keyword">import</span> { <span class="variable">nilai</span> } <span class="keyword">from</span> <span class="string">'./src/data/nilai.js'</span>;
+<span class="keyword">import</span> { <span class="variable">schema</span> } <span class="keyword">from</span> <span class="string">'./src/graphql/schema.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
+
+<span class="comment">// GraphQL: satu endpoint untuk semua query dan mutation</span>
+<span class="keyword">const</span> <span class="variable">yoga</span> = <span class="function">createYoga</span>({ <span class="variable">schema</span>, <span class="variable">graphqlEndpoint</span>: <span class="string">'/graphql'</span> });
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/graphql'</span>, <span class="variable">yoga</span>);
+
+<span class="comment">// ... kirimError dan semua rute REST dari Section 7.3 tetap di sini ...</span></code></pre>
+                <p>Jalankan lagi <code>npm run dev</code>. Selain itu, buka <code>http://localhost:3000/graphql</code> di browser. Kalian akan melihat <strong>GraphiQL</strong>: halaman untuk mencoba query langsung, dengan daftar schema di sisi kanan dan saran otomatis saat mengetik. Alat ini setara dengan Postman, khusus untuk GraphQL.</p>
+
+                <h3>8.7 Mencoba Query</h3>
+                <p>Semua permintaan GraphQL berupa <code>POST</code> ke <code>/graphql</code> dengan body JSON berisi kunci <code>query</code>. Dari terminal:</p>
+                <div class="terminal"><span class="prompt">$</span> curl -X POST http://localhost:3000/graphql \
+    -H "Content-Type: application/json" \
+    -d '{"query":"{ daftarMahasiswa { nama semester } }"}'
+<span class="out">{"data":{"daftarMahasiswa":[{"nama":"Andi","semester":6},{"nama":"Budi","semester":6},{"nama":"Citra","semester":4}]}}</span></div>
+                <p>Perhatikan: kita hanya meminta <code>nama</code> dan <code>semester</code>, dan hanya dua field itu yang dikirim balik. Tidak ada <code>nim</code> atau <code>ipk</code>. Itu penyelesaian untuk over-fetching. Di Postman, pilih <strong>POST</strong>, isi URL <code>/graphql</code>, buka tab Body, pilih tipe <strong>GraphQL</strong>, lalu tulis query-nya di kotak Query. Contoh berikutnya memakai tampilan itu.</p>
+
+                <h4>Satu permintaan untuk data bersarang</h4>
+                <p>Ini jawaban untuk under-fetching dari 8.1: mahasiswa <em>dan</em> nilainya dalam satu permintaan.</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+{
+  mahasiswa(id: 1) {
+    nama
+    nilai {
+      matkul
+      huruf
+    }
+  }
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": {
+    "mahasiswa": {
+      "nama": "Andi",
+      "nilai": [
+        {
+          "matkul": "Pemrograman Web Lanjut",
+          "huruf": "A"
+        },
+        {
+          "matkul": "Basis Data",
+          "huruf": "B"
+        }
+      ]
+    }
+  }
+}</div></div>
+                <p>Bandingkan dengan REST di 8.1: <strong>1 permintaan, 132 byte</strong>, dibanding 2 permintaan dan 213 byte.</p>
+
+                <h4>Argumen</h4>
+                <p>Menyaring daftar per semester, seperti <code>?semester=4</code> di REST:</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+{
+  daftarMahasiswa(semester: 4) {
+    nim
+    nama
+  }
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": {
+    "daftarMahasiswa": [
+      {
+        "nim": "F1D021003",
+        "nama": "Citra"
+      }
+    ]
+  }
+}</div></div>
+
+                <h4>Variabel</h4>
+                <p>Nilai argumen sebaiknya tidak ditulis langsung ke dalam teks query. Gunakan <strong>variabel</strong> (diawali <code>$</code>) dan kirim nilainya terpisah. Kotak <em>GraphQL Variables</em> di Postman dan GraphiQL dipakai untuk ini. Alasannya sama dengan mengapa kita tidak menempelkan input pengguna langsung ke teks query SQL (dibahas di Pertemuan 10).</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+query ($id: ID!) {
+  mahasiswa(id: $id) {
+    nama
+    ipk
+  }
+}
+
+GRAPHQL VARIABLES
+{"id": "2"}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": {
+    "mahasiswa": {
+      "nama": "Budi",
+      "ipk": 3.2
+    }
+  }
+}</div></div>
+
+                <h4>Mutation</h4>
+                <p>Menambah data memakai kata kunci <code>mutation</code>. Query di bawah menambah Dewi, dan kita minta langsung <code>id</code>, <code>nama</code>, dan <code>semester</code> hasilnya:</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+mutation {
+  tambahMahasiswa(nim: "F1D021004", nama: "Dewi", ipk: 3.5, semester: 2) {
+    id
+    nama
+    semester
+  }
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": {
+    "tambahMahasiswa": {
+      "id": "4",
+      "nama": "Dewi",
+      "semester": 2
+    }
+  }
+}</div></div>
+                <p>Perhatikan <code>id</code> berbentuk teks (<code>"4"</code>), bukan angka, karena tipe <code>ID</code> di GraphQL selalu dikirim sebagai teks. Buktikan datanya benar-benar bertambah, juga lewat GraphQL:</p>
+                <div class="terminal"><span class="prompt">$</span> curl -X POST http://localhost:3000/graphql \
+    -H "Content-Type: application/json" \
+    -d '{"query":"{ daftarMahasiswa { id nama } }"}'
+<span class="out">{"data":{"daftarMahasiswa":[{"id":"1","nama":"Andi"},{"id":"2","nama":"Budi"},{"id":"3","nama":"Citra"},{"id":"4","nama":"Dewi"}]}}</span></div>
+                <p>Karena GraphQL dan REST memakai array <code>mahasiswa</code> yang sama, Dewi juga muncul di <code>GET /mahasiswa</code>.</p>
+
+                <h4>Kalau query salah</h4>
+                <p>Coba minta field yang tidak ada di schema, yaitu <code>alamat</code>:</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+{
+  mahasiswa(id: 1) {
+    nama
+    alamat
+  }
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "errors": [
+    {
+      "message": "Cannot query field \"alamat\" on type \"Mahasiswa\". Did you mean \"nama\"?",
+      "locations": [
+        {
+          "line": 4,
+          "column": 5
+        }
+      ],
+      "extensions": {
+        "code": "GRAPHQL_VALIDATION_FAILED"
+      }
+    }
+  ]
+}</div></div>
+                <p>Perhatikan dua hal. Pertama, <strong>statusnya tetap 200</strong>, padahal permintaannya gagal. Bandingkan dengan Section 7.1: di REST, kegagalan harus dinyatakan lewat kode status, sedangkan di GraphQL klien harus memeriksa apakah ada field <code>errors</code> pada jawaban. Kedua, pesan errornya informatif: server memberi tahu field mana yang salah dan menyarankan <code>nama</code>. Karena schema adalah kontrak, server bisa memeriksa query sebelum menjalankan resolver apa pun.</p>
+                <p>Bagaimana dengan id yang tidak ada?</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">{{baseUrl}}/graphql</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">GraphQL
+
+QUERY
+{
+  mahasiswa(id: 99) {
+    nama
+  }
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": {
+    "mahasiswa": null
+  }
+}</div></div>
+                <p>Tidak ada error: <code>mahasiswa</code> bernilai <code>null</code>, karena di schema tipenya <code>Mahasiswa</code> tanpa <code>!</code>. Berbeda dengan REST yang akan menjawab <code>404</code>.</p>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Pilih Field, Lihat Selisihnya dengan REST</h5>
+                    <p style="margin:0 0 6px">Centang field yang dibutuhkan halaman profil Andi:</p>
+                    <label><input type="checkbox" class="gql-f" value="nim"> nim</label>
+                    <label><input type="checkbox" class="gql-f" value="nama" checked> nama</label>
+                    <label><input type="checkbox" class="gql-f" value="ipk"> ipk</label>
+                    <label><input type="checkbox" class="gql-f" value="semester"> semester</label>
+                    <label><input type="checkbox" class="gql-f" value="nilai" checked> nilai (matkul + huruf)</label>
+                    <div class="console-output" id="demo3-out"></div>
+                </div>
+
+                <h3>8.8 REST atau GraphQL?</h3>
+                <p>Keduanya bukan saling menggantikan. Pilihan tergantung kebutuhan:</p>
+                <table>
+                    <tr><th>Situasi</th><th>Lebih cocok</th></tr>
+                    <tr><td>API sederhana dengan operasi CRUD yang jelas</td><td>REST</td></tr>
+                    <tr><td>Memanfaatkan cache HTTP, CDN, atau alat standar yang sudah mengenal URL dan kode status</td><td>REST</td></tr>
+                    <tr><td>Banyak jenis klien (web, Android, iOS) yang masing-masing butuh data berbeda dari sumber yang sama</td><td>GraphQL</td></tr>
+                    <tr><td>Data saling berelasi dan satu layar sering butuh gabungan beberapa sumber daya</td><td>GraphQL</td></tr>
+                    <tr><td>Tim kecil dan waktu terbatas</td><td>REST (lebih sedikit konsep yang perlu dipelajari)</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>GraphQL bukan tanpa harga.</strong> Klien bisa menulis query yang sangat dalam atau sangat berat, sehingga server perlu dibatasi (kedalaman dan biaya query). Resolver juga mudah menjadi lambat kalau tiap item di daftar memicu pengambilan data tambahan ke database sendiri-sendiri (masalah <em>N+1</em>, dibahas di Pertemuan 7). Untuk proyek mata kuliah ini, REST sudah cukup, dan itu yang kita pakai ke depan.
+                </div>
+            </section>
+
+            <section id="latihan">
+                <h2>9. Latihan Mandiri: Lengkapi API Mahasiswa <span class="badge badge-new">Latihan</span></h2>
+
+                <p>Dua endpoint dari rancangan di Section 4.1 belum dibuat: <code>PUT</code> dan <code>DELETE</code>. Lengkapi sendiri di proyek <code>api-mahasiswa</code>, lalu uji semuanya di Postman. Gunakan pola <code>GET /mahasiswa/:id</code> sebagai contoh, dan format tanggapan dari Section 7.</p>
+
+                <h3>Tugas</h3>
+                <ol>
+                    <li>Tambahkan <code>PUT /mahasiswa/:id</code> untuk mengganti seluruh data satu mahasiswa. Kembalikan 404 kalau id tidak ada.</li>
+                    <li>Tambahkan <code>DELETE /mahasiswa/:id</code>. Kembalikan <code>204 No Content</code> (tanpa body) kalau berhasil.</li>
+                    <li>Tambahkan validasi: <code>ipk</code> harus di antara 0 dan 4, kalau tidak kembalikan <code>422</code>.</li>
+                    <li>Tambahkan dukungan <code>?urutkan=ipk</code> pada <code>GET /mahasiswa</code> yang mengurutkan hasil berdasarkan IPK menurun.</li>
+                    <li><strong>(GraphQL)</strong> Tambahkan field <code>jumlahMatkul: Int!</code> pada <code>type Mahasiswa</code> yang menghitung banyaknya nilai milik mahasiswa itu (resolver di <code>Mahasiswa</code>, seperti <code>nilai</code>). Uji dengan query yang meminta <code>nama</code> dan <code>jumlahMatkul</code>.</li>
+                    <li><strong>(GraphQL)</strong> Tambahkan mutation <code>hapusMahasiswa(id: ID!): Boolean!</code> yang menghapus mahasiswa dan mengembalikan <code>true</code> kalau berhasil, <code>false</code> kalau id tidak ada. Uji lewat Postman atau GraphiQL.</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Menuju Pertemuan 5:</strong> kalian akan sadar kode di atas mulai berulang &mdash; setiap handler mengecek error secara manual. Pertemuan 5 memperkenalkan <strong>middleware</strong> dan <strong>penanganan error terpusat</strong> untuk merapikan ini.
+                </div>
+
+            </section>
+
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran (Pertemuan 4)</h2>
+
+                <p><a href="materi-05-middleware-error-terpusat.html">Pertemuan 5</a> dan Pertemuan 4 bersama-sama membentuk <strong>Sub-CPMK 3</strong>: Mahasiswa mampu membangun REST API menggunakan framework JavaScript, mencakup perancangan sumber daya, middleware, kode status, dan penanganan error terpusat. <strong>[C3]</strong></p>
+
+                <table>
+                    <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
+                    <tr><td>3.1</td><td>Merancang sumber daya REST dan memilih metode HTTP</td><td>Section 2, 4.1</td></tr>
+                    <tr><td>3.2</td><td>Menggunakan kode status HTTP sesuai maknanya</td><td>Section 6.3, 7</td></tr>
+                    <tr><td>3.3</td><td>Membedakan parameter jalur, parameter kueri, dan badan permintaan</td><td>Section 6</td></tr>
+                </table>
+
+                <h3>Daftar Periksa Akhir Pertemuan</h3>
+                <div class="info-box">
+                    <ul>
+                        <li>Bisa menjelaskan apa itu REST dan merancang URL sumber daya yang benar (kata benda, jamak, tanpa kata kerja)</li>
+                        <li>Bisa memasang Express, membuat server, dan menjalankannya dengan <code>npm run dev</code></li>
+                        <li>Bisa menguji endpoint dengan Postman: memilih metode, mengisi Body JSON, dan membaca status</li>
+                        <li>Bisa membedakan <code>req.params</code>, <code>req.query</code>, dan <code>req.body</code></li>
+                        <li>Bisa memilih kode status HTTP yang tepat untuk setiap situasi</li>
+                        <li>API Mahasiswa berjalan dengan GET (daftar, detail, saring) dan POST, dengan format tanggapan konsisten</li>
+                        <li>(Pengayaan) Bisa menjelaskan perbedaan REST dan GraphQL, serta menulis query dan mutation sederhana ke endpoint <code>/graphql</code></li>
+                    </ul>
+                </div>
+
+                <h3>&#128218; Referensi</h3>
+                <ul>
+                    <li><a href="https://expressjs.com/en/starter/hello-world.html" target="_blank">Express &mdash; Hello World</a></li>
+                    <li><a href="https://expressjs.com/en/guide/routing.html" target="_blank">Express &mdash; Routing</a> [3]</li>
+                    <li><a href="https://learning.postman.com/docs/getting-started/first-steps/sending-the-first-request/" target="_blank">Postman &mdash; Sending your first request</a></li>
+                    <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">MDN &mdash; HTTP Status Codes</a></li>
+                    <li><a href="https://graphql.org/learn/" target="_blank">GraphQL &mdash; Introduction to GraphQL</a></li>
+                    <li><a href="https://the-guild.dev/graphql/yoga-server/docs/integrations/integration-with-express" target="_blank">GraphQL Yoga &mdash; Integration with Express</a></li>
+                    <li><a href="https://martinfowler.com/articles/richardsonMaturityModel.html" target="_blank">Martin Fowler &mdash; Richardson Maturity Model (REST)</a> [17]</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 4 &mdash; Pemrograman Web Lanjut &mdash; REST API Dasar dengan Express dan Pengenalan GraphQL</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        function tulis(id, teks) { document.getElementById(id).textContent = teks; }
+
+        function demoResource(mode) {
+            let out = '';
+            if (mode === 'list') {
+                out = 'Kebutuhan: daftar semua kelas\n\nURL: GET /kelas\n\n✅ Kata benda jamak, tanpa kata kerja.';
+            } else if (mode === 'detail') {
+                out = 'Kebutuhan: detail satu kelas (id=5)\n\nURL: GET /kelas/5\n\n✅ Parameter jalur untuk identifikasi satu sumber daya.';
+            } else if (mode === 'nested') {
+                out = 'Kebutuhan: peserta yang terdaftar di kelas id=5\n\nURL: GET /kelas/5/peserta\n\n✅ Sub-koleksi — merepresentasikan relasi kelas → peserta.\n❌ Hindari: GET /peserta?kelas_id=5 kecuali memang peserta\n   juga bisa diakses sebagai sumber daya independen.';
+            } else {
+                out = 'Kebutuhan: kelas yang masih aktif, semester 6 saja\n\nURL: GET /kelas?aktif=true&semester=6\n\n✅ Parameter kueri untuk MENYARING koleksi,\n   bukan bagian dari identitas sumber daya.';
+            }
+            tulis('demo1-out', out);
+        }
+
+        function demoStatus(mode) {
+            let out = '';
+            if (mode === 'sukses') {
+                out = 'POST /mahasiswa  (data valid, berhasil disimpan)\n\nres.status(201).json({ data: { id: 3, ... } });\n\nStatus: 201 Created\n→ 201, bukan 200 — karena ADA sumber daya baru yang dibuat.';
+            } else if (mode === 'notfound') {
+                out = 'GET /mahasiswa/99  (id tidak ada di data)\n\nres.status(404).json({ error: { pesan: "Tidak ditemukan" } });\n\nStatus: 404 Not Found\n→ BUKAN 200 dengan data:null — klien harus bisa\n   membedakan "berhasil tapi kosong" dari "gagal".';
+            } else if (mode === 'invalid') {
+                out = 'POST /mahasiswa  (nama kosong)\n\nres.status(422).json({ error: { pesan: "nama wajib diisi" } });\n\nStatus: 422 Unprocessable Entity\n→ Bukan 400 (400 untuk format request yang rusak,\n   422 untuk data yang formatnya benar tapi isinya tidak valid).';
+            } else {
+                out = 'DELETE /mahasiswa/3  (berhasil dihapus)\n\nres.status(204).end();   // TANPA body\n\nStatus: 204 No Content\n→ Tidak perlu res.json() — 204 secara konvensi\n   tidak membawa data balik.';
+            }
+            tulis('demo2-out', out);
+        }
+
+        function demoGraphql() {
+            const andi = { id: 1, nim: 'F1D021001', nama: 'Andi', ipk: 3.75, semester: 6 };
+            const nilai = [
+                { id: 1, mahasiswaId: 1, matkul: 'Pemrograman Web Lanjut', huruf: 'A' },
+                { id: 2, mahasiswaId: 1, matkul: 'Basis Data', huruf: 'B' }
+            ];
+            const dipilih = [...document.querySelectorAll('.gql-f:checked')].map(c => c.value);
+            if (dipilih.length === 0) { tulis('demo3-out', 'Centang minimal satu field.'); return; }
+
+            const hasil = {};
+            const baris = [];
+            dipilih.forEach(f => {
+                if (f === 'nilai') {
+                    hasil.nilai = nilai.map(n => ({ matkul: n.matkul, huruf: n.huruf }));
+                    baris.push('    nilai {\n      matkul\n      huruf\n    }');
+                } else {
+                    hasil[f] = andi[f];
+                    baris.push('    ' + f);
+                }
+            });
+            const query = '{\n  mahasiswa(id: 1) {\n' + baris.join('\n') + '\n  }\n}';
+            const jsonGql = JSON.stringify({ data: { mahasiswa: hasil } });
+
+            const restA = JSON.stringify({ data: andi }).length;
+            const restB = JSON.stringify({ data: nilai }).length;
+            const pakaiNilai = dipilih.includes('nilai');
+            const restReq = pakaiNilai ? 2 : 1;
+            const restByte = pakaiNilai ? restA + restB : restA;
+
+            tulis('demo3-out',
+                'GraphQL (POST /graphql):\n' + query +
+                '\n\nJawaban: ' + jsonGql.length + ' byte, 1 permintaan\n' +
+                '\nREST (GET /mahasiswa/1' + (pakaiNilai ? ' + GET /mahasiswa/1/nilai' : '') + '):\n' +
+                'Jawaban: ' + restByte + ' byte, ' + restReq + ' permintaan\n' +
+                '\n' + (restByte > jsonGql.length
+                    ? 'Selisih: REST mengirim ' + (restByte - jsonGql.length) + ' byte lebih banyak.'
+                    : 'Ukurannya sama atau lebih kecil di REST, hanya jumlah permintaannya yang berbeda.'));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.gql-f').forEach(c => c.addEventListener('change', demoGraphql));
+            demoGraphql();
+        });
+
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('dari-klien');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) { e.preventDefault(); showCopyWarning(); return false; });
+                el.style.userSelect = 'none'; el.style.webkitUserSelect = 'none'; el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            });
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) { e.preventDefault(); showCopyWarning(); return false; }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) { e.preventDefault(); return false; }
+                }
+            });
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) existingModal.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
+                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
+                            <h3 style="color:#1d4ed8;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#1d4ed8;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+                setTimeout(function() { var m = document.getElementById('copy-warning-modal'); if (m) m.remove(); }, 3000);
+            }
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+    <script src="sidebar-toggle.js"></script>
+</body>
+</html>
