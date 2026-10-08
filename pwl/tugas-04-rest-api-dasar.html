@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 4 - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+        }
+        section h2 { border-bottom: 3px solid #1d4ed8 !important; }
+        th { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; }
+        .badge { background: #1d4ed8 !important; }
+
+        /* Tanpa sidebar - konten satu kolom, dilebarkan penuh */
+        .container {
+            display: block;
+            max-width: 820px;
+            margin: 100px auto 0;
+        }
+        .content {
+            margin-left: 0;
+            width: auto;
+            padding: 30px 20px;
+        }
+        @media (max-width: 768px) {
+            .container { margin-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="text-align:center;">
+        <h1>Tugas 4 &mdash; REST API Dasar dengan Express</h1>
+        <p>Pertemuan 4, lanjutan dari <a href="materi-04-rest-api-dasar.html" style="color:#dbeafe;">Materi 4: REST API Dasar dengan Express dan Pengenalan GraphQL</a></p>
+    </header>
+
+    <div class="container">
+        <main class="content">
+
+            <section id="tugas">
+                <h2>REST API dengan Data Sendiri <span class="badge">Tugas 4</span></h2>
+
+                <p><strong>Tujuan:</strong> mahasiswa mampu meng-install Express, menjalankan server, lalu membuat route REST untuk melihat data (<code>GET</code> daftar dan <code>GET</code> detail) dengan <strong>data buatan sendiri</strong>. Kalian tidak membuat ulang API Mahasiswa dari materi: ganti topiknya dengan data milik kalian. Rujukan langkah-langkahnya ada di Materi 4.</p>
+
+                <h3>Instruksi</h3>
+                <ol>
+                    <li><strong>Tentukan data kalian sendiri.</strong> Pilih satu topik yang berbeda dari API Mahasiswa dan dari topik teman, lalu buat data dalam bentuk array of object, <strong>minimal 10 data</strong>.
+                        <ul>
+                            <li>Setiap data punya <code>id</code> (angka unik) dan <strong>minimal 3 field lain</strong> yang sesuai topik.</li>
+                            <li>Contoh topik: koleksi buku, film favorit, daftar menu kantin, playlist, game yang pernah dimainkan, tempat makan di Mataram, dan seterusnya (lihat <a href="#contoh-data">Contoh Bentuk Data</a>).</li>
+                            <li>Simpan data di file terpisah, misalnya <code>src/data/buku.js</code>, lalu <code>export</code> array-nya (seperti <code>src/data/mahasiswa.js</code> di materi).</li>
+                        </ul>
+                    </li>
+                    <li><strong>Install dan jalankan Express</strong> seperti Section 3 Materi 4: buat folder proyek, <code>npm init -y</code>, aktifkan <code>type: module</code>, tambahkan script <code>dev</code> dengan <code>--watch</code>, lalu <code>npm install express</code>. Pastikan <code>GET /</code> menampilkan teks sambutan.</li>
+                    <li><strong>Buat route</strong> untuk resource kalian. Nama resource harus berbentuk jamak, huruf kecil, tanpa kata kerja (contoh: <code>/buku</code>, <code>/film</code>). Route yang <strong>wajib</strong>:
+                        <table>
+                            <tr><th>Method</th><th>URL</th><th>Fungsinya</th><th>Status</th></tr>
+                            <tr><td><code>GET</code></td><td><code>/nama-resource</code></td><td>Menampilkan semua data</td><td>200</td></tr>
+                            <tr><td><code>GET</code></td><td><code>/nama-resource/:id</code></td><td>Menampilkan satu data berdasarkan <code>id</code></td><td>200, atau 404 kalau id tidak ada</td></tr>
+                        </table>
+                    </li>
+                    <li><strong>Opsional (nilai tambah): hapus data.</strong> Kalau kalian bisa, tambahkan <code>DELETE /nama-resource/:id</code> yang mengembalikan <code>204 No Content</code> kalau berhasil, dan <code>404</code> kalau id tidak ada. Data hanya hidup di memori, jadi akan kembali ke kondisi awal saat server restart (itu wajar).</li>
+                    <li><strong>Pakai format response yang konsisten</strong> seperti <a href="materi-04-rest-api-dasar.html#status-format">Section 7.2</a>: response berhasil dibungkus <code>{ data: ... }</code>, response gagal dibungkus <code>{ error: { pesan, kode } }</code>.</li>
+                    <li><strong>Uji dengan Postman</strong> (atau alat setara seperti Thunder Client, Bruno, REST Client). Buat screenshot:
+                        <ul>
+                            <li>Terminal yang menunjukkan server berjalan (<code>npm run dev</code>).</li>
+                            <li><code>GET</code> daftar: terlihat method, URL, status <code>200 OK</code>, dan isi response.</li>
+                            <li><code>GET</code> detail dengan id yang ada (status 200).</li>
+                            <li><code>GET</code> detail dengan id yang <strong>tidak ada</strong> (status 404).</li>
+                            <li>Kalau mengerjakan opsional: <code>DELETE</code> yang berhasil (204), lalu <code>GET</code> daftar lagi yang menunjukkan data sudah berkurang.</li>
+                        </ul>
+                    </li>
+                    <li><strong>Isi dokumentasi dan deklarasi penggunaan AI</strong> di <code>README.md</code> (lihat bagian di bawah).</li>
+                </ol>
+
+                <h3 id="contoh-data">Contoh Bentuk Data</h3>
+                <p>Dua contoh berikut hanya gambaran bentuknya (dipendekkan menjadi 3 data). Data di tugas kalian harus <strong>berbeda</strong>, buatan sendiri, dan berisi <strong>minimal 10 data</strong>.</p>
+
+                <h4>Contoh 1 &mdash; Koleksi buku</h4>
+<pre><code>// src/data/buku.js
+export const buku = [
+    { id: 1, judul: "Laskar Pelangi",   penulis: "Andrea Hirata", tahun: 2005, sudahDibaca: true  },
+    { id: 2, judul: "Bumi Manusia",     penulis: "Pramoedya A.T.", tahun: 1980, sudahDibaca: false },
+    { id: 3, judul: "Cantik Itu Luka",  penulis: "Eka Kurniawan", tahun: 2002, sudahDibaca: true  },
+    // ... lanjutkan sampai minimal 10 buku
+];</code></pre>
+                <p>Route-nya: <code>GET /buku</code> dan <code>GET /buku/:id</code>.</p>
+
+                <h4>Contoh 2 &mdash; Tempat makan</h4>
+<pre><code>// src/data/tempat-makan.js
+export const tempatMakan = [
+    { id: 1, nama: "Warung Bu Ani",  jenis: "Nasi campur", hargaRata2: 15000, buka24Jam: false },
+    { id: 2, nama: "Kopi Sudut",     jenis: "Kafe",        hargaRata2: 25000, buka24Jam: true  },
+    { id: 3, nama: "Sate Pak Dul",   jenis: "Sate",        hargaRata2: 30000, buka24Jam: false },
+    // ... lanjutkan sampai minimal 10 tempat
+];</code></pre>
+                <p>Route-nya: <code>GET /tempat-makan</code> dan <code>GET /tempat-makan/:id</code>. Perhatikan nama resource yang terdiri dari dua kata ditulis dengan tanda hubung (kebab-case), seperti <a href="materi-04-rest-api-dasar.html#prinsip-rest">Section 2.3</a>.</p>
+
+                <div class="info-box">
+                    <strong>Struktur proyek yang disarankan:</strong>
+<pre><code>api-nama-kalian/
+├── src/
+│   └── data/
+│       └── buku.js
+├── screenshot/
+├── index.js
+├── package.json
+├── .gitignore        (isi: node_modules)
+└── README.md</code></pre>
+                    Jangan upload folder <code>node_modules</code> ke GitHub. Orang lain bisa membuatnya ulang dengan <code>npm install</code>.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Pengingat dari materi:</strong> <code>req.params.id</code> selalu berupa <strong>string</strong>. Ubah dulu dengan <code>Number(...)</code> sebelum dibandingkan dengan <code>id</code> di data. Untuk opsional DELETE, <code>array</code> hasil <code>import</code> tidak bisa di-assign ulang, jadi gunakan <code>findIndex()</code> lalu <code>splice()</code> untuk menghapus elemennya.
+                </div>
+
+                <h3>Dokumentasi</h3>
+                <p>Buat <code>README.md</code> di repository sebagai keterangan tugas. Format berikut boleh diimprovisasi:</p>
+<pre><code># Tugas 4 - REST API Dasar
+
+## Identitas
+- Nama : [Nama Lengkap]
+- NIM  : [NIM Mahasiswa]
+
+## Deskripsi Tugas
+[Jelaskan topik data yang kamu pilih dan kenapa memilih topik itu]
+
+## Cara Menjalankan
+1. npm install
+2. npm run dev
+3. Buka http://localhost:3000
+
+## Daftar Endpoint
+| Method | URL | Fungsi | Status |
+|--------|-----|--------|--------|
+| GET    | /buku     | Semua buku | 200 |
+| GET    | /buku/:id | Satu buku  | 200 / 404 |
+| DELETE | /buku/:id | (opsional) Hapus buku | 204 / 404 |
+
+## Bentuk Data
+[Tampilkan contoh satu data dan jelaskan arti tiap field]
+
+## Pengujian
+### GET daftar
+Screenshot: [gambar]
+### GET detail (id ada)
+Screenshot: [gambar]
+### GET detail (id tidak ada)
+Screenshot: [gambar]
+(Jika mengerjakan DELETE: tambahkan bagian yang sama)
+
+## Deklarasi Penggunaan AI
+[Lihat ketentuan di bawah]
+
+## Kesimpulan & Kendala
+[Apa yang kamu pelajari, dan kendala apa yang kamu temui beserta cara mengatasinya]</code></pre>
+                <p>Semua screenshot disimpan di folder <code>screenshot/</code> di dalam repository, <strong>jangan diupload terpisah ke eLearning/Berajah</strong>.</p>
+
+                <h3>Deklarasi Penggunaan AI</h3>
+                <p>Menggunakan AI (ChatGPT, Claude, Copilot, Gemini, dan sejenisnya) <strong>boleh</strong>, tetapi kalian wajib <strong>mendeklarasikannya dengan jujur</strong> di README.md. Yang dinilai adalah kejujuran dan kelengkapan deklarasi, bukan banyak-sedikitnya AI yang dipakai. Isi bagian ini dengan tabel berikut:</p>
+<pre><code>## Deklarasi Penggunaan AI
+
+| Bagian | Alat AI | Dipakai untuk apa | Bagaimana saya memeriksa hasilnya |
+|--------|---------|-------------------|-----------------------------------|
+| Data (src/data/buku.js) | ChatGPT | Membuat 10 contoh data buku | Saya cek sendiri tahun terbit tiap buku |
+| Route GET /buku/:id | Claude | Menanyakan kenapa id tidak cocok | Saya uji di Postman, ternyata id masih string |
+| README | - | - | - |
+
+Pernyataan: [Saya menggunakan AI pada bagian yang tertulis di tabel. Bagian lain saya kerjakan sendiri.]</code></pre>
+                <ul>
+                    <li>Tulis <strong>setiap bagian</strong> yang dibantu AI: data, route, perbaikan error, README, atau lainnya. Kalau suatu bagian tidak memakai AI, boleh diberi tanda <code>-</code>.</li>
+                    <li>Jelaskan <strong>untuk apa</strong> AI dipakai (misalnya membuat data, menjelaskan error, menulis kode, merapikan kalimat), bukan hanya menyebut nama alatnya.</li>
+                    <li>Tuliskan <strong>cara kalian memeriksa</strong> hasil dari AI. Kode dari AI tetap harus kalian pahami dan uji sendiri.</li>
+                    <li>Kalau <strong>tidak memakai AI sama sekali</strong>, tulis tegas: <em>&quot;Saya tidak menggunakan AI dalam mengerjakan tugas ini.&quot;</em></li>
+                    <li>Tambahkan <strong>minimal satu contoh prompt</strong> yang kalian pakai (kalau memakai AI), supaya terlihat apa yang kalian minta.</li>
+                </ul>
+                <div class="info-box">
+                    <strong>Bersiaplah ditanya.</strong> Kalian bisa diminta menjelaskan kode yang dikumpulkan. Deklarasi yang tidak jujur (misalnya ada bagian yang jelas dibuat AI tetapi tidak dicantumkan) dapat mengurangi nilai tugas.
+                </div>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr>
+                        <th>No</th>
+                        <th>Kriteria</th>
+                        <th>Bobot</th>
+                    </tr>
+                    <tr><td>1</td><td>Data buatan sendiri, unik, minimal 10 data dengan <code>id</code> dan minimal 3 field lain, disimpan di file terpisah</td><td>10%</td></tr>
+                    <tr><td>2</td><td>Express ter-install dan server berjalan (<code>package.json</code> dengan <code>type: module</code> dan script <code>dev</code>, <code>.gitignore</code> berisi <code>node_modules</code>, <code>node_modules</code> tidak ikut di-upload)</td><td>10%</td></tr>
+                    <tr><td>3</td><td><code>GET /nama-resource</code> menampilkan semua data dengan benar</td><td>15%</td></tr>
+                    <tr><td>4</td><td><code>GET /nama-resource/:id</code> benar, termasuk <code>404</code> kalau id tidak ada</td><td>20%</td></tr>
+                    <tr><td>5</td><td>Penamaan resource (jamak, huruf kecil) dan format response konsisten (<code>data</code> / <code>error</code>) dengan status code yang tepat</td><td>10%</td></tr>
+                    <tr><td>6</td><td>Screenshot pengujian di Postman (server berjalan, GET daftar, GET detail, GET 404)</td><td>10%</td></tr>
+                    <tr><td>7</td><td>README.md (identitas, deskripsi, cara menjalankan, daftar endpoint, bentuk data, kesimpulan) di GitHub</td><td>15%</td></tr>
+                    <tr><td>8</td><td>Deklarasi penggunaan AI yang jujur, lengkap, dan mencantumkan cara memeriksa hasilnya</td><td>10%</td></tr>
+                    <tr><td colspan="2"><strong>Total</strong></td><td><strong>100%</strong></td></tr>
+                    <tr><td>+</td><td><strong>Bonus:</strong> <code>DELETE /nama-resource/:id</code> berfungsi (204 / 404) beserta screenshot buktinya</td><td>+10%</td></tr>
+                </table>
+
+                <h3>Submission</h3>
+                <ul>
+                    <li>Masukkan semua file (kode + screenshot + README) ke satu repository GitHub dengan nama: <strong>T4-REST-API</strong>, dan pastikan repository berstatus <strong>Public</strong>.</li>
+                    <li>Upload link repository GitHub ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">Berajah</a> &mdash; pengumpulan hanya diterima dalam bentuk link GitHub, bukan file/ZIP.</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Perhatian:</strong>
+                    <ul>
+                        <li>Repository harus tetap <strong>public</strong> dan dapat diakses hingga <strong>akhir semester</strong> (jangan di-private/dihapus sebelum nilai akhir keluar)</li>
+                        <li>Pastikan proyek bisa dijalankan orang lain hanya dengan <code>npm install</code> lalu <code>npm run dev</code></li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Tugas 4 &mdash; Pemrograman Web Lanjut &mdash; REST API Dasar</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+</body>
+</html>
