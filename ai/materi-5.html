@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi 5 — Sistem Pakar Berbasis Aturan: Forward &amp; Backward Chaining</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=20260927a">
+    <style>
+        /* ---- Inline styles khusus materi-5 ---- */
+
+        /* daftar isi kecil di dalam satu bagian (tidak menambah menu sidebar) */
+        .mini-toc {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+            background: #f5f8ff; border: 1px solid #d6e2f3; border-radius: 10px;
+            padding: 8px 12px; margin: 0 0 18px; font-size: 0.86em;
+        }
+        .mini-toc > span { font-weight: 700; color: #1a2a4a; margin-right: 4px; }
+        .mini-toc button {
+            background: #fff; border: 1px solid #b0c4de; border-radius: 14px;
+            padding: 3px 11px; font: inherit; font-size: 0.95em; color: #1565c0; cursor: pointer;
+        }
+        .mini-toc button:hover { background: #e3f2fd; }
+
+        /* aturan IF-THEN */
+        .rule-box {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #fff; border: 1px solid #d6e2f3; border-left: 4px solid #1565c0;
+            border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 14px 0;
+            line-height: 1.9; font-size: 0.95em; color: #1a2a4a;
+        }
+        .rule-box .kw { color: #1565c0; font-weight: 700; }
+        .rule-box .ind { display: block; padding-left: 2em; }
+        .rule-box small { font-family: 'Segoe UI', sans-serif; color: #607d8b; }
+
+        /* peta mata kuliah */
+        .peta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 14px 0; }
+        .peta div { background: #fff; border: 1px solid #d6e2f3; border-radius: 8px; padding: 8px 10px; font-size: 0.84em; color: #546e7a; }
+        .peta div b { display: block; color: #1a2a4a; font-size: 0.95em; }
+        .peta div.now { background: #fff3e0; border-color: #e65100; color: #7a3300; }
+        .peta div.now b { color: #bf360c; }
+        .peta div.gap { opacity: 0.55; border-style: dashed; }
+
+        /* diagram alur dari kotak */
+        .flow-row { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: 8px; margin: 14px 0; }
+        .flow-box {
+            flex: 1 1 150px; max-width: 235px; background: #fff; border: 1.5px solid #b0c4de;
+            border-radius: 10px; padding: 10px 12px; text-align: center; font-size: 0.88em;
+        }
+        .flow-box b { display: block; color: #1a2a4a; margin-bottom: 3px; }
+        .flow-box small { color: #607d8b; display: block; line-height: 1.4; }
+        .flow-box.hl { border-color: #2e7d32; background: #f1f8f1; }
+        .flow-box.or { border-color: #e65100; background: #fff8f0; }
+        .flow-box.pu { border-color: #6a1b9a; background: #faf4fc; }
+        .flow-arrow { align-self: center; font-size: 1.4em; color: #1565c0; font-weight: 700; }
+
+        /* percakapan */
+        .dlg { display: flex; flex-direction: column; gap: 7px; margin: 14px 0; }
+        .dlg > div { max-width: 86%; padding: 8px 12px; border-radius: 12px; font-size: 0.92em; line-height: 1.5; }
+        .dlg .a { align-self: flex-start; background: #e3f2fd; border-bottom-left-radius: 3px; }
+        .dlg .b { align-self: flex-end; background: #e8f5e9; border-bottom-right-radius: 3px; }
+        .dlg small { display: block; font-weight: 700; color: #546e7a; margin-bottom: 2px; }
+
+        /* dua kolom perbandingan */
+        .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 15px 0; }
+        .compare-col { background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.09); }
+        .compare-col.fw { border-top: 4px solid #2e7d32; }
+        .compare-col.bw { border-top: 4px solid #e65100; }
+        .compare-col h4 { margin-bottom: 8px; }
+        .compare-col ul { margin: 0 0 0 18px; font-size: 0.92em; }
+        .compare-col li { margin-bottom: 4px; }
+
+        /* diagram SVG statis */
+        .fig { background: #fff; border: 1px solid #e3e8f0; border-radius: 10px; padding: 8px; margin: 14px 0; overflow-x: auto; }
+        .fig svg { display: block; width: 100%; height: auto; min-width: 520px; }
+        .fig figcaption { font-size: 0.82em; color: #607d8b; padding: 4px 6px 0; }
+        .fig.fig-sm svg { min-width: 0; max-width: 460px; margin: 0 auto; }
+        .fig.fig-sm .vn-t { font-size: 12px; }
+        .fig.fig-sm .vn-i { font-size: 11.5px; }
+        .fig.fig-sm .vn-c { font-size: 12px; }
+        .fig text { font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .vn-t { font-size: 13px; font-weight: 700; }
+        .vn-i { font-size: 12px; fill: #37474f; }
+        .vn-c { font-size: 12.5px; font-weight: 700; fill: #4a148c; }
+
+        /* tabel kecil */
+        .tbl-wrap { overflow-x: auto; margin: 12px 0; }
+        .tbl-wrap table { margin: 0; }
+        .small-table { font-size: 0.88em; }
+        .small-table td:first-child { font-weight: 700; color: #1a2a4a; }
+
+        /* peringatan pada antarmuka sistem pakar */
+        .ui-mock {
+            border: 2px solid #f9a825; background: #fffde7; border-radius: 10px;
+            padding: 12px 16px; margin: 14px 0; font-size: 0.92em;
+        }
+        .ui-mock strong { color: #7a4f00; }
+        .ui-mock ul { margin: 6px 0 0 18px; }
+
+        /* kunci jawaban latihan */
+        details.kunci {
+            margin-top: 10px; background: #fff; border: 1px solid #d6e2f3;
+            border-radius: 8px; padding: 8px 12px;
+        }
+        details.kunci summary { cursor: pointer; font-weight: 600; color: #1565c0; }
+        details.kunci[open] summary { margin-bottom: 6px; }
+        details.kunci ul, details.kunci ol { margin: 0 0 0 18px; font-size: 0.92em; }
+        details.kunci p { font-size: 0.92em; margin: 4px 0; text-align: left; }
+
+        /* blok kode yang bisa disalin (pre[data-copy]) */
+        .code-wrap { margin: 15px 0; }
+        .code-head {
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            background: #10203d; color: #cfd8dc; padding: 7px 10px 7px 16px;
+            border-radius: 8px 8px 0 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85em;
+        }
+        .code-head .fa-python { color: #ffd54f; margin-right: 6px; }
+        .code-head .fa-file-code { color: #81d4fa; margin-right: 6px; }
+        .code-wrap pre { margin: 0; border-radius: 0 0 8px 8px; }
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 6px; background: #1565c0; color: #fff;
+            border: 0; border-radius: 6px; padding: 5px 12px; font-family: 'Segoe UI', sans-serif;
+            font-size: 0.95em; font-weight: 600; cursor: pointer;
+        }
+        .copy-btn:hover { background: #0d47a1; }
+        .copy-btn.done { background: #2e7d32; }
+
+        /* ---- Keterbacaan: huruf lebih besar (lebar kolom baca tetap seperti materi lain) ---- */
+        .content { font-size: 1.125rem; line-height: 1.75; }
+        .content section p { margin-bottom: 1.1em; }
+        .content section li { margin: 0.55em 0; }
+        .content section h3 {
+            margin-top: 2.2em; padding-top: 0.7em; border-top: 1px solid #dde6f1;
+        }
+        .content section .mini-toc + h3,
+        .content section h2 + h3 { margin-top: 1.4em; border-top: 0; padding-top: 0; }
+        .content section h4 { margin-top: 1.6em; }
+        .mini-toc { font-size: 0.8em; }
+
+        @media (max-width: 700px) {
+            .compare-cols { grid-template-columns: 1fr; }
+            .dlg > div { max-width: 96%; }
+        }
+        @media (max-width: 700px) {
+            .content { font-size: 1.04rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Pertemuan 9 &amp; 10</h1>
+        <p>Sub-CPMK5 · Sistem Pakar Berbasis Aturan: Forward &amp; Backward Chaining</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#cpmk" class="active">0. Capaian &amp; Peta</a></li>
+                <li><a href="#konsep">1. Konsep &amp; Aturan IF-THEN</a></li>
+                <li><a href="#struktur">2. Struktur &amp; Pembuatan</a></li>
+                <li><a href="#penalaran">3. Forward &amp; Backward Chaining</a></li>
+                <li><a href="#penjelasan">4. Penjelasan, Batas &amp; Kelemahan</a></li>
+                <li><a href="#contoh">5. Contoh Sistem Nyata</a></li>
+                <li><a href="#implementasi">6. Implementasi &amp; Rangkuman</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- 0. CPMK -->
+            <!-- ============================================================ -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran <span class="badge">Sub-CPMK5</span></h2>
+                <div class="success-box">
+                    <strong>Kemampuan Akhir yang Diharapkan:</strong>
+                    <p style="margin-top:8px;">Mahasiswa mampu <strong>menyusun dan menjalankan sistem pakar berbasis aturan</strong>: memisahkan basis pengetahuan dari mesin inferensi, menalar dengan <strong>forward chaining</strong> dan <strong>backward chaining</strong>, memilih arah yang tepat, serta menyediakan <strong>fasilitas penjelasan</strong> dan <strong>pernyataan batas keberlakuan</strong>. <em>(C3/C4)</em></p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-puzzle-piece"></i></div>
+                        <h4>5.4 Pisahkan Pengetahuan dan Mesin</h4>
+                        <p>Aturan disimpan sebagai data (JSON atau YAML), bukan ditanam di dalam kode.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                        <h4>5.5 Dua Arah Penalaran</h4>
+                        <p>Menjalankan forward dan backward chaining atas basis aturan yang sama.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-code-branch"></i></div>
+                        <h4>5.5 Memilih Arah</h4>
+                        <p>Menjelaskan keadaan yang membuat masing-masing arah lebih tepat dipakai.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-circle-question"></i></div>
+                        <h4>5.6 Fasilitas Penjelasan</h4>
+                        <p>Menampilkan rangkaian aturan penghasil kesimpulan: bagaimana dan mengapa.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h4>5.7 Batas Keberlakuan</h4>
+                        <p>Menyatakan kepada user pengetahuan siapa, untuk keadaan apa, dan sampai kapan.</p>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-circle-info"></i> Cakupan halaman ini:</strong>
+                    <p style="margin-top:6px;">Halaman ini membahas <strong>sistem pakar berbasis aturan</strong> dari dasar sampai bisa ditulis sebagai program. Pengetahuan dinyatakan langsung sebagai aturan produksi IF-THEN. Bahan logika proposisi dan predikat secara formal (indikator 5.1–5.3) dibahas pada materi representasi pengetahuan; di sini hanya disentuh yang diperlukan: modus ponens pada Bagian 1 dan pemeriksaan kualitas aturan pada Bagian 6.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Konsep -->
+            <!-- ============================================================ -->
+            <section id="konsep">
+                <h2>1. Konsep Sistem Pakar &amp; Aturan IF-THEN <span class="badge">Dasar</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="k-apa">Apa itu sistem pakar</button>
+                    <button type="button" data-goto="k-letak">Letak terhadap AI dan SPK</button>
+                    <button type="button" data-goto="k-nyata">Di sekitar kita</button>
+                    <button type="button" data-goto="k-ifthen">Aturan IF-THEN</button>
+                    <button type="button" data-goto="k-tiga">Tiga bagian</button>
+                    <button type="button" data-goto="k-fakta">Fakta</button>
+                    <button type="button" data-goto="k-andor">AND dan OR</button>
+                    <button type="button" data-goto="k-akibat">Banyak akibat</button>
+                </nav>
+
+                <h3 id="k-apa">Apa Itu Sistem Pakar?</h3>
+                <p>Bayangkan seorang montir senior. Begitu mendengar suara mesin, ia langsung tahu apakah busi atau karburator yang bermasalah. Pengetahuan itu tidak tertulis di buku mana pun; ia tersimpan di kepalanya dan terbentuk dari pengalaman bertahun-tahun. <strong>Sistem pakar</strong> adalah program yang berusaha <em>menyalin pengetahuan seperti itu ke komputer</em>, lalu memakainya untuk membantu orang lain yang belum seahli itu.</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Definisi:</strong>
+                    <p style="margin-top:6px;">Sistem pakar adalah sistem yang <strong>meniru atau mengadopsi kepakaran seseorang pada bidang tertentu</strong> untuk menyelesaikan masalah. Sistem ini mampu <strong>berdialog dengan user</strong> dan memberikan saran atau kesimpulan.</p>
+                </div>
+                <p>Dua frasa perlu diingat: <strong>“bidang tertentu”</strong> (sistem pakar bukan program serba bisa, ia hanya menguasai satu bidang yang sempit) dan <strong>“berdialog”</strong> (sistem bertanya, user menjawab, lalu sistem memberi saran).</p>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                        <h4>1. Meniru pakar</h4>
+                        <p>Sasarannya mengadopsi keahlian seseorang pada bidang tertentu.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-list-check"></i></div>
+                        <h4>2. Pengetahuan = aturan</h4>
+                        <p>Aturan memberitahukan apa yang harus dilakukan atau disimpulkan.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-comments"></i></div>
+                        <h4>3. Berdialog dengan user</h4>
+                        <p>Sistem bertanya, menerima jawaban, lalu memberi saran atau kesimpulan.</p>
+                    </div>
+                </div>
+
+                <h4>Tiga Nama untuk Gagasan yang Sama</h4>
+                <p>Pada buku dan makalah, tiga istilah ini sering muncul bergantian. Ketiganya menunjuk jenis sistem yang sama: <em>pengetahuan pakar ditulis sebagai himpunan aturan, lalu aturan itu dijalankan oleh program</em>.</p>
+                <table class="small-table">
+                    <thead><tr><th>Istilah</th><th>Terjemahan</th><th>Menekankan</th></tr></thead>
+                    <tbody>
+                        <tr><td>Rule-based system</td><td>Sistem berbasis aturan</td><td>Bentuk pengetahuannya: aturan</td></tr>
+                        <tr><td>Production system</td><td>Sistem produksi</td><td>Istilah penelitian awal (Newell dan Simon) untuk aturan “kondisi → tindakan”</td></tr>
+                        <tr><td>Expert system</td><td>Sistem pakar</td><td>Tujuannya: meniru pakar</td></tr>
+                    </tbody>
+                </table>
+                <p style="font-size:0.9em; color:#555;">Ada juga sistem pakar yang <em>tidak</em> berbasis aturan (berbasis kasus atau berbasis model). Pertemuan ini hanya membahas yang berbasis aturan.</p>
+
+                <h3 id="k-letak">Di Mana Letak Sistem Pakar? (AI dan SPK)</h3>
+                <p>Dua istilah sering tertukar dengan sistem pakar. <strong>Kecerdasan buatan</strong> adalah bidang yang luas: pencarian, pembelajaran mesin, logika fuzzy, algoritma genetika, dan lainnya. <strong>Sistem pendukung keputusan (SPK)</strong> berasal dari dunia sistem informasi, bukan dari AI; banyak SPK hanya memakai metode seperti AHP, SAW, atau TOPSIS tanpa teknik AI sama sekali.</p>
+                <figure class="fig fig-sm">
+                    <svg viewBox="0 0 470 270" role="img" aria-label="Diagram Venn: kecerdasan buatan dan sistem pendukung keputusan beririsan pada SPK cerdas, yang contohnya sistem pakar">
+                        <circle cx="175" cy="150" r="115" fill="#e3f2fd" stroke="#1565c0" stroke-width="2" fill-opacity="0.85"/>
+                        <circle cx="295" cy="150" r="115" fill="#fff3e0" stroke="#e65100" stroke-width="2" fill-opacity="0.85"/>
+                        <text class="vn-t" x="118" y="18" fill="#0d47a1" text-anchor="middle">Kecerdasan buatan (AI)</text>
+                        <text class="vn-t" x="352" y="18" fill="#bf360c" text-anchor="middle">Sistem pendukung keputusan</text>
+                        <text class="vn-i" x="118" y="115" text-anchor="middle">Pencarian</text>
+                        <text class="vn-i" x="118" y="140" text-anchor="middle">Pembelajaran mesin</text>
+                        <text class="vn-i" x="118" y="165" text-anchor="middle">Logika fuzzy</text>
+                        <text class="vn-i" x="118" y="190" text-anchor="middle">Algoritma genetika</text>
+                        <text class="vn-i" x="352" y="115" text-anchor="middle">AHP, SAW, TOPSIS</text>
+                        <text class="vn-i" x="352" y="140" text-anchor="middle">Model dan simulasi</text>
+                        <text class="vn-i" x="352" y="165" text-anchor="middle">Dasbor dan laporan</text>
+                        <text class="vn-c" x="235" y="135" text-anchor="middle">SPK cerdas</text>
+                        <text class="vn-i" x="235" y="157" text-anchor="middle">contoh umum:</text>
+                        <text class="vn-c" x="235" y="177" text-anchor="middle">sistem pakar</text>
+                    </svg>
+                    <figcaption>Sistem pakar adalah teknik AI. Tidak semua SPK memakai AI, dan tidak semua sistem pakar dipakai sebagai SPK.</figcaption>
+                </figure>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>Sistem pakar</th><th>Sistem pendukung keputusan</th></tr></thead>
+                        <tbody>
+                            <tr><td>Maksud rancangan</td><td>Mereproduksi keahlian seorang pakar pada bidang sempit, lengkap dengan alasan jawabannya</td><td>Mendampingi pertimbangan user dengan data, model, dan alternatif</td></tr>
+                            <tr><td>Contoh keluaran</td><td>“Gejala ini cocok dengan wereng cokelat, karena aturan R4 dan R7.”</td><td>“Dari empat lokasi gudang, ini peringkatnya menurut jarak, biaya, dan risiko banjir.”</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Batasnya tidak mutlak. Rule engine pada penilaian kredit adalah sistem pakar yang keputusannya otomatis, dan sebagian literatur menggolongkan sistem pakar sebagai salah satu jenis SPK.</p>
+
+                <h3 id="k-nyata">Sistem Berbasis Aturan di Sekitar Kita</h3>
+                <p>Sistem pakar terdengar seperti barang museum, padahal gagasan “pengetahuan ditulis sebagai aturan, lalu dijalankan program” ada di banyak perangkat lunak yang dipakai setiap hari. Beberapa contoh yang akan terus kita temui pada halaman ini:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Sistem</th><th>Bentuk aturannya</th><th>Pola penalaran</th></tr></thead>
+                        <tbody>
+                            <tr><td>Spam filter email</td><td>Tiap tes memberi poin: <code>IF subjek memuat “GRATIS” THEN +2,5</code>. Jumlah poin dibandingkan dengan ambang.</td><td>Berbasis skor (Bagian 5)</td></tr>
+                            <tr><td>Aturan <em>firewall</em></td><td><code>IF port tujuan = 22 AND asal bukan jaringan kantor THEN tolak</code>. Daftar dibaca berurutan; aturan pertama yang cocok berlaku.</td><td>Forward, konflik diselesaikan dengan urutan (Bagian 3)</td></tr>
+                            <tr><td>Deteksi penipuan kartu kredit</td><td><code>IF nilai transaksi &gt; batas AND negara berbeda dari transaksi sejam lalu THEN tahan dan minta verifikasi</code></td><td>Forward (pemantauan)</td></tr>
+                            <tr><td>Prasyarat mata kuliah pada KRS</td><td><code>IF lulus Algoritma AND lulus Matematika Diskrit THEN boleh mengambil Struktur Data</code></td><td>Forward (“MK apa yang boleh saya ambil?”) atau backward (“bolehkah saya mengambil MK ini?”)</td></tr>
+                            <tr><td>Pengendali suhu AC</td><td><code>IF suhu &gt; 28 °C THEN kompresor hidup</code></td><td>Forward (pengendalian)</td></tr>
+                            <tr><td>Chatbot layanan berbasis alur</td><td><code>IF pilihan = “tagihan” THEN tampilkan menu tagihan</code></td><td>Dialog bercabang</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 id="k-ifthen">Bentuk Paling Sederhana: Aturan IF-THEN</h3>
+                <p>Semua yang dilakukan sistem pakar berbasis aturan bertumpu pada satu bentuk kalimat: <strong>jika sesuatu benar, maka sesuatu yang lain berlaku</strong>.</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span>&nbsp;&nbsp; P &nbsp;&nbsp;<small>(premis)</small><br>
+                    <span class="kw">THEN</span> Q &nbsp;&nbsp;<small>(akibat) — ekuivalen dengan implikasi logika P ⇒ Q</small>
+                </div>
+                <p>Contoh: <strong>P</strong> = “hujan deras”, <strong>Q</strong> = “bawa payung”. Aturan ini hanya berkata apa yang terjadi <em>bila P benar</em>. Bila hari tidak hujan, aturan ini diam saja; ia tidak mengatakan Anda <em>tidak boleh</em> membawa payung.</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Modus ponens:</strong>
+                    <p style="margin-top:6px;">Dari <code>P ⇒ Q</code> dan fakta bahwa <code>P</code> benar, kita boleh menyimpulkan <code>Q</code> benar. Hampir seluruh kerja mesin inferensi adalah mengulang langkah kecil ini, berkali-kali, dengan aturan dan fakta yang berbeda.</p>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Jangan dibalik:</strong>
+                    <p style="margin-top:6px;">Dari <code>P ⇒ Q</code> dan <code>Q</code> benar, <em>tidak boleh</em> disimpulkan <code>P</code> benar. Orang membawa payung bukan hanya ketika hujan (mungkin matahari terik). Ingat ini ketika membaca backward chaining: sistem tidak menyimpulkan P dari Q, melainkan <em>bertanya apakah P benar</em>, dan bila ya, Q terbukti.</p>
+                </div>
+
+                <h3 id="k-tiga">Tiga Bagian Sistem Pakar Paling Sederhana</h3>
+                <p>Sistem pakar paling sederhana hanya butuh tiga hal. Analoginya memasak: <strong>fakta</strong> adalah bahan, <strong>aturan</strong> adalah resep, dan <strong>interpreter</strong> adalah juru masak yang mencocokkan keduanya. (Pada bagian struktur nanti, interpreter inilah yang disebut mesin inferensi.)</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>Himpunan fakta</b><small>suhu &lt; 0<br>musim = dingin</small></div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-box"><b>Himpunan aturan</b><small>IF musim dingin<br>THEN cuaca dingin</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box or"><b>Interpreter</b><small>mengendalikan penerapan aturan berdasarkan fakta</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Kesimpulan atau tindakan</b><small>cuaca dingin</small></div>
+                </div>
+
+                <p>Dilihat dari isinya, ada tiga komponen yang harus disediakan perancang:</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-database"></i></div>
+                        <h4>Himpunan fakta</h4>
+                        <p>Pernyataan yang relevan dengan keadaan awal sistem, berupa data dan kondisi.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-scroll"></i></div>
+                        <h4>Himpunan aturan</h4>
+                        <p>Semua tindakan yang harus diambil sesuai himpunan fakta yang ada.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-flag-checkered"></i></div>
+                        <h4>Kriteria berhenti</h4>
+                        <p>Kondisi yang menentukan bahwa solusi sudah ditemukan, atau memang tidak ada.</p>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kriteria berhenti sering dilupakan.</strong>
+                    <p style="margin-top:6px;">Tanpa kriteria berhenti, aturan yang saling memicu bisa berputar tanpa akhir. Dua penyebab berhenti yang umum: <em>tidak ada lagi aturan yang terpenuhi</em>, atau <em>ada aturan yang secara eksplisit meminta program berhenti</em>.</p>
+                </div>
+
+                <h4>Batas Ukuran Area Masalah</h4>
+                <p>Sistem pakar dibuat untuk <strong>satu bidang yang sempit</strong>. Bila areanya terlalu besar, cakupannya menuntut banyak pengetahuan, jumlah aturan membengkak (setiap kasus khusus perlu aturan sendiri), pengujian jadi lambat, dan perawatan sulit. Sistem pakar “diagnosis semua penyakit” tidak realistis; sistem “diagnosis hama padi” atau “penyebab sepeda motor tidak mau hidup” realistis.</p>
+
+                <h3 id="k-fakta">Fakta: Data dan Kondisi</h3>
+                <p>Sebuah fakta pada dasarnya selalu berpasangan: <strong>sesuatu yang diamati</strong> (data) dan <strong>keadaannya</strong> (kondisi). Pada fakta <code>suhu &lt; 0</code>, “suhu” adalah datanya dan “&lt; 0” adalah kondisinya. Tabel berikut memetakan satu contoh cuaca ke tiga komponen sistem pakar:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Data (yang diamati)</th><th>Kondisi (nilai yang mungkin)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Musim</td><td>dingin</td></tr>
+                            <tr><td>Temperatur</td><td>&lt; 0 atau &gt; 0</td></tr>
+                            <tr><td>Angin</td><td>kencang atau pelan</td></tr>
+                            <tr><td>Jalan</td><td>licin atau tidak licin</td></tr>
+                            <tr><td>Cuaca</td><td>dingin, hangat, atau panas</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="rule-box"><span class="kw">IF</span> temperatur &lt; 0 <span class="kw">AND</span> angin kencang <span class="kw">OR</span> jalan licin <span class="kw">THEN</span> cuaca dingin</div>
+                <p>Ada dua cara sebuah aturan menetapkan nilai baru pada data. <strong>By assignment</strong>: nilai diberikan langsung (<code>cuaca := dingin</code>). <strong>By assertion</strong>: sebuah pernyataan ditambahkan sebagai fakta baru (“cuaca dingin” menjadi benar). Mesin inferensi yang kita bangun memakai cara kedua: kesimpulan aturan adalah <em>fakta baru yang ditambahkan ke memori kerja</em>.</p>
+
+                <h3 id="k-andor">Aturan dengan Banyak Premis: AND, OR, dan Gabungan</h3>
+                <p>Satu aturan boleh punya banyak premis. Penghubungnya menentukan kapan aturan itu <em>terpenuhi</em>:</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-link"></i> AND</h4>
+                        <p style="font-size:0.9em;color:#555;">Semua premis harus terpenuhi.</p>
+                        <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> musim dingin<br><span class="ind"><span class="kw">AND</span> suhu &lt; 0</span><span class="ind"><span class="kw">AND</span> berangin</span><span class="kw">THEN</span> cuaca dingin</div>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-code-fork"></i> OR</h4>
+                        <p style="font-size:0.9em;color:#555;">Cukup satu premis yang terpenuhi.</p>
+                        <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> musim dingin<br><span class="ind"><span class="kw">OR</span> suhu &lt; 0</span><span class="ind"><span class="kw">OR</span> berangin</span><span class="kw">THEN</span> cuaca dingin</div>
+                    </div>
+                </div>
+                <p>Bila musim dingin dan suhu di bawah 0 tetapi tidak berangin, apakah cuaca dingin? Menurut aturan AND: <em>aturan tidak terpenuhi</em>. Perhatikan kalimatnya: aturan tidak berkata cuaca tidak dingin; ia hanya tidak memberi kesimpulan. Aturan OR yang sama terlalu longgar (hari berangin di musim panas pun disimpulkan “dingin”). Pilihan AND atau OR menentukan <strong>mutu pengetahuan</strong>, bukan sekadar sintaks.</p>
+
+                <h4>Coba Sendiri: Switch Fakta dan Empat Bentuk Aturan <span class="badge badge-new">Interaktif</span></h4>
+                <p>Geser switch untuk mengubah fakta hari ini. Empat kartu menunjukkan apakah aturannya terpenuhi, dan baris tabel kebenaran yang sedang berlaku ikut berwarna.</p>
+                <div data-viz="rule-lab"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Hanya “Berangin” yang menyala (musim panas, suhu di atas 0).</strong>
+                            <p>Kartu mana yang terpenuhi? Kartu B (OR) dan C terpenuhi; kartu A dan D tidak. Hari berangin di musim panas sudah cukup untuk “dingin” pada kartu OR dan C.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Bandingkan kartu C dan D pada keadaan itu.</strong>
+                            <p>Tulisan aslinya sama: “musim dingin AND suhu &lt; 0 OR berangin”. Hasilnya berbeda karena tanda kurung. Pada kebanyakan bahasa, AND diproses sebelum OR (seperti × sebelum +). <strong>Pada sistem sungguhan, selalu tulis tanda kurung.</strong></p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="k-akibat">Aturan dengan Banyak Akibat</h3>
+                <p>Satu premis dapat menghasilkan beberapa akibat sekaligus:</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span> musim dingin<br>
+                    <span class="kw">THEN</span> temperatur rendah<br>
+                    <span class="kw">THEN</span> jalan licin<br>
+                    <span class="kw">THEN</span> ramalan bersalju
+                </div>
+                <p>Ketika aturan dieksekusi, <strong>semua akibat itu ditambahkan ke himpunan fakta</strong>. Dan setiap akibat baru dapat memicu aturan lain, sehingga satu fakta awal bisa memicu rantai yang panjang. Rantai itulah yang dikerjakan mesin inferensi pada Bagian 3.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Struktur -->
+            <!-- ============================================================ -->
+            <section id="struktur">
+                <h2>2. Struktur &amp; Cara Membuat Sistem Pakar <span class="badge badge-algo">Inti</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="s-fungsi">Fungsi dasar</button>
+                    <button type="button" data-goto="s-enam">Enam komponen</button>
+                    <button type="button" data-goto="s-ke">Knowledge engineering</button>
+                </nav>
+
+                <h3 id="s-fungsi">Fungsi Dasar: Fakta Masuk, Keahlian Keluar</h3>
+                <p>Gambaran paling ringkas sebuah sistem pakar: user menyerahkan <strong>fakta</strong>, sistem memeriksa <strong>basis pengetahuannya</strong> dengan <strong>mesin inferensi</strong>, lalu user menerima <strong>keahlian</strong> (saran atau kesimpulan).</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>User</b><small>memberikan fakta (<em>facts</em>)</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box pu"><b>Sistem pakar</b><small><b style="display:inline">Knowledge base</b> ⇄ <b style="display:inline">Inference engine</b></small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>User</b><small>menerima keahlian (<em>expertise</em>)</small></div>
+                </div>
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Ide utama yang perlu diingat:</strong>
+                    <p style="margin-top:6px;">Basis pengetahuan dan mesin inferensi <strong>terpisah</strong>. Mesin inferensi tidak tahu apa pun tentang padi, motor, atau obligasi; ia hanya tahu cara mencocokkan fakta dengan aturan. Karena itu pengetahuan dapat diperbarui tanpa menulis ulang program. Inilah indikator 5.4.</p>
+                </div>
+
+                <h3 id="s-enam">Enam Komponen Sistem Pakar</h3>
+                <p>Gambaran ringkas di atas dibuka menjadi enam komponen. Klik sebuah komponen pada diagram (atau tekan <em>Langkah berikutnya</em>) untuk membaca perannya, analoginya, dan wujudnya pada sistem diagnosis sepeda motor yang akan kita kerjakan nanti.</p>
+                <div data-viz="es-arch"></div>
+
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Komponen</th><th>Tugasnya</th><th>Analogi dokter puskesmas</th><th>Kelompok</th></tr></thead>
+                        <tbody>
+                            <tr><td>1. Basis pengetahuan</td><td>Aturan IF-THEN dari pakar</td><td>Buku pedoman</td><td rowspan="2">Penyimpanan</td></tr>
+                            <tr><td>2. Database (memori kerja)</td><td>Fakta kasus yang sedang ditangani</td><td>Rekam medis pasien</td></tr>
+                            <tr><td>3. Mesin inferensi</td><td>Mencocokkan fakta dengan aturan</td><td>Cara dokter menalar</td><td>Pemroses</td></tr>
+                            <tr><td>4. Akuisisi pengetahuan</td><td>Jalur memasukkan aturan baru</td><td>Pelatihan dokter</td><td>Sisi pakar</td></tr>
+                            <tr><td>5. Fasilitas penjelasan</td><td>Menjawab “mengapa” dan “bagaimana”</td><td>Dokter menerangkan diagnosisnya</td><td rowspan="2">Sisi user</td></tr>
+                            <tr><td>6. Antarmuka pengguna</td><td>Tempat user bertanya dan membaca</td><td>Loket dan ruang periksa</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Pada literatur lain, database ini disebut <em>working memory</em> atau memori kerja. Istilah itu akan sering muncul pada Bagian 3.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Fasilitas penjelasan membedakan sistem pakar dari banyak model lain.</strong>
+                    <p style="margin-top:6px;">Banyak model hanya mengeluarkan jawaban. Sistem pakar dapat membacakan <em>alasannya</em>, karena setiap kesimpulan lahir dari aturan yang tertulis dan dapat dicatat. Ingat ini; kita membangunnya pada Bagian 4.</p>
+                </div>
+
+                <h3 id="s-ke">Knowledge Engineering: Cara Membuat Sistem Pakar</h3>
+                <p>Siapa yang menulis aturan? Bukan pakar (ia memahami bidangnya, tetapi tidak menulis aturan), dan bukan programmer biasa (ia tidak memahami bidangnya). Yang menjembatani adalah <strong>knowledge engineer</strong>. Prosesnya tiga langkah dan <strong>diulang sampai pakar puas</strong>:</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>1 · Dialog</b><small>Knowledge engineer membangun dialog dengan pakar untuk memperoleh pengetahuan.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>2 · Coding</b><small>Pengetahuan ditulis secara eksplisit ke dalam sistem sebagai aturan.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>3 · Evaluasi</b><small>Pakar menilai sistem dan memberi kritik kepada knowledge engineer.</small></div>
+                    <div class="flow-arrow" title="diulang">↺</div>
+                </div>
+                <p>Pengetahuan pakar bersifat <strong>tacit</strong> (tersirat): ia tahu, tetapi sering tidak sadar bagaimana ia tahu. Pekerjaan knowledge engineer adalah menjadikannya <strong>explicit</strong> (tertulis sebagai aturan). Seperti inilah wujud dialognya:</p>
+                <div class="dlg">
+                    <div class="a"><small>Knowledge engineer</small>Pak, kalau ada motor yang tidak mau hidup, apa yang Bapak periksa lebih dulu?</div>
+                    <div class="b"><small>Montir</small>Saya lihat lampunya. Kalau redup, biasanya akinya.</div>
+                    <div class="a"><small>Knowledge engineer</small>Redup saja cukup, atau ada tanda lain?</div>
+                    <div class="b"><small>Montir</small>Kalau distarter cuma “klik” saja, itu juga tanda aki lemah.</div>
+                    <div class="a"><small>Knowledge engineer</small>Jadi: <em>lampu redup ATAU starter hanya klik → daya aki lemah.</em> Kalau umur akinya sudah lebih dari dua tahun?</div>
+                    <div class="b"><small>Montir</small>Ya diganti saja, jangan diisi lagi.</div>
+                </div>
+                <div class="rule-box">
+                    <span class="kw">R1:</span> <span class="kw">IF</span> lampu redup <span class="kw">OR</span> starter hanya klik <span class="kw">THEN</span> daya aki lemah<br>
+                    <span class="kw">R2:</span> <span class="kw">IF</span> daya aki lemah <span class="kw">AND</span> aki lebih dari 2 tahun <span class="kw">THEN</span> aki perlu diganti
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Bagian tersulit bukan menulis mesinnya.</strong>
+                    <p style="margin-top:6px;">Mesin inferensi sederhana hanya sekitar 40 baris kode (Anda akan menulisnya pada Bagian 6). Yang sulit adalah <em>memperoleh pengetahuan dari pakar</em>: pakar bercerita tentang kasus, bukan menyatakan aturan; ia melewatkan hal yang dianggapnya jelas; dan pakar yang berbeda bisa berbeda pendapat. Cara yang paling efektif: <strong>susun aturan awal dari sumber tertulis</strong> (pedoman, manual), lalu minta pakar mengoreksinya. Mengoreksi jauh lebih mudah daripada menyusun dari nol.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Penalaran -->
+            <!-- ============================================================ -->
+            <section id="penalaran">
+                <h2>3. Penalaran: Forward &amp; Backward Chaining <span class="badge badge-algo">Inti</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="p-siklus">Siklus penalaran</button>
+                    <button type="button" data-goto="p-aturan">Contoh aturan</button>
+                    <button type="button" data-goto="p-forward">Forward chaining</button>
+                    <button type="button" data-goto="p-backward">Backward chaining</button>
+                    <button type="button" data-goto="p-jaringan">Jaringan AND/OR</button>
+                    <button type="button" data-goto="p-banding">Perbandingan</button>
+                    <button type="button" data-goto="p-pilih">Memilih arah</button>
+                    <button type="button" data-goto="p-konflik">Conflict resolution</button>
+                </nav>
+
+                <h3 id="p-siklus">Siklus Penalaran: Cocokkan, Eksekusi, Perbarui</h3>
+                <p>Mesin inferensi tidak “berpikir” dalam arti sehari-hari. Ia mengulang sebuah siklus kecil yang sama, berkali-kali, sampai ada alasan untuk berhenti:</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Mulai</strong>
+                            <p>Basis aturan berisi semua pengetahuan. Memori kerja berisi fakta awal (boleh kosong).</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Cocokkan</strong>
+                            <p>Uji bagian IF semua aturan terhadap memori kerja. Aturan yang kondisinya terpenuhi dikumpulkan sebagai <strong>himpunan konflik</strong> (<em>conflict set</em>).</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Eksekusi dan perbarui</strong>
+                            <p>Jalankan bagian THEN dari <em>satu</em> aturan terpilih. Hasilnya dapat menambah fakta pada memori kerja, mengubah basis aturan, atau melakukan tindakan yang ditetapkan programmer (misalnya menampilkan pesan atau menyalakan alarm).</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Ulangi sampai kriteria berhenti</strong>
+                            <p>Berhenti bila tidak ada aturan yang terpenuhi, atau bila ada aturan yang meminta berhenti.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Tiga hal yang sering luput:</strong>
+                    <ul style="margin-top:6px;">
+                        <li><strong>Satu siklus hanya mengeksekusi satu aturan.</strong> Setelah itu memori kerja berubah dan pencocokan diulang dari awal, karena fakta baru dapat membuat aturan lain terpenuhi.</li>
+                        <li><strong>Aturan yang sudah dijalankan tidak dijalankan lagi.</strong> Bila akibatnya sudah ada di memori kerja, aturan itu dilewati. Mekanisme ini disebut <em>refraction</em>; tanpanya, mesin akan mengulang aturan yang sama selamanya.</li>
+                        <li><strong>Bila himpunan konflik berisi dua aturan atau lebih</strong>, harus ada cara memilih. Itu disebut <em>conflict resolution</em> (dibahas di akhir bagian ini).</li>
+                    </ul>
+                </div>
+
+                <h3 id="p-aturan">Contoh yang Dipakai: Dolar, Suku Bunga, dan Obligasi</h3>
+                <p>Enam aturan berikut akan dipakai berulang kali: untuk forward chaining, backward chaining, penjelasan, sampai tabel inferensi. Bacalah dengan teliti dahulu.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Aturan</th><th>IF</th><th>THEN</th></tr></thead>
+                        <tbody>
+                            <tr><td>R1</td><td>suku bunga turun</td><td>harga obligasi naik</td></tr>
+                            <tr><td>R2</td><td>suku bunga naik</td><td>harga obligasi turun</td></tr>
+                            <tr><td>R3</td><td>suku bunga tidak berubah</td><td>harga obligasi tidak berubah</td></tr>
+                            <tr><td>R4</td><td>dolar naik</td><td>suku bunga turun</td></tr>
+                            <tr><td>R5</td><td>dolar turun</td><td>suku bunga naik</td></tr>
+                            <tr><td>R6</td><td>harga obligasi turun</td><td>beli obligasi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Perhatikan rantai yang terbentuk: <strong>dolar → suku bunga → harga obligasi → keputusan</strong>. R4 dan R5 menghubungkan dolar ke suku bunga; R1 sampai R3 menghubungkan suku bunga ke harga obligasi; R6 menghubungkan harga obligasi ke keputusan.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-question"></i> Pertanyaan:</strong>
+                    <p style="margin-top:6px;">Diketahui <strong>dolar turun</strong>. Apakah sebaiknya <strong>membeli obligasi</strong>? Tuliskan di kertas aturan mana saja yang Anda pakai dan urutannya, <em>sebelum</em> melihat simulasi di bawah. Aturan-aturan ini hanya bahan latihan penalaran, bukan saran investasi.</p>
+                </div>
+
+                <h3 id="p-forward">Forward Chaining: Dari Fakta ke Kesimpulan</h3>
+                <p><strong>Forward chaining</strong> dimulai dari <em>fakta awal</em>. Aturan dipakai terus untuk menarik kesimpulan baru, sampai tidak ada lagi yang dapat diturunkan. Sifatnya <strong>data-driven</strong> atau <em>bottom-up</em>. Pertanyaan khasnya: <em>“apa yang dapat terjadi berikutnya?”</em></p>
+                <p>Simulasi di bawah memakai enam aturan tadi. Fakta awal: <strong>dolar turun</strong>. Setiap siklus dipecah menjadi dua langkah: <em>cocokkan</em> (lihat himpunan konflik) lalu <em>eksekusi</em> (lihat fakta baru masuk).</p>
+                <div data-viz="rule-chain" data-kb="obligasi" data-mode="forward"></div>
+
+                <p>Hasil yang sama dituliskan sebagai tabel siklus:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Siklus</th><th>Memori kerja</th><th>Himpunan konflik</th><th>Dieksekusi</th></tr></thead>
+                        <tbody>
+                            <tr><td>1</td><td>dolar turun</td><td>{R5}</td><td>R5</td></tr>
+                            <tr><td>2</td><td>dolar turun, suku bunga naik</td><td>{R2}</td><td>R2</td></tr>
+                            <tr><td>3</td><td>dolar turun, suku bunga naik, harga obligasi turun</td><td>{R6}</td><td>R6</td></tr>
+                            <tr><td>4</td><td>dolar turun, suku bunga naik, harga obligasi turun, beli obligasi</td><td>{ }</td><td>berhenti</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul>
+                    <li><strong>Kesimpulan akhir tidak “dicari”.</strong> Ia muncul sebagai fakta terakhir yang dapat diturunkan. Sistem tidak pernah tahu bahwa “beli obligasi” adalah tujuannya.</li>
+                    <li><strong>Pada siklus 4</strong>, R2 sebenarnya masih cocok dengan memori kerja, tetapi akibatnya sudah ada; karena itu ia tidak dieksekusi lagi (<em>refraction</em>). Sistem berhenti.</li>
+                    <li><strong>Forward chaining tidak bertanya.</strong> Fakta harus tersedia sejak awal. Coba pada simulasi: klik “Dolar turun” sampai statusnya <em>ditanya → ya</em>, dan lihat bahwa fakta itu menjadi pudar dan tidak ikut dipakai.</li>
+                    <li>Coba juga <strong>dolar naik</strong> sebagai fakta awal (klik “Dolar turun” sampai kembali ke <em>tidak</em>, lalu jadikan “Dolar naik” <em>ada di memori kerja</em>): rantai yang terbentuk R4 → R1 dan berhenti tanpa “beli obligasi”.</li>
+                </ul>
+
+                <h3 id="p-backward">Backward Chaining: Dari Tujuan ke Fakta</h3>
+                <p><strong>Backward chaining</strong> dimulai dari <em>hipotesis atau tujuan</em> yang akan dibuktikan. Sistem mencari aturan yang dapat menyimpulkan tujuan itu; syarat aturan tersebut menjadi <strong>sub-goal</strong> baru, dan seterusnya sampai bertemu fakta. Sifatnya <strong>goal-driven</strong> atau <em>top-down</em>. Pertanyaan khasnya: <em>“mengapa hal ini terjadi?”</em> atau <em>“apakah hal ini benar?”</em></p>
+                <p>Tujuan: <strong>beli obligasi</strong>. Perhatikan goal stack di panel kanan: ia bertambah ke bawah ketika sub-goal muncul, lalu terbukti dari yang paling dalam ke luar.</p>
+                <div data-viz="rule-chain" data-kb="obligasi" data-mode="backward"></div>
+
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Jalankan sampai selesai pada keadaan awal.</strong>
+                            <p>“Dolar turun” sudah ada di memori kerja, sehingga sistem <em>tidak perlu bertanya</em>. Aturan yang disentuh hanya R6, R2, dan R5; R1, R3, dan R4 tidak pernah dilihat. Itulah arti “memilih tujuan memangkas ruang pencarian”.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Klik fakta “Dolar turun” satu kali (menjadi <em>ditanya → ya</em>), lalu jalankan lagi.</strong>
+                            <p>Sekarang fakta itu tidak ada di memori kerja dan tidak ada aturan yang menyimpulkannya. Satu-satunya cara: <strong>bertanya kepada user</strong>. Perhatikan kotak ungu <em>Mengapa sistem bertanya ini?</em>; ia menyebut rantai aturan sampai ke pertanyaan itu.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Klik sekali lagi (<em>ditanya → tidak</em>) dan jalankan.</strong>
+                            <p>User menjawab tidak, cabang R5 gagal, R2 gagal, R6 gagal. “Beli obligasi” <em>tidak terbukti</em> dari rantai ini. Sub-goal yang tidak dapat dibuktikan membuat cabangnya gagal; sistem tidak berhenti dengan error.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="p-jaringan">Jaringan yang Sama, Dua Arah: Gerbang AND dan OR</h3>
+                <p>Agar perbedaan arah benar-benar terlihat, pakai <em>satu jaringan yang sama</em>. Empat fakta menuju keputusan melalui gerbang AND dan OR. Bacalah jaringannya: <code>Fakta 1 AND Fakta 2 → Keputusan 1</code>; <code>Fakta 3 OR Fakta 4 → Keputusan 2</code>; <code>Keputusan 1 AND Keputusan 2 → Keputusan 4</code>. (Penomoran 1, 2, 4 mengikuti slide 2022.)</p>
+                <p>Keadaan awal: Fakta 1, 2, dan 4 benar; Fakta 3 tidak diketahui.</p>
+                <div data-viz="rule-chain" data-kb="jaringan"></div>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-arrow-right"></i> Arah forward</h4>
+                        <ul>
+                            <li>Himpunan konflik pertama berisi <strong>dua aturan</strong> (R1 dan R2) sekaligus; R1 dipilih karena urutannya.</li>
+                            <li><strong>Fakta 3 tidak pernah diperiksa</strong> dan tidak mengganggu: gerbang OR cukup dengan Fakta 4.</li>
+                            <li>Sistem menurunkan <em>semua</em> yang dapat diturunkan dari fakta yang ada.</li>
+                        </ul>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-arrow-left"></i> Arah backward</h4>
+                        <ul>
+                            <li>Mulai dari Keputusan 4, turun ke Keputusan 1 dan 2, baru sampai ke fakta.</li>
+                            <li><strong>Fakta 3 dicoba dahulu dan gagal</strong> (merah), lalu sistem mencoba Fakta 4 karena gerbangnya OR.</li>
+                            <li>Perilaku “coba satu cabang sampai tuntas, mundur bila gagal” mirip pencarian depth-first.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p>Ganti arah pada simulasi dan bandingkan. Jaringan, aturan, dan fakta <em>identik</em>; yang berubah hanya arah penelusurannya. Ubah juga fakta: klik Fakta 4 dua kali sampai <em>ditanya → tidak</em>, lalu jalankan backward. OR kini tidak terpenuhi, Keputusan 2 gagal, dan Keputusan 4 ikut gagal.</p>
+
+                <h3 id="p-banding">Forward dan Backward Chaining: Perbandingan</h3>
+                <div class="tbl-wrap">
+                    <table>
+                        <thead><tr><th></th><th>Forward chaining</th><th>Backward chaining</th></tr></thead>
+                        <tbody>
+                            <tr><td><strong>Titik awal</strong></td><td>Fakta yang diketahui, lalu aturan diterapkan untuk mendapat data baru sampai tujuan tercapai</td><td>Tujuan, lalu mundur melalui aturan untuk menemukan fakta yang mendukungnya</td></tr>
+                            <tr><td><strong>Pendekatan</strong></td><td>Bottom-up</td><td>Top-down</td></tr>
+                            <tr><td><strong>Teknik inferensi</strong></td><td>Data-driven</td><td>Goal-driven: tujuan dipecah menjadi sub-goal</td></tr>
+                            <tr><td><strong>Strategi (kecenderungan)</strong></td><td>Cenderung melebar, mirip breadth-first; menguji semua aturan yang tersedia</td><td>Cenderung mendalam, mirip depth-first; hanya menguji aturan yang relevan dengan tujuan</td></tr>
+                            <tr><td><strong>Cocok untuk</strong></td><td>Planning, monitoring, control, interpretation</td><td>Diagnostic, prescription, debugging</td></tr>
+                            <tr><td><strong>Bertanya ke user?</strong></td><td>Tidak; fakta harus tersedia sejak awal</td><td>Ya, hanya untuk fakta yang dibutuhkan</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Ringkasan tabel ini mengikuti materi kuliah 2022 yang bersumber dari javatpoint.com. “Breadth-first” dan “depth-first” di sini adalah kecenderungan, <em>bukan hukum</em>; pada implementasi nyata, strategi pemilihan aturan dapat diatur.</p>
+
+                <h3 id="p-pilih">Memilih Arah: Amati Dahulu Cara Pakar Bekerja</h3>
+                <p>Pilihan jenis inferensi mengikuti <strong>cara pakar bekerja</strong>, bukan selera programmer. Karena itu langkah pertama adalah mengamati pakar menyelesaikan masalah:</p>
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>Pakar mengumpulkan semua informasi lebih dahulu</b><small>lalu menyimpulkan apa pun yang dapat disimpulkan</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Forward chaining</b><small>contoh: dokter jaga IGD melihat semua hasil periksa, baru menyimpulkan</small></div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-box or"><b>Pakar memulai dengan hipotesis solusi</b><small>lalu mencari fakta untuk membuktikannya</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box or"><b>Backward chaining</b><small>contoh: spesialis menduga demam berdarah, lalu mencari gejala yang membuktikan atau menolaknya</small></div>
+                </div>
+
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4>Alasan memakai forward chaining</h4>
+                        <ul>
+                            <li><strong>Semua atau sebagian besar data sudah tersedia</strong> pada pernyataan masalah, jadi tidak perlu ditanyakan satu per satu.</li>
+                            <li><strong>Banyak tujuan potensial</strong>, tetapi hanya sedikit yang dapat dicapai pada satu kasus; memilih satu tujuan di awal tidak masuk akal.</li>
+                            <li><strong>Sulit merumuskan tujuan atau hipotesis</strong>: tidak jelas apa yang harus dibuktikan.</li>
+                        </ul>
+                        <p style="font-size:0.88em;color:#555;margin-top:8px;">Contoh: pemantau sensor pabrik. Data mengalir terus, kemungkinan masalahnya banyak, dan tidak ada hipotesis tunggal.</p>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4>Alasan memakai backward chaining</h4>
+                        <ul>
+                            <li><strong>Data sulit atau mahal didapat</strong>, tetapi dapat diperoleh bila dibutuhkan (misalnya hasil laboratorium).</li>
+                            <li><strong>Banyak aturan cocok dengan fakta</strong> dan menghasilkan banyak kesimpulan; memilih tujuan memangkas ruang pencarian.</li>
+                            <li><strong>Hipotesis mudah dirumuskan.</strong></li>
+                        </ul>
+                        <p style="font-size:0.88em;color:#555;margin-top:8px;">Contoh: dokter tidak memesan semua pemeriksaan sekaligus; ia memesan yang diperlukan untuk menguji dugaannya.</p>
+                    </div>
+                </div>
+
+                <h4>Latihan Singkat: Forward atau Backward?</h4>
+                <p>Baca kasusnya, putuskan, baru buka jawabannya.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Pemantau suhu mesin pabrik yang membaca sensor tiap detik dan menyalakan alarm.</strong>
+                            <details class="kunci"><summary>Lihat jawaban</summary><p><strong>Forward chaining</strong> (monitoring): data mengalir terus dan sistem harus bereaksi.</p></details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Sistem yang menguji dugaan “demam berdarah” dengan menanyakan gejala satu per satu.</strong>
+                            <details class="kunci"><summary>Lihat jawaban</summary><p><strong>Backward chaining</strong> (diagnosis): ada hipotesis yang dibuktikan, dan data ditanyakan hanya bila dibutuhkan.</p></details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Sistem yang menyusun rencana langkah kerja dari kondisi awal yang sudah lengkap.</strong>
+                            <details class="kunci"><summary>Lihat jawaban</summary><p><strong>Forward chaining</strong> (planning): semua data sudah tersedia. Kasus ini sengaja dibuat samar; bila ada yang memilih backward dengan alasan “tujuannya diketahui”, jawaban itu masih dapat dibela. Pilihannya bergantung pada cara data dan tujuan tersedia, bukan jawaban mutlak.</p></details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Layanan akademik: (a) “Mata kuliah apa saja yang boleh saya ambil semester ini?” dan (b) “Bolehkah saya mengambil Kecerdasan Buatan?”</strong>
+                            <details class="kunci"><summary>Lihat jawaban</summary><p>Aturan prasyaratnya <em>sama</em>, arahnya berbeda. (a) <strong>Forward</strong>: dari semua nilai yang sudah ada, turunkan semua mata kuliah yang terbuka. (b) <strong>Backward</strong>: tujuannya satu, sistem hanya memeriksa prasyarat mata kuliah itu.</p></details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <strong>Helpdesk yang menebak mengapa “situs tidak bisa dibuka”, lalu menanyakan hal-hal yang perlu dicek.</strong>
+                            <details class="kunci"><summary>Lihat jawaban</summary><p><strong>Backward chaining</strong> (debugging): setiap dugaan penyebab (DNS, koneksi, server) dibuktikan dengan menanyakan hanya fakta yang relevan.</p></details>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="p-konflik">Bila Dua Aturan Terpenuhi: Conflict Resolution</h3>
+                <p>Pada contoh obligasi, himpunan konflik selalu berisi satu aturan sehingga tidak ada yang perlu dipilih. Sistem sungguhan sering tidak seberuntung itu. Contoh toko daring berikut punya empat aturan diskon. Bila pembeli memenuhi syarat beberapa aturan sekaligus, mesin harus memutuskan <em>satu</em> aturan yang dieksekusi. Cara memilih itu disebut <strong>conflict resolution</strong>.</p>
+                <div data-viz="conflict-lab"></div>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Strategi</th><th>Artinya</th><th>Kelebihan dan kelemahan</th></tr></thead>
+                        <tbody>
+                            <tr><td>Urutan</td><td>Aturan pertama yang cocok pada daftar yang dieksekusi</td><td>Mudah dipahami (seperti aturan <em>firewall</em>), tetapi hasil bergantung pada letak aturan di file</td></tr>
+                            <tr><td>Paling spesifik</td><td>Aturan dengan syarat terbanyak menang atas aturan umum</td><td>Masuk akal: kasus khusus mengalahkan kasus umum; tetapi “spesifik” tidak selalu berarti “penting”</td></tr>
+                            <tr><td>Prioritas</td><td>Setiap aturan diberi nilai prioritas oleh perancang</td><td>Terkendali, tetapi perancang harus menjaga angkanya konsisten (rule engine seperti Drools menyediakan atribut <em>salience</em> untuk ini)</td></tr>
+                            <tr><td>Hasil terbesar</td><td>Pilih aturan yang menghasilkan nilai terbaik</td><td>Berguna untuk keputusan bisnis, tetapi bukan strategi “pengetahuan”</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Pelajaran:</strong>
+                    <p style="margin-top:6px;">Dengan keadaan yang <em>sama persis</em> dan aturan yang <em>sama persis</em>, empat strategi memberi tiga hasil yang berbeda (5%, 15%, 7%, dan 15%). Artinya strategi pemilihan aturan adalah <strong>bagian dari pengetahuan sistem</strong> dan harus dinyatakan dengan jelas, bukan terjadi begitu saja karena urutan file.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. Penjelasan, batas, kelemahan -->
+            <!-- ============================================================ -->
+            <section id="penjelasan">
+                <h2>4. Penjelasan, Batas Keberlakuan &amp; Kelemahan <span class="badge badge-tip">Penting</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="j-dua">Bagaimana dan mengapa</button>
+                    <button type="button" data-goto="j-obl">Penjelasan obligasi</button>
+                    <button type="button" data-goto="j-akuisisi">Akuisisi pengetahuan</button>
+                    <button type="button" data-goto="j-batas">Batas keberlakuan</button>
+                    <button type="button" data-goto="j-banding">Pakar vs sistem pakar</button>
+                    <button type="button" data-goto="j-lemah">Kelemahan</button>
+                </nav>
+
+                <h3 id="j-dua">Fasilitas Penjelasan: Bagaimana dan Mengapa</h3>
+                <p>Jawaban saja tidak cukup. Dokter yang menerima saran dari sistem pakar perlu memeriksa penalarannya sebelum mengikutinya, sebab dokter yang bertanggung jawab atas keputusan. <strong>Fasilitas penjelasan</strong> membuat sistem dapat menunjukkan alasannya. Ia bekerja di atas satu hal sederhana: <em>setiap kali sebuah aturan menyala, nama aturan dan fakta premisnya dicatat</em>, lalu catatan itu dibacakan kembali.</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-route"></i> “Bagaimana kesimpulan ini diperoleh?”</h4>
+                        <ul>
+                            <li>Dijawab dengan <strong>rangkaian aturan</strong>, dari kesimpulan mundur sampai fakta yang diamati user.</li>
+                            <li>Ditanyakan di <em>akhir</em> konsultasi.</li>
+                            <li>Dapat dipakai pada forward chaining maupun backward chaining.</li>
+                        </ul>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-circle-question"></i> “Mengapa hal ini ditanyakan?”</h4>
+                        <ul>
+                            <li>Dijawab dengan <strong>tujuan yang sedang dibuktikan</strong> ketika pertanyaan diajukan.</li>
+                            <li>Ditanyakan di <em>tengah</em> konsultasi, ketika sistem bertanya.</li>
+                            <li>Dipakai pada backward chaining (forward chaining tidak bertanya).</li>
+                        </ul>
+                    </div>
+                </div>
+                <p>Anda sudah melihat keduanya bekerja: kotak ungu <em>“Mengapa sistem bertanya ini?”</em> pada simulasi backward chaining (Bagian 3) dan tombol <strong>Mengapa?</strong> pada konsultasi motor (Bagian 5). Catatan yang sama juga menjadi alat bantu bagi penyusun basis pengetahuan: ketika sistem menghasilkan kesimpulan yang keliru, catatan itu menunjukkan aturan mana yang menyalakannya.</p>
+
+                <h3 id="j-obl">Contoh: Penjelasan pada Kasus Obligasi</h3>
+                <p>Memakai ulang aturan R1–R6. Kalimat penjelasan di bawah <em>tidak diketik manual</em>; ia disusun dari catatan aturan yang dipakai.</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4>Bagaimana “beli obligasi” diperoleh?</h4>
+                        <ol class="pk-how" style="list-style:decimal;margin-left:18px;font-size:0.92em;line-height:1.7;">
+                            <li>Beli obligasi, karena <strong>R6</strong>: harga obligasi turun.</li>
+                            <li>Harga obligasi turun, karena <strong>R2</strong>: suku bunga naik.</li>
+                            <li>Suku bunga naik, karena <strong>R5</strong>: dolar turun.</li>
+                            <li>Dolar turun adalah fakta yang diamati user. <em>Penjelasan berhenti di sini.</em></li>
+                        </ol>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4>Mengapa “dolar turun?” ditanyakan?</h4>
+                        <p style="font-size:0.92em;line-height:1.7;">Karena sistem sedang membuktikan “suku bunga naik”. Itu syarat R2 untuk “harga obligasi turun”, yang menjadi syarat R6 untuk “beli obligasi”.</p>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Prinsip:</strong>
+                    <p style="margin-top:6px;">Penjelasan yang memadai <strong>berhenti pada fakta yang benar-benar diamati user</strong>, bukan pada fakta antara yang disimpulkan sistem. Karena itu butir 4 berhenti di “dolar turun”.</p>
+                </div>
+                <details class="kunci">
+                    <summary>Latihan: bila user menjawab “tidak” untuk “dolar turun”, apa yang dikatakan penjelasan?</summary>
+                    <p>Cabang R5 gagal, sehingga R2 dan R6 tidak dapat dipakai. Sistem tidak dapat membuktikan “beli obligasi” dari rantai ini. Penjelasan yang jujur: “Beli obligasi tidak terbukti, karena syarat R5 (dolar turun) tidak terpenuhi.”</p>
+                </details>
+
+                <h3 id="j-akuisisi">Akuisisi Pengetahuan: Bagian yang Paling Sulit</h3>
+                <p>Menulis mesin inferensi hanya sekitar empat puluh baris. Yang menentukan mutu sistem adalah <strong>pengetahuan yang masuk</strong>. Tiga kesulitan yang hampir selalu muncul:</p>
+                <div class="card-grid">
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-book-open"></i></div>
+                        <h4>Pakar tidak menyatakan pengetahuannya sebagai aturan</h4>
+                        <p>Ia bercerita tentang kasus yang pernah ditangani. Aturan harus digali lewat pertanyaan atas kasus tertentu.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                        <h4>Pakar melewatkan hal yang dianggapnya jelas</h4>
+                        <p>Syarat yang selalu terpenuhi tidak disebutkan. Baru terlihat ketika sistem diuji pada kasus tidak lazim.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                        <h4>Pengetahuan pakar tidak selalu konsisten</h4>
+                        <p>Dua pakar bisa bertentangan; aturan mereka dapat saling meniadakan.</p>
+                    </div>
+                </div>
+                <p>Cara paling efektif: <strong>mulai dari sumber tertulis</strong> (pedoman penyuluhan, manual, SOP), susun aturan awal, lalu minta pakar mengoreksinya. Mengoreksi jauh lebih mudah daripada menyusun dari nol. Pada tugas RTM III, sumber pengetahuan wajib dicantumkan.</p>
+
+                <h3 id="j-batas">Batas Keberlakuan: Pengetahuan Siapa, Kapan, Untuk Apa</h3>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-shield-halved"></i> Basis pengetahuan mewakili pengetahuan <u>pihak tertentu</u>, pada <u>waktu tertentu</u>, untuk <u>keadaan tertentu</u>.</strong>
+                    <p style="margin-top:6px;">Ketiga batasan itu wajib dinyatakan kepada user. Sistem yang tidak menyatakan batasnya memberi kesan seolah kesimpulannya berlaku umum. Kesan itulah yang berbahaya, bukan semata-mata kekeliruan aturannya.</p>
+                </div>
+                <p>Empat pertanyaan berikut harus dapat dijawab oleh setiap sistem pakar yang Anda bangun. Kolom kanan memuat contoh jawaban untuk sistem diagnosis motor pada bagian contoh nanti.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Pertanyaan</th><th>Yang dinyatakan kepada user</th><th>Contoh: sistem motor</th></tr></thead>
+                        <tbody>
+                            <tr><td>Pengetahuan siapa yang diwakili?</td><td>Pakar dan sumber tertulis yang dipakai, beserta waktu pengambilannya</td><td>Wawancara satu montir bengkel dan buku manual motor 4-tak, diambil Oktober 2026</td></tr>
+                            <tr><td>Untuk keadaan apa berlaku?</td><td>Cakupan kasus yang ditangani</td><td>Sepeda motor bensin 4-tak yang tidak mau hidup; tidak mencakup masalah setelah mesin hidup</td></tr>
+                            <tr><td>Kapan perlu diperbarui?</td><td>Kejadian yang membuat basis pengetahuan usang</td><td>Bila muncul jenis motor baru (misalnya injeksi elektronik) atau pakar menemukan aturan yang keliru</td></tr>
+                            <tr><td>Keputusan apa yang tidak boleh diserahkan?</td><td>Keputusan berisiko yang tetap di tangan manusia</td><td>Menyatakan motor aman dikendarai, dan pembongkaran mesin</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Dan pernyataan kepada user harus muncul di antarmuka, bukan tersembunyi di laporan:</p>
+                <div class="ui-mock">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Saran sistem, bukan keputusan akhir.</strong>
+                    <ul>
+                        <li>Pengetahuan: satu montir bengkel dan buku manual motor 4-tak (Oktober 2026).</li>
+                        <li>Berlaku untuk: motor bensin 4-tak yang gagal dihidupkan.</li>
+                        <li>Perbarui bila: ada jenis motor baru atau aturan terbukti keliru.</li>
+                        <li>Tidak menggantikan pemeriksaan montir untuk keputusan keselamatan.</li>
+                    </ul>
+                </div>
+                <p>Satu hal yang perlu dipahami: aturan yang <em>seluruh premisnya terpenuhi</em> pun dapat menghasilkan saran yang keliru, bila keadaan nyata di luar apa yang dibayangkan pakar saat menulisnya. Pernyataan batas adalah cara jujur menyampaikan hal itu kepada user.</p>
+
+                <h3 id="j-banding">Pakar Manusia dan Sistem Pakar</h3>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Faktor</th><th>Pakar</th><th>Sistem pakar</th></tr></thead>
+                        <tbody>
+                            <tr><td>Ketersediaan waktu</td><td>Hari kerja</td><td>Setiap saat</td></tr>
+                            <tr><td>Geografis</td><td>Lokal atau tertentu</td><td>Di mana saja</td></tr>
+                            <tr><td>Keberlanjutan</td><td>Tidak tergantikan; pengetahuan hilang bila pakar pensiun atau pindah</td><td>Dapat diganti; pengetahuan dapat disalin dan dipasang di tempat lain</td></tr>
+                            <tr><td>Dapat habis (<em>perishable</em>)</td><td>Ya (lelah, sakit, pensiun)</td><td>Tidak</td></tr>
+                            <tr><td>Performansi</td><td>Variabel</td><td>Konsisten</td></tr>
+                            <tr><td>Kecepatan</td><td>Variabel</td><td>Konsisten</td></tr>
+                            <tr><td>Biaya</td><td>Tinggi</td><td>Terjangkau (setelah sistem jadi)</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Dari tabel itu muncul tujuh keuntungan sistem pakar: <strong>mudah direplikasi</strong>, <strong>mudah diproduksi massal</strong> (<em>availability</em>), <strong>biaya produksi masuk akal</strong>, <strong>cepat</strong>, <strong>potensi error lebih rendah</strong>, <strong>mengurangi risiko</strong> (bekerja di lingkungan berbahaya bagi manusia), dan <strong>respons stabil</strong> tanpa perlu motivasi.</p>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Dua catatan agar tidak terlalu optimistis:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>“Biaya terjangkau” berlaku <em>setelah</em> sistem jadi. Biaya awal membangun basis pengetahuan (waktu pakar dan knowledge engineer) tidak kecil.</li>
+                        <li>“Error lebih rendah” hanya benar bila aturannya benar. Sistem pakar mengulang kesalahan aturan <em>dengan konsisten</em>: konsisten tidak berarti selalu benar.</li>
+                    </ul>
+                </div>
+
+                <h3 id="j-lemah">Sembilan Kelemahan Sistem Pakar</h3>
+                <p>Daftar kelemahan pada sumber kuliah dibagi sembilan butir. Agar mudah diingat, kita kelompokkan menjadi tiga:</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+                        <h4>A. Tentang pengetahuan</h4>
+                        <ul style="font-size:0.88em;margin:6px 0 0 16px;">
+                            <li>Tidak dapat menangani pengetahuan yang tidak konsisten.</li>
+                            <li>Tidak selalu mudah mengodekan pengetahuan ke aturan.</li>
+                            <li>Para ahli sering kekurangan akses ke mekanisme analisis mereka sendiri (<em>bottleneck</em> akuisisi).</li>
+                        </ul>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-vial-circle-check"></i></div>
+                        <h4>B. Tentang skala dan pengujian</h4>
+                        <ul style="font-size:0.88em;margin:6px 0 0 16px;">
+                            <li>Validasi dan verifikasi sistem besar sangat sulit.</li>
+                            <li>Bila aturan banyak, efek penambahan aturan baru sulit dinilai.</li>
+                            <li>Tidak 100% benar, sehingga perlu diuji ulang teliti sebelum dipakai.</li>
+                        </ul>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div>
+                        <h4>C. Tentang keluwesan</h4>
+                        <ul style="font-size:0.88em;margin:6px 0 0 16px;">
+                            <li>Tidak dapat menerapkan penilaian dan intuisi (tidak punya akal sehat).</li>
+                            <li>Tanggapan kreatif pakar pada keadaan tidak biasa tidak dapat digabungkan.</li>
+                            <li>Kurang fleksibel, sulit beradaptasi dengan lingkungan yang berubah.</li>
+                        </ul>
+                    </div>
+                </div>
+                <p>Kelemahan “sulit beradaptasi” inilah salah satu alasan <em>machine learning</em> muncul: pengetahuan <em>dipelajari dari data</em>, bukan ditulis tangan (kita kembali ke sini di Bagian 6). Namun machine learning punya harganya sendiri: butuh data banyak dan sulit dijelaskan.</p>
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Kesimpulan bagian ini:</strong>
+                    <p style="margin-top:6px;">Dalam hal ini, peran manusia tetaplah faktor yang dominan. Sistem pakar <strong>membantu</strong> pakar dan user; ia tidak menggantikan pertimbangan manusia. Ia paling tepat sebagai alat bantu keputusan: sistem memberi saran, manusia yang memutuskan.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 5. Contoh sistem nyata -->
+            <!-- ============================================================ -->
+            <section id="contoh">
+                <h2>5. Contoh Sistem Pakar Nyata <span class="badge badge-new">Contoh</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="c-buah">Dialog buah</button>
+                    <button type="button" data-goto="c-motor">Konsultasi motor</button>
+                    <button type="button" data-goto="c-tiga">Tiga sistem yang masih dipakai</button>
+                    <button type="button" data-goto="c-skor">Sistem berbasis skor</button>
+                    <button type="button" data-goto="c-kspr">Studi kasus penelitian</button>
+                    <button type="button" data-goto="c-id">Aplikasi peneliti Indonesia</button>
+                    <button type="button" data-goto="c-klasik">Sistem klasik</button>
+                    <button type="button" data-goto="c-peta">Pemetaan komponen</button>
+                </nav>
+
+                <p>Pada bagian ini Anda berperan sebagai <strong>user</strong>: yang menjawab pertanyaan sistem. Dua konsultasi pertama adalah sistem sungguhan yang berjalan di halaman ini, memakai mesin backward chaining yang sama dengan yang Anda lihat sebelumnya. Sesudah itu kita lihat sistem yang dipakai orang di dunia nyata dan bagaimana ia memetakan ke enam komponen.</p>
+
+                <h3 id="c-buah">Sistem Pakar Buah: Dialog Paling Sederhana</h3>
+                <p>Ini dialog dari materi 2022. Jawab dengan urutan <strong>Ya, Tidak, Ya, Ya</strong> dan sistem akan menyimpulkan apel. Perhatikan dua hal: sistem <em>tidak menanyakan semua ciri sekaligus</em>; pertanyaan berikutnya bergantung pada jawaban sebelumnya. Dan setiap jawaban menyingkirkan buah yang tidak cocok (panel “Dugaan yang diuji”).</p>
+                <div data-viz="es-consult" data-kb="buah"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Ulangi dan jawab “Tidak” pada pertanyaan terakhir (berbatang).</strong>
+                            <p>Apel gagal, lalu sistem menguji dugaan berikutnya (delima) dan menanyakan hal baru. Pertanyaan memang dipilih dari sisa kemungkinan, bukan dari daftar tetap.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Tekan “Mengapa?” pada pertanyaan kedua.</strong>
+                            <p>Sistem menjawab bahwa ia sedang membuktikan “jeruk” lewat R1, yang membutuhkan “hijau muda, kuning tua”. Menyingkirkan kemungkinan adalah inti diagnosis; ingat ini pada Rice Doctor di bawah.</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Tabel ciri buah ini disederhanakan untuk contoh; ia bukan klasifikasi botani.</p>
+
+                <h3 id="c-motor">Konsultasi Sepeda Motor: Coba Jadi User</h3>
+                <p>Ini sistem pakar buatan kelas dengan tujuh aturan dan sepuluh fakta dasar. Anda tidak perlu motornya: <em>bayangkan sebuah kasus</em> dan jawab sesuai kasus itu. Tiga skenario yang dapat dicoba (jawab <strong>Tidak</strong> untuk pertanyaan lain yang muncul):</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Skenario</th><th>Yang harus Anda jawab “Ya”</th><th>Kesimpulan yang diharapkan</th></tr></thead>
+                        <tbody>
+                            <tr><td>A. Aki sudah tua</td><td>lampu redup; aki lebih dari 2 tahun</td><td>Aki perlu diganti</td></tr>
+                            <tr><td>B. Busi tidak memercik</td><td>mesin berputar; busi tidak memercik</td><td>Pengapian bermasalah</td></tr>
+                            <tr><td>C. Semua baik tetapi mesin tak menyala</td><td>mesin berputar; bensin ada; busi memercik</td><td>Pasokan bahan bakar bermasalah</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div data-viz="es-consult" data-kb="motor"></div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Perhatikan hitungan di panel kanan.</strong>
+                    <p style="margin-top:6px;">Pada skenario A sistem hanya bertanya <strong>2 kali</strong> dari 10 fakta dasar: ia tidak pernah menanyakan “starter hanya klik”, sebab R1 memakai OR dan “lampu redup” sudah cukup. Pada skenario C sistem bertanya <strong>8 kali</strong>: dugaan aki diuji lebih dulu (dua pertanyaan, dijawab tidak), lalu bensin, busi, dan seterusnya sampai dugaan terakhir terbukti. Dua fakta tidak pernah ditanyakan (umur aki dan terminal aki), karena R2 dan R3 gugur sebelum sampai ke sana. Forward chaining membutuhkan seluruh 10 fakta sejak awal. Inilah yang diminta dibandingkan pada tugas RTM III.</p>
+                </div>
+                <p>Aturan yang sama dapat dilihat sebagai graf. Gerbang OR pada R1 dan tiga gerbang AND yang berbagi “mesin berputar” terlihat jelas. Simulasi dimulai dengan <em>backward</em> untuk tujuan “pasokan bahan bakar bermasalah”. Coba tujuan lain, lalu ganti ke <em>forward</em> dan jadikan “Lampu redup”, “Aki lebih dari 2 tahun”, dan “Terminal aki kotor” sebagai fakta di memori kerja.</p>
+                <div data-viz="rule-chain" data-kb="motor" data-start="backward"></div>
+
+                <h3 id="c-tiga">Tiga Sistem yang Masih Dipakai</h3>
+                <p>Tiga contoh berikut dipilih karena resmi, masih dipelihara, dan dapat dicoba langsung oleh mahasiswa. Mereka mewakili tiga sisi sistem pakar: layanan publik yang dipakai orang awam, alat bantu untuk penyuluh dan petani, dan perangkat bagi pengembang.</p>
+
+                <h4>1. NHS 111 Online: Triase Gejala</h4>
+                <p>Layanan kesehatan Inggris yang membantu orang menentukan <em>bantuan apa yang dibutuhkan</em>. Menurut halaman resminya, layanan ini memakai sistem (algoritme) yang sama dengan layanan telepon 111, mencakup sekitar 120 topik gejala, memproses satu gejala per sesi, dan <strong>tidak memberi diagnosis</strong>; keluarannya berupa saran bantuan.</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>Pilih satu gejala utama</b><small>sekitar 120 topik</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>Pertanyaan berurutan</b><small>yang paling gawat ditanyakan lebih dahulu</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Saran: apa yang harus dilakukan</b><small>panggilan balik perawat · layanan mendesak · dokter umum · dokter gigi atau optik · apoteker · perawatan mandiri</small></div>
+                </div>
+                <ul>
+                    <li><strong>Pengetahuan:</strong> jalur klinis (<em>pathway</em>) yang ditulis dan dipelihara klinisi (paramedis, perawat, dokter); dipakai sejak 2005.</li>
+                    <li><strong>Pertanyaan diskusi:</strong> mengapa pertanyaan yang gawat ditanyakan lebih dahulu? Karena kesalahan pada kasus gawat paling mahal. <em>Urutan pertanyaan adalah bagian dari pengetahuan pakar.</em></li>
+                    <li><strong>Catatan jujur:</strong> sumber resminya tidak menyebut jenis inferensinya. Bentuknya mirip backward chaining pada diagnosis, tetapi itu tafsiran, bukan fakta dari sumber.</li>
+                </ul>
+                <p style="font-size:0.9em;"><i class="fa-solid fa-link"></i> <a href="https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-use-111/how-nhs-111-online-works/" target="_blank" rel="noopener">How NHS 111 online works — nhs.uk</a></p>
+
+                <h4>2. Rice Doctor (IRRI): Diagnosis Masalah Padi</h4>
+                <p>Alat diagnosis interaktif dari <em>International Rice Research Institute</em>. User memilih ciri atau gejala yang tampak pada tanaman; <strong>daftar kemungkinan menyempit tiap pilihan</strong> sampai satu diagnosis, disertai gambar dan lembar fakta berisi saran penanganan. Gratis, tersedia online dan sebagai aplikasi. Jenis masalah yang dapat dikenali: hama serangga, penyakit, kekurangan hara, keracunan, dan masalah agronomi.</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>Pilih gejala yang tampak</b><small>pada daun, batang, atau malai</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>Daftar kemungkinan menyempit</b><small>tiap pilihan menyingkirkan kandidat</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Lembar fakta dan saran penanganan</b><small>disertai gambar</small></div>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Catatan jujur: sumber resminya tidak menyebut aturan IF-THEN secara eksplisit; ia adalah <em>kunci identifikasi interaktif</em> yang menyimpan pengetahuan pakar. Ia tetap cocok sebagai contoh sistem diagnosis yang berdialog dengan user. Relevan untuk Indonesia karena padi komoditas utama: coba satu gejala yang Anda kenal, misalnya daun menguning.</p>
+                <p style="font-size:0.9em;"><i class="fa-solid fa-link"></i> <a href="http://ricedoctor.irri.org" target="_blank" rel="noopener">ricedoctor.irri.org</a></p>
+
+                <h4>3. Drools: Aturan Ditulis sebagai Kode</h4>
+                <p>Rule engine <em>open source</em> (kini di bawah Apache KIE) yang dipakai untuk keputusan bisnis seperti kelayakan kredit atau perhitungan tarif. Halaman resminya menyebutnya rule engine berbasis inferensi forward dan backward chaining, yaitu <em>building block</em> sistem pakar. Aturan ditulis dalam bahasa DRL: bagian <code>when</code> adalah premis, bagian <code>then</code> adalah akibat.</p>
+<pre><code><span class="kw">rule</span> <span class="st">"Pelamar pria diterima"</span>
+<span class="kw">when</span>
+    $p : Pelamar( jenisKelamin == <span class="st">"pria"</span>, umur &lt; <span class="nm">35</span> )
+<span class="kw">then</span>
+    $p.<span class="fn">setStatus</span>( <span class="st">"diterima"</span> );
+<span class="kw">end</span>
+
+<span class="kw">rule</span> <span class="st">"Pelamar wanita diterima"</span>
+<span class="kw">when</span>
+    $p : Pelamar( jenisKelamin == <span class="st">"wanita"</span>, umur &lt; <span class="nm">30</span> )
+<span class="kw">then</span>
+    $p.<span class="fn">setStatus</span>( <span class="st">"diterima"</span> );
+<span class="kw">end</span></code></pre>
+                <p style="font-size:0.9em;color:#555;">Contoh di atas ditulis sendiri untuk kuliah (bukan kutipan dokumentasi); kelas <code>Pelamar</code> diasumsikan ada. Perhatikan nilainya: mengubah batas usia cukup mengubah satu baris aturan, tanpa mengubah kode aplikasi. Itu yang disebut <em>soft-coded</em> pada Bagian 6. <strong>Pada tugas RTM III mesin inferensi wajib ditulis sendiri</strong>; Drools hanya contoh industri, bukan alat tugas.</p>
+                <p style="font-size:0.9em;"><i class="fa-solid fa-link"></i> <a href="https://kie.apache.org/drools/" target="_blank" rel="noopener">kie.apache.org/drools</a></p>
+
+                <h3 id="c-skor">Sistem Berbasis Skor: Spam Filter</h3>
+                <p>Tidak semua sistem berbasis aturan bekerja dengan rantai “jika A maka B maka C”. Bentuk lain yang sangat umum adalah <strong>berbasis skor</strong>: banyak aturan sederhana, masing-masing menambah atau mengurangi poin, lalu <em>jumlah poin</em> dibandingkan dengan ambang. Spam filter seperti SpamAssassin bekerja begini; ambang bawaannya 5,0. Poin pada simulasi berikut adalah angka ilustrasi, bukan skor SpamAssassin yang sebenarnya.</p>
+                <div data-viz="skor-lab"></div>
+                <ul>
+                    <li>Nyalakan tes 1 dan 2: skornya 4,5, masih di bawah ambang. <strong>Satu tes saja tidak memutuskan apa-apa</strong>; keputusan lahir dari akumulasi.</li>
+                    <li>Tambahkan tes 3: skor 6,0 dan pesan ditandai spam. Lalu nyalakan “pengirim ada di buku alamat” (−3,0): skor turun, pesan lolos. <strong>Aturan dapat bernilai negatif</strong>.</li>
+                    <li>Hasilnya <em>saran</em>: pesan ditandai dan masuk folder spam, bukan dihapus; user masih bisa memeriksanya. Ini wujud “keluaran adalah saran, bukan keputusan akhir”.</li>
+                </ul>
+
+                <h3 id="c-kspr">Studi Kasus Penelitian: Skor Poedji Rochjati</h3>
+                <p>Model berbasis skor yang sama dipakai pada bidang kebidanan: <strong>Kartu Skor Poedji Rochjati (KSPR)</strong> untuk deteksi dini kehamilan berisiko. Setiap ibu hamil mendapat skor awal 2, lalu skor 4 atau 8 ditambahkan untuk setiap faktor risiko yang ada. Jumlahnya dikelompokkan menjadi kehamilan risiko rendah (skor 2), risiko tinggi (skor 6–10), dan risiko sangat tinggi (skor 12 atau lebih). Bentuknya persis aturan IF-THEN atas total skor.</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span> skor total = 2 <span class="kw">THEN</span> kehamilan risiko rendah<br>
+                    <span class="kw">IF</span> 6 ≤ skor total ≤ 10 <span class="kw">THEN</span> kehamilan risiko tinggi<br>
+                    <span class="kw">IF</span> skor total ≥ 12 <span class="kw">THEN</span> kehamilan risiko sangat tinggi
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-book"></i> Studi kasus yang dibedah di kelas:</strong>
+                    <p style="margin-top:6px;">Lestari, H., Irfan, P., &amp; Azamti, B. N. A. (2026). Development of a Web-Based Poedji Rochjati Score Information System for Early Detection of High-Risk Pregnancy. <em>Science Midwifery</em>, 13(6), 1729–1737.</p>
+                </div>
+                <p>Baca artikelnya (atau tampilkan sistemnya), lalu jawab tiga pertanyaan pemandu:</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Sistem berbasis skor dan kaidah baku</strong>
+                            <p>Bagaimana skor dan kaidah baku dinyatakan sebagai aturan IF-THEN? Tuliskan tiga aturan skor sebagai IF-THEN, lalu tentukan bagian mana yang berupa keputusan dan bagian mana yang berupa saran.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Batas keberlakuan</strong>
+                            <p>Bagaimana sistem itu menyatakan batasnya kepada pengguna? Bandingkan dengan empat pertanyaan di Bagian 4.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Mengapa bukan tema tugas</strong>
+                            <p>Mengapa kesehatan manusia tidak dijadikan tema tugas mahasiswa?</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Mengapa kesehatan manusia bukan tema tugas?</strong>
+                    <p style="margin-top:6px;">Sistem yang menyimpulkan penyakit manusia menuntut pertanggungjawaban di luar cakupan mata kuliah, dan kekeliruannya berakibat langsung pada keselamatan orang. Pelajaran dari MYCIN: mutu sarannya setara dokter spesialis, tetapi sistem itu tidak dipakai rutin di rumah sakit, terutama karena persoalan tanggung jawab hukum. Karena itu contoh bidang kesehatan pada halaman ini (NHS 111, aplikasi paru-paru anak, epilepsi, KSPR) <strong>hanya sebagai ilustrasi</strong>, bukan tema yang boleh diambil.</p>
+                </div>
+
+                <h3 id="c-id">Aplikasi Buatan Peneliti Indonesia</h3>
+                <p>Tiga aplikasi dari penelitian di Indonesia dipertahankan dari materi 2022 karena memperlihatkan seluruh komponen sistem pakar, baik dari sisi pakar maupun sisi user.</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-lungs"></i></div>
+                        <h4>Diagnosis paru-paru anak</h4>
+                        <p>User memilih gejala dari daftar; gejala terpilih tampil di sisi lain. Tombol diagnosa menampilkan penyakit beserta <strong>persentase kecocokan</strong>, bukan sekadar ya/tidak. Antarmukanya tergolong lama: lihat sebagai ilustrasi susunan komponen, bukan contoh desain.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                        <h4>Konsultasi hukum pidana</h4>
+                        <p>User memilih jenis tindak pidana, lalu menjawab Ya atau Tidak atas pernyataan sistem. Aturannya berupa <strong>pasal dan unsur-unsurnya</strong>: tiap unsur menjadi satu premis, dan bila semua terpenuhi (AND) pasal berlaku. Hasil: pasal, sanksi, persentase kecocokan, dan saran.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-brain"></i></div>
+                        <h4>Diagnosis epilepsi</h4>
+                        <p>Contoh paling lengkap: antarmuka pakar untuk mengisi pengetahuan, aturan dengan nilai CF, konsultasi dengan tombol <strong>Mengapa</strong>, penjelasan, dan hasil terapi. Rinciannya pada tabel di bawah.</p>
+                    </div>
+                </div>
+
+                <h4>Aplikasi Epilepsi: Tujuh Layar, Enam Komponen</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Layar</th><th>Isi</th><th>Komponen yang tampak</th></tr></thead>
+                        <tbody>
+                            <tr><td>1. Data gejala</td><td>Pakar memasukkan nama dan keterangan gejala; daftar menampilkan 19 gejala tersimpan</td><td><strong>Akuisisi pengetahuan</strong> (komponen 4)</td></tr>
+                            <tr><td>2. Aturan gejala–sawan</td><td>JIKA gejala A DAN gejala B MAKA jenis sawan tertentu; tiap aturan memiliki nilai CF</td><td><strong>Basis pengetahuan</strong>, premis AND</td></tr>
+                            <tr><td>3. Aturan terapi</td><td>JIKA menderita jenis epilepsi tertentu MAKA gunakan obat tertentu</td><td>Keluaran satu aturan (diagnosis) menjadi masukan aturan berikutnya: <strong>rantai inferensi</strong></td></tr>
+                            <tr><td>4. Daftar aturan</td><td>Seluruh aturan dapat ditampilkan (12 aturan); premis aturan 5 adalah kesimpulan aturan 1</td><td>Basis pengetahuan <strong>terpisah</strong> dari mesin: dilihat, ditambah, dihapus tanpa mengubah program</td></tr>
+                            <tr><td>5. Konsultasi</td><td>Sistem bertanya; user menjawab Ya, Tidak, atau Tidak tahu, boleh memberi tingkat kepercayaan 0–1</td><td><strong>Antarmuka</strong>; “Tidak tahu” menunjukkan sistem bekerja dengan data tidak lengkap</td></tr>
+                            <tr><td>6. Penjelasan</td><td>Tombol Mengapa: gejala yang sudah diketahui, syarat tambahan yang diperiksa, dan dugaan penyakit</td><td><strong>Fasilitas penjelasan</strong> (komponen 5)</td></tr>
+                            <tr><td>7. Hasil</td><td>Penyakit, nama obat, dosis, efek samping, dan harga</td><td>Saran akhir untuk user</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Perhatikan “nilai CF” pada layar 2: <em>certainty factor</em>, ukuran keyakinan pakar terhadap aturan (0 sampai 1). Aturan pakar tidak selalu pasti; itu topik pertemuan berikutnya (ketidakpastian).</p>
+
+                <h3 id="c-klasik">Sistem Pakar Klasik</h3>
+                <p>Sistem pakar berasal dari penelitian AI tahun 1960–1980-an. Tiga yang paling sering disebut:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Sistem</th><th>Bidang</th><th>Yang perlu diingat</th></tr></thead>
+                        <tbody>
+                            <tr><td>DENDRAL</td><td>Kimia organik</td><td>Dikembangkan di Stanford sejak pertengahan 1960-an. Menentukan kemungkinan struktur molekul dari data spektrometri massa. Sering disebut sistem pakar pertama.</td></tr>
+                            <tr><td>MYCIN</td><td>Infeksi bakteri (kedokteran)</td><td>Stanford, awal 1970-an. Backward chaining dengan <em>certainty factor</em> dan ratusan aturan. Mutu sarannya setara dokter spesialis pada evaluasi, tetapi tidak dipakai rutin; soal tanggung jawab hukum menjadi salah satu penyebab yang sering disebut.</td></tr>
+                            <tr><td>XCON (R1)</td><td>Konfigurasi komputer</td><td>Dipakai Digital Equipment Corporation sejak awal 1980-an untuk menyusun konfigurasi pesanan komputer VAX. Berbasis aturan dengan forward chaining dan ribuan aturan; contoh sistem pakar yang dipakai secara komersial.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 id="c-peta">Pemetaan Contoh ke Komponen Sistem Pakar</h3>
+                <p>Latihan menyatukan semuanya: di mana enam komponen pada setiap contoh?</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Komponen</th><th>NHS 111 online</th><th>Rice Doctor</th><th>Drools</th><th>Sistem motor (kelas)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Basis pengetahuan</td><td>Jalur klinis (<em>pathway</em>)</td><td>Kunci diagnosis dan lembar fakta</td><td>File aturan DRL</td><td>Aturan R1–R7</td></tr>
+                            <tr><td>Mesin inferensi</td><td>Urutan pertanyaan pada jalur</td><td>Penyaringan menurut gejala</td><td><em>Rule engine</em></td><td>Backward chaining di halaman ini</td></tr>
+                            <tr><td>Akuisisi pengetahuan</td><td>Klinisi menulis dan memperbarui jalur</td><td>Tim IRRI dan mitra</td><td>Pengembang menulis aturan</td><td>Knowledge engineer + montir</td></tr>
+                            <tr><td>Antarmuka</td><td>Situs dan telepon</td><td>Aplikasi seluler dan situs</td><td>Dibuat oleh aplikasi pemakai</td><td>Dialog Ya / Tidak / Tidak tahu</td></tr>
+                            <tr><td>Fasilitas penjelasan</td><td>Tidak ditampilkan bagi pengguna awam</td><td>Lembar fakta</td><td>Harus dibangun aplikasi pemakai</td><td>Tombol Mengapa? dan Bagaimana?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Pemetaan ini penafsiran penulis materi untuk membantu menghubungkan contoh dengan struktur sistem pakar; sumber resmi masing-masing sistem tidak memuat pembagian ini, jadi anggaplah sebagai analogi.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-house-laptop"></i> Tugas ringan:</strong>
+                    <p style="margin-top:6px;">Pilih salah satu dari tiga sistem yang masih dipakai, coba di rumah, lalu tuliskan <em>satu pertanyaan</em> yang diajukannya dan <em>aturan IF-THEN yang mungkin ada di baliknya</em>.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 6. Implementasi & rangkuman -->
+            <!-- ============================================================ -->
+            <section id="implementasi">
+                <h2>6. Implementasi: dari Aturan ke Program &amp; Rangkuman <span class="badge badge-new">Praktik</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="i-kasus">Studi kasus</button>
+                    <button type="button" data-goto="i-hard">Hard-coded</button>
+                    <button type="button" data-goto="i-soft">Soft-coded</button>
+                    <button type="button" data-goto="i-tabel">Tabel inferensi</button>
+                    <button type="button" data-goto="i-python">Python</button>
+                    <button type="button" data-goto="i-kualitas">Kualitas aturan</button>
+                    <button type="button" data-goto="i-ml">Machine learning</button>
+                    <button type="button" data-goto="i-kelas">Kegiatan kelas</button>
+                    <button type="button" data-goto="i-ringkas">Rangkuman</button>
+                    <button type="button" data-goto="i-latihan">Latihan</button>
+                    <button type="button" data-goto="i-rtm">Tugas RTM III</button>
+                    <button type="button" data-goto="i-ref">Referensi</button>
+                </nav>
+
+                <h3 id="i-kasus">Studi Kasus: Lamaran Pekerjaan</h3>
+                <p>Kita ingin membuat sistem pakar yang menentukan apakah seseorang dapat melamar suatu pekerjaan. Aturannya hanya dua:</p>
+                <div class="rule-box">
+                    <span class="kw">Aturan 1:</span> pria hanya dapat melamar bila berusia di bawah 35 tahun.<br>
+                    <span class="kw">Aturan 2:</span> wanita hanya dapat melamar bila berusia di bawah 30 tahun.
+                </div>
+                <p><strong>Pertanyaan: bagaimana menerapkan ini ke dalam program AI?</strong> Kasusnya sengaja sederhana (dua aturan, dua atribut) supaya perbedaan <em>hard-coded</em> dan <em>soft-coded</em> terlihat jelas.</p>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Catatan etika:</strong>
+                    <p style="margin-top:6px;">Batas usia dan jenis kelamin pada lamaran kerja dapat bermasalah secara hukum dan etika. Kasus ini dipakai <em>hanya sebagai contoh teknis</em>. Sebagai latihan: sebutkan mengapa aturan seperti ini perlu ditinjau sebelum dipakai (lihat juga pertanyaan “keputusan apa yang tidak boleh diserahkan” pada Bagian 4).</p>
+                </div>
+
+                <h3 id="i-hard">Hard-Coded: Aturan Tertanam dalam Kode</h3>
+                <p>Solusi pertama yang terpikir: tulis aturannya langsung sebagai pernyataan <code>if-else</code>.</p>
+<pre><code><span class="kw">IF</span> (pria) <span class="kw">THEN</span>
+    <span class="kw">IF</span> (umur &lt; <span class="nm">35</span>) <span class="kw">THEN</span>  Diterima
+    <span class="kw">ELSE</span>                    Ditolak
+<span class="kw">ELSE</span>
+    <span class="kw">IF</span> (umur &lt; <span class="nm">30</span>) <span class="kw">THEN</span>  Diterima
+    <span class="kw">ELSE</span>                    Ditolak</code></pre>
+                <p>Berfungsi untuk dua aturan. <strong>Bagaimana bila aturannya ratusan?</strong> Biarkan pertanyaan itu menggantung sebentar. Setiap aturan baru berarti mengubah kode program, menguji ulang, dan men-deploy ulang. Tiga masalahnya:</p>
+                <ul>
+                    <li><strong>Kode membesar</strong> mengikuti jumlah aturan.</li>
+                    <li><strong>Aturan bercampur dengan logika program</strong>, sehingga sulit dibaca dan dirawat.</li>
+                    <li><strong>Pakar tidak dapat mengubah aturan</strong> tanpa programmer.</li>
+                </ul>
+
+                <h3 id="i-soft">Soft-Coded: Aturan Dipisahkan dari Kode</h3>
+                <p>Alternatifnya: aturan disimpan sebagai <strong>data</strong>, dan program hanya berisi <em>satu loop</em> yang membaca data itu.</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-rotate"></i></div>
+                        <h4>Satu loop penalaran</h4>
+                        <p>Kode mengulang siklus inferensi sampai kesimpulan diperoleh.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-compress"></i></div>
+                        <h4>Kode lebih singkat</h4>
+                        <p>Jumlah kode untuk membangun AI tidak besar.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                        <h4>Mudah diperbarui</h4>
+                        <p>Perubahan pengetahuan cukup mengubah basis pengetahuan; programnya tidak disentuh.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-tags"></i></div>
+                        <h4>Banyak nama</h4>
+                        <p>Inference engine, knowledge base, model, atau hasil training. Gagasannya sama: pengetahuan di luar kode.</p>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Ketentuan RTM III (indikator 5.4):</strong>
+                    <p style="margin-top:6px;">Basis pengetahuan <strong>wajib</strong> disimpan pada file terpisah (JSON atau YAML), bukan ditulis sebagai daftar di dalam program. Alasannya: basis yang tertanam di kode tidak dapat diperiksa pakar bidangnya, dan setiap perubahannya menuntut pengujian ulang seluruh program.</p>
+                </div>
+
+                <h3 id="i-tabel">Tabel Inferensi: Pohon Keputusan yang Dijadikan Tabel</h3>
+                <p>Bagaimana bentuk “data” itu? Salah satu yang paling sederhana adalah <strong>tabel inferensi</strong>. Mulai dari pohon keputusan: tiap simpul adalah sebuah pertanyaan, tiap cabang adalah jawaban, dan daunnya adalah kesimpulan. Ubah pohon itu menjadi tabel: <strong>setiap simpul menjadi satu baris</strong>, setiap cabang menjadi kolom <em>Pilihan</em>, dan kolom terakhir menandai apakah baris itu kesimpulan.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Aturan</th><th>Pernyataan</th><th>Pilihan 1</th><th>Pilihan 2</th><th>Kesimpulan?</th></tr></thead>
+                        <tbody>
+                            <tr><td>Start</td><td>Apa jenis kelamin Anda?</td><td>R1 (pria)</td><td>R2 (wanita)</td><td>Tidak</td></tr>
+                            <tr><td>R1</td><td>Apakah usia Anda kurang dari 35?</td><td>C1</td><td>C2</td><td>Tidak</td></tr>
+                            <tr><td>R2</td><td>Apakah usia Anda kurang dari 30?</td><td>C1</td><td>C2</td><td>Tidak</td></tr>
+                            <tr><td>C1</td><td>Lamaran diterima</td><td>-</td><td>-</td><td>Ya</td></tr>
+                            <tr><td>C2</td><td>Lamaran ditolak</td><td>-</td><td>-</td><td>Ya</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Perhatikan: <strong>C1 dan C2 dipakai bersama oleh dua cabang</strong>. Pada tabel, kesimpulan hanya ditulis sekali dan ditunjuk dari banyak baris; itulah bedanya dengan pohon. Sekarang jelajahi tabelnya. Garis kode di kiri adalah <em>seluruh program</em>-nya; lihat bagaimana ia berpindah antarbaris tabel tanpa pernah menyebut “pria” atau “35”.</p>
+                <div data-viz="infer-table" data-kb="lamaran"></div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Inilah mesin inferensi yang sebenarnya.</strong>
+                    <p style="margin-top:6px;">Program yang hanya beberapa baris itu tidak tahu apa pun tentang lamaran kerja. Bila tabelnya diganti tabel diagnosis, programnya tetap sama. Dan bila tabelnya <em>salah</em>, program tidak salah: kesalahan ada pada <strong>pengetahuan</strong>. Itu sebabnya validasi basis pengetahuan penting.</p>
+                </div>
+                <p>Aturan obligasi R1–R6 juga dapat dibuat tabel inferensinya: kolom <em>Aturan berikutnya</em> menunjuk aturan yang kondisinya sama dengan akibat aturan ini; bila tidak ada lanjutan, ia berujung pada kesimpulan (C1 = jangan beli, C2 = beli). Pilih fakta awal dan telusuri.</p>
+                <div data-viz="infer-table" data-kb="obligasi"></div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Keterbatasan:</strong>
+                    <p style="margin-top:6px;">Tabel ini hanya menyimpan <em>satu jalur per aturan</em>. Aturan sungguhan yang punya banyak premis tidak dapat dituliskan setegas ini. Tabel inferensi cocok untuk kasus sederhana; untuk yang lebih umum, kita butuh mesin forward dan backward chaining di bawah.</p>
+                </div>
+
+                <h3 id="i-python">Mesin Inferensi Mini dengan Python</h3>
+                <p>Mari bangun mesin yang sebenarnya, dalam tiga langkah: <strong>(1)</strong> basis aturan pada file terpisah, <strong>(2)</strong> mesin forward dan backward chaining, <strong>(3)</strong> fasilitas penjelasan. Aturannya sama dengan R1–R6 obligasi.</p>
+
+                <h4>Langkah 1: Basis aturan (file JSON)</h4>
+                <p>Simpan sebagai <code>aturan_obligasi.json</code>. Setiap aturan punya <code>id</code>, daftar premis <code>jika</code> (semuanya harus terpenuhi), dan satu akibat <code>maka</code>.</p>
+                <pre data-copy="aturan_obligasi.json"><code>{
+  <span class="st">"aturan"</span>: [
+    {<span class="st">"id"</span>: <span class="st">"R1"</span>, <span class="st">"jika"</span>: [<span class="st">"suku bunga turun"</span>],          <span class="st">"maka"</span>: <span class="st">"harga obligasi naik"</span>},
+    {<span class="st">"id"</span>: <span class="st">"R2"</span>, <span class="st">"jika"</span>: [<span class="st">"suku bunga naik"</span>],           <span class="st">"maka"</span>: <span class="st">"harga obligasi turun"</span>},
+    {<span class="st">"id"</span>: <span class="st">"R3"</span>, <span class="st">"jika"</span>: [<span class="st">"suku bunga tidak berubah"</span>],  <span class="st">"maka"</span>: <span class="st">"harga obligasi tidak berubah"</span>},
+    {<span class="st">"id"</span>: <span class="st">"R4"</span>, <span class="st">"jika"</span>: [<span class="st">"dolar naik"</span>],                <span class="st">"maka"</span>: <span class="st">"suku bunga turun"</span>},
+    {<span class="st">"id"</span>: <span class="st">"R5"</span>, <span class="st">"jika"</span>: [<span class="st">"dolar turun"</span>],               <span class="st">"maka"</span>: <span class="st">"suku bunga naik"</span>},
+    {<span class="st">"id"</span>: <span class="st">"R6"</span>, <span class="st">"jika"</span>: [<span class="st">"harga obligasi turun"</span>],      <span class="st">"maka"</span>: <span class="st">"beli obligasi"</span>}
+  ]
+}</code></pre>
+
+                <h4>Langkah 2: Mesin inferensi (di file yang berbeda)</h4>
+                <p>Simpan sebagai <code>mesin_inferensi.py</code> di folder yang sama. Perhatikan bahwa kode ini <strong>tidak memuat satu pun aturan</strong>.</p>
+                <pre data-copy="mesin_inferensi.py"><code><span class="kw">import</span> json
+
+<span class="cm"># Basis pengetahuan dibaca dari file terpisah: mesin di bawah tidak memuat satu pun aturan.</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">'aturan_obligasi.json'</span>, encoding=<span class="st">'utf-8'</span>) <span class="kw">as</span> f:
+    ATURAN = json.<span class="fn">load</span>(f)[<span class="st">'aturan'</span>]
+
+
+<span class="kw">def</span> <span class="fn">maju</span>(fakta_awal):
+    <span class="st">"""Forward chaining: ulangi cocokkan -&gt; eksekusi sampai tidak ada aturan baru."""</span>
+    memori = <span class="fn">list</span>(fakta_awal)                      <span class="cm"># memori kerja</span>
+    asal = {f: <span class="kw">None</span> <span class="kw">for</span> f <span class="kw">in</span> fakta_awal}           <span class="cm"># bahan fasilitas penjelasan; None = fakta dari user</span>
+    siklus = <span class="nm">0</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        siklus += <span class="nm">1</span>
+        konflik = [a <span class="kw">for</span> a <span class="kw">in</span> ATURAN
+                   <span class="kw">if</span> <span class="fn">all</span>(p <span class="kw">in</span> memori <span class="kw">for</span> p <span class="kw">in</span> a[<span class="st">'jika'</span>]) <span class="kw">and</span> a[<span class="st">'maka'</span>] <span class="kw">not</span> <span class="kw">in</span> memori]
+        <span class="kw">if</span> <span class="kw">not</span> konflik:
+            <span class="fn">print</span>(<span class="st">f'Siklus {siklus}: himpunan konflik kosong -&gt; berhenti'</span>)
+            <span class="kw">return</span> memori, asal
+        aturan = konflik[<span class="nm">0</span>]                        <span class="cm"># conflict resolution: aturan pertama</span>
+        <span class="fn">print</span>(<span class="st">f"Siklus {siklus}: konflik = {[a['id'] for a in konflik]} -&gt; jalankan {aturan['id']}"</span>)
+        memori.<span class="fn">append</span>(aturan[<span class="st">'maka'</span>])
+        asal[aturan[<span class="st">'maka'</span>]] = (aturan[<span class="st">'id'</span>], aturan[<span class="st">'jika'</span>])
+
+
+<span class="kw">def</span> <span class="fn">mundur</span>(tujuan, fakta_awal, tanya):
+    <span class="st">"""Backward chaining: buktikan tujuan; bertanya hanya bila fakta belum ada."""</span>
+    memori = <span class="fn">set</span>(fakta_awal)
+    alasan = {}
+
+    <span class="kw">def</span> <span class="fn">buktikan</span>(g, tingkat=<span class="nm">0</span>):
+        pad = <span class="st">'  '</span> * tingkat
+        <span class="kw">if</span> g <span class="kw">in</span> memori:
+            <span class="fn">print</span>(<span class="st">f'{pad}{g}: sudah diketahui'</span>)
+            <span class="kw">return</span> <span class="kw">True</span>
+        penyimpul = [a <span class="kw">for</span> a <span class="kw">in</span> ATURAN <span class="kw">if</span> a[<span class="st">'maka'</span>] == g]
+        <span class="kw">if</span> <span class="kw">not</span> penyimpul:                          <span class="cm"># fakta dasar: tidak ada aturan yang menyimpulkannya</span>
+            jawab = <span class="fn">tanya</span>(g)
+            <span class="fn">print</span>(<span class="st">f"{pad}{g}? (ditanyakan ke user) -&gt; {'ya' if jawab else 'tidak'}"</span>)
+            <span class="kw">if</span> jawab:
+                memori.<span class="fn">add</span>(g)
+            <span class="kw">return</span> jawab
+        <span class="kw">for</span> a <span class="kw">in</span> penyimpul:
+            <span class="fn">print</span>(<span class="st">f"{pad}{g}: coba {a['id']}, butuh {a['jika']}"</span>)
+            <span class="kw">if</span> <span class="fn">all</span>(<span class="fn">buktikan</span>(p, tingkat + <span class="nm">1</span>) <span class="kw">for</span> p <span class="kw">in</span> a[<span class="st">'jika'</span>]):
+                memori.<span class="fn">add</span>(g)
+                alasan[g] = a[<span class="st">'id'</span>]
+                <span class="kw">return</span> <span class="kw">True</span>
+        <span class="kw">return</span> <span class="kw">False</span>
+
+    <span class="kw">return</span> <span class="fn">buktikan</span>(tujuan), alasan
+
+
+<span class="kw">def</span> <span class="fn">jelaskan</span>(fakta, asal, tingkat=<span class="nm">0</span>):
+    <span class="st">"""Fasilitas penjelasan 'Bagaimana?': telusuri dari kesimpulan sampai fakta dari user."""</span>
+    pad = <span class="st">'  '</span> * tingkat
+    <span class="kw">if</span> asal[fakta] <span class="kw">is</span> <span class="kw">None</span>:
+        <span class="fn">print</span>(<span class="st">f'{pad}{fakta}: fakta dari user (penjelasan berhenti di sini)'</span>)
+        <span class="kw">return</span>
+    id_aturan, premis = asal[fakta]
+    <span class="fn">print</span>(<span class="st">f"{pad}{fakta}, karena {id_aturan}: {' dan '.join(premis)}"</span>)
+    <span class="kw">for</span> p <span class="kw">in</span> premis:
+        <span class="fn">jelaskan</span>(p, asal, tingkat + <span class="nm">1</span>)
+
+
+<span class="fn">print</span>(<span class="st">'=== FORWARD ==='</span>)
+memori, asal = <span class="fn">maju</span>([<span class="st">'dolar turun'</span>])
+<span class="fn">print</span>(<span class="st">'Memori kerja akhir:'</span>, memori)
+<span class="fn">print</span>(<span class="st">'Bagaimana "beli obligasi" diperoleh?'</span>)
+<span class="fn">jelaskan</span>(<span class="st">'beli obligasi'</span>, asal)
+
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">'=== BACKWARD ==='</span>)
+ok, alasan = <span class="fn">mundur</span>(<span class="st">'beli obligasi'</span>, [], tanya=<span class="kw">lambda</span> fakta: fakta == <span class="st">'dolar turun'</span>)
+<span class="fn">print</span>(<span class="st">'Terbukti:'</span>, ok, <span class="st">'| aturan yang dipakai:'</span>, alasan)</code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>=== FORWARD ===
+Siklus 1: konflik = ['R5'] -&gt; jalankan R5
+Siklus 2: konflik = ['R2'] -&gt; jalankan R2
+Siklus 3: konflik = ['R6'] -&gt; jalankan R6
+Siklus 4: himpunan konflik kosong -&gt; berhenti
+Memori kerja akhir: ['dolar turun', 'suku bunga naik', 'harga obligasi turun', 'beli obligasi']
+Bagaimana "beli obligasi" diperoleh?
+beli obligasi, karena R6: harga obligasi turun
+  harga obligasi turun, karena R2: suku bunga naik
+    suku bunga naik, karena R5: dolar turun
+      dolar turun: fakta dari user (penjelasan berhenti di sini)
+
+=== BACKWARD ===
+beli obligasi: coba R6, butuh ['harga obligasi turun']
+  harga obligasi turun: coba R2, butuh ['suku bunga naik']
+    suku bunga naik: coba R5, butuh ['dolar turun']
+      dolar turun? (ditanyakan ke user) -&gt; ya
+Terbukti: True | aturan yang dipakai: {'suku bunga naik': 'R5', 'harga obligasi turun': 'R2', 'beli obligasi': 'R6'}</pre>
+
+                <h4>Cara Membaca Kodenya</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Bagian kode</th><th>Setara dengan</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>ATURAN = json.load(f)['aturan']</code></td><td>Basis pengetahuan dibaca dari file; mesin tidak berisi pengetahuan</td></tr>
+                            <tr><td><code>konflik = [a for a in ATURAN if all(p in memori ...) and a['maka'] not in memori]</code></td><td><strong>Cocokkan</strong>: himpunan konflik. Syarat <code>not in memori</code> adalah <em>refraction</em>: aturan yang akibatnya sudah ada tidak dijalankan lagi</td></tr>
+                            <tr><td><code>aturan = konflik[0]</code></td><td><em>Conflict resolution</em>: aturan pertama</td></tr>
+                            <tr><td><code>memori.append(aturan['maka'])</code></td><td><strong>Eksekusi dan perbarui</strong>: fakta baru masuk memori kerja</td></tr>
+                            <tr><td><code>if not konflik: ... return</code></td><td><strong>Kriteria berhenti</strong></td></tr>
+                            <tr><td><code>asal[...] = (id, jika)</code> dan <code>jelaskan()</code></td><td><strong>Fasilitas penjelasan “Bagaimana?”</strong>: catatan aturan yang dipakai, dibaca mundur sampai fakta dari user</td></tr>
+                            <tr><td><code>buktikan(g)</code> yang memanggil dirinya sendiri</td><td><strong>Backward chaining</strong>: sub-goal = rekursi; <code>all(...)</code> berhenti pada premis pertama yang gagal</td></tr>
+                            <tr><td><code>if not penyimpul: tanya(g)</code></td><td>Bertanya kepada user <em>hanya</em> bila fakta belum ada dan tidak ada aturan yang menyimpulkannya</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Yang masih harus Anda tambahkan pada tugas:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>Gerbang <strong>OR</strong>, misalnya dengan menambah kolom <code>"mode": "atau"</code> pada aturan dan memakai <code>any()</code> sebagai pengganti <code>all()</code>.</li>
+                        <li>Bertanya sungguhan lewat <code>input()</code> atau formulir, termasuk pilihan <em>tidak tahu</em> dan tombol <strong>Mengapa?</strong> (fasilitas penjelasan yang menjawab alasan sebuah pertanyaan).</li>
+                        <li>Perlindungan terhadap <strong>aturan melingkar</strong> pada backward chaining (simpan himpunan sub-goal yang sedang dibuktikan).</li>
+                        <li>Pernyataan <strong>batas keberlakuan</strong> dan kalimat “keluaran ini saran, bukan keputusan akhir”.</li>
+                        <li>Sekurang-kurangnya <strong>5 kasus uji</strong>, termasuk satu kasus yang seharusnya <em>tidak</em> menghasilkan kesimpulan.</li>
+                    </ul>
+                </div>
+
+                <h4>Satu Lagi: Penjelajah Tabel Inferensi</h4>
+                <p>Program lima baris pada simulasi tabel di atas, ditulis dalam Python. Tabelnya adalah data (kamus Python di sini; pada tugas, simpan di JSON atau YAML).</p>
+                <pre data-copy="tabel_inferensi.py"><code><span class="cm"># Tabel inferensi lamaran pekerjaan. Setiap baris menunjuk baris berikutnya.</span>
+TABEL = {
+    <span class="st">'Start'</span>: {<span class="st">'pernyataan'</span>: <span class="st">'Apa jenis kelamin Anda?'</span>,          <span class="st">'pilihan'</span>: [<span class="st">'R1'</span>, <span class="st">'R2'</span>], <span class="st">'kesimpulan'</span>: <span class="kw">False</span>},
+    <span class="st">'R1'</span>:    {<span class="st">'pernyataan'</span>: <span class="st">'Apakah usia Anda kurang dari 35?'</span>, <span class="st">'pilihan'</span>: [<span class="st">'C1'</span>, <span class="st">'C2'</span>], <span class="st">'kesimpulan'</span>: <span class="kw">False</span>},
+    <span class="st">'R2'</span>:    {<span class="st">'pernyataan'</span>: <span class="st">'Apakah usia Anda kurang dari 30?'</span>, <span class="st">'pilihan'</span>: [<span class="st">'C1'</span>, <span class="st">'C2'</span>], <span class="st">'kesimpulan'</span>: <span class="kw">False</span>},
+    <span class="st">'C1'</span>:    {<span class="st">'pernyataan'</span>: <span class="st">'Lamaran diterima'</span>,                 <span class="st">'pilihan'</span>: [],           <span class="st">'kesimpulan'</span>: <span class="kw">True</span>},
+    <span class="st">'C2'</span>:    {<span class="st">'pernyataan'</span>: <span class="st">'Lamaran ditolak'</span>,                  <span class="st">'pilihan'</span>: [],           <span class="st">'kesimpulan'</span>: <span class="kw">True</span>},
+}
+
+
+<span class="kw">def</span> <span class="fn">jelajah</span>(tabel, jawaban):
+    <span class="st">"""Program ini tidak memuat aturan lamaran kerja; semuanya ada pada TABEL."""</span>
+    jawaban = <span class="fn">iter</span>(jawaban)                        <span class="cm"># pengganti input() agar bisa diuji</span>
+    aturan_dipakai = <span class="st">'Start'</span>
+    <span class="kw">while</span> <span class="kw">not</span> tabel[aturan_dipakai][<span class="st">'kesimpulan'</span>]:
+        baris = tabel[aturan_dipakai]
+        pilih = <span class="fn">next</span>(jawaban)                      <span class="cm"># 1 = Pilihan 1, 2 = Pilihan 2</span>
+        <span class="fn">print</span>(<span class="st">f"{aturan_dipakai}: {baris['pernyataan']} -&gt; pilihan {pilih}"</span>)
+        aturan_dipakai = baris[<span class="st">'pilihan'</span>][pilih - <span class="nm">1</span>]
+    <span class="fn">print</span>(<span class="st">f"{aturan_dipakai}: {tabel[aturan_dipakai]['pernyataan']}"</span>)
+
+
+<span class="fn">print</span>(<span class="st">'Wanita, usia 27'</span>)
+<span class="fn">jelajah</span>(TABEL, [<span class="nm">2</span>, <span class="nm">1</span>])      <span class="cm"># wanita = pilihan 2, 27 &lt; 30 = pilihan 1</span>
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">'Pria, usia 40'</span>)
+<span class="fn">jelajah</span>(TABEL, [<span class="nm">1</span>, <span class="nm">2</span>])      <span class="cm"># pria = pilihan 1, 40 &gt;= 35 = pilihan 2</span></code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>Wanita, usia 27
+Start: Apa jenis kelamin Anda? -&gt; pilihan 2
+R2: Apakah usia Anda kurang dari 30? -&gt; pilihan 1
+C1: Lamaran diterima
+
+Pria, usia 40
+Start: Apa jenis kelamin Anda? -&gt; pilihan 1
+R1: Apakah usia Anda kurang dari 35? -&gt; pilihan 2
+C2: Lamaran ditolak</pre>
+
+                <h3 id="i-kualitas">Memeriksa Kualitas Basis Aturan</h3>
+                <p>Basis aturan yang <em>dapat dijalankan</em> belum tentu <em>baik</em>. Pada RTM III, empat masalah ini harus diperiksa:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Masalah</th><th>Contoh</th><th>Akibat</th></tr></thead>
+                        <tbody>
+                            <tr><td>Bertentangan</td><td><code>IF hujan THEN bawa payung</code><br><code>IF hujan AND angin kencang THEN jangan bawa payung</code></td><td>Pada hujan berangin, dua kesimpulan yang saling meniadakan ikut masuk memori kerja</td></tr>
+                            <tr><td>Tidak terpakai</td><td><code>IF kelembapan &gt; 90 THEN risiko jamur</code>, padahal “kelembapan” tidak pernah ditanyakan dan tidak pernah disimpulkan</td><td>Aturan tidak pernah menyala; menambah beban perawatan</td></tr>
+                            <tr><td>Melingkar</td><td><code>IF A THEN B</code><br><code>IF B THEN A</code></td><td>Backward chaining berputar tanpa akhir bila tidak dijaga: membuktikan A butuh B yang butuh A</td></tr>
+                            <tr><td>Tumpang tindih (redundan)</td><td><code>IF A THEN X</code><br><code>IF A AND B THEN X</code></td><td>Aturan kedua tidak pernah menambah apa pun; kesalahan penulisan sering bersembunyi di sini</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 id="i-ml">Siapa yang Membuat Tabel? Sistem Pakar dan Machine Learning</h3>
+                <p>Tabel inferensi dibuat manusia. Pada AI yang lain, “tabel” itu dibangun lewat <em>training</em> pada data. Keduanya menghasilkan sesuatu yang kemudian dijalankan oleh mesin inferensi; yang berbeda adalah <strong>dari mana pengetahuannya datang</strong>.</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-user-graduate"></i> Sistem pakar</h4>
+                        <ul>
+                            <li>Pakar dan knowledge engineer menuliskan aturan.</li>
+                            <li>Tabel dibuat manusia berdasarkan pengetahuan pakar.</li>
+                            <li>Berubah bila manusia mengubah aturan.</li>
+                        </ul>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-database"></i> Machine learning</h4>
+                        <ul>
+                            <li>Model dibangun lewat <em>training</em> pada data yang tersedia.</li>
+                            <li>Data diproses menjadi “otak” sistem.</li>
+                            <li>Berubah bila data baru dilatihkan.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="flow-row">
+                    <div class="flow-box"><b>Data</b><small>teks, gambar, suara, video, dan lainnya</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box or"><b>Training</b><small>model dilatih dari data</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Inference</b><small>model dipakai pada aplikasi</small></div>
+                </div>
+                <p>Perhatikan kata <em>inference</em>: sama dengan “mesin inferensi” pada sistem pakar. Bedanya, basisnya hasil training, bukan ditulis pakar. Machine learning menjawab kelemahan “kurang fleksibel” sistem pakar, tetapi dengan harga lain: perlu data yang banyak dan sulit dijelaskan. Topiknya akan dipelajari pada pertemuan mendatang (pembelajaran dari data dan pohon keputusan).</p>
+
+                <h3 id="i-kelas">Kegiatan Kelas: Menyusun Basis Aturan Sendiri</h3>
+                <p>Kegiatan ini sekaligus pemanasan untuk RTM III. Sengaja <strong>tidak ada kunci aturannya di halaman ini</strong>: Anda menyusunnya dari sumber tertulis, bukan menyalin.</p>
+                <div class="flow-row">
+                    <div class="flow-box"><b>1 · Susun</b><small>Buat basis aturan untuk mengenali gejala hama tanaman padi (atau bidang lain yang disepakati kelompok).</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>2 · Jalankan maju</b><small>Mulai dari gejala yang diamati, turunkan semua kesimpulan.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box"><b>3 · Jalankan mundur</b><small>Mulai dari satu dugaan hama, buktikan lewat gejala.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>4 · Bandingkan</b><small>Hitung jumlah pertanyaan yang diajukan kepada user pada tiap arah.</small></div>
+                </div>
+                <ul>
+                    <li>Rujukan gejala boleh diambil dari pedoman penyuluhan atau dari Rice Doctor (Bagian 5).</li>
+                    <li>Simpan basis aturan pada <strong>file terpisah</strong> dan tuliskan <strong>pernyataan batas keberlakuannya</strong>.</li>
+                    <li>Yang diharapkan: backward chaining mengajukan <em>lebih sedikit</em> pertanyaan bila dugaannya tepat, sebab hanya menguji aturan yang relevan. Forward chaining menurunkan semua kemungkinan dari gejala yang sudah ada. Tuliskan angkanya.</li>
+                </ul>
+
+                <h3 id="i-ringkas">Rangkuman</h3>
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
+                    <ul style="margin-top:10px;">
+                        <li>Sistem pakar menyimpan <strong>pengetahuan pakar sebagai aturan IF-THEN</strong> dan berdialog dengan user. Ia sempit bidangnya dan memberi saran, bukan keputusan akhir.</li>
+                        <li>Strukturnya enam komponen: <strong>basis pengetahuan, database (memori kerja), mesin inferensi, akuisisi pengetahuan, fasilitas penjelasan, antarmuka</strong>. Basis pengetahuan dan mesin inferensi terpisah.</li>
+                        <li>Penalaran adalah siklus <strong>cocokkan → himpunan konflik → eksekusi → perbarui</strong>, diulang sampai kriteria berhenti. Satu siklus menjalankan satu aturan; aturan yang akibatnya sudah ada tidak diulang.</li>
+                        <li><strong>Forward chaining</strong> berangkat dari data (data-driven, bottom-up); <strong>backward chaining</strong> berangkat dari tujuan (goal-driven, top-down) dan hanya bertanya bila perlu. Aturannya sama, arah penelusurannya berbeda.</li>
+                        <li>Pilih arah dengan <strong>mengamati cara pakar bekerja</strong>: forward untuk planning, monitoring, control; backward untuk diagnosis, debugging.</li>
+                        <li><strong>Conflict resolution</strong> menentukan aturan mana yang dieksekusi bila beberapa terpenuhi; strategi itu bagian dari pengetahuan sistem.</li>
+                        <li>Aturan dipisahkan dari program (<strong>soft-coded</strong>), misalnya sebagai tabel inferensi atau file JSON, sehingga pakar dapat memeriksanya dan program tak perlu diubah.</li>
+                        <li><strong>Fasilitas penjelasan</strong> mencatat aturan yang dipakai (bagaimana, mengapa). <strong>Batas keberlakuan</strong> wajib dinyatakan: pengetahuan siapa, untuk keadaan apa, kapan diperbarui, dan keputusan apa yang tidak boleh diserahkan.</li>
+                    </ul>
+                </div>
+
+                <h3 id="i-latihan">Latihan Mandiri</h3>
+                <p>Kerjakan di kertas terlebih dahulu, lalu periksa dengan simulasi atau kunci jawaban.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Aturan: R1: IF A AND B THEN C; R2: IF C OR D THEN E; R3: IF E THEN F.</strong>
+                            <p>(a) Fakta awal {A, B}: tuliskan memori kerja dan himpunan konflik pada setiap siklus forward chaining. (b) Fakta awal kosong, tujuan F, dan user menjawab “ya” untuk semua pertanyaan: pertanyaan apa saja yang diajukan backward chaining, dan berapa banyak?</p>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>(a) Siklus 1: memori {A, B}, konflik {R1} → C. Siklus 2: {A, B, C}, konflik {R2} → E. Siklus 3: {A, B, C, E}, konflik {R3} → F. Siklus 4: {A, B, C, E, F}, konflik kosong → berhenti.</li>
+                                    <li>(b) <strong>2 pertanyaan</strong>: A dan B. R2 memakai OR dan C sudah terbukti (via R1), sehingga D tidak pernah ditanyakan.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Tambahkan aturan R7: IF harga obligasi naik THEN jual obligasi pada tabel inferensi obligasi.</strong>
+                            <p>Bagian mana yang berubah, dan apakah program penjelajah tabelnya perlu diubah?</p>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>Tambah baris R7 (kondisi: harga obligasi naik; akibat: jual obligasi; berikutnya: C3) dan baris C3 (jual obligasi, berhenti). Baris R1 menunjuk R7, bukan C1.</li>
+                                    <li>Jalur “dolar naik” menjadi R4 → R1 → R7 → C3.</li>
+                                    <li><strong>Program tidak berubah sama sekali</strong>; hanya datanya. Itulah soft-coded.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Pada aturan “IF hujan THEN bawa payung” dan “IF hujan AND angin kencang THEN jangan bawa payung”, masalah kualitas apa yang muncul dan bagaimana memperbaikinya?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <p><strong>Bertentangan</strong>: pada hujan berangin kedua aturan terpenuhi dengan kesimpulan yang saling meniadakan. Perbaikan: (a) ubah aturan pertama menjadi “IF hujan AND tidak angin kencang THEN bawa payung”, atau (b) pertahankan keduanya dan tetapkan strategi conflict resolution “paling spesifik” sehingga aturan kedua menang. Pilihan (a) lebih baik karena kebenarannya terlihat dari aturan itu sendiri, tidak bergantung pada strategi mesin.</p>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Tuliskan tiga aturan IF-THEN untuk bidang yang Anda kuasai.</strong>
+                            <p>Tentukan apakah sistemnya cocok forward atau backward chaining dan alasannya, lalu sebutkan satu kelemahan yang paling mungkin muncul.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <strong>Susun pernyataan batas keberlakuan untuk aturan pada soal 4.</strong>
+                            <p>Jawab empat pertanyaan pada Bagian 4, lalu tuliskan satu keadaan nyata yang membuat sebuah aturan menghasilkan saran keliru <em>meskipun seluruh premisnya terpenuhi</em>.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="i-rtm">Yang Akan Anda Bangun pada RTM III</h3>
+                <p>Setelah konsep, struktur, penalaran, dan contoh di atas, inilah yang diminta dari tugas kelompok pada pertemuan ini: sebuah sistem pakar yang bekerja. Empat bagian ini harus ada.</p>
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>1 · Basis aturan</b><small>Aturan IF-THEN pada file terpisah, misalnya JSON atau YAML.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>2 · Mesin inferensi</b><small>Ditulis sendiri dengan Python: forward dan backward chaining.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>3 · Penjelasan</b><small>Menampilkan rangkaian aturan penghasil kesimpulan.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>4 · Batas keberlakuan</b><small>Pernyataan bahwa keluaran adalah saran, bukan keputusan akhir.</small></div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Ketentuan singkat:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>Kelompok paling banyak 3 orang, dikerjakan Minggu 9 sampai 11, bobot 7%.</li>
+                        <li>Mesin inferensi <strong>wajib ditulis sendiri</strong>; pustaka siap pakai hanya sebagai pembanding hasil.</li>
+                        <li>Tema bebas selama pengetahuannya dapat dinyatakan sebagai aturan: misalnya pertanian, kebencanaan, layanan publik, atau logistik. <strong>Bidang kesehatan manusia tidak dijadikan tema</strong> (alasannya ada di Bagian 5).</li>
+                        <li>Bidang setiap kelompok harus berbeda dan disetujui pengampu paling lambat Minggu 10.</li>
+                    </ul>
+                </div>
+
+                <h3>Persiapan Pertemuan Berikutnya</h3>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-book"></i> Minggu 11 — Penalaran dalam Ketidakpastian:</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Aturan pakar tidak selalu pasti. Aplikasi epilepsi pada Bagian 5 sudah memberi nilai CF pada tiap aturan; itulah yang akan dibahas: <em>certainty factor</em>, probabilitas bersyarat, dan teorema Bayes.</li>
+                        <li>Basis aturan RTM III Anda akan dipakai kembali sebagai bahan latihan pertemuan itu, yaitu diberi derajat keyakinan. Siapkan agar tiap aturan mudah ditunjuk (id yang jelas).</li>
+                        <li>Kuis 2 (Minggu 13) mencakup materi Minggu 9–12.</li>
+                    </ul>
+                </div>
+
+                <h3 id="i-ref">Referensi Utama</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Referensi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 7 (§7.5.4 <em>Forward and backward chaining</em>) dan Bab 9 (§9.3–9.4)</td></tr>
+                        <tr><td>2</td><td>Giarratano, J. C., &amp; Riley, G. D. (2004). <em>Expert Systems: Principles and Programming</em> (4th ed.). Course Technology.</td></tr>
+                        <tr><td>3</td><td>Luger, G. F. (2009). <em>Artificial Intelligence: Structures and Strategies for Complex Problem Solving</em> (6th ed.). Addison-Wesley. — Bab 8: sistem pakar berbasis aturan</td></tr>
+                        <tr><td>4</td><td>Buchanan, B. G., &amp; Shortliffe, E. H. (Eds.). (1984). <em>Rule-Based Expert Systems: The MYCIN Experiments of the Stanford Heuristic Programming Project</em>. Addison-Wesley.</td></tr>
+                        <tr><td>5</td><td>Suyanto. (2014). <em>Artificial Intelligence: Searching, Reasoning, Planning, dan Learning</em> (Edisi Revisi). Informatika.</td></tr>
+                        <tr><td>6</td><td>Lestari, H., Irfan, P., &amp; Azamti, B. N. A. (2026). Development of a Web-Based Poedji Rochjati Score Information System for Early Detection of High-Risk Pregnancy. <em>Science Midwifery</em>, 13(6), 1729–1737.</td></tr>
+                        <tr><td>7</td><td>Materi kuliah “Sistem Pakar (Rule Base | Expert System)” (2022), Teknik Informatika, Fakultas Teknik, Universitas Mataram — sumber urutan materi, contoh obligasi, jaringan fakta–keputusan, tabel inferensi lamaran kerja, dan dialog buah; tabel perbandingan forward–backward chaining di dalamnya bersumber dari javatpoint.com.</td></tr>
+                        <tr><td>8</td><td>NHS England. <em>How NHS 111 online works</em>. <a href="https://www.nhs.uk/nhs-services/urgent-and-emergency-care-services/when-to-use-111/how-nhs-111-online-works/" target="_blank" rel="noopener">nhs.uk</a> — sumber contoh triase gejala.</td></tr>
+                        <tr><td>9</td><td>International Rice Research Institute (IRRI). <em>Rice Doctor</em>. <a href="http://ricedoctor.irri.org" target="_blank" rel="noopener">ricedoctor.irri.org</a> — sumber contoh diagnosis masalah padi.</td></tr>
+                        <tr><td>10</td><td>Apache KIE. <em>Drools</em>. <a href="https://kie.apache.org/drools/" target="_blank" rel="noopener">kie.apache.org/drools</a> — sumber contoh rule engine industri.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script src="pakar-viz.js?v=20261026a"></script>
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Perkecil/perbesar sidebar (desktop), diingat lewat localStorage ----
+        function toggleSidebarCollapse() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('ai-sidebar-collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('ai-sidebar-collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        } catch (e) {}
+
+        // ---- Tombol "Salin kode" untuk blok kode yang bisa dijalankan (pre[data-copy]) ----
+        // navigator.clipboard hanya tersedia di konteks aman (https/localhost); selain itu pakai execCommand.
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok ? Promise.resolve() : Promise.reject(new Error('copy gagal'));
+        }
+        document.querySelectorAll('pre[data-copy]').forEach(pre => {
+            const wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            const head = document.createElement('div');
+            head.className = 'code-head';
+            const icon = /\.py$/.test(pre.dataset.copy) ? 'fa-brands fa-python' : 'fa-solid fa-file-code';
+            head.innerHTML = '<span><i class="' + icon + '"></i>' + pre.dataset.copy + '</span>';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'copy-btn';
+            const label = '<i class="fa-regular fa-copy"></i> Salin kode';
+            btn.innerHTML = label;
+            btn.addEventListener('click', () => {
+                copyText(pre.querySelector('code').textContent).then(() => {
+                    btn.classList.add('done');
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin';
+                }, () => {
+                    btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Gagal, salin manual';
+                }).finally(() => setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = label; }, 2000));
+            });
+            head.appendChild(btn);
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(head);
+            wrap.appendChild(pre);
+        });
+
+        // ---- Daftar isi kecil di dalam bagian: gulir ke subbagian (tanpa mengubah hash) ----
+        document.querySelectorAll('.mini-toc button[data-goto]').forEach(b => {
+            b.addEventListener('click', () => {
+                const t = document.getElementById(b.dataset.goto);
+                if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal materi';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir materi';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>
