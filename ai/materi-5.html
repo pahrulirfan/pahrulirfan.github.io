@@ -982,6 +982,7 @@
                     <button type="button" data-goto="c-skor">Sistem berbasis skor</button>
                     <button type="button" data-goto="c-kspr">Studi kasus penelitian</button>
                     <button type="button" data-goto="c-id">Aplikasi peneliti Indonesia</button>
+                    <button type="button" data-goto="c-web">Tiga aplikasi web</button>
                     <button type="button" data-goto="c-klasik">Sistem klasik</button>
                     <button type="button" data-goto="c-peta">Pemetaan komponen</button>
                 </nav>
@@ -1124,7 +1125,7 @@
                 </div>
                 <div class="warning-box">
                     <strong><i class="fa-solid fa-triangle-exclamation"></i> Mengapa kesehatan manusia bukan tema tugas?</strong>
-                    <p style="margin-top:6px;">Sistem yang menyimpulkan penyakit manusia menuntut pertanggungjawaban di luar cakupan mata kuliah, dan kekeliruannya berakibat langsung pada keselamatan orang. Pelajaran dari MYCIN: mutu sarannya setara dokter spesialis, tetapi sistem itu tidak dipakai rutin di rumah sakit, terutama karena persoalan tanggung jawab hukum. Karena itu contoh bidang kesehatan pada halaman ini (NHS 111, aplikasi paru-paru anak, epilepsi, KSPR) <strong>hanya sebagai ilustrasi</strong>, bukan tema yang boleh diambil.</p>
+                    <p style="margin-top:6px;">Sistem yang menyimpulkan penyakit manusia menuntut pertanggungjawaban di luar cakupan mata kuliah, dan kekeliruannya berakibat langsung pada keselamatan orang. Pelajaran dari MYCIN: mutu sarannya setara dokter spesialis, tetapi sistem itu tidak dipakai rutin di rumah sakit, terutama karena persoalan tanggung jawab hukum. Karena itu contoh bidang kesehatan pada halaman ini (NHS 111, aplikasi paru-paru anak, epilepsi, KSPR, dan tiga aplikasi web pada Bagian 5) <strong>hanya sebagai ilustrasi</strong>, bukan tema yang boleh diambil.</p>
                 </div>
 
                 <h3 id="c-id">Aplikasi Buatan Peneliti Indonesia</h3>
@@ -1163,6 +1164,147 @@
                     </table>
                 </div>
                 <p style="font-size:0.9em;color:#555;">Perhatikan “nilai CF” pada layar 2: <em>certainty factor</em>, ukuran keyakinan pakar terhadap aturan (0 sampai 1). Aturan pakar tidak selalu pasti; itu topik pertemuan berikutnya (ketidakpastian).</p>
+
+                <h3 id="c-web">Tiga Sistem Pakar Web: Antarmuka dan Cara Kerjanya</h3>
+                <p>Tiga aplikasi berikut berasal dari penelitian dan berjalan sebagai situs web. Dari luar ketiganya mirip: user <strong>memilih gejala</strong>, lalu sistem mengembalikan <strong>peringkat kemungkinan</strong> beserta saran. Yang berbeda adalah “otak” di belakang layar: yang pertama memakai <em>certainty factor</em>, yang kedua <em>forward chaining</em> dengan teori Dempster-Shafer, yang ketiga <em>case-based reasoning</em>. Tangkapan layar di bawah memperlihatkan <strong>antarmuka</strong> tiap aplikasi, yaitu bagian yang dilihat user; simulasi di bawahnya memperlihatkan bagaimana angka-angkanya dihitung di balik layar. Simulasi memakai basis pengetahuan dan rumus yang sama dengan aplikasinya, dan hasilnya sudah dicocokkan dengan aplikasi asli.</p>
+
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>TropisCheck</th><th>BabyCheck</th><th>SehatBalita</th></tr></thead>
+                        <tbody>
+                            <tr><td>Masalah</td><td>Penyakit tropis (7 penyakit)</td><td>Penyakit balita (15 penyakit)</td><td>Penyakit balita, dengan rekomendasi pengobatan tradisional dan medis</td></tr>
+                            <tr><td>Masukan user</td><td>Centang dari 28 gejala</td><td>Centang dari 32 gejala</td><td>Pilih dari 15 gejala, lalu tentukan intensitas: Ringan, Sedang, Berat, Parah</td></tr>
+                            <tr><td>Pengetahuan pakar</td><td>59 nilai <em>cf</em> pasangan penyakit–gejala</td><td>44 aturan IF gejala THEN penyakit, masing-masing bernilai <em>certainty</em></td><td>11 kasus lama beserta bobot fuzzy tiap gejala</td></tr>
+                            <tr><td>Inferensi</td><td>Certainty Factor, lalu “DS”</td><td>Forward chaining, lalu Dempster-Shafer</td><td>Case-Based Reasoning dengan fuzzy</td></tr>
+                            <tr><td>Keluaran</td><td>Peringkat 7 penyakit dengan nilai CF dan DS, deskripsi, dan rekomendasi</td><td>5 penyakit teratas dengan tingkat kepercayaan</td><td>Satu kasus terbaik, persentase kecocokan, dan solusi penyakitnya</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>1. TropisCheck: Certainty Factor</h4>
+                <p>Pakar memberi setiap pasangan penyakit–gejala sebuah <em>cf</em> antara 0 dan 1: seberapa kuat gejala itu mengarah ke penyakit tersebut. Inilah basis pengetahuannya. Fakta adalah gejala yang dicentang user. Untuk tiap penyakit, <em>cf</em> semua gejala yang cocok digabung satu per satu.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin:14px 0;">
+                    <figure class="fig" style="margin:0"><img src="img/app-tropis-form.jpg" alt="Layar diagnosa mandiri TropisCheck dengan lima gejala dicentang" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Layar 1 (antarmuka masukan): user mencentang gejala dari daftar 28 gejala; penghitung di bawah menunjukkan 5 gejala dipilih.</figcaption></figure>
+                    <figure class="fig" style="margin:0"><img src="img/app-tropis-hasil.jpg" alt="Halaman hasil TropisCheck: DBD 99,8% CF dan 44,2% DS" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Layar 2 (antarmuka keluaran): penyakit terkuat beserta CF dan DS, deskripsi, rekomendasi, lalu semua kemungkinan penyakit.</figcaption></figure>
+                </div>
+                <div class="rule-box">
+                    <span class="kw">IF</span> demam tinggi mendadak <span class="kw">THEN</span> DBD <span class="kw">(cf 0,80)</span><br>
+                    <span class="kw">IF</span> bintik merah (petekie) di kulit <span class="kw">THEN</span> DBD <span class="kw">(cf 0,80)</span><br>
+                    <span class="kw">IF</span> nyeri sendi hebat <span class="kw">THEN</span> Chikungunya <span class="kw">(cf 0,90)</span>
+                </div>
+                <p>Mulai dari skenario “Demam berdarah: gejala klasik”, lalu klik baris penyakit lain untuk melihat hitungannya. Tambah dan kurangi gejala, dan perhatikan bagaimana CF dan DS bergerak.</p>
+                <div data-viz="app-tropis"></div>
+                <ul>
+                    <li><strong>CF hanya naik.</strong> Tiap gejala yang cocok menambah keyakinan, tetapi tambahannya makin kecil, sehingga CF mendekati 1 tanpa pernah melewatinya. Lima gejala DBD menghasilkan 99,8%.</li>
+                    <li><strong>CF dan DS mengukur hal berbeda.</strong> DBD punya CF 99,8% tetapi DS hanya 44,2%. CF menjawab “seberapa yakin terhadap penyakit ini”; DS di aplikasi ini hanyalah <em>porsi</em> penyakit itu di antara semua kandidat, sehingga seluruhnya berjumlah 100%.</li>
+                    <li><strong>DS di sini disederhanakan.</strong> Rumusnya hanya pembagian jumlah <em>cf</em> dengan totalnya. Aturan kombinasi Dempster yang sebenarnya dipakai aplikasi berikutnya.</li>
+                    <li><strong>Pertanyaan diskusi:</strong> pada skenario pertama, Leptospirosis dan Malaria sama-sama punya DS 13,0%, tetapi CF-nya 76,0% dan 75,0%. Mengapa jumlah <em>cf</em> yang sama bisa menghasilkan CF yang berbeda? (Petunjuk: lihat tabel hitungan keduanya.)</li>
+                </ul>
+
+                <h4>2. BabyCheck: Forward Chaining dan Dempster-Shafer</h4>
+                <p>Basisnya adalah 44 aturan satu premis. Gejala yang dicentang menjadi <strong>fakta</strong>; setiap aturan yang premisnya ada di fakta “menembak” (ini <em>forward chaining</em>: dari data menuju kesimpulan). Aturan yang menunjuk penyakit yang sama lalu digabung dengan aturan kombinasi Dempster pada dua hipotesis: <em>penyakit</em> dan <em>bukan penyakit</em>, dengan massa awal 0,5 untuk masing-masing.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin:14px 0;">
+                    <figure class="fig" style="margin:0"><img src="img/app-balita-form.jpg" alt="Layar diagnosa mandiri BabyCheck dengan tiga gejala dicentang" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Layar 1: user mencentang gejala (demam, batuk, pilek); ada kolom pencarian dan penghitung gejala terpilih.</figcaption></figure>
+                    <figure class="fig" style="margin:0"><img src="img/app-balita-hasil.jpg" alt="Halaman hasil BabyCheck: Pilek 98,82%" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Layar 2: gejala yang dipilih diulang di bagian atas, lalu lima penyakit teratas dengan bar tingkat kepercayaan.</figcaption></figure>
+                </div>
+                <div class="rule-box">
+                    <span class="kw">IF</span> demam <span class="kw">THEN</span> Pilek <span class="kw">(certainty 0,70)</span><br>
+                    <span class="kw">IF</span> batuk <span class="kw">THEN</span> Pilek <span class="kw">(certainty 0,80)</span><br>
+                    <span class="kw">IF</span> pilek <span class="kw">THEN</span> Pilek <span class="kw">(certainty 0,90)</span>
+                </div>
+                <p>Skenario pertama adalah masukan yang sama dengan percobaan pada aplikasinya: demam, batuk, dan pilek. Pilek menempati urutan satu dengan 98,82%.</p>
+                <div data-viz="app-balita"></div>
+                <ul>
+                    <li><strong>Hanya satu lapis.</strong> Kesimpulan satu aturan tidak pernah menjadi premis aturan lain, jadi tidak ada rantai seperti R5 → R2 → R6 pada obligasi. Ini bentuk forward chaining yang paling sederhana.</li>
+                    <li><strong>Mengapa hasilnya cepat naik?</strong> Massa awal 0,5 membuat hasilnya setara dengan mengalikan rasio <em>odds</em> tiap aturan. Tiga aturan Pilek memberi 2,33 × 4 × 9 = 84, sehingga keyakinannya 84/85 = 98,82%.</li>
+                    <li><strong>Yang tidak dipilih tidak dihitung.</strong> Gejala penyakit yang <em>tidak</em> dicentang sama sekali tidak mengurangi keyakinan. Coba “Hanya demam”: lima penyakit berbagi nilai 90% yang persis sama, dan aplikasi tidak punya cara untuk membedakannya.</li>
+                    <li><strong>Pertanyaan diskusi:</strong> Pilek mengalahkan Influenza padahal Influenza punya <em>certainty</em> demam yang lebih tinggi (0,90 lawan 0,70). Apa yang membuat Pilek menang? Apakah itu sesuai pertimbangan pakar yang sebenarnya?</li>
+                </ul>
+
+                <h4>3. SehatBalita: Case-Based Reasoning</h4>
+                <p>Aplikasi ini tidak punya aturan IF-THEN. Pengetahuannya berupa <strong>kasus</strong>: tiap kasus adalah satu kejadian penyakit beserta gejala dan intensitasnya. Kasus baru dicocokkan dengan kasus lama; solusi dari kasus yang paling mirip dipakai ulang. Logika fuzzy dipakai agar tingkat keparahan gejala ikut diperhitungkan, sebab user hampir tidak pernah bisa menjawab “ada” atau “tidak ada” saja.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px;margin:14px 0;">
+                    <figure class="fig" style="margin:0"><img src="img/app-cbr-1-gejala.jpg" alt="SehatBalita langkah 1: memilih gejala" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Langkah 1: memilih gejala; panel kanan merangkum pilihan.</figcaption></figure>
+                    <figure class="fig" style="margin:0"><img src="img/app-cbr-2-intensitas.jpg" alt="SehatBalita langkah 2: menentukan intensitas" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Langkah 2: intensitas tiap gejala (Ringan sampai Parah). Inilah masukan fuzzy.</figcaption></figure>
+                    <figure class="fig" style="margin:0"><img src="img/app-cbr-3-hasil.jpg" alt="SehatBalita langkah 3: hasil Batuk Pilek 49%" loading="lazy" style="display:block;width:100%;height:auto;border-radius:6px"><figcaption>Langkah 3: kasus terbaik, kecocokan, dan rekomendasi pengobatan tradisional dan medis.</figcaption></figure>
+                </div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Intensitas menjadi angka.</strong>
+                            <p>Ringan = 0,3; Sedang = 0,5; Berat = 0,7; Parah = 0,9. Skor fuzzy gejala = (1 − |intensitas − bobot gejala|) × bobot gejala: makin dekat intensitas ke bobot pakar, makin besar skornya.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Bandingkan dengan tiap kasus (retrieve).</strong>
+                            <p>Untuk gejala yang dimiliki kasus, kemiripan = 1 − |intensitas Anda − intensitas kasus|, dirata-ratakan dengan skor fuzzy sebagai bobot. Hasilnya dikalikan (gejala cocok ÷ gejala dipilih) sebagai penalti bagi kasus yang tidak memuat semua gejala Anda.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Ambil yang terbaik, buang yang lemah (reuse).</strong>
+                            <p>Kasus dengan nilai 0,3 atau kurang dibuang. Dari yang tersisa, nilai tertinggi menentukan penyakit, dan solusi penyakit itu (pengobatan tradisional dan medis) ditampilkan apa adanya.</p>
+                        </div>
+                    </div>
+                </div>
+                <p>Skenario pertama mengulang percobaan pada aplikasinya: demam berat, batuk kering sedang, dan pilek ringan. Sistem memilih Kasus 4 (Batuk Pilek) dengan kecocokan 49%.</p>
+                <div data-viz="app-cbr"></div>
+                <ul>
+                    <li><strong>Pengetahuan tanpa aturan.</strong> CBR cocok bila pakar sulit menuliskan aturan tetapi mudah menunjukkan contoh. Konsekuensinya, mutu hasil sangat bergantung pada banyak dan ragam kasus; basis ini hanya berisi 11 kasus.</li>
+                    <li><strong>Berani berkata “belum ada yang cocok”.</strong> Karena ada ambang 0,3, gejala yang aneh tidak dipaksa menjadi diagnosis; sistem menyarankan pemeriksaan medis. Kaitkan dengan batas keberlakuan pada Bagian 4. Coba pilih hanya “Sariawan di mulut”, gejala yang tidak dimiliki kasus mana pun, dan baca pesan yang muncul.</li>
+                    <li><strong>Siklus CBR lengkap.</strong> Teori CBR punya empat tahap: <em>retrieve, reuse, revise, retain</em>. Pada alur yang berjalan, yang terlihat adalah retrieve dan reuse; hasil konsultasi disimpan sebagai sesi, belum menjadi kasus baru. Apa yang harus ditambahkan agar sistem ini belajar dari pemakaiannya?</li>
+                </ul>
+
+                <h4>Membandingkan Ketiganya</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Komponen / aspek</th><th>TropisCheck</th><th>BabyCheck</th><th>SehatBalita</th></tr></thead>
+                        <tbody>
+                            <tr><td>Basis pengetahuan</td><td>Tabel <em>cf</em> penyakit–gejala</td><td>Tabel <em>certainty</em> penyakit–gejala, dibaca sebagai aturan IF-THEN</td><td>Kasus lama dan bobot fuzzy gejala</td></tr>
+                            <tr><td>Fakta (memori kerja)</td><td>Gejala yang dicentang</td><td>Gejala yang dicentang</td><td>Gejala beserta intensitasnya</td></tr>
+                            <tr><td>Mesin inferensi</td><td>Penggabungan CF, normalisasi “DS”</td><td>Forward chaining satu lapis, kombinasi Dempster</td><td>Pencocokan kasus (retrieve, reuse)</td></tr>
+                            <tr><td>Ketidakpastian</td><td><em>cf</em> pakar per pasangan</td><td><em>certainty</em> pakar per aturan, massa penyakit dan bukan penyakit</td><td>Intensitas gejala dan kemiripan kasus</td></tr>
+                            <tr><td>Akuisisi pengetahuan</td><td>Panel admin untuk penyakit, gejala, dan nilai CF</td><td>Panel admin (login) untuk penyakit dan gejala</td><td>Panel admin untuk kasus, gejala, solusi, dan obat</td></tr>
+                            <tr><td>Antarmuka</td><td>Formulir centang, halaman hasil</td><td>Formulir centang, halaman hasil</td><td>Tiga langkah: pilih gejala, tentukan intensitas, lihat hasil</td></tr>
+                            <tr><td>Fasilitas penjelasan</td><td>Ada daftar semua kemungkinan, tetapi tanpa jalur perhitungan</td><td>Hanya deskripsi penyakit</td><td>Tingkat kecocokan dan gejala yang dipilih</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em;color:#555;">Pemetaan ini hasil membaca halaman aplikasi dan kodenya untuk keperluan kuliah. Halaman hasil ketiganya menampilkan angka tanpa memperlihatkan <em>bagaimana</em> angka itu dihitung untuk masukan user (halaman alurnya hanya memberi contoh umum). Itulah yang diperlihatkan simulasi di halaman ini, dan itulah gunanya fasilitas penjelasan (Bagian 4).</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-people-arrows"></i> Kegiatan kelas:</strong>
+                    <div class="algo-steps" style="margin-top:8px;">
+                        <div class="algo-step">
+                            <div class="step-num">1</div>
+                            <div class="step-content">
+                                <strong>Satu gejala, tiga jawaban.</strong>
+                                <p>Pada simulasi, pilih “demam” (BabyCheck) dan “demam tinggi mendadak” (TropisCheck) saja, lalu “demam tinggi” dengan intensitas Berat (SehatBalita). Bandingkan peringkat teratas dan jelaskan mengapa hasilnya berbeda padahal masukannya hampir sama.</p>
+                            </div>
+                        </div>
+                        <div class="algo-step">
+                            <div class="step-num">2</div>
+                            <div class="step-content">
+                                <strong>Tulis ulang sebagai aturan.</strong>
+                                <p>Ambil tiga baris dari tabel <em>cf</em> TropisCheck dan tulis sebagai aturan IF-THEN. Lalu jawab: mengapa SehatBalita <em>tidak</em> bisa ditulis seperti itu?</p>
+                            </div>
+                        </div>
+                        <div class="algo-step">
+                            <div class="step-num">3</div>
+                            <div class="step-content">
+                                <strong>Cari kelemahan.</strong>
+                                <p>Temukan satu masukan yang menghasilkan jawaban yang menurut Anda keliru atau tidak masuk akal pada salah satu aplikasi. Bagian mana dari enam komponen yang paling mudah diperbaiki?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Ilustrasi, bukan tema tugas.</strong>
+                    <p style="margin-top:6px;">Ketiganya bertema kesehatan dan hasilnya hanyalah perkiraan awal. Pakai untuk memahami <em>cara kerja</em> sistem pakar, bukan untuk menilai kondisi siapa pun. Aturan tema tugas RTM III tetap seperti yang dijelaskan pada studi kasus Poedji Rochjati di atas.</p>
+                </div>
 
                 <h3 id="c-klasik">Sistem Pakar Klasik</h3>
                 <p>Sistem pakar berasal dari penelitian AI tahun 1960–1980-an. Tiga yang paling sering disebut:</p>
@@ -1673,7 +1815,7 @@ C2: Lamaran ditolak</pre>
            Pahrul Irfan &amp; Halil Akhyar</p>
     </footer>
 
-    <script src="pakar-viz.js?v=20261026a"></script>
+    <script src="pakar-viz.js?v=20261027a"></script>
     <script>
         function toggleMobileMenu() {
             document.querySelector('.sidebar').classList.toggle('active');
