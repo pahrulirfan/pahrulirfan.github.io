@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 7: Kueri Lanjutan & Transaksi - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        header { background: #0f766e !important; }
+        .sidebar h3 { color: #5eead4 !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #5eead4 !important; }
+        .sidebar ul li a.active { background-color: #0f766e !important; }
+        section h2 { border-bottom: 3px solid #0f766e !important; }
+        th { background: linear-gradient(135deg, #14b8a6 0%, #0f766e 100%) !important; }
+        .badge { background: #0f766e !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #5eead4 !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #0f766e; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #0d5c56; margin-bottom: 15px; }
+        .interactive-demo button {
+            padding: 8px 20px; background: #0f766e; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #0d5c56; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #5eead4; }
+        .terminal .out { color: #8a8f98; }
+
+        /* Diagram transaksi — CSS step boxes */
+        .tx-diagram {
+            background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 18px; margin: 15px 0;
+        }
+        .tx-step {
+            display: flex; align-items: center; gap: 10px; padding: 8px 0;
+            font-family: 'Consolas', monospace; font-size: 0.85em;
+        }
+        .tx-num {
+            background: #0f766e; color: #fff; width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8em; flex-shrink: 0;
+        }
+        .tx-fail .tx-num { background: #dc2626; }
+        .tx-connector { border-left: 2px dashed #0f766e; height: 14px; margin-left: 11px; }
+        .tx-result {
+            margin-top: 10px; padding: 10px 14px; border-radius: 6px; font-size: 0.85em; font-weight: 600;
+        }
+        .tx-result.ok { background: #dcfce7; color: #15803d; }
+        .tx-result.rollback { background: #fef2f2; color: #b91c1c; }
+        .req-mock { border:1px solid #d6dbe4; border-radius:8px; overflow:hidden; margin:12px 0 18px; background:#fff; font-size:0.9em; }
+        .req-cap { padding:6px 14px; background:#eef1f7; color:#64748b; font-size:0.8em; border-bottom:1px solid #e0e5ee; }
+        .req-bar { display:flex; padding:10px 14px; background:#f4f6fa; border-bottom:1px solid #e0e5ee; }
+        .req-method { padding:8px 14px; font-weight:700; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-radius:6px 0 0 6px; }
+        .req-url { flex:1; padding:8px 12px; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-left:none; overflow-x:auto; white-space:nowrap; }
+        .req-send { padding:8px 18px; font-weight:700; color:#fff; background:#ff6c37; border-radius:0 6px 6px 0; }
+        .req-tabs { display:flex; gap:20px; padding:8px 14px 0; border-bottom:1px solid #e0e5ee; color:#64748b; font-size:0.85em; overflow-x:auto; }
+        .req-tabs span { padding-bottom:6px; white-space:nowrap; }
+        .req-tabs .on { color:#0f172a; font-weight:700; border-bottom:2px solid #ff6c37; }
+        .req-pane { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; background:#fafbfd; border-bottom:1px solid #e0e5ee; }
+        .req-res { display:flex; gap:14px; align-items:center; padding:8px 14px; background:#f4f6fa; border-top:1px solid #e0e5ee; border-bottom:1px solid #e0e5ee; font-size:0.85em; color:#475569; }
+        .req-res .st { font-weight:700; }
+        .req-res .s2 { color:#15803d; } .req-res .s4 { color:#b91c1c; } .req-res .s5 { color:#7c2d12; }
+        .req-resbody { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; }
+        .erd {
+            display: flex; align-items: center; justify-content: center; gap: 24px;
+            flex-wrap: wrap; background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 24px; margin: 15px 0;
+        }
+        .erd-entity {
+            background: #fff; border: 2px solid #0f766e; border-radius: 8px; min-width: 160px;
+        }
+        .erd-entity-title {
+            background: #0f766e; color: #fff; padding: 8px 14px; border-radius: 6px 6px 0 0;
+            font-family: 'Consolas', monospace; font-weight: 700; font-size: 0.88em;
+        }
+        .erd-entity-fields { padding: 10px 14px; font-family: 'Consolas', monospace; font-size: 0.8em; color: #444; }
+        .erd-entity-fields div { padding: 2px 0; }
+        .erd-fk { color: #0f766e; font-weight: 600; }
+        .erd-rel {
+            display: flex; flex-direction: column; align-items: center; color: #0f766e;
+            font-family: 'Consolas', monospace; font-size: 0.78em; font-weight: 700;
+        }
+        .erd-rel-arrow { font-size: 1.5em; line-height: 1; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 7: Kueri Lanjutan & Transaksi</h1>
+        <p>Sub-CPMK 4 (bagian 2) &mdash; Minggu 7 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#kueri-lanjutan" class="active">1. Kueri Lanjutan</a></li>
+                <li><a href="#relasi-join">2. Tabel Relasi &amp; JOIN</a></li>
+                <li><a href="#transaksi">3. Transaksi Basis Data</a></li>
+                <li><a href="#seed">4. Data Awal (Seed)</a></li>
+                <li><a href="#dokumentasi">5. Dokumentasi Endpoint</a></li>
+                <li><a href="#praktik">6. Latihan Mandiri</a></li>
+                <li><a href="#cpmk">7. Capaian Pembelajaran</a></li>
+            </ul>
+            <h3>Link Terkait</h3>
+            <ul>
+                <!-- <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-06-orm-skema-migrasi.html">&larr; Pertemuan 6</a></li>
+                <li><a href="materi-09-autentikasi-otorisasi.html">Pertemuan 9 &rarr;</a></li> -->
+                <li><a href="https://www.prisma.io/docs/orm/prisma-client/queries/transactions" target="_blank">Prisma &mdash; Transactions</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <section id="kueri-lanjutan">
+                <h2>1. Kueri Lanjutan: Paginasi, Filter, Pengurutan <span class="badge badge-important">Indikator 4.5</span></h2>
+
+                <p>Kita lanjutkan <code>api-mahasiswa</code> dari Pertemuan 6 yang sudah tersambung ke MySQL. Saat ini <code>GET /mahasiswa</code> mengembalikan <strong>semua</strong> data sekaligus. Untuk ribuan data itu tidak realistis: klien menunggu lama dan boros bandwidth. Kita lengkapi bertahap, dan setiap tahap langsung diuji di Postman: <strong>paginasi, filter, lalu pengurutan</strong>.</p>
+
+                <h3>1.1 Siapkan Data yang Lebih Banyak</h3>
+                <p>Paginasi baru terasa kalau datanya banyak. Struktur tabel <code>mahasiswa</code> tidak berubah dari Pertemuan 6; yang kita tambah hanya barisnya, dari 3 menjadi 25. Buka phpMyAdmin, pilih database <code>api_mahasiswa</code>, tab <strong>SQL</strong>, lalu jalankan:</p>
+<pre><code><span class="keyword">INSERT INTO</span> mahasiswa (nim, nama, ipk, semester)
+<span class="keyword">WITH RECURSIVE</span> n(i) <span class="keyword">AS</span> (<span class="keyword">SELECT</span> 4 <span class="keyword">UNION ALL</span> <span class="keyword">SELECT</span> i + 1 <span class="keyword">FROM</span> n <span class="keyword">WHERE</span> i &lt; 25)
+<span class="keyword">SELECT</span> CONCAT('F1D0210', LPAD(i, 2, '0')),
+       CONCAT(ELT(1 + (i MOD 8), 'Andi', 'Budi', 'Citra', 'Dewi', 'Eko', 'Fitri', 'Gilang', 'Hana'), ' ', i),
+       ROUND(2 + (i MOD 20) / 10, 2),
+       1 + (i MOD 8)
+<span class="keyword">FROM</span> n;</code></pre>
+                <p>Perintah ini membuat 22 mahasiswa sekaligus (id 4&ndash;25) dengan nama, IPK, dan semester yang bervariasi; detailnya tidak perlu dipahami sekarang. Perintah ini membutuhkan MySQL 8 ke atas. Kalau muncul error karena versi, lewati dulu dan buat data yang sama lewat seed di Section 4.</p>
+                <p>Buka tab <strong>Browse</strong> tabel <code>mahasiswa</code>. Seharusnya ada 25 baris, antara lain:</p>
+                <table>
+                    <tr><th>id</th><th>nim</th><th>nama</th><th>ipk</th><th>semester</th></tr>
+                    <tr><td>3</td><td>F1D021003</td><td>Citra</td><td>3.9</td><td>4</td></tr>
+                    <tr><td>4</td><td>F1D021004</td><td>Eko 4</td><td>2.4</td><td>5</td></tr>
+                    <tr><td>5</td><td>F1D021005</td><td>Fitri 5</td><td>2.5</td><td>6</td></tr>
+                    <tr><td>6</td><td>F1D021006</td><td>Gilang 6</td><td>2.6</td><td>7</td></tr>
+                    <tr><td>7</td><td>F1D021007</td><td>Hana 7</td><td>2.7</td><td>8</td></tr>
+                    <tr><td colspan="5">&hellip; sampai id 25</td></tr>
+                </table>
+
+                <h3>1.2 Paginasi</h3>
+                <p>Paginasi artinya membagi data menjadi halaman. Klien menyebut halaman berapa dan berapa data per halaman; server menerjemahkannya menjadi <code>skip</code> (lompati) dan <code>take</code> (ambil):</p>
+                <table>
+                    <tr><th>Query string</th><th>skip</th><th>take</th><th>Hasil</th></tr>
+                    <tr><td><code>?halaman=1&amp;ukuran=5</code></td><td>0</td><td>5</td><td>data ke-1 sampai ke-5</td></tr>
+                    <tr><td><code>?halaman=2&amp;ukuran=5</code></td><td>5</td><td>5</td><td>data ke-6 sampai ke-10</td></tr>
+                    <tr><td><code>?halaman=3&amp;ukuran=5</code></td><td>10</td><td>5</td><td>data ke-11 sampai ke-15</td></tr>
+                </table>
+                <p>Rumusnya <code>skip = (halaman - 1) * ukuran</code>. Klien juga perlu tahu jumlah seluruh data supaya bisa menampilkan &ldquo;halaman 2 dari 5&rdquo;, jadi kita ambil data dan hitung total sekaligus.</p>
+
+                <h4>Langkah 1 &mdash; Lapis data</h4>
+                <p>Di <code>src/data/mahasiswa.data.js</code>, ganti fungsi <code>semua()</code> dengan dua fungsi baru. Fungsi lain tidak berubah.</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">daftar</span>({ <span class="variable">where</span>, <span class="variable">orderBy</span>, <span class="variable">skip</span>, <span class="variable">take</span> }) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>({ <span class="variable">where</span>, <span class="variable">orderBy</span>, <span class="variable">skip</span>, <span class="variable">take</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hitung</span>(<span class="variable">where</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">count</span>({ <span class="variable">where</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariByNim</span>(<span class="variable">nim</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">nim</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>(<span class="variable">input</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">create</span>({ <span class="variable">data</span>: <span class="variable">input</span> });
+}</code></pre>
+                <h4>Langkah 2 &mdash; Lapis service</h4>
+                <p>Ganti fungsi <code>daftarMahasiswa</code> (fungsi <code>detailMahasiswa</code> dan <code>buatMahasiswa</code> tetap):</p>
+<pre><code><span class="comment">// src/services/mahasiswa.service.js — fungsi daftarMahasiswa</span>
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>(<span class="variable">query</span>) {
+    <span class="keyword">const</span> <span class="variable">halaman</span> = <span class="variable">Math</span>.<span class="function">max</span>(<span class="function">Number</span>(<span class="variable">query</span>.<span class="variable">halaman</span>) <span class="operator">||</span> <span class="number">1</span>, <span class="number">1</span>);
+    <span class="keyword">const</span> <span class="variable">ukuran</span> = <span class="variable">Math</span>.<span class="function">min</span>(<span class="variable">Math</span>.<span class="function">max</span>(<span class="function">Number</span>(<span class="variable">query</span>.<span class="variable">ukuran</span>) <span class="operator">||</span> <span class="number">10</span>, <span class="number">1</span>), <span class="number">100</span>);
+
+    <span class="keyword">const</span> [<span class="variable">hasil</span>, <span class="variable">total</span>] = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>([
+        <span class="variable">data</span>.<span class="function">daftar</span>({ <span class="variable">skip</span>: (<span class="variable">halaman</span> - <span class="number">1</span>) * <span class="variable">ukuran</span>, <span class="variable">take</span>: <span class="variable">ukuran</span> }),
+        <span class="variable">data</span>.<span class="function">hitung</span>(),
+    ]);
+
+    <span class="keyword">return</span> {
+        <span class="variable">data</span>: <span class="variable">hasil</span>,
+        <span class="variable">meta</span>: { <span class="variable">halaman</span>, <span class="variable">ukuran</span>, <span class="variable">total</span>, <span class="variable">totalHalaman</span>: <span class="variable">Math</span>.<span class="function">ceil</span>(<span class="variable">total</span> / <span class="variable">ukuran</span>) },
+    };
+}</code></pre>
+                <ul>
+                    <li><code>Math.max(...)</code> dan <code>Math.min(...)</code> merapikan masukan yang tidak masuk akal: <code>?halaman=abc</code> menjadi halaman 1, <code>?ukuran=999</code> dibatasi 100.</li>
+                    <li><code>findMany</code> dan <code>count</code> tidak saling bergantung, jadi dijalankan serentak dengan <code>Promise.all</code> (Pertemuan 3).</li>
+                </ul>
+
+                <h4>Langkah 3 &mdash; Lapis controller</h4>
+                <p>Service sekarang sudah mengembalikan <code>{ data, meta }</code>, jadi controller tinggal meneruskannya:</p>
+<pre><code><span class="comment">// src/controllers/mahasiswa.controller.js</span>
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftar</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="variable">res</span>.<span class="function">json</span>(<span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarMahasiswa</span>(<span class="variable">req</span>.<span class="variable">query</span>));
+}</code></pre>
+                <h4>Uji di Postman</h4>
+                <p>Kirim <code>GET http://localhost:3000/mahasiswa?halaman=2&amp;ukuran=5</code>:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; kolom createdAt tidak ditampilkan agar ringkas)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/mahasiswa?halaman=2&amp;ukuran=5</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": [
+    { "id": 6,  "nim": "F1D021006", "nama": "Gilang 6", "ipk": 2.6, "semester": 7 },
+    { "id": 7,  "nim": "F1D021007", "nama": "Hana 7",   "ipk": 2.7, "semester": 8 },
+    { "id": 8,  "nim": "F1D021008", "nama": "Andi 8",   "ipk": 2.8, "semester": 1 },
+    { "id": 9,  "nim": "F1D021009", "nama": "Budi 9",   "ipk": 2.9, "semester": 2 },
+    { "id": 10, "nim": "F1D021010", "nama": "Citra 10", "ipk": 3,   "semester": 3 }
+  ],
+  "meta": { "halaman": 2, "ukuran": 5, "total": 25, "totalHalaman": 5 }
+}</div></div>
+                <p>Data ke-6 sampai ke-10 muncul, dan <code>meta</code> memberi tahu ada 25 data dalam 5 halaman. Coba juga <code>GET /mahasiswa</code> tanpa parameter: hasilnya 10 data (ukuran bawaan) dengan <code>totalHalaman</code> 3.</p>
+
+                <h3>1.3 Filter</h3>
+                <p>Filter menyaring data dengan syarat. Di Prisma, syaratnya ditulis di <code>where</code>. Beberapa operator yang sering dipakai:</p>
+                <table>
+                    <tr><th>Operator Prisma</th><th>Artinya</th><th>Padanan SQL</th></tr>
+                    <tr><td><code>{ semester: 6 }</code></td><td>sama dengan</td><td><code>semester = 6</code></td></tr>
+                    <tr><td><code>gte</code> / <code>lte</code></td><td>lebih besar sama / lebih kecil sama</td><td><code>&gt;=</code> / <code>&lt;=</code></td></tr>
+                    <tr><td><code>gt</code> / <code>lt</code></td><td>lebih besar / lebih kecil</td><td><code>&gt;</code> / <code>&lt;</code></td></tr>
+                    <tr><td><code>contains</code></td><td>mengandung teks</td><td><code>LIKE '%...%'</code></td></tr>
+                    <tr><td><code>in: [...]</code></td><td>salah satu dari daftar</td><td><code>IN (...)</code></td></tr>
+                </table>
+                <p>Kita dukung tiga filter: <code>semester</code>, <code>ipkMin</code>, dan <code>cari</code> (nama). Di <code>daftarMahasiswa</code>, tambahkan <code>where</code> dan teruskan ke <strong>kedua</strong> pemanggilan data, supaya total ikut terfilter:</p>
+<pre><code><span class="comment">// src/services/mahasiswa.service.js — di dalam daftarMahasiswa, tambahkan where</span>
+<span class="keyword">const</span> { <span class="variable">semester</span>, <span class="variable">ipkMin</span>, <span class="variable">cari</span> } = <span class="variable">query</span>;
+
+<span class="keyword">const</span> <span class="variable">where</span> = {
+    ...(<span class="variable">semester</span> <span class="operator">&amp;&amp;</span> { <span class="variable">semester</span>: <span class="function">Number</span>(<span class="variable">semester</span>) }),
+    ...(<span class="variable">ipkMin</span> <span class="operator">&amp;&amp;</span> { <span class="variable">ipk</span>: { <span class="variable">gte</span>: <span class="function">Number</span>(<span class="variable">ipkMin</span>) } }),
+    ...(<span class="variable">cari</span> <span class="operator">&amp;&amp;</span> { <span class="variable">nama</span>: { <span class="variable">contains</span>: <span class="variable">cari</span> } }),
+};
+
+<span class="keyword">const</span> [<span class="variable">hasil</span>, <span class="variable">total</span>] = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>([
+    <span class="variable">data</span>.<span class="function">daftar</span>({ <span class="variable">where</span>, <span class="variable">skip</span>: (<span class="variable">halaman</span> - <span class="number">1</span>) * <span class="variable">ukuran</span>, <span class="variable">take</span>: <span class="variable">ukuran</span> }),
+    <span class="variable">data</span>.<span class="function">hitung</span>(<span class="variable">where</span>),                                  <span class="comment">// hitung dengan filter yang sama</span>
+]);</code></pre>
+                <p>Pola <code>...(kondisi &amp;&amp; { field })</code> adalah spread bersyarat (Pertemuan 2): kalau parameter tidak dikirim, yang disebar adalah nilai kosong sehingga field itu tidak ikut masuk ke <code>where</code>. Dengan begitu tidak perlu banyak <code>if</code>.</p>
+                <div class="info-box">
+                    <strong>Huruf besar atau kecil?</strong> Di MySQL, pencarian teks dengan collation bawaan (<code>utf8mb4_unicode_ci</code>) sudah tidak membedakan huruf besar/kecil, jadi <code>?cari=AN</code> dan <code>?cari=an</code> sama saja. Opsi <code>mode: 'insensitive'</code> yang ada di banyak tutorial hanya untuk PostgreSQL dan tidak dipakai di MySQL.
+                </div>
+
+                <h4>Uji di Postman</h4>
+                <table>
+                    <tr><th>Permintaan</th><th>Hasil</th></tr>
+                    <tr><td><code>GET /mahasiswa?semester=6&amp;ipkMin=3.5</code></td><td>1 data: Andi (IPK 3.75). <code>meta.total</code> = 1</td></tr>
+                    <tr><td><code>GET /mahasiswa?cari=an</code></td><td>10 data yang namanya mengandung &ldquo;an&rdquo; (Andi, Gilang, Hana, &hellip;). <code>meta.total</code> = 10</td></tr>
+                    <tr><td><code>GET /mahasiswa?cari=AN</code></td><td>Sama persis dengan <code>?cari=an</code></td></tr>
+                </table>
+
+                <h3>1.4 Pengurutan</h3>
+                <p>Pengurutan memakai <code>orderBy</code>: nama kolom dan arahnya (<code>asc</code> naik, <code>desc</code> turun). Klien menyebut kolom lewat <code>?urutkan=ipk&amp;arah=desc</code>.</p>
+                <p>Ada satu hal yang perlu diwaspadai: nama kolom datang dari pengguna. Kalau langsung dipakai, <code>?urutkan=password</code> atau salah ketik akan membuat Prisma melempar error aneh (500). Karena itu kita hanya mengizinkan kolom dari daftar yang kita tentukan. Berikut bentuk akhir bagian atas service (menggabungkan paginasi, filter, dan pengurutan):</p>
+<pre><code><span class="comment">// src/services/mahasiswa.service.js — bagian atas file (sisanya tidak berubah)</span>
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">KOLOM_URUT</span> = [<span class="string">'nama'</span>, <span class="string">'nim'</span>, <span class="string">'ipk'</span>, <span class="string">'semester'</span>, <span class="string">'createdAt'</span>];
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>(<span class="variable">query</span>) {
+    <span class="keyword">const</span> { <span class="variable">semester</span>, <span class="variable">ipkMin</span>, <span class="variable">cari</span>, <span class="variable">urutkan</span> = <span class="string">'nama'</span>, <span class="variable">arah</span> = <span class="string">'asc'</span> } = <span class="variable">query</span>;
+    <span class="keyword">const</span> <span class="variable">halaman</span> = <span class="variable">Math</span>.<span class="function">max</span>(<span class="function">Number</span>(<span class="variable">query</span>.<span class="variable">halaman</span>) <span class="operator">||</span> <span class="number">1</span>, <span class="number">1</span>);
+    <span class="keyword">const</span> <span class="variable">ukuran</span> = <span class="variable">Math</span>.<span class="function">min</span>(<span class="variable">Math</span>.<span class="function">max</span>(<span class="function">Number</span>(<span class="variable">query</span>.<span class="variable">ukuran</span>) <span class="operator">||</span> <span class="number">10</span>, <span class="number">1</span>), <span class="number">100</span>);
+
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">KOLOM_URUT</span>.<span class="function">includes</span>(<span class="variable">urutkan</span>)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">400</span>, <span class="string">`urutkan harus salah satu dari: ${KOLOM_URUT.join(', ')}`</span>, <span class="string">'QUERY_TIDAK_VALID'</span>);
+    }
+
+    <span class="keyword">const</span> <span class="variable">where</span> = {
+        ...(<span class="variable">semester</span> <span class="operator">&amp;&amp;</span> { <span class="variable">semester</span>: <span class="function">Number</span>(<span class="variable">semester</span>) }),
+        ...(<span class="variable">ipkMin</span> <span class="operator">&amp;&amp;</span> { <span class="variable">ipk</span>: { <span class="variable">gte</span>: <span class="function">Number</span>(<span class="variable">ipkMin</span>) } }),
+        ...(<span class="variable">cari</span> <span class="operator">&amp;&amp;</span> { <span class="variable">nama</span>: { <span class="variable">contains</span>: <span class="variable">cari</span> } }),
+    };
+
+    <span class="keyword">const</span> [<span class="variable">hasil</span>, <span class="variable">total</span>] = <span class="keyword">await</span> <span class="variable">Promise</span>.<span class="function">all</span>([
+        <span class="variable">data</span>.<span class="function">daftar</span>({
+            <span class="variable">where</span>,
+            <span class="variable">orderBy</span>: { [<span class="variable">urutkan</span>]: <span class="variable">arah</span> <span class="operator">===</span> <span class="string">'desc'</span> ? <span class="string">'desc'</span> : <span class="string">'asc'</span> },
+            <span class="variable">skip</span>: (<span class="variable">halaman</span> - <span class="number">1</span>) * <span class="variable">ukuran</span>,
+            <span class="variable">take</span>: <span class="variable">ukuran</span>,
+        }),
+        <span class="variable">data</span>.<span class="function">hitung</span>(<span class="variable">where</span>),
+    ]);
+
+    <span class="keyword">return</span> {
+        <span class="variable">data</span>: <span class="variable">hasil</span>,
+        <span class="variable">meta</span>: { <span class="variable">halaman</span>, <span class="variable">ukuran</span>, <span class="variable">total</span>, <span class="variable">totalHalaman</span>: <span class="variable">Math</span>.<span class="function">ceil</span>(<span class="variable">total</span> / <span class="variable">ukuran</span>) },
+    };
+}</code></pre>
+                <h4>Uji di Postman</h4>
+                <p><code>GET /mahasiswa?urutkan=ipk&amp;arah=desc&amp;ukuran=5</code> menampilkan 5 mahasiswa dengan IPK tertinggi: Dewi 19 dan Citra (3.9), Citra 18 (3.8), Andi (3.75), Budi 17 (3.7). Urutan sesama IPK yang sama (3.9) tidak dijamin tetap.</p>
+                <p>Lalu coba kolom yang tidak diizinkan, <code>GET /mahasiswa?urutkan=password</code>:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/mahasiswa?urutkan=password</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">400 Bad Request</span></div><div class="req-resbody">{
+  "error": {
+    "pesan": "urutkan harus salah satu dari: nama, nim, ipk, semester, createdAt",
+    "kode": "QUERY_TIDAK_VALID"
+  }
+}</div></div>
+                <h3>1.5 Menggabungkan Ketiganya</h3>
+                <p>Ketiga kemampuan itu bisa dipakai bersamaan. <code>GET /mahasiswa?halaman=1&amp;ukuran=5&amp;semester=6&amp;urutkan=ipk&amp;arah=desc</code> berarti &ldquo;mahasiswa semester 6, IPK tertinggi dulu, 5 data per halaman&rdquo;. Hasilnya, berurutan: Andi (3.75), Fitri 13 (3.3), Budi (3.2), Fitri 5 (2.5), Fitri 21 (2.1), dengan <code>meta.total</code> = 5.</p>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Susun Kueri</h5>
+                    <button onclick="demoKueri('paginasi')">?halaman=2&ukuran=5</button>
+                    <button onclick="demoKueri('filter')">?semester=6&ipkMin=3.5</button>
+                    <button onclick="demoKueri('urut')">?urutkan=ipk&arah=desc</button>
+                    <button onclick="demoKueri('gabung')">Gabungan ketiganya</button>
+                    <div class="console-output" id="demo1-out">Klik salah satu tombol...</div>
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> <code>GET /mahasiswa</code> mendukung paginasi, filter, dan pengurutan sekaligus, dan semuanya sudah kalian coba di Postman.
+                </div>
+            </section>
+
+            <section id="relasi-join">
+                <h2>2. Tabel Relasi dan JOIN <span class="badge badge-important">Indikator 4.5</span></h2>
+
+                <p>Mahasiswa bisa mendaftar ke kelas. Satu mahasiswa mengikuti banyak kelas, satu kelas diikuti banyak mahasiswa: relasi banyak-ke-banyak dari Pertemuan 6 (Section 3.2), dengan tabel penghubung <code>pendaftaran</code>. Di section ini kita membuat tabelnya, mengisinya, lalu menampilkan pendaftaran <strong>beserta</strong> data mahasiswa dan kelasnya (inilah JOIN).</p>
+
+                <h3>2.1 Rencana: Tabel yang Akan Dibuat</h3>
+                <div class="erd">
+                    <div class="erd-entity">
+                        <div class="erd-entity-title">mahasiswa</div>
+                        <div class="erd-entity-fields">
+                            <div>id <span class="erd-fk">PK</span></div>
+                            <div>nim</div>
+                            <div>nama</div>
+                            <div>&hellip;</div>
+                        </div>
+                    </div>
+                    <div class="erd-rel"><div>1</div><div class="erd-rel-arrow">&rarr;</div><div>N</div></div>
+                    <div class="erd-entity">
+                        <div class="erd-entity-title">pendaftaran</div>
+                        <div class="erd-entity-fields">
+                            <div>id <span class="erd-fk">PK</span></div>
+                            <div>mahasiswaId <span class="erd-fk">FK</span></div>
+                            <div>kelasId <span class="erd-fk">FK</span></div>
+                            <div>tanggalDaftar</div>
+                        </div>
+                    </div>
+                    <div class="erd-rel"><div>N</div><div class="erd-rel-arrow">&larr;</div><div>1</div></div>
+                    <div class="erd-entity">
+                        <div class="erd-entity-title">kelas</div>
+                        <div class="erd-entity-fields">
+                            <div>id <span class="erd-fk">PK</span></div>
+                            <div>nama</div>
+                            <div>kuota</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p>Dua tabel baru. Tabel <code>mahasiswa</code> sudah ada.</p>
+                <table>
+                    <tr><th>Tabel</th><th>Kolom</th><th>Tipe di MySQL</th><th>Aturan</th></tr>
+                    <tr><td rowspan="3"><code>kelas</code></td><td><code>id</code></td><td><code>INT</code></td><td>primary key, naik otomatis</td></tr>
+                    <tr><td><code>nama</code></td><td><code>VARCHAR(191)</code></td><td>wajib</td></tr>
+                    <tr><td><code>kuota</code></td><td><code>INT</code></td><td>sisa tempat, bawaan 30</td></tr>
+                    <tr><td rowspan="4"><code>pendaftaran</code></td><td><code>id</code></td><td><code>INT</code></td><td>primary key, naik otomatis</td></tr>
+                    <tr><td><code>mahasiswaId</code></td><td><code>INT</code></td><td>foreign key ke <code>mahasiswa.id</code></td></tr>
+                    <tr><td><code>kelasId</code></td><td><code>INT</code></td><td>foreign key ke <code>kelas.id</code></td></tr>
+                    <tr><td><code>tanggalDaftar</code></td><td><code>DATETIME(3)</code></td><td>diisi otomatis saat baris dibuat</td></tr>
+                </table>
+                <p>Satu aturan tambahan pada <code>pendaftaran</code>: pasangan (<code>mahasiswaId</code>, <code>kelasId</code>) harus unik, supaya satu mahasiswa tidak bisa mendaftar dua kali di kelas yang sama.</p>
+
+                <p>Data yang akan kita isi:</p>
+                <table>
+                    <tr><th>kelas.id</th><th>nama</th><th>kuota</th></tr>
+                    <tr><td>1</td><td>Pemrograman Web Lanjut</td><td>28</td></tr>
+                    <tr><td>2</td><td>Basis Data</td><td>1</td></tr>
+                </table>
+                <table>
+                    <tr><th>pendaftaran.id</th><th>mahasiswaId</th><th>kelasId</th></tr>
+                    <tr><td>1</td><td>1 (Andi)</td><td>1 (PWL)</td></tr>
+                    <tr><td>2</td><td>2 (Budi)</td><td>1 (PWL)</td></tr>
+                </table>
+                <p>Kelas PWL berkapasitas 30 dan sudah punya 2 pendaftar, jadi kuota tersisa 28. Kelas Basis Data sengaja berkuota 1 agar mudah diuji saat kuota penuh di Section 3.</p>
+
+                <h3>2.2 Tulis Skema dan Jalankan Migrasi</h3>
+                <p>Di <code>prisma/schema.prisma</code>, tambahkan satu baris pada model <code>Mahasiswa</code> dan dua model baru:</p>
+<pre><code><span class=<span class="string">"keyword"</span>>model</span> Mahasiswa {
+<span class="comment">  // ...field yang sudah ada tidak berubah, tambahkan SATU baris ini:</span>
+  pendaftaran Pendaftaran[]
+
+  <span class="function">@@map</span>(<span class="string">"mahasiswa"</span>)
+}
+
+<span class=<span class="string">"keyword"</span>>model</span> Kelas {
+  id    Int    <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  nama  String
+  kuota Int    <span class="function">@default</span>(30)
+
+  pendaftaran Pendaftaran[]
+
+  <span class="function">@@map</span>(<span class="string">"kelas"</span>)
+}
+
+<span class=<span class="string">"keyword"</span>>model</span> Pendaftaran {
+  id            Int      <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  mahasiswaId   Int
+  kelasId       Int
+  tanggalDaftar DateTime <span class="function">@default</span>(now())
+
+  mahasiswa Mahasiswa <span class="function">@relation</span>(fields: [mahasiswaId], references: [id])
+  kelas     Kelas     <span class="function">@relation</span>(fields: [kelasId], references: [id])
+
+  <span class="function">@@unique</span>([mahasiswaId, kelasId])
+  <span class="function">@@map</span>(<span class="string">"pendaftaran"</span>)
+}</code></pre>
+                <p><code>@relation(fields: [mahasiswaId], references: [id])</code> artinya &ldquo;kolom <code>mahasiswaId</code> menunjuk ke <code>id</code> di tabel <code>mahasiswa</code>&rdquo; (foreign key). Baris <code>pendaftaran Pendaftaran[]</code> di sisi lain hanyalah penanda &ldquo;satu mahasiswa punya banyak pendaftaran&rdquo;; ia tidak membuat kolom baru. <code>@@unique([mahasiswaId, kelasId])</code> adalah aturan pasangan unik tadi.</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name tambah_kelas_pendaftaran
+<span class="out">Applying migration `20261028224520_tambah_kelas_pendaftaran`</span>
+
+<span class="out">The following migration(s) have been created and applied from new schema changes:</span>
+
+<span class="out">prisma/migrations/</span>
+<span class="out">  └─ 20261028224520_tambah_kelas_pendaftaran/</span>
+<span class="out">    └─ migration.sql</span>
+
+<span class="out">Your database is now in sync with your schema.</span>
+
+<span class="prompt">$</span> npx prisma generate</div>
+                <p>Isi <code>migration.sql</code> yang dibuat Prisma (SQL biasa; perhatikan dua <code>FOREIGN KEY</code>):</p>
+<pre><code><span class="comment">-- CreateTable</span>
+<span class="keyword">CREATE TABLE</span> `kelas` (
+    `id` INTEGER <span class="keyword">NOT NULL</span> <span class="keyword">AUTO_INCREMENT</span>,
+    `nama` VARCHAR(191) <span class="keyword">NOT NULL</span>,
+    `kuota` INTEGER <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> 30,
+
+    <span class="keyword">PRIMARY KEY</span> (`id`)
+) <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER SET</span> utf8mb4 <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;
+
+<span class="comment">-- CreateTable</span>
+<span class="keyword">CREATE TABLE</span> `pendaftaran` (
+    `id` INTEGER <span class="keyword">NOT NULL</span> <span class="keyword">AUTO_INCREMENT</span>,
+    `mahasiswaId` INTEGER <span class="keyword">NOT NULL</span>,
+    `kelasId` INTEGER <span class="keyword">NOT NULL</span>,
+    `tanggalDaftar` DATETIME(3) <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> CURRENT_TIMESTAMP(3),
+
+    <span class="keyword">UNIQUE INDEX</span> `pendaftaran_mahasiswaId_kelasId_key`(`mahasiswaId`, `kelasId`),
+    <span class="keyword">PRIMARY KEY</span> (`id`)
+) <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER SET</span> utf8mb4 <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;
+
+<span class="comment">-- AddForeignKey</span>
+<span class="keyword">ALTER TABLE</span> `pendaftaran` <span class="keyword">ADD CONSTRAINT</span> `pendaftaran_mahasiswaId_fkey` <span class="keyword">FOREIGN KEY</span> (`mahasiswaId`) <span class="keyword">REFERENCES</span> `mahasiswa`(`id`) <span class="keyword">ON DELETE</span> <span class="keyword">RESTRICT</span> <span class="keyword">ON UPDATE</span> <span class="keyword">CASCADE</span>;
+
+<span class="comment">-- AddForeignKey</span>
+<span class="keyword">ALTER TABLE</span> `pendaftaran` <span class="keyword">ADD CONSTRAINT</span> `pendaftaran_kelasId_fkey` <span class="keyword">FOREIGN KEY</span> (`kelasId`) <span class="keyword">REFERENCES</span> `kelas`(`id`) <span class="keyword">ON DELETE</span> <span class="keyword">RESTRICT</span> <span class="keyword">ON UPDATE</span> <span class="keyword">CASCADE</span>;</code></pre>
+                <p>Buka phpMyAdmin, muat ulang. Database <code>api_mahasiswa</code> kini punya tabel <code>kelas</code> dan <code>pendaftaran</code>. Cek tab <strong>Structure</strong> keduanya dan cocokkan dengan tabel rencana di 2.1.</p>
+
+                <h3>2.3 Isi Data di phpMyAdmin</h3>
+                <p>Tab <strong>SQL</strong>, jalankan:</p>
+<pre><code><span class="keyword">INSERT INTO</span> kelas (nama, kuota) <span class="keyword">VALUES</span>
+('Pemrograman Web Lanjut', 28),
+('Basis Data', 1);
+
+<span class="keyword">INSERT INTO</span> pendaftaran (mahasiswaId, kelasId) <span class="keyword">VALUES</span>
+(1, 1),
+(2, 1);</code></pre>
+                <p>Buka tab <strong>Browse</strong> masing-masing tabel dan pastikan isinya sama dengan tabel data di 2.1.</p>
+
+                <h3>2.4 Menampilkan Pendaftaran Beserta Mahasiswa dan Kelasnya (JOIN)</h3>
+                <p>Tabel <code>pendaftaran</code> sendiri hanya berisi angka (<code>mahasiswaId: 1</code>, <code>kelasId: 1</code>), tidak enak dibaca. Untuk menampilkan nama mahasiswa dan nama kelas, data tiga tabel perlu digabung. Operasi itu bernama <strong>JOIN</strong>. Di SQL mentah ditulis begini:</p>
+<pre><code><span class="keyword">SELECT</span> p.id, m.nama <span class="keyword">AS</span> mahasiswa, k.nama <span class="keyword">AS</span> kelas
+<span class="keyword">FROM</span> pendaftaran p
+<span class="keyword">JOIN</span> mahasiswa m <span class="keyword">ON</span> m.id = p.mahasiswaId
+<span class="keyword">JOIN</span> kelas k <span class="keyword">ON</span> k.id = p.kelasId;</code></pre>
+                <p>Di Prisma kita tidak menulis JOIN. Cukup menyebut relasi mana yang ikut dibawa lewat <code>include</code>. Buat empat file kecil (pola yang sama dengan <code>mahasiswa</code>):</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">semua</span>() {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">findMany</span>({
+        <span class="variable">include</span>: { <span class="variable">mahasiswa</span>: <span class="variable">true</span>, <span class="variable">kelas</span>: <span class="variable">true</span> },
+    });
+}</code></pre>
+<pre><code><span class="comment">// src/services/pendaftaran.service.js</span>
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/pendaftaran.data.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarPendaftaran</span>() {
+    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">semua</span>();
+}</code></pre><pre><code><span class="comment">// src/controllers/pendaftaran.controller.js</span>
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">service</span> <span class="keyword">from</span> <span class="string">'../services/pendaftaran.service.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftar</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarPendaftaran</span>();
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
+}</code></pre><pre><code><span class="comment">// src/routes/pendaftaran.routes.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">ctrl</span> <span class="keyword">from</span> <span class="string">'../controllers/pendaftaran.controller.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="variable">ctrl</span>.<span class="variable">daftar</span>);
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
+                <p>Lalu pasang router di <code>index.js</code>, di bawah router mahasiswa:</p>
+<pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">pendaftaranRoutes</span> <span class="keyword">from</span> <span class="string">'./src/routes/pendaftaran.routes.js'</span>;
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/pendaftaran'</span>, <span class="variable">pendaftaranRoutes</span>);   <span class="comment">// ← baru</span></code></pre>
+                <h4>Uji di Postman</h4>
+                <p><code>GET http://localhost:3000/pendaftaran</code>. Setiap pendaftaran kini membawa objek <code>mahasiswa</code> dan <code>kelas</code>:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; sebagian field dipotong dengan ...)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/pendaftaran</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": [
+    {
+      "id": 1, "mahasiswaId": 1, "kelasId": 1,
+      "tanggalDaftar": "2026-10-29T06:45:29.951Z",
+      "mahasiswa": { "id": 1, "nim": "F1D021001", "nama": "Andi", "ipk": 3.75, "semester": 6, ... },
+      "kelas":     { "id": 1, "nama": "Pemrograman Web Lanjut", "kuota": 28 }
+    },
+    { "id": 2, ... "mahasiswa": { ... "nama": "Budi", ... }, "kelas": { ... } }
+  ]
+}</div></div>
+                <p><code>include</code> membawa <strong>semua kolom</strong> tabel relasinya. Kalau hanya butuh sebagian kolom, pakai <code>select</code>:</p>
+<pre><code><span class="comment">// select — pilih kolom tertentu saja, juga di dalam relasi</span>
+<span class="keyword">const</span> <span class="variable">ringkas</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">findMany</span>({
+    <span class="variable">select</span>: {
+        <span class="variable">tanggalDaftar</span>: <span class="variable">true</span>,
+        <span class="variable">mahasiswa</span>: { <span class="variable">select</span>: { <span class="variable">nim</span>: <span class="variable">true</span>, <span class="variable">nama</span>: <span class="variable">true</span> } },
+        <span class="variable">kelas</span>: { <span class="variable">select</span>: { <span class="variable">nama</span>: <span class="variable">true</span> } },
+    },
+});</code></pre>
+                <h4>Berapa kueri yang dijalankan?</h4>
+                <p>Kita bisa melihat SQL yang dikirim Prisma. Sementara, ubah <code>src/lib/prisma.js</code> menjadi <code>new PrismaClient({ adapter, log: ['query'] })</code>, kirim ulang <code>GET /pendaftaran</code>, lalu lihat terminal server (ditulis ringkas):</p>
+<div class="terminal"><span class="out">prisma:query SELECT ... FROM `pendaftaran` WHERE 1=1</span>
+<span class="out">prisma:query SELECT ... FROM `kelas` WHERE `kelas`.`id` IN (?,?)</span>
+<span class="out">prisma:query SELECT ... FROM `mahasiswa` WHERE `mahasiswa`.`id` IN (?,?)</span>
+<span class="out">GET /pendaftaran -&gt; 200 (79 ms)</span></div>
+                <p>Tiga kueri: satu untuk pendaftaran, satu untuk semua kelas yang terkait, satu untuk semua mahasiswa yang terkait. Jumlahnya <strong>tetap tiga</strong> berapa pun banyak pendaftarannya. Bandingkan dengan cara yang sering dilakukan pemula:</p>
+<pre><code><span class="comment">// ❌ 1 kueri untuk daftar, lalu 1 kueri LAGI untuk setiap pendaftaran</span>
+<span class="keyword">const</span> <span class="variable">daftar</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">findMany</span>();
+<span class="variable">for</span> (<span class="keyword">const</span> <span class="variable">p</span> <span class="variable">of</span> <span class="variable">daftar</span>) {
+    <span class="variable">p</span>.<span class="variable">mahasiswa</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span>: <span class="variable">p</span>.<span class="variable">mahasiswaId</span> } });
+}
+<span class="comment">// 100 pendaftaran → 101 kueri ke database</span>
+
+<span class="comment">// ✅ Tetap 3 kueri, berapa pun jumlah barisnya</span>
+<span class="keyword">const</span> <span class="variable">daftar2</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">findMany</span>({
+    <span class="variable">include</span>: { <span class="variable">mahasiswa</span>: <span class="variable">true</span>, <span class="variable">kelas</span>: <span class="variable">true</span> },
+});</code></pre>
+                <p>Versi pertama disebut <strong>masalah N+1</strong>: satu kueri untuk daftar, ditambah satu kueri untuk setiap barisnya. Dengan 10 baris terasa sama cepat, tetapi dengan ribuan baris endpoint bisa menunggu berdetik-detik. Gejalanya khas: <code>await prisma...</code> di dalam <code>for</code> atau <code>map</code>. Begitu melihatnya, cari cara membawanya keluar dengan <code>include</code> atau <code>select</code>. Kembalikan <code>src/lib/prisma.js</code> seperti semula setelah selesai melihat log.</p>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> tabel <code>kelas</code> dan <code>pendaftaran</code> ada dan berisi data, dan <code>GET /pendaftaran</code> menampilkan nama mahasiswa dan nama kelas dalam satu respons.
+                </div>
+            </section>
+
+            <section id="transaksi">
+                <h2>3. Transaksi Basis Data <span class="badge badge-important">Indikator 4.6</span></h2>
+
+                <p>Sekarang kita buat endpoint untuk mendaftar kelas. Satu pendaftaran berarti dua langkah: (1) buat baris di tabel <code>pendaftaran</code>, (2) kurangi <code>kuota</code> kelas sebanyak 1. Kalau langkah kedua gagal <strong>setelah</strong> langkah pertama berhasil, data jadi tidak konsisten: mahasiswa tercatat mendaftar, tetapi kuota tidak berkurang.</p>
+
+                <h3>3.1 Tanpa Transaksi dan Dengan Transaksi</h3>
+                <div class="tx-diagram">
+                    <div class="tx-step"><div class="tx-num">1</div> INSERT INTO pendaftaran ... &mdash; <strong>berhasil</strong></div>
+                    <div class="tx-connector"></div>
+                    <div class="tx-step tx-fail"><div class="tx-num">2</div> UPDATE kelas SET kuota = kuota - 1 ... &mdash; <strong>gagal</strong> (koneksi putus)</div>
+                    <div class="tx-result rollback">❌ Tanpa transaksi: mahasiswa tercatat daftar, tapi kuota TIDAK berkurang. Data tidak konsisten</div>
+                </div>
+                <div class="tx-diagram">
+                    <div class="tx-step"><div class="tx-num">1</div> BEGIN TRANSACTION</div>
+                    <div class="tx-connector"></div>
+                    <div class="tx-step"><div class="tx-num">2</div> INSERT INTO pendaftaran ... &mdash; berhasil</div>
+                    <div class="tx-connector"></div>
+                    <div class="tx-step tx-fail"><div class="tx-num">3</div> UPDATE kelas SET kuota = kuota - 1 ... &mdash; gagal</div>
+                    <div class="tx-result ok">✅ Dengan transaksi: SELURUH transaksi di-ROLLBACK. Langkah 2 ikut dibatalkan, database kembali seperti semula</div>
+                </div>
+                <p>Aturan sederhananya: setiap kali operasi menyentuh <strong>lebih dari satu tabel</strong> dan semuanya harus berhasil bersama-sama (atau gagal bersama-sama), bungkus dengan transaksi. Di Prisma namanya <code>$transaction</code>.</p>
+
+                <h3>3.2 Praktik: Endpoint Mendaftar Kelas</h3>
+                <p>Endpoint-nya <code>POST /pendaftaran</code> dengan body <code>{ "mahasiswaId": 3, "kelasId": 1 }</code>. Urutan kerja di dalam transaksi:</p>
+                <ol>
+                    <li>Pastikan mahasiswanya ada (kalau tidak: 404).</li>
+                    <li>Pastikan kelasnya ada (kalau tidak: 404) dan kuotanya masih lebih dari 0 (kalau tidak: 409).</li>
+                    <li>Buat baris <code>pendaftaran</code>.</li>
+                    <li>Kurangi kuota kelas 1.</li>
+                </ol>
+
+                <h4>Langkah 1 &mdash; Validasi masukan</h4>
+                <p>Bentuk body diperiksa Joi, seperti di Pertemuan 5:</p>
+<pre><code><span class="keyword">import</span> <span class="variable">Joi</span> <span class="keyword">from</span> <span class="string">'joi'</span>;
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">skemaPendaftaran</span> = <span class="variable">Joi</span>.<span class="function">object</span>({
+    <span class="variable">mahasiswaId</span>: <span class="variable">Joi</span>.<span class="function">number</span>().<span class="function">integer</span>().<span class="function">positive</span>().<span class="function">required</span>(),
+    <span class="variable">kelasId</span>:     <span class="variable">Joi</span>.<span class="function">number</span>().<span class="function">integer</span>().<span class="function">positive</span>().<span class="function">required</span>()
+});</code></pre>
+                <h4>Langkah 2 &mdash; Service dengan transaksi</h4>
+                <p>Ubah <code>src/services/pendaftaran.service.js</code> (fungsi <code>daftarPendaftaran</code> tetap, tambahkan <code>daftarKelas</code>):</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/pendaftaran.data.js'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarPendaftaran</span>() {
+    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">semua</span>();
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarKelas</span>(<span class="variable">mahasiswaId</span>, <span class="variable">kelasId</span>) {
+    <span class="keyword">try</span> {
+        <span class="keyword">return</span> <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="function">$transaction</span>(<span class="keyword">async</span> (<span class="variable">tx</span>) <span class="operator">=&gt;</span> {
+            <span class="keyword">const</span> <span class="variable">mahasiswa</span> = <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span>: <span class="variable">mahasiswaId</span> } });
+            <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">mahasiswa</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'MAHASISWA_NOT_FOUND'</span>);
+
+            <span class="keyword">const</span> <span class="variable">kelas</span> = <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">kelas</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span>: <span class="variable">kelasId</span> } });
+            <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">kelas</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Kelas tidak ditemukan'</span>, <span class="string">'KELAS_NOT_FOUND'</span>);
+            <span class="keyword">if</span> (<span class="variable">kelas</span>.<span class="variable">kuota</span> &lt;= <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">'Kuota kelas sudah penuh'</span>, <span class="string">'KUOTA_PENUH'</span>);
+
+            <span class="keyword">const</span> <span class="variable">pendaftaran</span> = <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">pendaftaran</span>.<span class="function">create</span>({
+                <span class="variable">data</span>: { <span class="variable">mahasiswaId</span>, <span class="variable">kelasId</span> },
+            });
+
+            <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">kelas</span>.<span class="function">update</span>({
+                <span class="variable">where</span>: { <span class="variable">id</span>: <span class="variable">kelasId</span> },
+                <span class="variable">data</span>: { <span class="variable">kuota</span>: { <span class="variable">decrement</span>: <span class="number">1</span> } },
+            });
+
+            <span class="keyword">return</span> <span class="variable">pendaftaran</span>;
+        });
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="keyword">if</span> (<span class="variable">err</span>.<span class="variable">code</span> <span class="operator">===</span> <span class="string">'P2002'</span>) {   <span class="comment">// UNIQUE (mahasiswaId, kelasId) dilanggar</span>
+            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">'Mahasiswa sudah terdaftar di kelas ini'</span>, <span class="string">'SUDAH_TERDAFTAR'</span>);
+        }
+        <span class="keyword">throw</span> <span class="variable">err</span>;
+    }
+}</code></pre>
+                <ul>
+                    <li>Semua operasi di dalam transaksi memakai <code>tx.namaModel</code>, bukan <code>prisma.namaModel</code>. <code>tx</code> adalah &ldquo;prisma versi transaksi&rdquo; yang dioper ke callback.</li>
+                    <li>Kalau ada satu saja yang <code>throw</code>, seluruh transaksi dibatalkan otomatis (rollback), dan errornya diteruskan keluar.</li>
+                    <li><code>{ decrement: 1 }</code> berarti &ldquo;kurangi nilai yang ada di database sebanyak 1&rdquo;.</li>
+                    <li>Bagian <code>catch</code> menerjemahkan error <code>P2002</code> (pasangan mahasiswa-kelas sudah ada, dari <code>@@unique</code>) menjadi 409, seperti yang kita lakukan untuk NIM kembar di Pertemuan 6.</li>
+                </ul>
+
+                <h4>Langkah 3 &mdash; Controller dan route</h4>
+<pre><code><span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">service</span> <span class="keyword">from</span> <span class="string">'../services/pendaftaran.service.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftar</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarPendaftaran</span>();
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buat</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> { <span class="variable">mahasiswaId</span>, <span class="variable">kelasId</span> } = <span class="variable">req</span>.<span class="variable">body</span>;
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarKelas</span>(<span class="variable">mahasiswaId</span>, <span class="variable">kelasId</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
+}</code></pre><pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">ctrl</span> <span class="keyword">from</span> <span class="string">'../controllers/pendaftaran.controller.js'</span>;
+<span class="keyword">import</span> { <span class="variable">cekApiKey</span> } <span class="keyword">from</span> <span class="string">'../middleware/cekApiKey.js'</span>;
+<span class="keyword">import</span> { <span class="variable">validasi</span> } <span class="keyword">from</span> <span class="string">'../middleware/validasi.js'</span>;
+<span class="keyword">import</span> { <span class="variable">skemaPendaftaran</span> } <span class="keyword">from</span> <span class="string">'../validators/pendaftaran.validator.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="variable">ctrl</span>.<span class="variable">daftar</span>);
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">cekApiKey</span>, <span class="function">validasi</span>(<span class="variable">skemaPendaftaran</span>), <span class="variable">ctrl</span>.<span class="variable">buat</span>);
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
+                <h3>3.3 Uji di Postman, Lalu Cek di phpMyAdmin</h3>
+                <p><code>POST http://localhost:3000/pendaftaran</code> dengan header <code>x-api-key: rahasia123</code> dan body JSON. Contoh yang berhasil:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; header x-api-key: rahasia123 diisi di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">http://localhost:3000/pendaftaran</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{ "mahasiswaId": 3, "kelasId": 1 }</div><div class="req-res"><span>Response</span><span class="st s2">201 Created</span></div><div class="req-resbody">{
+  "data": { "id": 3, "mahasiswaId": 3, "kelasId": 1, "tanggalDaftar": "2026-10-28T22:45:47.488Z" }
+}</div></div>
+                <p>Buka phpMyAdmin: tabel <code>pendaftaran</code> bertambah satu baris, dan <code>kuota</code> kelas 1 berkurang dari 28 menjadi 27. Keduanya terjadi bersamaan. Lalu coba skenario lain, satu per satu, berurutan:</p>
+                <table>
+                    <tr><th>Body</th><th>Hasil</th><th>Penjelasan</th></tr>
+                    <tr><td><code>{ "mahasiswaId": 3, "kelasId": 1 }</code> (kirim lagi)</td><td>409 <code>SUDAH_TERDAFTAR</code></td><td>pasangan unik dilanggar</td></tr>
+                    <tr><td><code>{ "mahasiswaId": 1, "kelasId": 2 }</code></td><td>201</td><td>kelas Basis Data, kuota 1 menjadi 0</td></tr>
+                    <tr><td><code>{ "mahasiswaId": 2, "kelasId": 2 }</code></td><td>409 <code>KUOTA_PENUH</code></td><td>kuota sudah 0</td></tr>
+                    <tr><td><code>{ "mahasiswaId": 999, "kelasId": 1 }</code></td><td>404 <code>MAHASISWA_NOT_FOUND</code></td><td>mahasiswa tidak ada</td></tr>
+                    <tr><td><code>{ "mahasiswaId": 1, "kelasId": 999 }</code></td><td>404 <code>KELAS_NOT_FOUND</code></td><td>kelas tidak ada</td></tr>
+                    <tr><td><code>{ "mahasiswaId": "a" }</code></td><td>422 <code>VALIDATION_ERROR</code></td><td>ditolak Joi sebelum sampai ke service</td></tr>
+                </table>
+                <div class="info-box">
+                    Setelah percobaan duplikat, <code>id</code> pendaftaran berikutnya bisa melompat (misalnya dari 3 langsung ke 5). Itu normal: MySQL tetap memakai satu nomor untuk percobaan yang gagal. Setelah semua skenario, cek phpMyAdmin: kuota kelas 1 adalah 27 dan kuota kelas 2 adalah 0, sesuai jumlah pendaftaran yang benar-benar berhasil.
+                </div>
+
+                <h3>3.4 Membuktikan Rollback Bekerja</h3>
+                <p>Mari buktikan bahwa langkah yang &ldquo;sempat berhasil&rdquo; benar-benar dibatalkan. Buat file <code>coba-rollback.js</code> di akar proyek:</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'./src/lib/prisma.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">sebelum</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">count</span>();
+
+<span class="keyword">try</span> {
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="function">$transaction</span>(<span class="keyword">async</span> (<span class="variable">tx</span>) <span class="operator">=&gt;</span> {
+        <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">pendaftaran</span>.<span class="function">create</span>({ <span class="variable">data</span>: { <span class="variable">mahasiswaId</span>: <span class="number">4</span>, <span class="variable">kelasId</span>: <span class="number">1</span> } });
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'di dalam transaksi :'</span>, <span class="keyword">await</span> <span class="variable">tx</span>.<span class="variable">pendaftaran</span>.<span class="function">count</span>(), <span class="string">'pendaftaran'</span>);
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">Error</span>(<span class="string">'Sengaja gagal untuk membuktikan rollback'</span>);
+    });
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'error              :'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}
+
+<span class="keyword">const</span> <span class="variable">sesudah</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">count</span>();
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">`sebelum: ${sebelum}, sesudah: ${sesudah}`</span>);
+<span class="keyword">await</span> <span class="variable">prisma</span>.<span class="function">$disconnect</span>();</code></pre><div class="terminal"><span class="prompt">$</span> node coba-rollback.js
+<span class="out">di dalam transaksi : 5 pendaftaran</span>
+<span class="out">error              : Sengaja gagal untuk membuktikan rollback</span>
+<span class="out">sebelum: 4, sesudah: 4</span></div>
+                <p>Di dalam transaksi, jumlah pendaftaran sempat menjadi 5 (baris baru berhasil dibuat), tetapi setelah error dilempar jumlahnya kembali 4. Cek juga di phpMyAdmin: tidak ada baris untuk mahasiswa 4 di kelas 1. Hapus file <code>coba-rollback.js</code> setelah dicoba.</p>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Transaksi Gagal di Tengah</h5>
+                    <button onclick="demoTransaksi('sukses')">Transaksi berhasil penuh</button>
+                    <button onclick="demoTransaksi('gagal')">Gagal di langkah ke-2</button>
+                    <div class="console-output" id="demo2-out">Klik salah satu tombol...</div>
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> mendaftar kelas menambah baris <code>pendaftaran</code> dan mengurangi <code>kuota</code> secara bersamaan, semua skenario gagal di tabel memberi respons yang benar, dan kalian sudah melihat rollback bekerja.
+                </div>
+            </section>
+
+            <section id="seed">
+                <h2>4. Data Awal (Seed) yang Dapat Diulang <span class="badge badge-important">Indikator 4.7</span></h2>
+
+                <p>Sampai sekarang kita mengisi data lewat phpMyAdmin. Itu cukup untuk satu orang di satu komputer. Tetapi anggota kelompok lain butuh data contoh yang <strong>sama persis</strong> di database masing-masing, dan kalian sendiri mungkin ingin mengembalikan data ke kondisi awal setelah banyak percobaan. <strong>Seed</strong> adalah skrip yang mengisi data awal itu sekali jalan (padanan <code>php artisan db:seed</code> di Laravel).</p>
+
+                <h3>4.1 Praktik: Buat Seed</h3>
+                <p>Seed ini membuat ulang data yang tadi kita isi: 25 mahasiswa, 2 kelas, 2 pendaftaran. Buat <code>prisma/seed.js</code>:</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../src/lib/prisma.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">NAMA</span> = [<span class="string">'Andi'</span>, <span class="string">'Budi'</span>, <span class="string">'Citra'</span>, <span class="string">'Dewi'</span>, <span class="string">'Eko'</span>, <span class="string">'Fitri'</span>, <span class="string">'Gilang'</span>, <span class="string">'Hana'</span>];
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">main</span>() {
+    <span class="comment">// Kosongkan dulu (tabel anak sebelum tabel induk) supaya seed aman dijalankan ULANG</span>
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">deleteMany</span>();
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">deleteMany</span>();
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">kelas</span>.<span class="function">deleteMany</span>();
+
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">createMany</span>({
+        <span class="variable">data</span>: [
+            { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nim</span>: <span class="string">'F1D021001'</span>, <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">ipk</span>: <span class="number">3.75</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+            { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">nim</span>: <span class="string">'F1D021002'</span>, <span class="variable">nama</span>: <span class="string">'Budi'</span>, <span class="variable">ipk</span>: <span class="number">3.2</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+            { <span class="variable">id</span>: <span class="number">3</span>, <span class="variable">nim</span>: <span class="string">'F1D021003'</span>, <span class="variable">nama</span>: <span class="string">'Citra'</span>, <span class="variable">ipk</span>: <span class="number">3.9</span>, <span class="variable">semester</span>: <span class="number">4</span> },
+            <span class="comment">// id 4-25: dibuat dengan perulangan</span>
+            ...<span class="variable">Array</span>.<span class="keyword">from</span>({ <span class="variable">length</span>: <span class="number">22</span> }, (<span class="variable">_</span>, <span class="variable">k</span>) <span class="operator">=&gt;</span> {
+                <span class="keyword">const</span> <span class="variable">i</span> = <span class="variable">k</span> + <span class="number">4</span>;
+                <span class="keyword">return</span> {
+                    <span class="variable">id</span>: <span class="variable">i</span>,
+                    <span class="variable">nim</span>: <span class="string">`F1D0210${String(i).padStart(2, '0')}`</span>,
+                    <span class="variable">nama</span>: <span class="string">`${NAMA[i % 8]} ${i}`</span>,
+                    <span class="variable">ipk</span>: <span class="variable">Math</span>.<span class="function">round</span>((<span class="number">2</span> + (<span class="variable">i</span> % <span class="number">20</span>) / <span class="number">10</span>) * <span class="number">100</span>) / <span class="number">100</span>,
+                    <span class="variable">semester</span>: <span class="number">1</span> + (<span class="variable">i</span> % <span class="number">8</span>),
+                };
+            }),
+        ],
+    });
+
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">kelas</span>.<span class="function">createMany</span>({
+        <span class="variable">data</span>: [
+            { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nama</span>: <span class="string">'Pemrograman Web Lanjut'</span>, <span class="variable">kuota</span>: <span class="number">28</span> },
+            { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">nama</span>: <span class="string">'Basis Data'</span>, <span class="variable">kuota</span>: <span class="number">1</span> },
+        ],
+    });
+
+    <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pendaftaran</span>.<span class="function">createMany</span>({
+        <span class="variable">data</span>: [
+            { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">mahasiswaId</span>: <span class="number">1</span>, <span class="variable">kelasId</span>: <span class="number">1</span> },
+            { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">mahasiswaId</span>: <span class="number">2</span>, <span class="variable">kelasId</span>: <span class="number">1</span> },
+        ],
+    });
+
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Seed selesai'</span>);
+}
+
+<span class="function">main</span>()
+    .<span class="keyword">catch</span>((<span class="variable">err</span>) <span class="operator">=&gt;</span> { <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>); <span class="variable">process</span>.<span class="variable">exitCode</span> = <span class="number">1</span>; })
+    .<span class="function">finally</span>(() <span class="operator">=&gt;</span> <span class="variable">prisma</span>.<span class="function">$disconnect</span>());</code></pre>
+                <ul>
+                    <li><strong>Kosongkan dulu</strong> di awal (<code>deleteMany</code>), dengan urutan tabel anak sebelum induk (<code>pendaftaran</code> baru <code>mahasiswa</code> dan <code>kelas</code>), karena foreign key tidak membolehkan induk dihapus selagi masih ada anaknya. Inilah yang membuat seed <em>dapat diulang</em>.</li>
+                    <li><code>id</code> ditulis eksplisit supaya id data sama di semua komputer. Tanpa itu, id akan terus naik setiap seed dijalankan ulang.</li>
+                    <li>22 mahasiswa terakhir dibuat dengan perulangan, aturannya sama dengan perintah SQL di 1.1.</li>
+                    <li><code>createMany</code> menyimpan banyak baris dalam satu perintah.</li>
+                </ul>
+
+                <h3>4.2 Daftarkan dan Jalankan</h3>
+                <p>Di Prisma 7, perintah seed didaftarkan di <code>prisma.config.ts</code>, di bawah <code>migrations</code>:</p>
+<pre><code><span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> { <span class="variable">defineConfig</span> } <span class="keyword">from</span> <span class="string">'prisma/config'</span>;
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="function">defineConfig</span>({
+  <span class="variable">schema</span>: <span class="string">'prisma/schema.prisma'</span>,
+  <span class="variable">migrations</span>: {
+    <span class="variable">seed</span>: <span class="string">'node prisma/seed.js'</span>,
+  },
+  <span class="variable">datasource</span>: {
+    <span class="variable">url</span>: <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>,
+  },
+});</code></pre><div class="terminal"><span class="prompt">$</span> npx prisma db seed
+<span class="out">Running seed command `node prisma/seed.js` ...</span>
+<span class="out">Seed selesai</span>
+
+<span class="out">🌱  The seed command has been executed.</span></div>
+                <p>Jalankan sekali lagi: hasilnya tetap sama dan tidak ada error, tidak ada data dobel. Buka phpMyAdmin untuk memastikan: tabel <code>mahasiswa</code> berisi 25 baris, <code>kelas</code> 2 baris dengan kuota 28 dan 1, <code>pendaftaran</code> 2 baris. Kuota yang tadi berubah karena percobaan di Section 3 kembali ke kondisi awal.</p>
+                <div class="warning-box">
+                    <strong>Hati-hati: seed menghapus data.</strong> Jalankan hanya di database pengembangan milik sendiri. Untuk memulai dari kondisi benar-benar bersih (semua tabel dihapus dan dibuat ulang dari migrasi), ada <code>npx prisma migrate reset</code>; perintah ini menghapus <strong>semua</strong> data, jadi setelahnya jalankan <code>npx prisma db seed</code> lagi.
+                </div>
+                <div class="info-box">
+                    <strong>&ldquo;Dapat diulang&rdquo;</strong> adalah kata kuncinya: seed yang baik boleh dijalankan berkali-kali tanpa error dan tanpa data dobel. Bagi kelompok, cukup <code>npx prisma migrate dev</code> lalu <code>npx prisma db seed</code> untuk mendapatkan database yang sama dengan milik rekan.
+                </div>
+            </section>
+
+            <section id="dokumentasi">
+                <h2>5. Dokumentasi Endpoint <span class="badge badge-important">Indikator 4.8</span></h2>
+
+                <p>Endpoint yang tidak didokumentasikan menyulitkan siapa pun yang memakainya: diri kalian sendiri tiga minggu kemudian, dan rekan kelompok yang membangun antarmuka React di Pertemuan 11&ndash;12. Cukup satu file <code>API.md</code> di akar repositori; tidak perlu Swagger/OpenAPI penuh.</p>
+
+                <h3>5.1 Format Minimal yang Wajib Ada</h3>
+                <p>Untuk setiap endpoint: method dan path, parameter atau body, dan contoh respons berhasil serta gagal. Berikut contoh untuk dua endpoint yang baru kita bangun (nilai-nilainya diambil dari hasil Postman tadi):</p>
+<pre><code><span class="keyword"># API Mahasiswa</span>
+
+<span class="keyword">## GET /mahasiswa</span>
+Daftar mahasiswa dengan paginasi, filter, dan pengurutan.
+
+**Query params:**
+
+| Parameter | Tipe   | Default | Keterangan                                   |
+|-----------|--------|---------|----------------------------------------------|
+| halaman   | number | 1       | Nomor halaman                                |
+| ukuran    | number | 10      | Jumlah data per halaman (maksimal 100)       |
+| semester  | number | -       | Saring berdasarkan semester                  |
+| ipkMin    | number | -       | Hanya IPK &gt;= nilai ini                       |
+| cari      | string | -       | Nama mengandung teks ini                     |
+| urutkan   | string | nama    | nama, nim, ipk, semester, atau createdAt     |
+| arah      | string | asc     | asc atau desc                                |
+
+**Respons 200:**
+
+```json
+{
+  "data": [{ "id": 1, "nim": "F1D021001", "nama": "Andi", "ipk": 3.75, "semester": 6 }],
+  "meta": { "halaman": 1, "ukuran": 10, "total": 25, "totalHalaman": 3 }
+}
+```
+
+**Respons 400:** nilai `urutkan` tidak diizinkan (`QUERY_TIDAK_VALID`)
+
+<span class="keyword">## POST /pendaftaran</span>
+Mendaftarkan mahasiswa ke kelas (mengurangi kuota).
+
+**Header:** `x-api-key`
+
+**Body:**
+
+| Field       | Tipe   | Wajib | Keterangan |
+|-------------|--------|-------|------------|
+| mahasiswaId | number | ya    | id mahasiswa |
+| kelasId     | number | ya    | id kelas     |
+
+**Respons 201:** data pendaftaran yang baru dibuat
+**Respons 401:** API key salah
+**Respons 404:** mahasiswa atau kelas tidak ditemukan
+**Respons 409:** sudah terdaftar, atau kuota penuh
+**Respons 422:** body tidak valid</code></pre>
+                <div class="info-box">
+                    <strong>Cara cepat:</strong> jalankan endpoint di Postman, lalu salin contoh respons dari sana ke <code>API.md</code>. Dengan begitu dokumentasi pasti sesuai dengan perilaku API yang sebenarnya, dan file <code>requests.http</code> (Pertemuan 5) serta pengujian otomatis (Pertemuan 13) bisa merujuk ke dokumen yang sama.
+                </div>
+
+                <h3>5.2 Praktik: Tulis <code>API.md</code></h3>
+                <p>Dokumentasikan <strong>seluruh</strong> endpoint yang sudah dibangun sejak Pertemuan 4 mengikuti format di atas: <code>GET /mahasiswa</code>, <code>GET /mahasiswa/:id</code>, <code>POST /mahasiswa</code>, <code>GET /pendaftaran</code>, dan <code>POST /pendaftaran</code>. Simpan di akar repositori.</p>
+            </section>
+
+            <section id="praktik">
+                <h2>6. Latihan Mandiri <span class="badge badge-new">Latihan</span></h2>
+
+                <div class="success-box">
+                    <strong>Selesai kalau:</strong> <code>GET /mahasiswa</code> mendukung paginasi, filter, dan pengurutan; <code>POST /pendaftaran</code> menambah pendaftaran dan mengurangi kuota secara atomik; seed bisa dijalankan berulang tanpa error; dan <code>API.md</code> mendokumentasikan semua endpoint yang ada.
+                </div>
+
+                <h3>Latihan</h3>
+                <ol>
+                    <li>Tambahkan <code>GET /kelas/:id</code> yang menyertakan daftar mahasiswa terdaftar (pakai <code>include</code> lewat relasi <code>pendaftaran</code>).</li>
+                    <li>Tambahkan <code>DELETE /pendaftaran/:id</code> yang membatalkan pendaftaran dan mengembalikan kuota (<code>increment</code>). Wajib memakai transaksi juga. Buktikan di phpMyAdmin bahwa baris terhapus dan kuota bertambah.</li>
+                    <li>Tambahkan paginasi dan filter (Section 1) ke endpoint <code>GET /pendaftaran</code>, misalnya <code>?kelasId=1</code>.</li>
+                    <li>Perluas <code>prisma/seed.js</code> dengan kelas ketiga, jalankan seed dua kali, lalu pastikan jumlah barisnya tidak berlipat.</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Menuju ETS (Minggu 8):</strong> mini proyek individu berupa API utuh (Sub-CPMK 1&ndash;4) disertai video penjelasan. Pastikan proyek kalian dari Pertemuan 1&ndash;7 berjalan penuh sebelum minggu itu.
+                </div>
+            </section>
+
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran (Pertemuan 7)</h2>
+
+                <p><a href="materi-06-orm-skema-migrasi.html">Pertemuan 6</a> dan Pertemuan 7 bersama-sama membentuk <strong>Sub-CPMK 4</strong>: Mahasiswa mampu merancang skema basis data, menjalankan migrasi, memodelkan relasi, memvalidasi masukan, serta menyusun kueri lanjutan dan transaksi melalui ORM. <strong>[C3, C4]</strong></p>
+
+                <table>
+                    <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
+                    <tr><td>4.5</td><td>Menyusun kueri berparameter, paginasi, penyaringan, pengurutan, dan penggabungan tabel (JOIN)</td><td>Section 1 dan 2</td></tr>
+                    <tr><td>4.6</td><td>Menggunakan transaksi pada operasi yang menyentuh lebih dari satu tabel</td><td>Section 3</td></tr>
+                    <tr><td>4.7</td><td>Menyiapkan data awal (seed) yang dapat diulang</td><td>Section 4</td></tr>
+                    <tr><td>4.8</td><td>Menyusun dokumentasi endpoint yang sesuai dengan perilaku API</td><td>Section 5</td></tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>Sub-CPMK 4 tercapai secara penuh</strong> setelah Pertemuan 6&ndash;7. Ini melengkapi seluruh dasar backend (Sub-CPMK 1&ndash;4) yang akan diuji pada <strong>ETS di Minggu 8</strong>.
+                </div>
+
+                <h3>Daftar Periksa Akhir Pertemuan</h3>
+                <div class="info-box">
+                    <ul>
+                        <li>Endpoint <code>GET /mahasiswa</code> mendukung paginasi, filter, dan pengurutan sekaligus</li>
+                        <li>Bisa menjelaskan kapan sebuah operasi WAJIB dibungkus <code>$transaction</code>, dan membuktikan rollback bekerja</li>
+                        <li>Ada <code>prisma/seed.js</code> yang bisa dijalankan berulang tanpa error</li>
+                        <li>Ada <code>API.md</code> yang mendokumentasikan seluruh endpoint dari Pertemuan 4&ndash;7</li>
+                        <li>Pendaftaran kelas (Section 3) mengurangi kuota secara atomik, dan GET /pendaftaran menampilkan mahasiswa serta kelasnya lewat <code>include</code></li>
+                    </ul>
+                </div>
+
+                <h3>&#128218; Referensi</h3>
+                <ul>
+                    <li><a href="https://www.prisma.io/docs/orm/prisma-client/queries/pagination" target="_blank">Prisma &mdash; Pagination</a> [5]</li>
+                    <li><a href="https://www.prisma.io/docs/orm/prisma-client/queries/transactions" target="_blank">Prisma &mdash; Transactions</a> [5]</li>
+                    <li><a href="https://www.prisma.io/docs/orm/prisma-migrate/workflows/seeding" target="_blank">Prisma &mdash; Seeding</a> [5]</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 7 &mdash; Pemrograman Web Lanjut &mdash; Kueri Lanjutan & Transaksi</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        function tulis(id, teks) { document.getElementById(id).textContent = teks; }
+
+        function demoKueri(mode) {
+            let out = '';
+            if (mode === 'paginasi') {
+                out = 'GET /mahasiswa?halaman=2&ukuran=5\n\nprisma.mahasiswa.findMany({ skip: 5, take: 5 })\n\n→ Melompati 5 data pertama, ambil 5 data berikutnya\n  (data ke-6 sampai ke-10).';
+            } else if (mode === 'filter') {
+                out = 'GET /mahasiswa?semester=6&ipkMin=3.5\n\nwhere: { semester: 6, ipk: { gte: 3.5 } }\n\n→ Hanya mahasiswa semester 6 DENGAN ipk >= 3.5.';
+            } else if (mode === 'urut') {
+                out = 'GET /mahasiswa?urutkan=ipk&arah=desc\n\norderBy: { ipk: "desc" }\n\n→ Diurutkan dari IPK tertinggi ke terendah.';
+            } else {
+                out = 'GET /mahasiswa?halaman=1&ukuran=5&semester=6&urutkan=ipk&arah=desc\n\n{\n  where: { semester: 6 },\n  orderBy: { ipk: "desc" },\n  skip: 0,\n  take: 5\n}\n\n→ 5 mahasiswa semester 6 dengan IPK tertinggi, halaman pertama.';
+            }
+            tulis('demo1-out', out);
+        }
+
+        function demoTransaksi(mode) {
+            let out = '';
+            if (mode === 'sukses') {
+                out = 'prisma.$transaction(async (tx) => {\n  await tx.pendaftaran.create({ data: {...} });\n  await tx.kelas.update({ data: { kuota: { decrement: 1 } } });\n});\n\n1. BEGIN TRANSACTION\n2. INSERT Pendaftaran ✅\n3. UPDATE Kelas (kuota -1) ✅\n4. COMMIT\n\n✅ Kedua perubahan tersimpan permanen bersama-sama.';
+            } else {
+                out = 'prisma.$transaction(async (tx) => {\n  await tx.pendaftaran.create({ data: {...} });   // berhasil\n  throw new Error("Kuota penuh");                 // gagal di sini\n});\n\n1. BEGIN TRANSACTION\n2. INSERT Pendaftaran (sempat berhasil di dalam transaksi)\n3. throw Error → Prisma otomatis ROLLBACK\n4. ROLLBACK — SEMUA perubahan langkah 2 dibatalkan\n\n✅ Cek tabel Pendaftaran: baris yang "sempat" dibuat TIDAK ADA.\n   Basis data tetap konsisten walau gagal di tengah jalan.';
+            }
+            tulis('demo2-out', out);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('kueri-lanjutan');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) { e.preventDefault(); showCopyWarning(); return false; });
+                el.style.userSelect = 'none'; el.style.webkitUserSelect = 'none'; el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            });
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) { e.preventDefault(); showCopyWarning(); return false; }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) { e.preventDefault(); return false; }
+                }
+            });
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) existingModal.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
+                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
+                            <h3 style="color:#0f766e;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#0f766e;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+                setTimeout(function() { var m = document.getElementById('copy-warning-modal'); if (m) m.remove(); }, 3000);
+            }
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+    <script src="sidebar-toggle.js"></script>
+</body>
+</html>

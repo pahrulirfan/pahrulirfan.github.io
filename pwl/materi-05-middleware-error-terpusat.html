@@ -95,19 +95,23 @@
         <nav class="sidebar">
             <h3>Daftar Materi</h3>
             <ul>
-                <li><a href="#middleware" class="active">1. Middleware & Urutannya</a></li>
-                <li><a href="#error-terpusat">2. Penanganan Error Terpusat</a></li>
-                <li><a href="#struktur">3. Struktur Proyek</a></li>
-                <li><a href="#rest-client">4. Menguji dengan REST Client</a></li>
-                <li><a href="#praktik">5. Praktik</a></li>
-                <li><a href="#cpmk">6. Capaian Pembelajaran</a></li>
+                <li><a href="#router" class="active">1. Router</a></li>
+                <li><a href="#middleware">2. Middleware</a></li>
+                <li><a href="#error-terpusat">3. Error Terpusat</a></li>
+                <li><a href="#validasi">4. Validasi Masukan</a></li>
+                <li><a href="#struktur">5. Struktur Proyek Berlapis</a></li>
+                <li><a href="#rest-client">6. Menguji dengan REST Client</a></li>
+                <li><a href="#latihan">7. Latihan Mandiri</a></li>
+                <li><a href="#cpmk">8. Capaian Pembelajaran</a></li>
             </ul>
             <h3>Link Terkait</h3>
             <ul>
                 <!-- <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
                 <li><a href="materi-04-rest-api-dasar.html">&larr; Pertemuan 4</a></li> -->
-                <li><a href="materi-06-orm-skema-migrasi.html">Pertemuan 6 &rarr;</a></li>
+                <!-- <li><a href="materi-06-orm-skema-migrasi.html">Pertemuan 6 &rarr;</a></li> -->
+                <li><a href="https://expressjs.com/en/guide/using-middleware.html" target="_blank">Express &mdash; Using Middleware</a></li>
                 <li><a href="https://expressjs.com/en/guide/error-handling.html" target="_blank">Express &mdash; Error Handling</a></li>
+                <li><a href="https://joi.dev/api/" target="_blank">Joi &mdash; API Reference</a></li>
             </ul>
         </nav>
 
@@ -117,25 +121,145 @@
 
         <main class="content">
 
-            <section id="middleware">
-                <h2>1. Middleware dan Urutannya <span class="badge badge-important">Indikator 3.4</span></h2>
+            <section id="router">
+                <h2>1. Router <span class="badge badge-important">Indikator 3.6</span></h2>
 
-                <h3>Apa itu Middleware?</h3>
-                <p><strong>Middleware</strong> adalah fungsi yang berdiri <em>di antara</em> permintaan masuk dan handler akhir. Setiap middleware bisa memeriksa, mengubah, atau menolak permintaan sebelum diteruskan ke middleware berikutnya &mdash; persis seperti middleware di Laravel (<code>auth</code>, <code>throttle</code>, dsb), hanya saja di Express kalian menulis dan menyusun sendiri urutannya secara eksplisit.</p>
+                <p>Bagian ini dikerjakan di proyek yang sama, <code>api-mahasiswa</code> dari <a href="materi-04-rest-api-dasar.html#status-format">Pertemuan 4</a>. Kita mulai dengan <strong>Router</strong>: dijelaskan dulu, lalu dipraktikkan. Hasilnya menjadi wadah tempat <a href="#middleware" onclick="showSection('middleware'); return false;">middleware di Section 2</a> dipasang.</p>
 
-                <h3>1.1 Anatomi Middleware</h3>
-                <pre><code><span class="keyword">function</span> <span class="function">contohMiddleware</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${req.method} ${req.path}`</span>);   <span class="comment">// lakukan sesuatu</span>
-    <span class="function">next</span>();                                <span class="comment">// WAJIB dipanggil agar lanjut ke berikutnya</span>
-}
+                <h3>1.1 Apa itu Router?</h3>
+                <p>Di Pertemuan 4 semua rute ditulis langsung di <code>index.js</code> lewat <code>app.get(...)</code> dan <code>app.post(...)</code>. Untuk satu sumber daya itu masih nyaman. Tetapi bayangkan nanti ada juga <code>/dosen</code> dan <code>/mata-kuliah</code>: <code>index.js</code> menjadi penuh sesak, dan awalan <code>'/mahasiswa'</code> harus diulang di setiap rute.</p>
+                <p><strong>Router</strong> adalah &ldquo;mini-aplikasi&rdquo; yang menampung sekelompok rute. Ia punya <code>get</code>, <code>post</code>, dan <code>use</code> seperti <code>app</code>, tetapi hanya mengurus rutenya sendiri. Rute yang sekelompok (misalnya semua rute mahasiswa) dikumpulkan di satu router, biasanya satu file, lalu router itu <strong>dipasang</strong> ke aplikasi pada satu awalan alamat.</p>
+                <table>
+                    <tr><th>&nbsp;</th><th>Tanpa router (Pertemuan 4)</th><th>Dengan router</th></tr>
+                    <tr><td><strong>Tempat rute</strong></td><td>semua di <code>index.js</code></td><td>satu file per sumber daya</td></tr>
+                    <tr><td><strong>Awalan alamat</strong></td><td><code>'/mahasiswa'</code> diulang di tiap rute</td><td>ditulis sekali, saat router dipasang</td></tr>
+                    <tr><td><strong>Menulis rute</strong></td><td><code>app.get('/mahasiswa/:id', ...)</code></td><td><code>router.get('/:id', ...)</code></td></tr>
+                    <tr><td><strong>Padanan Laravel</strong></td><td>&mdash;</td><td><code>Route::prefix('mahasiswa')-&gt;group(...)</code></td></tr>
+                </table>
+                <p>Bentuk dasarnya hanya tiga langkah: buat router, isi dengan rute, lalu pasang ke aplikasi.</p>
+<pre><code><span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();                  <span class="comment">// 1. buat router</span>
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { /* ... */ });     <span class="comment">// 2. isi dengan rute (path relatif terhadap awalan)</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">router</span>);                    <span class="comment">// 3. pasang ke aplikasi pada awalan '/mahasiswa'</span></code></pre>
+                <p>Baris ketiga dibaca: &ldquo;setiap permintaan yang alamatnya diawali <code>/mahasiswa</code>, serahkan ke <code>router</code>&rdquo;. Sisa alamatnya dicocokkan di dalam router, jadi <code>GET /mahasiswa</code> cocok dengan <code>'/'</code>, dan <code>GET /mahasiswa/2</code> cocok dengan <code>'/:id'</code>. Sekarang kita praktikkan di proyek.</p>
 
-<span class="variable">app</span>.<span class="function">use</span>(<span class="function">contohMiddleware</span>);</code></pre>
+                <h3>1.2 Praktik: Pindahkan Rute ke Router</h3>
+                <h4>Langkah 0 &mdash; Siapkan proyek (lanjutan Pertemuan 4)</h4>
+                <p>Buka folder <code>api-mahasiswa</code> hasil Pertemuan 4 (sampai Section 7.3). Kalau belum punya, selesaikan dulu bagian itu. Kondisi awalnya:</p>
+                <div class="folder-tree">
+                    <div class="f-root">api-mahasiswa/</div>
+                    <div class="f-item">index.js <span class="f-comment">// semua rute + helper kirimError ada di sini</span></div>
+                    <div class="f-item">package.json <span class="f-comment">// "type": "module", script dev</span></div>
+                    <div class="f-item">src/data/mahasiswa.js <span class="f-comment">// array 3 mahasiswa</span></div>
+                </div>
+                <div class="terminal"><span class="prompt">$</span> cd api-mahasiswa
+<span class="prompt">$</span> npm run dev</div>
+                <p>Di terminal lain, pastikan API masih berjalan seperti akhir Pertemuan 4. Tanda <code>"</code> pada URL penting, karena tanpa itu terminal (zsh) menganggap <code>?</code> sebagai karakter khusus:</p>
+                <div class="terminal"><span class="prompt">$</span> curl "http://localhost:3000/mahasiswa?semester=6"
+<span class="out">{"data":[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75,"semester":6},{"id":2,...}],"meta":{"total":2}}</span></div>
 
-                <div class="warning-box">
-                    <strong>Lupa memanggil <code>next()</code> adalah kesalahan nomor satu.</strong> Kalau <code>next()</code> tidak dipanggil, permintaan <strong>menggantung selamanya</strong> &mdash; klien menunggu tanpa batas waktu sampai time out, tanpa pesan error yang jelas.
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> <code>GET /mahasiswa</code> dan <code>GET /mahasiswa/2</code> menjawab dengan benar. Mulai dari sini, perilaku API <strong>tidak berubah</strong>; yang kita ubah hanya cara kodenya ditata, lalu dilindungi dengan middleware.
                 </div>
 
-                <h3>1.2 Alur Middleware: Sebuah Pipeline</h3>
+                <h4>Langkah 1 &mdash; Buat file router</h4>
+                <div class="terminal"><span class="prompt">$</span> mkdir -p src/routes</div>
+                <p>Buat file <code>src/routes/mahasiswa.routes.js</code>. Isinya rute-rute dari <code>index.js</code>, dengan dua perbedaan: dibuat lewat <code>express.Router()</code>, dan path-nya cukup <code>'/'</code> serta <code>'/:id'</code> (tanpa <code>/mahasiswa</code>). Helper <code>kirimError</code> ikut dipindah ke sini karena hanya dipakai di file ini.</p>
+<pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> { <span class="variable">mahasiswa</span> } <span class="keyword">from</span> <span class="string">'../data/mahasiswa.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+
+<span class="comment">// Helper: semua error memakai bentuk { error: { pesan, kode } }</span>
+<span class="keyword">const</span> <span class="variable">kirimError</span> = (<span class="variable">res</span>, <span class="variable">status</span>, <span class="variable">kode</span>, <span class="variable">pesan</span>) <span class="operator">=&gt;</span>
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="variable">status</span>).<span class="function">json</span>({ <span class="variable">error</span>: { <span class="variable">pesan</span>, <span class="variable">kode</span> } });
+
+<span class="comment">// GET /mahasiswa  atau  GET /mahasiswa?semester=6</span>
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">query</span>;
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="variable">semester</span>
+        ? <span class="variable">mahasiswa</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">semester</span>))
+        : <span class="variable">mahasiswa</span>;
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span>, <span class="variable">meta</span>: { <span class="variable">total</span>: <span class="variable">hasil</span>.<span class="variable">length</span> } });
+});
+
+<span class="comment">// GET /mahasiswa/:id</span>
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">x</span> <span class="operator">=&gt;</span> <span class="variable">x</span>.<span class="variable">id</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
+        <span class="keyword">return</span> <span class="function">kirimError</span>(<span class="variable">res</span>, <span class="number">404</span>, <span class="string">'NOT_FOUND'</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>);
+    }
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+});
+
+<span class="comment">// POST /mahasiswa</span>
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">body</span> <span class="operator">??</span> {};
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">nim</span> <span class="operator">||</span> <span class="operator">!</span><span class="variable">nama</span>) {
+        <span class="keyword">return</span> <span class="function">kirimError</span>(<span class="variable">res</span>, <span class="number">422</span>, <span class="string">'VALIDATION_ERROR'</span>, <span class="string">'nim dan nama wajib diisi'</span>);
+    }
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>: <span class="variable">ipk</span> <span class="operator">??</span> <span class="number">0</span>, <span class="variable">semester</span>: <span class="variable">semester</span> <span class="operator">??</span> <span class="number">1</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
+});
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
+                <h4>Langkah 2 &mdash; Pasang router di <code>index.js</code></h4>
+                <p>Hapus semua <code>app.get('/mahasiswa'...)</code> dan <code>app.post('/mahasiswa'...)</code> beserta helper <code>kirimError</code> dari <code>index.js</code>, sehingga tinggal seperti ini:</p>
+<pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> <span class="variable">mahasiswaRoutes</span> <span class="keyword">from</span> <span class="string">'./src/routes/mahasiswa.routes.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);   <span class="comment">// router dipasang di sini, lengkap dengan awalannya</span>
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> <span class="operator">??</span> <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
+});</code></pre>
+                <p>Perhatikan baris <code>app.use('/mahasiswa', mahasiswaRoutes)</code>: awalan <code>/mahasiswa</code> sekarang hanya ditulis di sini. Kalau suatu saat alamatnya berubah menjadi <code>/api/v1/mahasiswa</code>, hanya satu baris ini yang disunting.</p>
+
+                <h4>Langkah 3 &mdash; Uji ulang</h4>
+                <div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/2
+<span class="out">{"data":{"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2,"semester":6}}</span>
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/99
+<span class="out">{"error":{"pesan":"Mahasiswa tidak ditemukan","kode":"NOT_FOUND"}}</span></div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> hasilnya sama persis dengan sebelum dipindah. Rute sudah berada di router, <code>index.js</code> tinggal mengatur aplikasi. Inilah wadah tempat middleware-middleware berikutnya kita pasang.
+                </div>
+
+            </section>
+
+            <section id="middleware">
+                <h2>2. Middleware <span class="badge badge-important">Indikator 3.4</span></h2>
+
+                <p>Router di Section 1 sudah siap sebagai wadah. Sekarang kita menambahkan <strong>middleware</strong> ke proyek yang sama, mulai dari kondisi akhir Section 1: dijelaskan dulu apa itu middleware, lalu dipraktikkan satu per satu (<code>logger</code>, lalu <code>cekApiKey</code>).</p>
+
+                <h3>2.1 Apa itu Middleware?</h3>
+                <p><strong>Middleware</strong> adalah fungsi yang berdiri <em>di antara</em> permintaan masuk dan handler akhir. Setiap middleware bisa memeriksa, mengubah, atau menolak permintaan sebelum diteruskan ke middleware berikutnya &mdash; persis seperti middleware di Laravel (<code>auth</code>, <code>throttle</code>, dsb), hanya saja di Express kalian menulis dan menyusun sendiri urutannya secara eksplisit.</p>
+                <p>Kalian sebenarnya sudah memakainya: <code>app.use(express.json())</code> di Pertemuan 4 adalah middleware yang mengurai body JSON menjadi <code>req.body</code>.</p>
+
+                <h4>Anatomi</h4>
+<pre><code><span class="keyword">function</span> <span class="function">contohMiddleware</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${req.method} ${req.path}`</span>);   <span class="comment">// lakukan sesuatu</span>
+    <span class="function">next</span>();                                      <span class="comment">// WAJIB dipanggil agar lanjut ke berikutnya</span>
+}
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">contohMiddleware</span>);</code></pre>
+                <div class="warning-box">
+                    <strong>Lupa memanggil <code>next()</code> adalah kesalahan nomor satu.</strong> Kalau <code>next()</code> tidak dipanggil (dan tidak ada tanggapan yang dikirim), permintaan <strong>menggantung selamanya</strong> &mdash; klien menunggu tanpa batas waktu sampai time out, tanpa pesan error yang jelas.
+                </div>
+
+                <h3>2.2 Alur Middleware: Sebuah Pipeline</h3>
                 <p>Bayangkan permintaan sebagai bola yang menggelinding melewati serangkaian pos pemeriksaan. Setiap pos boleh meloloskan bola (<code>next()</code>) atau menghentikannya (mengirim tanggapan langsung).</p>
 
                 <div class="pipeline">
@@ -150,8 +274,8 @@
                     </div>
                     <div class="pipe-arrow">&rarr;</div>
                     <div class="pipe-box">
-                        <div class="pipe-box-title">cek token</div>
-                        <div class="pipe-box-desc">autentikasi (Pert. 9)</div>
+                        <div class="pipe-box-title">cek API key</div>
+                        <div class="pipe-box-desc">izin akses (token: Pert. 9)</div>
                     </div>
                     <div class="pipe-arrow">&rarr;</div>
                     <div class="pipe-box">
@@ -164,80 +288,200 @@
                         <div class="pipe-box-desc">logika utama</div>
                     </div>
                 </div>
-                <p style="font-size:0.85em;color:#777;margin-top:-8px;">Kalau salah satu pos menolak (misalnya token tidak valid), bola berhenti di situ dan langsung mengirim tanggapan error &mdash; tidak pernah sampai ke route handler.</p>
+                <p style="font-size:0.85em;color:#777;margin-top:-8px;">Kalau salah satu pos menolak (misalnya API key salah), bola berhenti di situ dan langsung mengirim tanggapan error &mdash; tidak pernah sampai ke route handler. Dua pos pertama kita buat di 2.4 dan 2.6.</p>
 
-                <h3>1.3 Tiga Jenis Middleware</h3>
+                <h3>2.3 Tiga Jenis Middleware</h3>
                 <table>
                     <tr><th>Jenis</th><th>Contoh</th><th>Dipasang dengan</th></tr>
                     <tr><td><strong>Bawaan Express</strong></td><td><code>express.json()</code>, <code>express.static()</code></td><td><code>app.use(express.json())</code></td></tr>
                     <tr><td><strong>Pihak ketiga (npm)</strong></td><td><code>cors</code>, <code>helmet</code>, <code>morgan</code></td><td><code>app.use(cors())</code></td></tr>
-                    <tr><td><strong>Buatan sendiri</strong></td><td>logger, cek token, validasi</td><td><code>app.use(middlewareSaya)</code></td></tr>
+                    <tr><td><strong>Buatan sendiri</strong></td><td>logger, cek API key, validasi</td><td><code>app.use(middlewareSaya)</code></td></tr>
+                </table>
+                <p>Mulai bagian berikut kita membuat yang ketiga.</p>
+
+                <h3>2.4 Praktik: Middleware Pertama, <code>logger</code></h3>
+                <p>Saat ini <code>api-mahasiswa</code> sudah bisa melayani permintaan, tetapi terminal server sunyi. Kita tidak tahu endpoint mana yang dipanggil klien (Postman, <code>curl</code>, nanti aplikasi React), kapan, dan apa hasilnya. Kalau ada yang mengeluh &ldquo;data saya tidak muncul&rdquo;, kita hanya bisa menebak. Middleware <code>logger</code> menyelesaikannya: setiap permintaan ke API dicatat satu baris di terminal server.</p>
+                <p>Bagi <code>api-mahasiswa</code>, ini berarti <code>GET /</code>, <code>GET /mahasiswa</code>, <code>GET /mahasiswa/2</code>, <code>POST /mahasiswa</code>, dan permintaan lain, semuanya akan melewati <code>logger</code> sebelum sampai ke router.</p>
+
+                <h4>Langkah 1 &mdash; Buat file <code>logger</code></h4>
+<div class="terminal"><span class="prompt">$</span> mkdir -p src/middleware</div><pre><code><span class="comment">// src/middleware/logger.js</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">logger</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${req.method} ${req.originalUrl}`</span>);
+    <span class="function">next</span>();
+}</code></pre>
+                <table>
+                    <tr><th>Bagian kode</th><th>Artinya</th></tr>
+                    <tr><td><code>(req, res, next)</code></td><td>Tiga parameter middleware: permintaan masuk, alat menjawab, dan penyambung ke langkah berikutnya</td></tr>
+                    <tr><td><code>req.method</code></td><td>Method HTTP permintaan: <code>GET</code>, <code>POST</code>, dst.</td></tr>
+                    <tr><td><code>req.originalUrl</code></td><td>Alamat lengkap sebagaimana diminta klien, <strong>termasuk query string</strong> (<code>/mahasiswa?semester=6</code>). Dipilih daripada <code>req.path</code> yang tidak memuat query</td></tr>
+                    <tr><td><code>next()</code></td><td>Meneruskan permintaan ke langkah berikutnya (middleware lain atau router). Tanpa ini permintaan berhenti di sini</td></tr>
                 </table>
 
-                <h3>1.4 Urutan SANGAT Menentukan</h3>
-                <pre><code><span class="comment">// ❌ SALAH — express.json() dipasang TERLAMBAT</span>
-<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">req</span>.<span class="variable">body</span>);   <span class="comment">// undefined! belum diurai</span>
-});
-<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());   <span class="comment">// terlambat, handler di atas sudah lebih dulu terdaftar</span>
+                <h4>Langkah 2 &mdash; Pasang di <code>index.js</code></h4>
+                <p>Berikut <code>index.js</code> proyek kita sekarang, dengan dua baris baru (bertanda <code>← baru</code>):</p>
+<pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> <span class="variable">mahasiswaRoutes</span> <span class="keyword">from</span> <span class="string">'./src/routes/mahasiswa.routes.js'</span>;
+<span class="keyword">import</span> { <span class="variable">logger</span> } <span class="keyword">from</span> <span class="string">'./src/middleware/logger.js'</span>;     <span class="comment">// ← baru</span>
 
-<span class="comment">// ✅ BENAR — middleware global dipasang PALING AWAL</span>
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
 <span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
-<span class="variable">app</span>.<span class="function">use</span>(<span class="function">logger</span>);
-<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/mahasiswa'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="variable">console</span>.<span class="function">log</span>(<span class="variable">req</span>.<span class="variable">body</span>);   <span class="comment">// ✅ sudah terurai</span>
-});</code></pre>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">logger</span>);                                         <span class="comment">// ← baru: setelah express.json(), sebelum rute</span>
 
-                <h3>1.5 Middleware Khusus Satu Rute</h3>
-                <pre><code><span class="keyword">function</span> <span class="function">cekToken</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
-    <span class="keyword">const</span> <span class="variable">token</span> = <span class="variable">req</span>.<span class="variable">headers</span>.<span class="variable">authorization</span>;
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">token</span>) {
-        <span class="keyword">return</span> <span class="variable">res</span>.<span class="function">status</span>(<span class="number">401</span>).<span class="function">json</span>({ <span class="variable">error</span>: { <span class="variable">pesan</span>: <span class="string">'Token diperlukan'</span> } });
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">res</span>.<span class="function">send</span>(<span class="string">'Halo dari Express!'</span>);
+});
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
+
+<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> <span class="operator">??</span> <span class="number">3000</span>;
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, (<span class="variable">err</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">if</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">error</span>(<span class="string">'Gagal menjalankan server:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+        <span class="variable">process</span>.<span class="function">exit</span>(<span class="number">1</span>);
     }
-    <span class="function">next</span>();
-}
-
-<span class="comment">// Middleware disisipkan sebagai argumen tambahan, hanya berlaku di rute ini</span>
-<span class="variable">app</span>.<span class="function">delete</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="function">cekToken</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="comment">// hanya sampai ke sini kalau cekToken() memanggil next()</span>
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>);
 });</code></pre>
+                <p><code>app.use(logger)</code> tanpa alamat berarti &ldquo;jalankan untuk <strong>semua</strong> permintaan&rdquo;. Posisinya disengaja: sesudah <code>express.json()</code> dan sebelum rute. Karena Express menjalankan middleware dari atas ke bawah, hanya yang berada <em>di atas</em> rute yang sempat berjalan sebelum rute menjawab (alasan lengkapnya di 2.5).</p>
 
+                <h4>Langkah 3 &mdash; Uji</h4>
+                <p>Pastikan server berjalan (<code>npm run dev</code>), lalu dari terminal lain kirim beberapa permintaan ke <code>api-mahasiswa</code>:</p>
+<div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa
+<span class="prompt">$</span> curl "http://localhost:3000/mahasiswa?semester=6"
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/2
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/99</div>
+                <p>Pindah ke terminal tempat server berjalan. Sekarang ada satu baris untuk tiap permintaan tadi:</p>
+<div class="terminal"><span class="out">Server jalan di http://localhost:3000</span>
+<span class="out">GET /</span>
+<span class="out">GET /mahasiswa</span>
+<span class="out">GET /mahasiswa?semester=6</span>
+<span class="out">GET /mahasiswa/2</span>
+<span class="out">GET /mahasiswa/99</span></div>
+                <p>Perhatikan dua hal. Query string <code>?semester=6</code> ikut tercatat berkat <code>req.originalUrl</code>. Dan <code>GET /mahasiswa/99</code> (yang berujung 404) dicatat sama seperti yang berhasil, karena pada titik ini <code>logger</code> belum tahu hasilnya: ia dijalankan <em>sebelum</em> rute.</p>
 
-                <h3>1.6 Tingkat Aplikasi vs Tingkat Router</h3>
-                <p>Sejauh ini semua middleware kita pasang di <code>app</code> &mdash; itu disebut <strong>middleware tingkat aplikasi</strong> (<em>application-level</em>): berlaku untuk <em>setiap</em> permintaan yang masuk. Express juga menyediakan <strong>middleware tingkat router</strong> (<em>router-level</em>), yang hanya berlaku bagi sekelompok rute yang dikumpulkan dalam satu <code>express.Router()</code>.</p>
+                <h4>Percobaan: apa yang terjadi kalau <code>next()</code> dihapus?</h4>
+                <p>Ini kesalahan nomor satu yang diperingatkan di 2.1. Coba sendiri: beri komentar pada baris <code>next();</code> di <code>logger.js</code>, simpan, lalu kirim permintaan dengan batas waktu 3 detik:</p>
+<div class="terminal"><span class="prompt">$</span> curl -m 3 http://localhost:3000/mahasiswa
+<span class="out">curl: (28) Operation timed out after 3005 milliseconds with 0 bytes received</span></div>
+                <p>Di terminal server baris <code>GET /mahasiswa</code> tetap tercetak (logger-nya jalan), tetapi klien tidak pernah mendapat jawaban: permintaan berhenti di <code>logger</code>, router tidak pernah dipanggil, dan tidak ada pesan error apa pun. Kembalikan <code>next();</code> sebelum lanjut.</p>
+
+                <h4>Menambah status dan waktu</h4>
+                <p>Log yang berguna biasanya memuat <strong>hasilnya</strong> (status) dan <strong>lama pemrosesannya</strong>. Masalahnya, status baru diketahui <em>setelah</em> handler menjawab, padahal <code>logger</code> berjalan <em>sebelum</em> handler. Solusinya mendaftarkan pendengar pada peristiwa <code>finish</code> milik <code>res</code>, yang dipicu saat jawaban selesai dikirim ke klien. Ganti isi <code>logger.js</code>:</p>
+<pre><code><span class="comment">// src/middleware/logger.js</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">logger</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">mulai</span> = <span class="variable">Date</span>.<span class="function">now</span>();                    <span class="comment">// 1. catat jam saat permintaan masuk</span>
+
+    <span class="variable">res</span>.<span class="function">on</span>(<span class="string">'finish'</span>, () <span class="operator">=&gt;</span> {                     <span class="comment">// 2. "pasang pengintai": dijalankan nanti, saat jawaban selesai dikirim</span>
+        <span class="keyword">const</span> <span class="variable">ms</span> = <span class="variable">Date</span>.<span class="function">now</span>() - <span class="variable">mulai</span>;
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`${req.method} ${req.originalUrl} -&gt; ${res.statusCode} (${ms} ms)`</span>);
+    });
+
+    <span class="function">next</span>();                                      <span class="comment">// 3. lanjutkan ke router tanpa menunggu</span>
+}</code></pre>
+                <p>Ambil contoh <code>GET /mahasiswa/99</code> di <code>api-mahasiswa</code>. Urutan kejadiannya:</p>
+                <ol>
+                    <li>Permintaan masuk, <code>express.json()</code> selesai, <code>logger</code> dipanggil. Jam mulai disimpan.</li>
+                    <li><code>res.on('finish', ...)</code> hanya <em>mendaftarkan</em> fungsi; isinya belum dijalankan.</li>
+                    <li><code>next()</code> dipanggil, permintaan lanjut ke router. Handler tidak menemukan mahasiswa dan menjawab 404.</li>
+                    <li>Begitu jawaban selesai dikirim, peristiwa <code>finish</code> terpicu. Barulah baris log dicetak, kini dengan <code>res.statusCode</code> yang sudah pasti.</li>
+                </ol>
+                <p>Kirim ulang permintaan tadi, dan log berubah menjadi:</p>
+<div class="terminal"><span class="out">GET /mahasiswa -&gt; 200 (5 ms)</span>
+<span class="out">GET /mahasiswa/99 -&gt; 404 (1 ms)</span></div>
+                <p><code>logger</code> tidak mengubah isi tanggapan dan selalu memanggil <code>next()</code>; tugasnya hanya mengamati. Itu pola khas middleware pencatat.</p>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> setiap permintaan ke <code>api-mahasiswa</code> tercatat di terminal server lengkap dengan status dan waktunya, tanpa satu pun handler rute diubah. Inilah keuntungan middleware: satu fungsi berlaku untuk semua rute.
+                </div>
+
+                <h3>2.5 Urutan SANGAT Menentukan</h3>
+                <p>Express menjalankan middleware sesuai urutan penulisan. Dua kesalahan paling umum, keduanya bisa kalian coba langsung di proyek ini:</p>
+<pre><code><span class="comment">// ❌ SALAH — express.json() terlambat: handler lebih dulu terdaftar</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());        <span class="comment">// POST /mahasiswa → req.body undefined → 422 "nim dan nama wajib diisi"</span>
+
+<span class="comment">// ❌ SALAH — logger terlambat: permintaan ke rute di atasnya tidak pernah tercatat</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">logger</span>);                <span class="comment">// router sudah menjawab, logger tidak sempat jalan</span>
+
+<span class="comment">// ✅ BENAR — middleware yang berlaku untuk semua rute dipasang PALING AWAL</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">logger</span>);
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);</code></pre>
+                <p>Aturan praktisnya: Express mencocokkan dari atas ke bawah, dan begitu ada yang mengirim tanggapan, sisanya dilewati. Maka pasang yang bersifat umum (pengurai body, logger) di atas, rute di tengah, dan penanganan error di paling bawah (Section 2).</p>
+
+                <h3>2.6 Praktik: Middleware Khusus Satu Rute, <code>cekApiKey</code></h3>
+                <p>Kebutuhan berikutnya: <code>GET</code> boleh dibuka siapa saja, tetapi menambah data (<code>POST /mahasiswa</code>) hanya untuk klien yang membawa kunci. Login sungguhan dibahas di Pertemuan 9; sementara kita pakai API key sederhana yang dikirim lewat header <code>x-api-key</code>.</p>
+<pre><code><span class="comment">// src/middleware/cekApiKey.js</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cekApiKey</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">kunci</span> = <span class="variable">req</span>.<span class="variable">headers</span>[<span class="string">'x-api-key'</span>];
+
+    <span class="keyword">if</span> (<span class="variable">kunci</span> <span class="operator">!==</span> <span class="string">'rahasia123'</span>) {
+        <span class="keyword">return</span> <span class="variable">res</span>.<span class="function">status</span>(<span class="number">401</span>).<span class="function">json</span>({
+            <span class="variable">error</span>: { <span class="variable">pesan</span>: <span class="string">'API key tidak valid'</span>, <span class="variable">kode</span>: <span class="string">'UNAUTHORIZED'</span> }
+        });
+    }
+    <span class="function">next</span>();   <span class="comment">// kunci benar, lanjut ke handler</span>
+}</code></pre>
+                <p>Bedanya dengan <code>logger</code>: middleware ini <strong>bisa menolak</strong>. Kalau kunci salah, ia menjawab sendiri dengan 401 lalu <code>return</code>, sehingga <code>next()</code> tidak pernah dipanggil dan handler tidak jalan. Kalau benar, <code>next()</code> meneruskan permintaan.</p>
+                <p>Middleware untuk satu rute disisipkan sebagai argumen <strong>di antara path dan handler</strong>. Buka <code>src/routes/mahasiswa.routes.js</code>, impor <code>cekApiKey</code>, lalu sisipkan pada rute <code>POST</code> saja:</p>
+<pre><code><span class="comment">// src/routes/mahasiswa.routes.js</span>
+<span class="keyword">import</span> { <span class="variable">cekApiKey</span> } <span class="keyword">from</span> <span class="string">'../middleware/cekApiKey.js'</span>;
+
+<span class="comment">// ...rute GET tidak berubah...</span>
+
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">cekApiKey</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {     <span class="comment">// ← cekApiKey disisipkan di sini</span>
+    <span class="comment">// isi handler sama seperti sebelumnya</span>
+});</code></pre>
+                <p>Uji tiga skenario:</p>
+                <div class="terminal"><span class="prompt">$</span> curl -i http://localhost:3000/mahasiswa/1
+<span class="out">HTTP/1.1 200 OK            # GET tetap terbuka</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa \
+    -H "Content-Type: application/json" \
+    -d '{"nim":"F1D021004","nama":"Dewi"}'
+<span class="out">{"error":{"pesan":"API key tidak valid","kode":"UNAUTHORIZED"}}    # 401, ditolak</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa \
+    -H "Content-Type: application/json" \
+    -H "x-api-key: rahasia123" \
+    -d '{"nim":"F1D021004","nama":"Dewi"}'
+<span class="out">{"data":{"id":4,"nim":"F1D021004","nama":"Dewi","ipk":0,"semester":1}}    # 201, lolos</span></div>
+
+                <div class="warning-box">
+                    <strong>Kunci yang ditulis langsung di kode hanya untuk latihan.</strong> Di aplikasi sungguhan, kunci atau token disimpan di environment variable dan diperiksa dengan cara yang lebih aman (Pertemuan 9 dan 10).
+                </div>
+                <p>Perhatikan bahwa <code>cekApiKey</code> menulis format error-nya sendiri, begitu juga <code>kirimError</code> di router. Itu yang kita rapikan di Section 3.</p>
+
+                <h3>2.7 Tingkat Aplikasi vs Tingkat Router</h3>
+                <p>Sekarang kita punya dua tempat memasang middleware. Yang kita pasang dengan <code>app.use(...)</code> (<code>express.json()</code>, <code>logger</code>) disebut <strong>middleware tingkat aplikasi</strong> (<em>application-level</em>): berlaku untuk <em>setiap</em> permintaan. Yang dipasang di router dengan <code>router.use(...)</code> disebut <strong>middleware tingkat router</strong> (<em>router-level</em>): hanya berlaku bagi rute di dalam router itu.</p>
 
                 <table>
                     <tr><th>&nbsp;</th><th>Tingkat aplikasi</th><th>Tingkat router</th></tr>
                     <tr><td><strong>Dipasang pada</strong></td><td><code>app.use(...)</code></td><td><code>router.use(...)</code></td></tr>
                     <tr><td><strong>Cakupan</strong></td><td>seluruh aplikasi</td><td>hanya rute di dalam router itu</td></tr>
-                    <tr><td><strong>Cocok untuk</strong></td><td>parsing body, CORS, log, penanganan error</td><td>cek token untuk satu modul, validasi khusus, prefiks URL</td></tr>
+                    <tr><td><strong>Cocok untuk</strong></td><td>parsing body, CORS, log, penanganan error</td><td>cek akses untuk satu modul, validasi khusus</td></tr>
                     <tr><td><strong>Padanan Laravel</strong></td><td>global middleware di <code>Kernel.php</code></td><td><code>Route::group()</code> dengan middleware</td></tr>
                 </table>
 
-<pre><code><span class="comment">// routes/mahasiswa.js — satu file untuk satu kelompok sumber daya</span>
-<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
-<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+                <p>Coba tambahkan satu middleware tingkat router di <code>src/routes/mahasiswa.routes.js</code>, tepat setelah <code>const router = ...</code>:</p>
+<pre><code><span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
 
 <span class="comment">// Middleware tingkat router: hanya jalan untuk rute di file ini</span>
 <span class="variable">router</span>.<span class="function">use</span>((<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
     <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'[mahasiswa]'</span>, <span class="variable">req</span>.<span class="variable">method</span>, <span class="variable">req</span>.<span class="variable">originalUrl</span>);
     <span class="function">next</span>();
-});
-
-<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* GET /mahasiswa */</span> });
-<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { <span class="comment">/* GET /mahasiswa/:id */</span> });
-
-<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
-<pre><code><span class="comment">// index.js — router dipasang di satu titik, prefiks ditentukan di sini</span>
-<span class="keyword">import</span> <span class="variable">mahasiswaRouter</span> <span class="keyword">from</span> <span class="string">'./routes/mahasiswa.js'</span>;
-
-<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());              <span class="comment">// tingkat aplikasi: semua rute</span>
-<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRouter</span>); <span class="comment">// tingkat router: hanya /mahasiswa/*</span></code></pre>
-                <p>Mari kita bedah keuntungannya. Pertama, <strong>prefiks ditulis sekali</strong> &mdash; di dalam <code>routes/mahasiswa.js</code> kita cukup menulis <code>'/'</code> dan <code>'/:id'</code>, bukan <code>'/mahasiswa'</code> dan <code>'/mahasiswa/:id'</code>. Kalau suatu saat alamatnya berubah menjadi <code>/api/v1/mahasiswa</code>, hanya satu baris di <code>index.js</code> yang disunting.</p>
-                <p>Kedua, <strong>middleware ikut terkurung</strong>. Middleware log di atas tidak akan mengotori rute lain. Di Pertemuan 9 nanti, middleware pemeriksa token akan dipasang persis di sini &mdash; sehingga seluruh rute mahasiswa terlindungi sekaligus tanpa menyentuh rute publik seperti <code>/login</code>.</p>
+});</code></pre>
+                <p>Kirim <code>GET /mahasiswa/2</code> dan <code>GET /</code>. Terminal server menampilkan:</p>
+                <div class="terminal"><span class="out">[mahasiswa] GET /mahasiswa/2
+GET /mahasiswa/2 -> 200 (3 ms)
+GET / -> 200 (1 ms)</span></div>
+                <p>Baris <code>[mahasiswa]</code> hanya muncul untuk alamat berawalan <code>/mahasiswa</code>, sedangkan <code>logger</code> mencatat semuanya. Perhatikan urutannya: baris router muncul lebih dulu karena middleware itu berjalan sebelum handler, sementara baris <code>logger</code> baru dicetak setelah tanggapan selesai.</p>
+                <p>Pemakaian paling berguna adalah <strong>mengurung</strong> middleware pada satu kelompok rute. Misalnya, kalau semua rute <code>/mahasiswa</code> (termasuk <code>GET</code>) harus butuh kunci, cukup satu baris <code>router.use(cekApiKey)</code> di router, tanpa menyentuh rute publik lain seperti <code>/</code> atau nanti <code>/login</code>. Di Pertemuan 9, middleware pemeriksa token akan dipasang dengan cara ini.</p>
 
                 <div class="info-box">
-                    <strong>Kaitan dengan bagian 3.</strong> Struktur proyek yang kita rapikan pada bagian 3 nanti memakai pola ini: satu file router per sumber daya di dalam folder <code>routes/</code>, lalu semuanya dipasang dari <code>index.js</code>.
+                    <strong>Kaitan dengan Section 5.</strong> Router sudah memisahkan rute dari <code>index.js</code>. Di Section 5 kita memisahkan lagi isi handler menjadi controller dan service, tetapi file router, folder <code>src/middleware/</code>, dan pola <code>app.use('/mahasiswa', ...)</code> tetap sama.
                 </div>
 
                 <div class="interactive-demo">
@@ -250,234 +494,454 @@
             </section>
 
             <section id="error-terpusat">
-                <h2>2. Penanganan Error Terpusat <span class="badge badge-important">Indikator 3.5</span></h2>
+                <h2>3. Penanganan Error Terpusat <span class="badge badge-important">Indikator 3.5</span></h2>
 
-                <p>Di Pertemuan 4, setiap handler menangani errornya sendiri-sendiri dengan <code>if</code> berulang. Express punya cara yang jauh lebih rapi: <strong>error-handling middleware</strong> &mdash; satu tempat tunggal yang menangkap semua error dari seluruh aplikasi.</p>
-
-                <h3>2.1 Error-Handling Middleware</h3>
-                <p>Bentuknya persis middleware biasa, hanya dengan <strong>empat parameter</strong> (bukan tiga). Express mengenali ini secara khusus lewat jumlah parameternya:</p>
-
-                <pre><code><span class="comment">// src/middleware/errorHandler.js</span>
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">errorHandler</span>(<span class="variable">err</span>, <span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {   <span class="comment">// 4 parameter!</span>
-    <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>);   <span class="comment">// log untuk developer</span>
-
-    <span class="keyword">const</span> <span class="variable">status</span> = <span class="variable">err</span>.<span class="variable">status</span> ?? <span class="number">500</span>;
-    <span class="variable">res</span>.<span class="function">status</span>(<span class="variable">status</span>).<span class="function">json</span>({
-        <span class="variable">error</span>: {
-            <span class="variable">pesan</span>: <span class="variable">err</span>.<span class="variable">message</span> ?? <span class="string">'Terjadi kesalahan pada server'</span>,
-            <span class="variable">kode</span>: <span class="variable">err</span>.<span class="variable">kode</span> ?? <span class="string">'INTERNAL_ERROR'</span>
-        }
-    });
-}
-
-<span class="comment">// index.js — DIPASANG PALING TERAKHIR, setelah semua rute</span>
-<span class="variable">app</span>.<span class="function">use</span>(<span class="function">errorHandler</span>);</code></pre>
-
-                <div class="warning-box">
-                    <strong>Posisi sangat menentukan:</strong> error-handling middleware harus didaftarkan <strong>setelah</strong> semua <code>app.get/post/put/delete</code>. Express mencari middleware error hanya ketika ada yang memanggil <code>next(err)</code> atau melempar error &mdash; dan ia mencarinya <strong>ke bawah</strong> dari titik kegagalan.
+                <h3>3.1 Masalah: Error Tersebar di Mana-Mana</h3>
+                <p>Lihat kembali kode di Section 1 dan 2. Setiap tempat yang menemukan masalah membentuk jawabannya sendiri: router memakai helper <code>kirimError</code>, sedangkan <code>cekApiKey</code> menulis JSON error secara manual. Ada tiga akibatnya:</p>
+                <ul>
+                    <li><strong>Format error ditulis di banyak tempat.</strong> Kalau format <code>{ error: { pesan, kode } }</code> berubah, semua tempat itu harus dicari dan disunting satu per satu.</li>
+                    <li><strong>Bug tak terduga tidak punya jawaban yang rapi.</strong> Kalau handler melempar <code>TypeError</code> karena salah ketik, Express menjawab dengan halaman HTML berisi jejak error, bukan JSON.</li>
+                    <li><strong>URL yang tidak dikenal</strong> dijawab teks <code>Cannot GET /xyz</code>, juga bukan JSON.</li>
+                </ul>
+                <p>Solusinya memisahkan dua pekerjaan: tempat yang <em>menemukan</em> masalah cukup <strong>melempar error</strong>, dan satu fungsi khusus di paling bawah yang <strong>menjawab</strong> semua error. Fungsi itu disebut <strong>error-handling middleware</strong>.</p>
+                <div class="pipeline">
+                    <div class="pipe-box"><div class="pipe-box-title">rute / middleware</div><div class="pipe-box-desc">throw AppError(...)<br>atau next(err)</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box pipe-error"><div class="pipe-box-title">errorHandler</div><div class="pipe-box-desc">satu-satunya yang menjawab error</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box pipe-final"><div class="pipe-box-title">response JSON</div><div class="pipe-box-desc">{ error: { pesan, kode } }</div></div>
                 </div>
 
-                <h3>2.2 Kelas Error Kustom (Sambungan dari Pertemuan 3)</h3>
-                <p>Ingat kelas error kustom yang dibuat di Pertemuan 3 untuk menangani respons <code>fetch</code>? Pola yang sama dipakai di sisi server:</p>
-
-                <pre><code><span class="comment">// src/utils/AppError.js</span>
-<span class="keyword">export</span> <span class="keyword">class</span> <span class="function">AppError</span> <span class="keyword">extends</span> <span class="variable">Error</span> {
+                <h3>3.2 Kelas Error Kustom: <code>AppError</code></h3>
+                <p>Agar <code>errorHandler</code> tahu harus menjawab dengan status apa, error yang dilempar perlu membawa status dan kode. Caranya dengan kelas turunan <code>Error</code>, pola yang sama dengan kelas error kustom di Pertemuan 3 (sisi klien), kini dipakai di sisi server:</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">class</span> <span class="variable">AppError</span> <span class="keyword">extends</span> <span class="variable">Error</span> {
     <span class="function">constructor</span>(<span class="variable">status</span>, <span class="variable">pesan</span>, <span class="variable">kode</span>) {
         <span class="function">super</span>(<span class="variable">pesan</span>);
-        <span class="keyword">this</span>.<span class="variable">status</span> = <span class="variable">status</span>;
-        <span class="keyword">this</span>.<span class="variable">kode</span> = <span class="variable">kode</span>;
+        <span class="variable">this</span>.<span class="variable">status</span> = <span class="variable">status</span>;
+        <span class="variable">this</span>.<span class="variable">kode</span> = <span class="variable">kode</span>;
     }
-}
+}</code></pre>
+                <p><code>super(pesan)</code> mengisi <code>err.message</code>. Dua properti tambahan membawa kebutuhan HTTP: <code>status</code> (kode status) dan <code>kode</code> (kode mesin yang stabil, misalnya <code>NOT_FOUND</code>, agar klien tidak perlu membaca kalimat pesan). Pemakaiannya satu baris: <code>throw new AppError(404, 'Mahasiswa tidak ditemukan', 'NOT_FOUND')</code>.</p>
 
-<span class="comment">// Dipakai di route handler</span>
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">x</span> <span class="operator">=&gt;</span> <span class="variable">x</span>.<span class="variable">id</span> === <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
-        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>));
-    }
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
-});</code></pre>
+                <h3>3.3 Error-Handling Middleware</h3>
+                <p>Bentuknya sama dengan middleware biasa, tetapi dengan <strong>empat parameter</strong> (<code>err</code> di depan). Express mengenalinya secara khusus dari jumlah parameter itu, sehingga keempatnya harus ditulis walaupun <code>next</code> tidak dipakai.</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">function</span> <span class="function">errorHandler</span>(<span class="variable">err</span>, <span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">status</span> = <span class="variable">err</span>.<span class="variable">status</span> <span class="operator">??</span> <span class="number">500</span>;
 
-                <h3>2.3 Menangani Error pada Handler async</h3>
-                <p>Ini jebakan yang sangat sering: Express <strong>tidak otomatis</strong> menangkap error yang dilempar dari dalam fungsi <code>async</code>. Ingat Materi 2 &mdash; error di dalam <code>async</code> perlu ditangani secara eksplisit.</p>
+    <span class="keyword">if</span> (<span class="variable">status</span> &gt;= <span class="number">500</span>) <span class="variable">console</span>.<span class="function">error</span>(<span class="variable">err</span>);   <span class="comment">// hanya error server yang dicatat lengkap</span>
 
-                <pre><code><span class="comment">// ❌ Error di sini TIDAK tertangkap errorHandler — server bisa crash</span>
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="function">ambilDariDatabase</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);   <span class="comment">// kalau ini reject...</span>
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
-});
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="variable">status</span>).<span class="function">json</span>({
+        <span class="variable">error</span>: {
+            <span class="variable">pesan</span>: <span class="variable">status</span> &lt; <span class="number">500</span> ? <span class="variable">err</span>.<span class="variable">message</span> : <span class="string">'Terjadi kesalahan pada server'</span>,
+            <span class="variable">kode</span>: <span class="variable">err</span>.<span class="variable">kode</span> <span class="operator">??</span> (<span class="variable">status</span> &lt; <span class="number">500</span> ? <span class="string">'REQUEST_ERROR'</span> : <span class="string">'INTERNAL_ERROR'</span>)
+        }
+    });
+}</code></pre>
+                <p>Tiga keputusan di kode ini:</p>
+                <ul>
+                    <li><code>err.status ?? 500</code>: error yang tidak membawa status (misalnya <code>TypeError</code> dari bug) dianggap kesalahan server, 500.</li>
+                    <li>Pesan asli hanya dikirim ke klien kalau statusnya di bawah 500. Untuk error server, klien menerima kalimat umum, sedangkan detailnya dicatat di terminal dengan <code>console.error</code>. Pesan error internal (nama tabel, jalur file) tidak boleh bocor ke klien.</li>
+                    <li>Error dari luar kita ikut tertangani. Misalnya JSON yang rusak ditolak <code>express.json()</code> dengan status 400, lalu diubah <code>errorHandler</code> ke format yang sama.</li>
+                </ul>
 
-<span class="comment">// ✅ Bungkus dengan try/catch, teruskan ke next()</span>
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">try</span> {
-        <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="function">ambilDariDatabase</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);
-        <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
-    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
-        <span class="function">next</span>(<span class="variable">err</span>);   <span class="comment">// diteruskan ke errorHandler, TIDAK dilempar langsung</span>
-    }
-});
+                <p>Satu middleware lagi melengkapinya: penangkap URL yang tidak dikenal. Ia dipasang setelah semua rute, dan tugasnya hanya mengubah &ldquo;tidak ada rute yang cocok&rdquo; menjadi <code>AppError</code>:</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
 
-<span class="comment">// ✅✅ Lebih rapi — pembungkus generik (dipakai seterusnya di mata kuliah ini)</span>
-<span class="keyword">const</span> <span class="function">asyncHandler</span> = (<span class="variable">fn</span>) <span class="operator">=&gt;</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
-    <span class="variable">Promise</span>.<span class="function">resolve</span>(<span class="function">fn</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>)).<span class="function">catch</span>(<span class="variable">next</span>);
-};
-
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="function">asyncHandler</span>(<span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="function">ambilDariDatabase</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
-}));</code></pre>
-
-                <div class="success-box">
-                    <strong><code>asyncHandler</code> akan dipakai terus mulai sekarang</strong> &mdash; membungkus setiap handler async sekali, sehingga tidak perlu menulis <code>try/catch</code> berulang-ulang di setiap rute. Pola ini menjadi standar di Pertemuan 6 dan seterusnya.
-                </div>
-
-
-                <h3>2.4 Validasi Masukan sebagai Middleware</h3>
-                <p>Sampai di sini penanganan error sudah terpusat. Sekarang pertanyaannya: <em>di mana</em> masukan dari klien seharusnya diperiksa? Kalau pemeriksaan ditaruh di dalam setiap handler, kodenya akan berulang dan mudah terlewat. Cara yang lebih rapi: jadikan validasi itu sendiri sebagai middleware, dipasang <strong>sebelum</strong> handler.</p>
-                <p>Menulis aturan validasi dengan <code>if</code> bertumpuk cepat menjadi panjang. Pustaka <strong>Joi</strong> menggantinya dengan <em>skema</em> &mdash; deskripsi bentuk data yang kita harapkan.</p>
-
-<pre><code><span class="variable">$</span> <span class="variable">npm</span> <span class="variable">install</span> <span class="variable">joi</span></code></pre>
-<pre><code><span class="comment">// validators/mahasiswa.js</span>
-<span class="keyword">import</span> <span class="variable">Joi</span> <span class="keyword">from</span> <span class="string">'joi'</span>;
-
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">skemaMahasiswa</span> = <span class="variable">Joi</span>.<span class="function">object</span>({
-    <span class="variable">nim</span>:     <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">length</span>(<span class="number">11</span>).<span class="function">required</span>(),
-    <span class="variable">nama</span>:    <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">min</span>(<span class="number">3</span>).<span class="function">max</span>(<span class="number">100</span>).<span class="function">required</span>(),
-    <span class="variable">email</span>:   <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">email</span>().<span class="function">required</span>(),
-    <span class="variable">semester</span>: <span class="variable">Joi</span>.<span class="function">number</span>().<span class="function">integer</span>().<span class="function">min</span>(<span class="number">1</span>).<span class="function">max</span>(<span class="number">14</span>).<span class="function">required</span>(),
-});</code></pre>
-                <p>Mari kita bedah skemanya. <code>Joi.object({...})</code> mendeskripsikan sebuah objek; setiap properti diisi rangkaian method yang dirantai. <code>Joi.string()</code> menetapkan tipe, <code>.length(11)</code> menetapkan panjang persis, dan <code>.required()</code> menandai properti itu wajib ada. Rantai ini dibaca dari kiri ke kanan seperti kalimat: <em>&ldquo;nim adalah string, panjangnya 11, dan wajib diisi&rdquo;</em>.</p>
-                <p>Skema diperiksa dengan <code>skema.validate(data)</code>, yang mengembalikan objek hasil. Bila properti <code>error</code> pada hasil itu <strong>bukan</strong> <code>undefined</code>, berarti validasi gagal, dan <code>error.message</code> menjelaskan alasannya.</p>
-
-<pre><code><span class="comment">// middlewares/validasi.js — satu pabrik middleware, dipakai semua rute</span>
-<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../errors/AppError.js'</span>;
-
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">validasi</span> = (<span class="variable">skema</span>) <span class="operator">=&gt;</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> { <span class="variable">error</span>, <span class="variable">value</span> } = <span class="variable">skema</span>.<span class="function">validate</span>(<span class="variable">req</span>.<span class="variable">body</span>, { <span class="variable">abortEarly</span>: <span class="keyword">false</span> });
-
-    <span class="keyword">if</span> (<span class="variable">error</span>) {
-        <span class="comment">// Semua pesan digabung, lalu diserahkan ke errorHandler lewat next()</span>
-        <span class="keyword">const</span> <span class="variable">pesan</span> = <span class="variable">error</span>.<span class="variable">details</span>.<span class="function">map</span>((<span class="variable">d</span>) <span class="operator">=&gt;</span> <span class="variable">d</span>.<span class="variable">message</span>).<span class="function">join</span>(<span class="string">'; '</span>);
-        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="variable">pesan</span>, <span class="number">400</span>));
-    }
-
-    <span class="variable">req</span>.<span class="variable">body</span> = <span class="variable">value</span>;   <span class="comment">// pakai nilai yang sudah dibersihkan Joi</span>
-    <span class="function">next</span>();
-};</code></pre>
-                <p>Perhatikan tiga keputusan pada kode di atas. <code>validasi</code> bukan middleware, melainkan <strong>fungsi yang mengembalikan</strong> middleware &mdash; sehingga satu file ini bisa dipakai untuk skema apa pun. Opsi <code>abortEarly: false</code> membuat Joi melaporkan <em>seluruh</em> kesalahan sekaligus, bukan berhenti di kesalahan pertama; bagi pengguna formulir, ini jauh lebih ramah. Dan yang terpenting: kegagalan validasi tidak dibalas langsung dengan <code>res.status(400)</code>, melainkan diserahkan ke <code>next(new AppError(...))</code> &mdash; supaya bentuk tanggapan errornya tetap seragam dengan error lain, persis seperti yang kita bangun di 2.1&ndash;2.2.</p>
-
-<pre><code><span class="comment">// routes/mahasiswa.js — validasi dipasang di antara rute dan handler</span>
-<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), <span class="function">asyncHandler</span>(<span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="comment">// Sampai di sini req.body DIJAMIN sudah sesuai skema</span>
-    <span class="keyword">const</span> <span class="variable">baru</span> = <span class="keyword">await</span> <span class="variable">mahasiswaService</span>.<span class="function">tambah</span>(<span class="variable">req</span>.<span class="variable">body</span>);
-    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
-}));</code></pre>
-                <div class="success-box">
-                    <strong>Handler menjadi bersih.</strong> Karena validasi sudah dijamin oleh middleware di depannya, isi handler tinggal mengurus satu hal: logika bisnisnya. Inilah alasan validasi ditaruh sebagai middleware, bukan di dalam handler.
-                </div>
-
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">notFound</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">`Rute ${req.method} ${req.originalUrl} tidak ada`</span>, <span class="string">'ROUTE_NOT_FOUND'</span>));
+}</code></pre>
                 <div class="warning-box">
-                    <strong>Validasi sisi klien bukan pengganti.</strong> Pemeriksaan di formulir React (Pertemuan 11) hanya membantu pengguna; siapa pun tetap bisa mengirim permintaan langsung ke API lewat cURL atau REST Client. Validasi sisi server adalah satu-satunya yang benar-benar menjaga data &mdash; ini akan kita perdalam di Pertemuan 10 sebagai bagian dari OWASP.
+                    <strong>Posisi sangat menentukan.</strong> <code>notFound</code> dan <code>errorHandler</code> harus didaftarkan <strong>setelah</strong> semua rute, dengan <code>errorHandler</code> paling akhir. Express mencari penangan error ke <em>bawah</em> dari titik kegagalan. Dan kalau memanggil <code>next(err)</code> di dalam middleware, jangan lupa <code>return</code>, supaya kode di bawahnya tidak ikut berjalan.
+                </div>
+
+                <h3>3.4 Praktik: Terapkan di API Mahasiswa</h3>
+                <p>Lanjutkan proyek dari Section 2. Kita ganti <code>kirimError</code> dan JSON manual dengan <code>AppError</code>.</p>
+
+                <h4>Langkah 1 &mdash; Buat tiga file</h4>
+                <p>Salin kode dari 3.2 dan 3.3 ke tiga file baru:</p>
+                <div class="folder-tree">
+                    <div class="f-root">src/</div>
+                    <div class="f-item">utils/AppError.js</div>
+                    <div class="f-item">middleware/errorHandler.js</div>
+                    <div class="f-item">middleware/notFound.js</div>
+                </div>
+
+                <h4>Langkah 2 &mdash; Ubah <code>cekApiKey</code></h4>
+                <p>Alih-alih menjawab sendiri, ia meneruskan <code>AppError</code>:</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cekApiKey</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">kunci</span> = <span class="variable">req</span>.<span class="variable">headers</span>[<span class="string">'x-api-key'</span>];
+
+    <span class="keyword">if</span> (<span class="variable">kunci</span> <span class="operator">!==</span> <span class="string">'rahasia123'</span>) {
+        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'API key tidak valid'</span>, <span class="string">'UNAUTHORIZED'</span>));
+    }
+    <span class="function">next</span>();   <span class="comment">// kunci benar, lanjut ke handler</span>
+}</code></pre>
+                <h4>Langkah 3 &mdash; Ubah router</h4>
+                <p>Di <code>src/routes/mahasiswa.routes.js</code>: hapus helper <code>kirimError</code>, impor <code>AppError</code>, lalu ganti dua pemanggilannya dengan <code>throw</code>. Rute GET daftar tidak berubah.</p>
+<pre><code><span class="comment">// src/routes/mahasiswa.routes.js</span>
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">x</span> <span class="operator">=&gt;</span> <span class="variable">x</span>.<span class="variable">id</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>));
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);   <span class="comment">// dulu: return kirimError(...)</span>
+    }
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+});
+
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">cekApiKey</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> } = <span class="variable">req</span>.<span class="variable">body</span> <span class="operator">??</span> {};
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">nim</span> <span class="operator">||</span> <span class="operator">!</span><span class="variable">nama</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">422</span>, <span class="string">'nim dan nama wajib diisi'</span>, <span class="string">'VALIDATION_ERROR'</span>);   <span class="comment">// dulu: return kirimError(...)</span>
+    }
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>: <span class="variable">ipk</span> <span class="operator">??</span> <span class="number">0</span>, <span class="variable">semester</span>: <span class="variable">semester</span> <span class="operator">??</span> <span class="number">1</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
+});</code></pre>
+                <p>Perhatikan: <code>throw</code> di handler sinkron langsung ditangkap Express dan diteruskan ke <code>errorHandler</code>. Tidak perlu <code>return</code> ataupun <code>try/catch</code>.</p>
+
+                <h4>Langkah 4 &mdash; Daftarkan di <code>index.js</code></h4>
+                <p>Impor keduanya, lalu pasang tepat setelah router (urutan penting):</p>
+<pre><code><span class="keyword">import</span> { <span class="variable">notFound</span> } <span class="keyword">from</span> <span class="string">'./src/middleware/notFound.js'</span>;
+<span class="keyword">import</span> { <span class="variable">errorHandler</span> } <span class="keyword">from</span> <span class="string">'./src/middleware/errorHandler.js'</span>;
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">notFound</span>);        <span class="comment">// tidak ada rute yang cocok</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">errorHandler</span>);    <span class="comment">// SELALU paling terakhir</span></code></pre>
+                <h4>Langkah 5 &mdash; Uji</h4>
+<div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/99
+<span class="out">{"error":{"pesan":"Mahasiswa tidak ditemukan","kode":"NOT_FOUND"}}</span>
+
+<span class="prompt">$</span> curl http://localhost:3000/xyz
+<span class="out">{"error":{"pesan":"Rute GET /xyz tidak ada","kode":"ROUTE_NOT_FOUND"}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -d '{"nim":"F1D021004","nama":"Dewi"}'
+<span class="out">{"error":{"pesan":"API key tidak valid","kode":"UNAUTHORIZED"}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{ngawur'
+<span class="out">{"error":{"pesan":"Expected property name or '}' in JSON at position 1 (line 1 column 2)","kode":"REQUEST_ERROR"}}</span></div>
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> empat sumber error berbeda (data tidak ada, URL tidak dikenal, kunci salah, JSON rusak) kini semuanya menjawab dengan format yang sama, padahal hanya <code>errorHandler</code> yang membentuk jawaban itu.
+                </div>
+
+                <h3>3.5 Error pada Handler <code>async</code></h3>
+                <p>Pada Express 4, error yang dilempar dari handler <code>async</code> <strong>tidak</strong> otomatis ditangkap, sehingga tutorial lama membungkus tiap handler dengan <code>try/catch</code> atau fungsi pembungkus. <strong>Express 5</strong>, versi yang kita pasang di Pertemuan 4, sudah menanganinya: handler yang melempar error atau mengembalikan <em>promise</em> yang gagal otomatis diteruskan ke <code>errorHandler</code>.</p>
+<pre><code><span class="comment">// Express 5: aman tanpa try/catch dan tanpa pembungkus</span>
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="function">cariMahasiswa</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);   <span class="comment">// kalau promise ini gagal, errorHandler yang menjawab</span>
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+});</code></pre>
+                <p>Pola ini kita pakai mulai Section 5, ketika service dan controller menjadi fungsi <code>async</code>.</p>
+
+                <div class="info-box">
+                    <strong>Kalau menemukan kode seperti ini di tutorial atau proyek lama,</strong> itu penambal untuk Express 4:
+<pre><code><span class="keyword">const</span> <span class="variable">asyncHandler</span> = (<span class="variable">fn</span>) <span class="operator">=&gt;</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">Promise</span>.<span class="function">resolve</span>(<span class="function">fn</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>)).<span class="keyword">catch</span>(<span class="variable">next</span>);
+};
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, <span class="function">asyncHandler</span>(<span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> { /* ... */ }));</code></pre>
+                    Di proyek kita tidak diperlukan. Cek versi Express dengan <code>npm ls express</code>.
                 </div>
 
                 <div class="interactive-demo">
                     <h5>Coba Langsung: Error Terpusat</h5>
                     <button onclick="demoErrorHandler('sync')">Error pada handler biasa</button>
-                    <button onclick="demoErrorHandler('async-gagal')">Error async TANPA asyncHandler</button>
-                    <button onclick="demoErrorHandler('async-benar')">Error async DENGAN asyncHandler</button>
+                    <button onclick="demoErrorHandler('async')">Error pada handler async (Express 5)</button>
+                    <button onclick="demoErrorHandler('express4')">Error pada handler async (Express 4)</button>
+                    <button onclick="demoErrorHandler('bug')">Bug tak terduga (TypeError)</button>
                     <div class="console-output" id="demo2-out">Klik salah satu tombol...</div>
+                </div>
+
+            </section>
+
+            <section id="validasi">
+                <h2>4. Validasi Masukan <span class="badge badge-important">Indikator 3.5</span></h2>
+
+                <p>Lanjutkan proyek <code>api-mahasiswa</code> dari akhir Section 3. Error sudah terpusat, tetapi pemeriksaan isi kiriman klien masih lemah. Section ini menutup celah itu dengan middleware validasi.</p>
+
+                <h3>4.1 Mengapa Validasi Dipisah dari Handler?</h3>
+                <p>Pemeriksaan isi <code>POST /mahasiswa</code> sekarang hanya <code>if (!nim || !nama)</code> di dalam handler. Coba kirim data yang jelas keliru:</p>
+<div class="terminal"><span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"1","nama":"X","ipk":9,"semester":-3}'
+<span class="out">{"data":{"id":4,"nim":"1","nama":"X","ipk":9,"semester":-3}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021004","nama":"Dewi","ipk":"bagus"}'
+<span class="out">{"data":{"id":5,"nim":"F1D021004","nama":"Dewi","ipk":"bagus","semester":1}}</span></div>
+                <p>Keduanya diterima dan masuk ke daftar: NIM &ldquo;1&rdquo;, IPK 9, semester &minus;3, bahkan IPK berupa teks &ldquo;bagus&rdquo;. Data rusak seperti ini akan merepotkan semua yang memakai API nanti (React, laporan, database). Menambah <code>if</code> untuk setiap kemungkinan membuat handler panjang dan berulang di setiap rute.</p>
+                <p>Cara yang lebih rapi: jadikan validasi itu sendiri sebagai <strong>middleware yang dipasang sebelum handler</strong>. Handler hanya dijalankan kalau datanya sudah pasti benar.</p>
+                <div class="pipeline">
+                    <div class="pipe-box"><div class="pipe-box-title">cekApiKey</div><div class="pipe-box-desc">sudah punya izin?</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">validasi</div><div class="pipe-box-desc">bentuk data benar?</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box pipe-final"><div class="pipe-box-title">handler</div><div class="pipe-box-desc">simpan data</div></div>
+                </div>
+
+                <p>Ada dua jenis pemeriksaan yang perlu dibedakan, karena tempatnya berbeda:</p>
+                <table>
+                    <tr><th>Jenis</th><th>Contoh di api-mahasiswa</th><th>Tempatnya</th></tr>
+                    <tr><td><strong>Validasi bentuk data</strong></td><td>NIM 9 karakter, IPK angka 0&ndash;4, nama wajib ada</td><td>Middleware validasi (Section ini)</td></tr>
+                    <tr><td><strong>Aturan bisnis</strong></td><td>NIM tidak boleh sama dengan mahasiswa lain</td><td>Service (Section 5)</td></tr>
+                </table>
+                <p>Menulis aturan bentuk data dengan <code>if</code> bertumpuk cepat panjang. Pustaka <strong>Joi</strong> menggantinya dengan <em>skema</em>, yaitu deskripsi bentuk data yang diharapkan. Skema ditulis sekali, lalu dipakai oleh satu middleware generik.</p>
+
+                <h3>4.2 Praktik: Pasang Validasi di API Mahasiswa</h3>
+
+                <h4>Langkah 1 &mdash; Install Joi dan tulis skema</h4>
+                <div class="terminal"><span class="prompt">$</span> npm install joi</div>
+<pre><code><span class="comment">// src/validators/mahasiswa.validator.js</span>
+<span class="keyword">import</span> <span class="variable">Joi</span> <span class="keyword">from</span> <span class="string">'joi'</span>;
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">skemaMahasiswa</span> = <span class="variable">Joi</span>.<span class="function">object</span>({
+    <span class="variable">nim</span>:      <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">length</span>(<span class="number">9</span>).<span class="function">required</span>(),
+    <span class="variable">nama</span>:     <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">min</span>(<span class="number">3</span>).<span class="function">max</span>(<span class="number">100</span>).<span class="function">required</span>(),
+    <span class="variable">ipk</span>:      <span class="variable">Joi</span>.<span class="function">number</span>().<span class="function">min</span>(<span class="number">0</span>).<span class="function">max</span>(<span class="number">4</span>).<span class="keyword">default</span>(<span class="number">0</span>),
+    <span class="variable">semester</span>: <span class="variable">Joi</span>.<span class="function">number</span>().<span class="function">integer</span>().<span class="function">min</span>(<span class="number">1</span>).<span class="function">max</span>(<span class="number">14</span>).<span class="keyword">default</span>(<span class="number">1</span>)
+});</code></pre>
+
+                <p>Rantai method dibaca dari kiri ke kanan seperti kalimat: <em>&ldquo;nim adalah string, panjangnya 9, dan wajib diisi&rdquo;</em>. <code>.default(0)</code> berarti kalau <code>ipk</code> tidak dikirim, Joi mengisinya dengan 0. Ini menggantikan <code>ipk ?? 0</code> di handler.</p>
+
+                <h4>Langkah 2 &mdash; Bungkus skema menjadi middleware</h4>
+<pre><code><span class="comment">// src/middleware/validasi.js</span>
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">validasi</span> = (<span class="variable">skema</span>) <span class="operator">=&gt;</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">error</span>, <span class="variable">value</span> } = <span class="variable">skema</span>.<span class="function">validate</span>(<span class="variable">req</span>.<span class="variable">body</span> <span class="operator">??</span> {}, { <span class="variable">abortEarly</span>: <span class="variable">false</span> });
+
+    <span class="keyword">if</span> (<span class="variable">error</span>) {
+        <span class="keyword">const</span> <span class="variable">pesan</span> = <span class="variable">error</span>.<span class="variable">details</span>.<span class="function">map</span>(<span class="variable">d</span> <span class="operator">=&gt;</span> <span class="variable">d</span>.<span class="variable">message</span>).<span class="function">join</span>(<span class="string">'; '</span>);
+        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">422</span>, <span class="variable">pesan</span>, <span class="string">'VALIDATION_ERROR'</span>));
+    }
+
+    <span class="variable">req</span>.<span class="variable">body</span> = <span class="variable">value</span>;   <span class="comment">// pakai nilai yang sudah dibersihkan Joi (termasuk nilai bawaan)</span>
+    <span class="function">next</span>();
+};</code></pre>
+                <p>Tiga hal yang perlu diperhatikan:</p>
+                <ul>
+                    <li><code>validasi</code> bukan middleware, melainkan <strong>fungsi yang mengembalikan</strong> middleware. Karena itu satu file ini dipakai untuk skema apa pun.</li>
+                    <li><code>abortEarly: false</code> membuat Joi melaporkan <em>semua</em> kesalahan sekaligus, bukan berhenti di yang pertama. Bagi pengguna formulir, ini lebih ramah.</li>
+                    <li>Kegagalan tidak dijawab langsung, melainkan diserahkan ke <code>next(new AppError(...))</code>, sehingga bentuk jawabannya tetap sama dengan error lain. <code>req.body ?? {}</code> menjaga agar request tanpa body tetap berujung 422, bukan error aneh.</li>
+                </ul>
+
+                <h4>Langkah 3 &mdash; Pasang di rute POST</h4>
+                <p>Ganti rute POST di router. Handler jadi jauh lebih pendek karena pemeriksaan <code>if</code> dan nilai bawaan sudah ditangani middleware:</p>
+<pre><code><span class="comment">// src/routes/mahasiswa.routes.js</span>
+<span class="keyword">import</span> { <span class="variable">validasi</span> } <span class="keyword">from</span> <span class="string">'../middleware/validasi.js'</span>;
+<span class="keyword">import</span> { <span class="variable">skemaMahasiswa</span> } <span class="keyword">from</span> <span class="string">'../validators/mahasiswa.validator.js'</span>;
+
+<span class="comment">// urutan: cek kunci dulu, baru validasi isi, baru handler</span>
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">cekApiKey</span>, <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, ...<span class="variable">req</span>.<span class="variable">body</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
+});</code></pre>
+                <p>Urutan <code>cekApiKey</code> sebelum <code>validasi</code> disengaja: klien tanpa izin cukup ditolak, tidak perlu repot memeriksa isi kirimannya.</p>
+
+                <h4>Langkah 4 &mdash; Uji</h4>
+<div class="terminal"><span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"123","ipk":9}'
+<span class="out">{"error":{"pesan":"\"nim\" length must be 9 characters long; \"nama\" is required; \"ipk\" must be less than or equal to 4","kode":"VALIDATION_ERROR"}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021004","nama":"Dewi"}'
+<span class="out">{"data":{"id":4,"nim":"F1D021004","nama":"Dewi","ipk":0,"semester":1}}</span></div>
+                <p>Ketiga kesalahan dilaporkan sekaligus, dan pada kiriman kedua <code>ipk</code> serta <code>semester</code> terisi nilai bawaan. Pesan Joi berbahasa Inggris; kalau ingin bahasa Indonesia, setiap aturan bisa diberi pesan sendiri dengan <code>.messages({...})</code>.</p>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> kiriman yang keliru (seperti dua contoh di 4.1) kini ditolak dengan 422 dan semua alasannya dilaporkan sekaligus, sedangkan kiriman yang benar lolos dengan nilai bawaan terisi. Handler POST tinggal tiga baris.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Validasi sisi klien bukan pengganti.</strong> Pemeriksaan di formulir React (Pertemuan 11) hanya membantu pengguna; siapa pun tetap bisa mengirim permintaan langsung ke API lewat cURL atau REST Client. Validasi sisi server adalah satu-satunya yang benar-benar menjaga data. Ini diperdalam di Pertemuan 10 sebagai bagian dari OWASP.
                 </div>
             </section>
 
             <section id="struktur">
-                <h2>3. Struktur Proyek: Pemisahan Tanggung Jawab <span class="badge">Indikator 3.6</span></h2>
+                <h2>5. Struktur Proyek: Pemisahan Tanggung Jawab <span class="badge">Indikator 3.6</span></h2>
 
-                <p>Selama ini semua kode masih ada di <code>index.js</code>. Untuk proyek yang akan tumbuh sampai akhir semester, kita pisahkan menjadi tiga lapis &mdash; padanan MVC di Laravel, dengan nama yang lebih menjelaskan perannya:</p>
+                <h3>5.1 Mengapa Dipisah?</h3>
+                <p>Router di Section 1 memisahkan rute dari <code>index.js</code>, tetapi isi handler di dalamnya masih bercampur: membaca <code>req</code>, memeriksa aturan, mengakses array, dan menyusun jawaban, semua dalam satu fungsi. Untuk proyek yang akan tumbuh sampai akhir semester, kita pisahkan menjadi <strong>empat lapis</strong>, padanan MVC di Laravel dengan nama yang lebih menjelaskan perannya:</p>
 
                 <table>
                     <tr><th>Lapis</th><th>Tanggung jawab</th><th>Padanan Laravel</th></tr>
-                    <tr><td><strong>Routes</strong></td><td>Mendaftarkan URL + metode HTTP, memanggil controller</td><td><code>routes/web.php</code></td></tr>
-                    <tr><td><strong>Controllers</strong></td><td>Membaca request, memanggil service, menyusun response</td><td>Controller</td></tr>
-                    <tr><td><strong>Services</strong></td><td>Logika bisnis: validasi, aturan, perhitungan</td><td>Service / Action class</td></tr>
-                    <tr><td><strong>Data</strong> (atau <strong>Repositories</strong>)</td><td>Akses data mentah (Pertemuan 6: lewat Prisma)</td><td>Model / Eloquent</td></tr>
+                    <tr><td><strong>Routes</strong></td><td>Memetakan URL + metode HTTP ke controller, dan memasang middleware (kunci, validasi)</td><td><code>routes/web.php</code></td></tr>
+                    <tr><td><strong>Controllers</strong></td><td>Membaca <code>req</code>, memanggil service, menyusun <code>res</code></td><td>Controller</td></tr>
+                    <tr><td><strong>Services</strong></td><td>Aturan bisnis: mencari, memutuskan, menolak dengan <code>AppError</code></td><td>Service / Action class</td></tr>
+                    <tr><td><strong>Data</strong></td><td>Akses data mentah (sekarang array; Pertemuan 6: Prisma)</td><td>Model / Eloquent</td></tr>
+                </table>
+                <div class="pipeline">
+                    <div class="pipe-box"><div class="pipe-box-title">routes</div><div class="pipe-box-desc">URL + middleware</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">controller</div><div class="pipe-box-desc">req &rarr; res</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">service</div><div class="pipe-box-desc">aturan bisnis</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box pipe-final"><div class="pipe-box-title">data</div><div class="pipe-box-desc">array / database</div></div>
+                </div>
+
+                <p style="font-size:0.85em;color:#777;margin-top:-8px;">Permintaan mengalir ke kanan, data mengalir balik ke kiri. Setiap lapis hanya mengenal lapis di sebelahnya.</p>
+
+                <table>
+                    <tr><th>Lapis</th><th>Boleh</th><th>Tidak boleh</th></tr>
+                    <tr><td>Controller</td><td>memakai <code>req</code>, <code>res</code>, memanggil service</td><td>berisi aturan bisnis atau mengakses data langsung</td></tr>
+                    <tr><td>Service</td><td>memanggil data, melempar <code>AppError</code></td><td>menyentuh <code>req</code> atau <code>res</code> (service harus bisa diuji tanpa server HTTP)</td></tr>
+                    <tr><td>Data</td><td>membaca dan menulis data</td><td>tahu apa pun tentang HTTP atau aturan bisnis</td></tr>
                 </table>
 
+                <div class="info-box">
+                    <strong>Mengapa dipisah begini?</strong> Kalau Pertemuan 6 mengganti lapis data dari array biasa menjadi Prisma, <strong>controller dan service tidak perlu diubah sama sekali</strong>. Perubahan terisolasi di satu lapis. Ini juga memudahkan pengujian otomatis di Pertemuan 13, karena service bisa diuji tanpa menjalankan server HTTP.
+                </div>
+
+                <h3>5.2 Praktik: Pecah Menjadi Empat Lapis</h3>
+                <p>Target struktur akhirnya (yang baru bertanda <span style="color:#16a34a;font-weight:700">+</span>):</p>
                 <div class="folder-tree">
                     <div class="f-root">api-mahasiswa/</div>
-                    <div class="f-item">index.js <span class="f-comment">// hanya setup app + daftar route + errorHandler</span></div>
+                    <div class="f-item">index.js <span class="f-comment">// hanya menyusun middleware global + memasang router</span></div>
                     <div class="f-item">src/</div>
-                    <div class="f-item f-2">routes/mahasiswa.routes.js <span class="f-comment">// app.get/post/...</span></div>
-                    <div class="f-item f-2">controllers/mahasiswa.controller.js <span class="f-comment">// baca req, panggil service</span></div>
-                    <div class="f-item f-2">services/mahasiswa.service.js <span class="f-comment">// validasi + aturan bisnis</span></div>
-                    <div class="f-item f-2">data/mahasiswa.data.js <span class="f-comment">// akses data (array untuk sekarang)</span></div>
-                    <div class="f-item f-2">middleware/errorHandler.js</div>
+                    <div class="f-item f-2">routes/mahasiswa.routes.js <span class="f-comment">// peta URL + middleware</span></div>
+                    <div class="f-item f-2"><span style="color:#16a34a;font-weight:700">+</span> controllers/mahasiswa.controller.js <span class="f-comment">// req &rarr; res</span></div>
+                    <div class="f-item f-2"><span style="color:#16a34a;font-weight:700">+</span> services/mahasiswa.service.js <span class="f-comment">// aturan bisnis</span></div>
+                    <div class="f-item f-2">data/mahasiswa.data.js <span class="f-comment">// akses data (diganti nama dari mahasiswa.js)</span></div>
+                    <div class="f-item f-2">middleware/ <span class="f-comment">// logger, cekApiKey, validasi, notFound, errorHandler</span></div>
+                    <div class="f-item f-2">validators/mahasiswa.validator.js</div>
                     <div class="f-item f-2">utils/AppError.js</div>
                 </div>
 
-                <pre><code><span class="comment">// src/routes/mahasiswa.routes.js — HANYA routing</span>
-<span class="keyword">import</span> { <span class="variable">Router</span> } <span class="keyword">from</span> <span class="string">'express'</span>;
-<span class="keyword">import</span> * <span class="keyword">as</span> <span class="variable">ctrl</span> <span class="keyword">from</span> <span class="string">'../controllers/mahasiswa.controller.js'</span>;
-<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">Router</span>();
+                <h4>Langkah 1 &mdash; Lapis data</h4>
+                <p>Ganti nama file data, lalu bungkus array-nya dengan empat fungsi. Array tidak lagi diekspor langsung, jadi lapis lain tidak bisa mengutak-atiknya sembarangan.</p>
+<div class="terminal"><span class="prompt">$</span> mv src/data/mahasiswa.js src/data/mahasiswa.data.js
+<span class="prompt">$</span> mkdir -p src/services src/controllers</div><pre><code><span class="keyword">const</span> <span class="variable">mahasiswa</span> = [
+    { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nim</span>: <span class="string">'F1D021001'</span>, <span class="variable">nama</span>: <span class="string">'Andi'</span>, <span class="variable">ipk</span>: <span class="number">3.75</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+    { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">nim</span>: <span class="string">'F1D021002'</span>, <span class="variable">nama</span>: <span class="string">'Budi'</span>, <span class="variable">ipk</span>: <span class="number">3.20</span>, <span class="variable">semester</span>: <span class="number">6</span> },
+    { <span class="variable">id</span>: <span class="number">3</span>, <span class="variable">nim</span>: <span class="string">'F1D021003'</span>, <span class="variable">nama</span>: <span class="string">'Citra'</span>, <span class="variable">ipk</span>: <span class="number">3.90</span>, <span class="variable">semester</span>: <span class="number">4</span> }
+];
 
-<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="variable">ctrl</span>.<span class="variable">daftar</span>);
-<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, <span class="variable">ctrl</span>.<span class="variable">detail</span>);
-<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">ctrl</span>.<span class="variable">buat</span>);
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">semua</span>() {
+    <span class="keyword">return</span> <span class="variable">mahasiswa</span>;
+}
 
-<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">id</span> <span class="operator">===</span> <span class="variable">id</span>);
+}
 
-<span class="comment">// src/controllers/mahasiswa.controller.js — HANYA req/res, tidak ada logika bisnis</span>
-<span class="keyword">import</span> * <span class="keyword">as</span> <span class="variable">service</span> <span class="keyword">from</span> <span class="string">'../services/mahasiswa.service.js'</span>;
-<span class="keyword">import</span> { <span class="variable">asyncHandler</span> } <span class="keyword">from</span> <span class="string">'../utils/asyncHandler.js'</span>;
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariByNim</span>(<span class="variable">nim</span>) {
+    <span class="keyword">return</span> <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">nim</span> <span class="operator">===</span> <span class="variable">nim</span>);
+}
 
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">daftar</span> = <span class="function">asyncHandler</span>(<span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarMahasiswa</span>(<span class="variable">req</span>.<span class="variable">query</span>);
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
-});
-
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">buat</span> = <span class="function">asyncHandler</span>(<span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">baru</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">buatMahasiswa</span>(<span class="variable">req</span>.<span class="variable">body</span>);
-    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
-});
-
-<span class="comment">// src/services/mahasiswa.service.js — LOGIKA BISNIS ada di sini</span>
-<span class="keyword">import</span> * <span class="keyword">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>(<span class="variable">input</span>) {
+    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, ...<span class="variable">input</span> };
+    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
+    <span class="keyword">return</span> <span class="variable">baru</span>;
+}</code></pre>
+                <h4>Langkah 2 &mdash; Lapis service</h4>
+                <p>Di sini aturan bisnis tinggal. Perhatikan aturan baru: NIM tidak boleh kembar, ditolak dengan status 409 (Conflict). Aturan ini tidak bisa diperiksa oleh Joi karena membutuhkan data.</p>
+<pre><code><span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
 <span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
 
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>({ <span class="variable">semester</span> }) {
+    <span class="keyword">const</span> <span class="variable">semua</span> = <span class="variable">data</span>.<span class="function">semua</span>();
+    <span class="keyword">return</span> <span class="variable">semester</span>
+        ? <span class="variable">semua</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">semester</span>))
+        : <span class="variable">semua</span>;
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">data</span>.<span class="function">cariById</span>(<span class="function">Number</span>(<span class="variable">id</span>));
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">m</span>;
+}
+
 <span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">input</span>.<span class="variable">nim</span> <span class="operator">||</span> <span class="operator">!</span><span class="variable">input</span>.<span class="variable">nama</span>) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">422</span>, <span class="string">'nim dan nama wajib diisi'</span>, <span class="string">'VALIDATION_ERROR'</span>);
+    <span class="keyword">if</span> (<span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
     }
     <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
 }</code></pre>
+                <p>Semua fungsi dibuat <code>async</code> sejak sekarang. Pekerjaan data di Pertemuan 6 berupa query database yang asinkron, dan dengan begini controller tidak perlu diubah. Karena Express 5 menangani error <code>async</code> (Section 3.5), <code>throw new AppError(...)</code> di sini langsung sampai ke <code>errorHandler</code>.</p>
 
-                <div class="info-box">
-                    <strong>Mengapa dipisah begini?</strong> Kalau Pertemuan 6 mengganti <code>data/mahasiswa.data.js</code> dari array biasa menjadi Prisma, <strong>controller dan service tidak perlu diubah sama sekali</strong>. Perubahan terisolasi hanya di satu lapis. Ini juga memudahkan pengujian otomatis di Pertemuan 13 &mdash; service bisa diuji tanpa harus menjalankan server HTTP sungguhan.
+                <h4>Langkah 3 &mdash; Lapis controller</h4>
+<pre><code><span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">service</span> <span class="keyword">from</span> <span class="string">'../services/mahasiswa.service.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftar</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">daftarMahasiswa</span>(<span class="variable">req</span>.<span class="variable">query</span>);
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span>, <span class="variable">meta</span>: { <span class="variable">total</span>: <span class="variable">hasil</span>.<span class="variable">length</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detail</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">detailMahasiswa</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buat</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">baru</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">buatMahasiswa</span>(<span class="variable">req</span>.<span class="variable">body</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">baru</span> });
+}</code></pre>
+                <p>Controller sangat tipis: ambil masukan dari <code>req</code>, minta service bekerja, kirim hasilnya. Tidak ada <code>if</code> untuk kasus gagal, karena itu urusan service dan <code>errorHandler</code>.</p>
+
+                <h4>Langkah 4 &mdash; Rapikan router</h4>
+                <p>Ganti seluruh isi <code>src/routes/mahasiswa.routes.js</code>. Router kini hanya peta: URL, middleware, controller.</p>
+<pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">ctrl</span> <span class="keyword">from</span> <span class="string">'../controllers/mahasiswa.controller.js'</span>;
+<span class="keyword">import</span> { <span class="variable">cekApiKey</span> } <span class="keyword">from</span> <span class="string">'../middleware/cekApiKey.js'</span>;
+<span class="keyword">import</span> { <span class="variable">validasi</span> } <span class="keyword">from</span> <span class="string">'../middleware/validasi.js'</span>;
+<span class="keyword">import</span> { <span class="variable">skemaMahasiswa</span> } <span class="keyword">from</span> <span class="string">'../validators/mahasiswa.validator.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+
+<span class="comment">// Middleware tingkat router: hanya jalan untuk rute di file ini</span>
+<span class="variable">router</span>.<span class="function">use</span>((<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'[mahasiswa]'</span>, <span class="variable">req</span>.<span class="variable">method</span>, <span class="variable">req</span>.<span class="variable">originalUrl</span>);
+    <span class="function">next</span>();
+});
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="variable">ctrl</span>.<span class="variable">daftar</span>);
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, <span class="variable">ctrl</span>.<span class="variable">detail</span>);
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">cekApiKey</span>, <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), <span class="variable">ctrl</span>.<span class="variable">buat</span>);
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
+                <p><code>index.js</code> tidak berubah dari akhir Section 4.</p>
+
+                <h4>Langkah 5 &mdash; Uji, termasuk aturan bisnis baru</h4>
+<div class="terminal"><span class="prompt">$</span> curl "http://localhost:3000/mahasiswa?semester=4"
+<span class="out">{"data":[{"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9,"semester":4}],"meta":{"total":1}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021003","nama":"Dobel"}'
+<span class="out">{"error":{"pesan":"NIM F1D021003 sudah terdaftar","kode":"NIM_DUPLIKAT"}}</span></div>
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> perilaku API sama seperti akhir Section 4, ditambah satu aturan baru (NIM kembar ditolak dengan 409). Yang berubah hanya letak kodenya.
                 </div>
             </section>
 
             <section id="rest-client">
-                <h2>4. Menguji API dengan REST Client <span class="badge">Indikator 3.7</span></h2>
+                <h2>6. Menguji API dengan REST Client <span class="badge">Indikator 3.7</span></h2>
 
-                <p>Sejauh ini kalian menguji lewat <code>curl</code> atau browser. Untuk API dengan banyak endpoint, cara yang lebih rapi adalah menyimpan kumpulan permintaan dalam sebuah file <code>.http</code> yang bisa dijalankan ulang kapan saja.</p>
+                <p>Sejauh ini kalian menguji lewat <code>curl</code> atau browser. API kita sekarang punya banyak kasus (berhasil, 401, 404, 409, 422), dan mengetik ulang <code>curl</code> yang panjang setiap kali melelahkan. Cara yang lebih rapi: simpan kumpulan permintaan dalam sebuah file <code>.http</code> yang bisa dijalankan ulang kapan saja.</p>
 
-                <h3>4.1 Ekstensi REST Client (VS Code)</h3>
-                <p>Pasang ekstensi <strong>REST Client</strong> (humao.rest-client) di VS Code. Buat file <code>requests.http</code>:</p>
+                <h3>6.1 Ekstensi REST Client (VS Code)</h3>
+                <p>Pasang ekstensi <strong>REST Client</strong> (humao.rest-client) di VS Code. Buat file <code>requests.http</code> di akar proyek <code>api-mahasiswa</code>. Dua baris <code>@</code> di atas mendefinisikan variabel yang dipakai sebagai <code>{{baseUrl}}</code> dan <code>{{apiKey}}</code>, sehingga alamat dan kunci cukup diubah di satu tempat.</p>
+<pre><code>@baseUrl = http://localhost:3000
+@apiKey = rahasia123
 
-                <pre><code><span class="comment">### Daftar semua mahasiswa</span>
-GET http://localhost:3000/mahasiswa
+<span class="comment">### Daftar semua mahasiswa</span>
+GET {{baseUrl}}/mahasiswa
 
 <span class="comment">### Filter berdasarkan semester</span>
-GET http://localhost:3000/mahasiswa?semester=6
+GET {{baseUrl}}/mahasiswa?semester=6
 
 <span class="comment">### Detail satu mahasiswa</span>
-GET http://localhost:3000/mahasiswa/1
+GET {{baseUrl}}/mahasiswa/1
 
-<span class="comment">### Mahasiswa yang tidak ada — harus 404</span>
-GET http://localhost:3000/mahasiswa/999
+<span class="comment">### Mahasiswa yang tidak ada: harus 404 NOT_FOUND</span>
+GET {{baseUrl}}/mahasiswa/999
 
-<span class="comment">### Buat mahasiswa baru</span>
-POST http://localhost:3000/mahasiswa
+<span class="comment">### URL yang tidak dikenal: harus 404 ROUTE_NOT_FOUND</span>
+GET {{baseUrl}}/xyz
+
+<span class="comment">### Buat mahasiswa baru: harus 201</span>
+POST {{baseUrl}}/mahasiswa
 Content-Type: application/json
+x-api-key: {{apiKey}}
 
 {
     "nim": "F1D021010",
@@ -486,107 +950,75 @@ Content-Type: application/json
     "semester": 6
 }
 
-<span class="comment">### Buat TANPA nama — harus 422</span>
-POST http://localhost:3000/mahasiswa
+<span class="comment">### Tanpa API key: harus 401</span>
+POST {{baseUrl}}/mahasiswa
 Content-Type: application/json
 
-{
-    "nim": "F1D021011"
-}</code></pre>
+{ "nim": "F1D021011", "nama": "Gita" }
 
+<span class="comment">### Tanpa nama: harus 422</span>
+POST {{baseUrl}}/mahasiswa
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{ "nim": "F1D021011" }
+
+<span class="comment">### NIM sudah ada: harus 409</span>
+POST {{baseUrl}}/mahasiswa
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{ "nim": "F1D021001", "nama": "Kembar" }</code></pre>
                 <div class="info-box">
-                    <strong>Cara pakai:</strong> setiap blok dipisah tiga tanda pagar <code>###</code>. Klik <em>"Send Request"</em> yang muncul di atas tiap blok. Hasilnya tampil di panel terpisah tanpa harus mengetik ulang perintah <code>curl</code>.
+                    <strong>Cara pakai:</strong> setiap blok dipisah tiga tanda pagar <code>###</code>. Klik <em>&ldquo;Send Request&rdquo;</em> yang muncul di atas tiap blok. Hasilnya tampil di panel terpisah tanpa harus mengetik ulang perintah <code>curl</code>. Jalankan blok &ldquo;Buat mahasiswa baru&rdquo; dua kali: kali kedua mendapat 409, karena NIM F1D021010 sudah tersimpan di memori.
                 </div>
 
-                <h3>4.2 Mengapa File .http Disimpan di Repositori</h3>
+                <h3>6.2 Mengapa File .http Disimpan di Repositori</h3>
                 <ul>
                     <li>Rekan satu kelompok bisa memakai koleksi permintaan yang sama tanpa menyusun ulang</li>
-                    <li>Berfungsi sebagai <strong>dokumentasi hidup</strong> &mdash; bisa dibaca dan dijalankan, bukan sekadar teks</li>
-                    <li>Kasus uji "harus gagal" (seperti 404 dan 422 di atas) ikut tersimpan, bukan hanya kasus yang berhasil</li>
+                    <li>Berfungsi sebagai <strong>dokumentasi hidup</strong>: bisa dibaca dan dijalankan, bukan sekadar teks</li>
+                    <li>Kasus uji &ldquo;harus gagal&rdquo; (401, 404, 409, 422) ikut tersimpan, bukan hanya kasus yang berhasil</li>
                 </ul>
 
                 <div class="warning-box">
-                    <strong>Kebiasaan yang wajib dibangun mulai sekarang:</strong> setiap kali menambah endpoint baru, tambahkan juga permintaan ujinya di <code>requests.http</code> &mdash; termasuk minimal satu kasus yang <strong>sengaja gagal</strong> (data tidak valid, id tidak ada). Kebiasaan ini akan langsung terpakai lagi saat menyusun pengujian otomatis di Pertemuan 13.
+                    <strong>Kebiasaan yang wajib dibangun mulai sekarang:</strong> setiap kali menambah endpoint baru, tambahkan juga permintaan ujinya di <code>requests.http</code>, termasuk minimal satu kasus yang <strong>sengaja gagal</strong> (data tidak valid, id tidak ada). Kebiasaan ini langsung terpakai lagi saat menyusun pengujian otomatis di Pertemuan 13.
                 </div>
             </section>
 
-            <section id="praktik">
-                <h2>5. Praktik: Merapikan API Mahasiswa <span class="badge badge-new">Latihan</span></h2>
+            <section id="latihan">
+                <h2>7. Latihan Mandiri <span class="badge badge-new">Latihan</span></h2>
 
-                <p>Ambil proyek <code>api-mahasiswa</code> dari Pertemuan 4, lalu rapikan menjadi struktur berlapis dengan middleware dan penanganan error terpusat.</p>
-
-                <h3>Langkah 1 &mdash; Buat AppError dan asyncHandler</h3>
-                <p>Salin persis kode <code>AppError</code> (Section 2.2) dan <code>asyncHandler</code> (Section 2.3) ke <code>src/utils/</code>.</p>
-
-                <h3>Langkah 2 &mdash; Pindahkan Data</h3>
-                <pre><code><span class="comment">// src/data/mahasiswa.data.js</span>
-<span class="keyword">const</span> <span class="variable">mahasiswa</span> = [
-    { <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">nim</span>: <span class="string">"F1D021001"</span>, <span class="variable">nama</span>: <span class="string">"Andi"</span>, <span class="variable">ipk</span>: <span class="number">3.75</span>, <span class="variable">semester</span>: <span class="number">6</span> },
-    { <span class="variable">id</span>: <span class="number">2</span>, <span class="variable">nim</span>: <span class="string">"F1D021002"</span>, <span class="variable">nama</span>: <span class="string">"Budi"</span>, <span class="variable">ipk</span>: <span class="number">3.20</span>, <span class="variable">semester</span>: <span class="number">6</span> }
-];
-
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">semua</span>() { <span class="keyword">return</span> <span class="variable">mahasiswa</span>; }
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) { <span class="keyword">return</span> <span class="variable">mahasiswa</span>.<span class="function">find</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">id</span> === <span class="variable">id</span>); }
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>(<span class="variable">input</span>) {
-    <span class="keyword">const</span> <span class="variable">baru</span> = { <span class="variable">id</span>: <span class="variable">mahasiswa</span>.<span class="variable">length</span> + <span class="number">1</span>, ...<span class="variable">input</span> };
-    <span class="variable">mahasiswa</span>.<span class="function">push</span>(<span class="variable">baru</span>);
-    <span class="keyword">return</span> <span class="variable">baru</span>;
-}</code></pre>
-
-                <h3>Langkah 3 &mdash; Service dengan Validasi</h3>
-                <pre><code><span class="comment">// src/services/mahasiswa.service.js</span>
-<span class="keyword">import</span> * <span class="keyword">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
-<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>(<span class="variable">query</span>) {
-    <span class="keyword">const</span> <span class="variable">semua</span> = <span class="variable">data</span>.<span class="function">semua</span>();
-    <span class="keyword">if</span> (<span class="variable">query</span>.<span class="variable">semester</span>) {
-        <span class="keyword">return</span> <span class="variable">semua</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> === <span class="function">Number</span>(<span class="variable">query</span>.<span class="variable">semester</span>));
-    }
-    <span class="keyword">return</span> <span class="variable">semua</span>;
-}
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>) {
-    <span class="keyword">const</span> <span class="variable">m</span> = <span class="variable">data</span>.<span class="function">cariById</span>(<span class="function">Number</span>(<span class="variable">id</span>));
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);
-    <span class="keyword">return</span> <span class="variable">m</span>;
-}
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">input</span>.<span class="variable">nim</span> <span class="operator">||</span> <span class="operator">!</span><span class="variable">input</span>.<span class="variable">nama</span>) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">422</span>, <span class="string">'nim dan nama wajib diisi'</span>, <span class="string">'VALIDATION_ERROR'</span>);
-    }
-    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
-}</code></pre>
-
-                <h3>Langkah 4 &mdash; index.js Menjadi Sangat Ringkas</h3>
-                <pre><code><span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
-<span class="keyword">import</span> <span class="variable">mahasiswaRoutes</span> <span class="keyword">from</span> <span class="string">'./src/routes/mahasiswa.routes.js'</span>;
-<span class="keyword">import</span> { <span class="variable">errorHandler</span> } <span class="keyword">from</span> <span class="string">'./src/middleware/errorHandler.js'</span>;
-
-<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
-<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
-<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);
-<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">errorHandler</span>);   <span class="comment">// SELALU paling terakhir</span>
-
-<span class="variable">app</span>.<span class="function">listen</span>(<span class="number">3000</span>, () <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Server jalan di http://localhost:3000'</span>));</code></pre>
-
-                <h3>Langkah 5 &mdash; Buat requests.http dan Uji</h3>
-                <p>Salin koleksi permintaan pada Section 4.1, sesuaikan dengan data kalian, lalu jalankan satu per satu memakai REST Client.</p>
-
-                <div class="success-box">
-                    <strong>Selesai kalau:</strong> struktur folder mengikuti Section 3, semua error (404, 422) melewati <code>errorHandler</code> yang sama, dan seluruh permintaan di <code>requests.http</code> memberi hasil yang sesuai.
+                <p>Berikut gambaran lengkap satu permintaan <code>POST /mahasiswa</code> di API yang sudah kalian bangun. Setiap kotak adalah sesuatu yang kalian tulis di Pertemuan ini:</p>
+                <div class="pipeline">
+                    <div class="pipe-box"><div class="pipe-box-title">express.json()</div><div class="pipe-box-desc">urai body</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">logger</div><div class="pipe-box-desc">catat permintaan</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">router log</div><div class="pipe-box-desc">khusus /mahasiswa</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">cekApiKey</div><div class="pipe-box-desc">tolak bila kunci salah</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box"><div class="pipe-box-title">validasi</div><div class="pipe-box-desc">tolak bila bentuk salah</div></div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box pipe-final"><div class="pipe-box-title">controller &rarr; service &rarr; data</div><div class="pipe-box-desc">simpan, tolak bila NIM kembar</div></div>
                 </div>
 
-                <h3>Latihan Mandiri</h3>
+                <p style="font-size:0.85em;color:#777;margin-top:-8px;">Kalau salah satu kotak menolak, permintaan tidak lanjut ke kotak berikutnya. Penolakan diteruskan sebagai <code>AppError</code> ke <code>errorHandler</code>, yang menjawab dengan format seragam.</p>
+
+                <div class="success-box">
+                    <strong>Selesai kalau:</strong> struktur folder mengikuti Section 5, seluruh permintaan di <code>requests.http</code> memberi hasil yang sesuai komentarnya, dan semua error (401, 404, 409, 422) bentuk jawabannya sama karena melewati <code>errorHandler</code>.
+                </div>
+
+                <h3>Latihan</h3>
                 <ol>
-                    <li>Tambahkan middleware <code>logger</code> sederhana yang mencatat <code>method</code>, <code>path</code>, dan waktu tiap permintaan ke konsol.</li>
-                    <li>Pindahkan <code>PUT</code> dan <code>DELETE</code> dari Pertemuan 4 ke struktur berlapis yang baru (routes &rarr; controller &rarr; service &rarr; data).</li>
-                    <li>Tambahkan penanganan untuk error yang <strong>tidak terduga</strong> (misalnya <code>data.simpan()</code> melempar <code>TypeError</code> biasa, bukan <code>AppError</code>) &mdash; pastikan <code>errorHandler</code> tetap mengembalikan 500 dengan format yang konsisten, bukan meng-crash server.</li>
+                    <li><strong>PUT dan DELETE.</strong> Tambahkan <code>PUT /mahasiswa/:id</code> (200) dan <code>DELETE /mahasiswa/:id</code> (204) dari Pertemuan 4 ke struktur berlapis: routes &rarr; controller &rarr; service &rarr; data. Pasang <code>cekApiKey</code> pada keduanya, dan <code>validasi</code> pada PUT. Tambahkan permintaan ujinya, termasuk yang gagal, ke <code>requests.http</code>.</li>
+                    <li><strong>Router kedua.</strong> Buat router <code>/mata-kuliah</code> (field <code>kode</code>, <code>nama</code>, <code>sks</code>) dengan <code>GET</code> daftar dan <code>GET</code> detail, lalu pasang di <code>index.js</code>. Kirim permintaan ke <code>/mata-kuliah</code> dan amati terminal: baris <code>logger</code> muncul, baris <code>[mahasiswa]</code> tidak. Jelaskan mengapa.</li>
+                    <li><strong>Error tak terduga.</strong> Sengaja salah ketik di lapis data (misalnya <code>mahasiswa.push</code> menjadi <code>mahasiswa.dorong</code>), lalu kirim <code>POST</code> yang valid. Pastikan klien menerima 500 dengan pesan umum &ldquo;Terjadi kesalahan pada server&rdquo; (bukan nama method yang salah), sementara jejak lengkapnya muncul di terminal server. Kembalikan kodenya.</li>
+                    <li><strong>Kunci dari environment.</strong> Ubah <code>cekApiKey</code> agar membaca kunci dari <code>process.env.API_KEY</code>, bukan teks tetap di kode. Jalankan dengan <code>API_KEY=rahasia123 npm run dev</code>. Apa yang terjadi kalau variabelnya tidak diset? Putuskan perilaku yang paling aman.</li>
                 </ol>
 
                 <div class="info-box">
-                    <strong>Menuju Pertemuan 6:</strong> lapis <code>data/</code> yang kalian buat hari ini masih berupa array di memori &mdash; hilang setiap kali server di-restart. Pertemuan 6 mengganti lapis ini dengan Prisma yang tersambung ke PostgreSQL sungguhan, <strong>tanpa mengubah controller atau service sama sekali</strong>.
+                    <strong>Menuju Pertemuan 6:</strong> lapis <code>data/</code> masih berupa array di memori, jadi data hilang setiap server restart. Pertemuan 6 menggantinya dengan Prisma yang tersambung ke PostgreSQL sungguhan, <strong>tanpa mengubah controller atau service sama sekali</strong>.
                 </div>
             </section>
 
@@ -597,10 +1029,10 @@ Content-Type: application/json
 
                 <table>
                     <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
-                    <tr><td>3.4</td><td>Menyusun dan mengurutkan middleware</td><td>Section 1</td></tr>
-                    <tr><td>3.5</td><td>Membuat penanganan error terpusat dengan format tanggapan konsisten</td><td>Section 2</td></tr>
-                    <tr><td>3.6</td><td>Menata struktur proyek: pemisahan rute, layanan, dan akses data</td><td>Section 3</td></tr>
-                    <tr><td>3.7</td><td>Menguji API menggunakan REST client dan membaca hasilnya</td><td>Section 4</td></tr>
+                    <tr><td>3.4</td><td>Menyusun dan mengurutkan middleware</td><td>Section 2</td></tr>
+                    <tr><td>3.5</td><td>Membuat penanganan error terpusat dengan format tanggapan konsisten, dan memvalidasi masukan</td><td>Section 3 dan 4</td></tr>
+                    <tr><td>3.6</td><td>Menata struktur proyek: pemisahan rute, layanan, dan akses data</td><td>Section 1 dan 5</td></tr>
+                    <tr><td>3.7</td><td>Menguji API menggunakan REST client dan membaca hasilnya</td><td>Section 6</td></tr>
                 </table>
 
                 <div class="success-box">
@@ -610,9 +1042,12 @@ Content-Type: application/json
                 <h3>Daftar Periksa Akhir Pertemuan</h3>
                 <div class="info-box">
                     <ul>
+                        <li>Bisa menjelaskan fungsi <code>express.Router()</code> dan cara memasangnya dengan awalan alamat</li>
                         <li>Bisa menjelaskan mengapa urutan middleware penting, dan apa akibat lupa <code>next()</code></li>
-                        <li>Bisa membuat error-handling middleware dan kelas error kustom (<code>AppError</code>)</li>
-                        <li>Bisa menangani error pada handler <code>async</code> dengan benar (<code>asyncHandler</code>)</li>
+                        <li>Bisa membedakan middleware tingkat aplikasi, tingkat router, dan khusus satu rute</li>
+                        <li>Bisa membuat <code>AppError</code> dan error-handling middleware (empat parameter, dipasang paling akhir)</li>
+                        <li>Bisa menjelaskan mengapa error <code>async</code> aman di Express 5, dan kapan perlu pembungkus (Express 4)</li>
+                        <li>Bisa membuat middleware validasi dengan Joi, dan membedakan validasi bentuk data dengan aturan bisnis</li>
                         <li>Proyek API mahasiswa sudah berlapis: routes &rarr; controller &rarr; service &rarr; data</li>
                         <li>Punya file <code>requests.http</code> yang mencakup kasus berhasil DAN kasus gagal</li>
                     </ul>
@@ -640,11 +1075,11 @@ Content-Type: application/json
         function demoMiddleware(mode) {
             let out = '';
             if (mode === 'benar') {
-                out = 'app.use(express.json());\napp.use(logger);\napp.post("/mahasiswa", handler);\n\n--- Simulasi permintaan POST ---\n1. express.json() → body diurai ✅\n2. logger → "POST /mahasiswa" dicatat ✅\n3. handler → req.body TERISI, berhasil diproses ✅';
+                out = 'app.use(express.json());\napp.use(logger);\napp.use("/mahasiswa", mahasiswaRoutes);\n\n--- Simulasi permintaan POST /mahasiswa ---\n1. express.json() → body diurai ✅\n2. logger → "POST /mahasiswa" dicatat ✅\n3. router → rute POST dicocokkan, req.body TERISI ✅';
             } else if (mode === 'salah') {
-                out = 'app.post("/mahasiswa", handler);   // didaftarkan DULUAN\napp.use(express.json());            // baru dipasang di sini\n\n--- Simulasi permintaan POST ---\n1. handler dipanggil LEBIH DULU\n2. req.body → undefined ❌\n3. express.json() tidak pernah sempat jalan untuk request ini\n\n→ Middleware global harus dipasang SEBELUM route yang memakainya.';
+                out = 'app.use("/mahasiswa", mahasiswaRoutes);   // didaftarkan DULUAN\napp.use(express.json());                 // baru dipasang di sini\n\n--- Simulasi permintaan POST /mahasiswa ---\n1. router menangani LEBIH DULU\n2. req.body → undefined ❌\n3. express.json() tidak pernah sempat jalan untuk request ini\n\n→ Middleware global harus dipasang SEBELUM rute yang memakainya.';
             } else {
-                out = 'app.delete("/mahasiswa/:id", cekToken, handler);\n\n--- Simulasi permintaan tanpa header Authorization ---\n1. cekToken(req, res, next) dijalankan\n2. req.headers.authorization → undefined\n3. res.status(401).json(...) dikirim, next() TIDAK dipanggil\n4. handler TIDAK PERNAH dijalankan\n\nStatus akhir: 401 Unauthorized';
+                out = 'router.post("/", cekApiKey, handler);\n\n--- Simulasi POST tanpa header x-api-key ---\n1. cekApiKey(req, res, next) dijalankan\n2. req.headers["x-api-key"] → undefined\n3. res.status(401).json(...) dikirim, next() TIDAK dipanggil\n4. handler TIDAK PERNAH dijalankan\n\nStatus akhir: 401 Unauthorized';
             }
             tulis('demo1-out', out);
         }
@@ -652,11 +1087,13 @@ Content-Type: application/json
         function demoErrorHandler(mode) {
             let out = '';
             if (mode === 'sync') {
-                out = 'app.get("/x", (req, res) => {\n    throw new AppError(400, "Data tidak valid");\n});\n\n--- Yang terjadi ---\nExpress SECARA OTOMATIS menangkap throw pada handler SINKRON,\nlalu meneruskannya ke errorHandler.\n\nHasil: 400 { error: { pesan: "Data tidak valid" } } ✅';
-            } else if (mode === 'async-gagal') {
-                out = 'app.get("/x", async (req, res) => {\n    throw new AppError(400, "Data tidak valid");\n});\n\n--- Yang terjadi ---\nExpress TIDAK OTOMATIS menangkap throw dari fungsi ASYNC.\nPromise yang reject menjadi "unhandled rejection".\n\nHasil: ❌ permintaan menggantung / server bisa crash,\n       errorHandler TIDAK PERNAH terpanggil.';
+                out = 'router.get("/x", (req, res) => {\n    throw new AppError(404, "Tidak ada", "NOT_FOUND");\n});\n\n--- Yang terjadi ---\nExpress menangkap throw pada handler SINKRON dan\nmeneruskannya ke errorHandler.\n\nHasil: 404 { error: { pesan: "Tidak ada", kode: "NOT_FOUND" } } ✅';
+            } else if (mode === 'async') {
+                out = 'router.get("/x", async (req, res) => {\n    await sesuatu();\n    throw new AppError(404, "Tidak ada", "NOT_FOUND");\n});\n\n--- Yang terjadi (Express 5) ---\nHandler async mengembalikan promise yang gagal.\nExpress 5 meneruskannya ke errorHandler secara otomatis.\n\nHasil: 404 { error: { pesan: "Tidak ada", kode: "NOT_FOUND" } } ✅\nTanpa try/catch, tanpa pembungkus.';
+            } else if (mode === 'express4') {
+                out = 'router.get("/x", async (req, res) => {\n    throw new AppError(404, "Tidak ada", "NOT_FOUND");\n});\n\n--- Yang terjadi (Express 4) ---\nExpress 4 TIDAK menangkap promise yang gagal.\nErrorHandler tidak terpanggil, permintaan menggantung.\n\nSolusi lama: try/catch + next(err), atau pembungkus\nasyncHandler = fn => (req,res,next) =>\n    Promise.resolve(fn(req,res,next)).catch(next)\n\nDi Express 5 (proyek kita) hal ini tidak diperlukan.';
             } else {
-                out = 'app.get("/x", asyncHandler(async (req, res) => {\n    throw new AppError(400, "Data tidak valid");\n}));\n\n--- Yang terjadi ---\nasyncHandler membungkus fungsi dengan:\n  Promise.resolve(fn(...)).catch(next)\nSehingga error async ikut diteruskan ke next(err).\n\nHasil: 400 { error: { pesan: "Data tidak valid" } } ✅';
+                out = 'mahasiswa.dorong(baru);   // salah ketik → TypeError\n\n--- Yang terjadi ---\nErrornya tidak punya status → errorHandler memakai 500.\n\nTerminal server : TypeError: mahasiswa.dorong is not a function\n                  (jejak lengkap, untuk developer)\nKlien menerima  : 500 { error: { pesan: "Terjadi kesalahan pada server",\n                                 kode: "INTERNAL_ERROR" } }\n\nDetail internal TIDAK bocor ke klien. ✅';
             }
             tulis('demo2-out', out);
         }
@@ -672,7 +1109,7 @@ Content-Type: application/json
 
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
-            showSection('middleware');
+            showSection('router');
             document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
