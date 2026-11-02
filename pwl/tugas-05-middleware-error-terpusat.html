@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 5 - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%) !important;
+        }
+        section h2 { border-bottom: 3px solid #1d4ed8 !important; }
+        th { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important; }
+        .badge { background: #1d4ed8 !important; }
+
+        /* Tanpa sidebar - konten satu kolom, dilebarkan penuh */
+        .container {
+            display: block;
+            max-width: 820px;
+            margin: 100px auto 0;
+        }
+        .content {
+            margin-left: 0;
+            width: auto;
+            padding: 30px 20px;
+        }
+        @media (max-width: 768px) {
+            .container { margin-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="text-align:center;">
+        <h1>Tugas 5 &mdash; Middleware &amp; Error Terpusat</h1>
+        <p>Pertemuan 5, lanjutan dari <a href="materi-05-middleware-error-terpusat.html" style="color:#dbeafe;">Materi 5: Middleware dan Penanganan Error Terpusat</a></p>
+    </header>
+
+    <div class="container">
+        <main class="content">
+
+            <section id="tugas">
+                <h2>Router, Middleware, dan Error Terpusat <span class="badge">Tugas 5</span></h2>
+
+                <p><strong>Tujuan:</strong> membangun API berlapis lengkap dengan router, middleware (<code>logger</code>, <code>cekApiKey</code>, validasi Joi), dan error terpusat, sesuai spesifikasi varian kalian. Rujukan langkahnya ada di Materi 5.</p>
+
+                <h3>Pembagian Varian</h3>
+                <table>
+                    <tr><th>Digit terakhir NIM</th><th>Varian</th><th>Resource</th></tr>
+                    <tr><td><strong>Ganjil</strong> (1, 3, 5, 7, 9)</td><td>A &mdash; Perpustakaan</td><td><code>/buku</code></td></tr>
+                    <tr><td><strong>Genap</strong> (0, 2, 4, 6, 8)</td><td>B &mdash; Kantin</td><td><code>/menu</code></td></tr>
+                </table>
+                <p>Buat proyek baru (kerangka Express boleh disalin dari Tugas 4) dengan minimal <strong>5 data awal</strong> buatan sendiri. Kerjakan <strong>hanya varian kalian</strong>.</p>
+
+                <h3>Varian A &mdash; Perpustakaan (NIM ganjil)</h3>
+                <p><strong>Bentuk data:</strong> <code>{ id, judul, penulis, tahun, stok, kategori }</code></p>
+                <table>
+                    <tr><th>Method</th><th>URL</th><th>Middleware</th><th>Hasil</th></tr>
+                    <tr><td><code>GET</code></td><td><code>/buku</code> dan <code>/buku?kategori=sains</code></td><td>logger</td><td>200, daftar (dengan filter kategori bila ada)</td></tr>
+                    <tr><td><code>GET</code></td><td><code>/buku/:id</code></td><td>logger</td><td>200, atau 404 <code>NOT_FOUND</code></td></tr>
+                    <tr><td><code>POST</code></td><td><code>/buku</code></td><td>logger, cekApiKey, validasi</td><td>201, atau 401 / 422 / 409</td></tr>
+                    <tr><td><code>DELETE</code></td><td><code>/buku/:id</code></td><td>logger, cekApiKey</td><td>204, atau 401 / 404</td></tr>
+                </table>
+                <table>
+                    <tr><th>Field</th><th>Aturan validasi (Joi)</th></tr>
+                    <tr><td><code>judul</code></td><td>string, 3&ndash;100 karakter, wajib</td></tr>
+                    <tr><td><code>penulis</code></td><td>string, minimal 3 karakter, wajib</td></tr>
+                    <tr><td><code>tahun</code></td><td>bilangan bulat, 1900&ndash;2026, wajib</td></tr>
+                    <tr><td><code>stok</code></td><td>bilangan bulat, 0&ndash;100, default <code>1</code></td></tr>
+                    <tr><td><code>kategori</code></td><td>salah satu dari <code>novel</code>, <code>sains</code>, <code>sejarah</code>, <code>agama</code>, wajib</td></tr>
+                </table>
+                <p><strong>Aturan bisnis (di service, status 409):</strong> <code>judul</code> tidak boleh kembar (abaikan huruf besar/kecil), kode <code>JUDUL_DUPLIKAT</code>.</p>
+
+                <h3>Varian B &mdash; Kantin (NIM genap)</h3>
+                <p><strong>Bentuk data:</strong> <code>{ id, nama, harga, kategori, tersedia }</code></p>
+                <table>
+                    <tr><th>Method</th><th>URL</th><th>Middleware</th><th>Hasil</th></tr>
+                    <tr><td><code>GET</code></td><td><code>/menu</code> dan <code>/menu?kategori=minuman</code></td><td>logger</td><td>200, daftar (dengan filter kategori bila ada)</td></tr>
+                    <tr><td><code>GET</code></td><td><code>/menu/:id</code></td><td>logger</td><td>200, atau 404 <code>NOT_FOUND</code></td></tr>
+                    <tr><td><code>POST</code></td><td><code>/menu</code></td><td>logger, cekApiKey, validasi</td><td>201, atau 401 / 422 / 409</td></tr>
+                    <tr><td><code>DELETE</code></td><td><code>/menu/:id</code></td><td>logger, cekApiKey</td><td>204, atau 401 / 404</td></tr>
+                </table>
+                <table>
+                    <tr><th>Field</th><th>Aturan validasi (Joi)</th></tr>
+                    <tr><td><code>nama</code></td><td>string, 3&ndash;50 karakter, wajib</td></tr>
+                    <tr><td><code>harga</code></td><td>bilangan bulat, 1.000&ndash;100.000, wajib</td></tr>
+                    <tr><td><code>kategori</code></td><td>salah satu dari <code>makanan</code>, <code>minuman</code>, <code>camilan</code>, wajib</td></tr>
+                    <tr><td><code>tersedia</code></td><td>boolean, default <code>true</code></td></tr>
+                </table>
+                <p><strong>Aturan bisnis (di service, status 409):</strong> <code>nama</code> tidak boleh kembar (abaikan huruf besar/kecil), kode <code>NAMA_DUPLIKAT</code>.</p>
+
+                <h3>Syarat Teknis (Semua Varian)</h3>
+                <ul>
+                    <li><strong>Struktur 4 lapis:</strong> <code>routes/</code>, <code>controllers/</code>, <code>services/</code>, <code>data/</code>. Router dipasang di <code>index.js</code> dengan <code>app.use('/buku', ...)</code>; awalan tidak diulang di file router. Fungsi service <code>async</code> dan tidak menyentuh <code>req</code>/<code>res</code>.</li>
+                    <li><strong>logger:</strong> tiap request tercatat satu baris <code>METHOD URL -&gt; STATUS (n ms)</code>.</li>
+                    <li><strong>cekApiKey:</strong> membaca header <code>x-api-key</code>, salah atau kosong &rarr; 401. Hanya dipasang di <code>POST</code> dan <code>DELETE</code>. Urutan di <code>POST</code>: <code>cekApiKey</code> &rarr; <code>validasi</code> &rarr; controller.</li>
+                    <li><strong>Validasi:</strong> skema Joi di <code>validators/</code>, <code>abortEarly: false</code>, gagal &rarr; 422 <code>VALIDATION_ERROR</code> berisi semua kesalahan sekaligus.</li>
+                    <li><strong>Error terpusat:</strong> <code>AppError</code>, <code>notFound</code>, dan <code>errorHandler</code> (4 parameter, dipasang paling akhir). Tidak boleh ada <code>res.status(4xx).json(...)</code> manual. Format selalu <code>{ error: { pesan, kode } }</code>; URL tak dikenal &rarr; 404 <code>ROUTE_NOT_FOUND</code>.</li>
+                    <li><strong>requests.http</strong> (REST Client), minimal 10 request: GET daftar, GET dengan filter, GET detail ada, GET detail 404, URL tak dikenal, POST 201, POST 401, POST 422, POST 409, DELETE 204 dan DELETE 404.</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Jebakan dari materi:</strong> lupa <code>next()</code> membuat request menggantung; <code>errorHandler</code> wajib 4 parameter; <code>notFound</code> dan <code>errorHandler</code> dipasang setelah semua rute; <code>req.params.id</code> itu string; <code>DELETE</code> berhasil dijawab <code>res.status(204).end()</code> tanpa body.
+                </div>
+
+                <h3>Uji Error 500</h3>
+                <p>Sengaja salah ketik di lapis data (mis. <code>push</code> jadi <code>dorong</code>), kirim <code>POST</code> yang valid. Klien harus menerima <code>500</code> dengan pesan umum &ldquo;Terjadi kesalahan pada server&rdquo;, sedangkan jejak lengkap hanya muncul di terminal server. Screenshot keduanya, lalu <strong>kembalikan kodenya</strong> sebelum commit.</p>
+
+                <h3>Bonus (Opsional)</h3>
+                <ul>
+                    <li><strong>+5%:</strong> <code>PUT /:id</code> (200) lewat 4 lapis dengan <code>cekApiKey</code> dan <code>validasi</code>; id tidak ada &rarr; 404. Tambahkan ke <code>requests.http</code> beserta screenshot.</li>
+                    <li><strong>+5%:</strong> kunci dibaca dari <code>process.env.API_KEY</code>. Jelaskan di README apa yang terjadi bila variabel tidak diset dan pilihan kalian.</li>
+                </ul>
+
+                <h3>Screenshot</h3>
+                <p>Simpan di folder <code>screenshot/</code> dalam repository:</p>
+                <ul>
+                    <li>Terminal server dengan baris <code>logger</code> (ada status 404, 401, 422, 201, 204).</li>
+                    <li>Hasil di REST Client/Postman: GET 404, URL tak dikenal, POST 401, 422, 409, 201, DELETE 204.</li>
+                    <li>Error 500 (sisi klien dan terminal), serta <code>requests.http</code> di VS Code.</li>
+                </ul>
+
+                <h3>README.md</h3>
+<pre><code># Tugas 5 - Middleware &amp; Error Terpusat
+
+## Identitas
+- Nama : [Nama Lengkap]
+- NIM  : [NIM Mahasiswa]  (Varian: A / B)
+
+## Cara Menjalankan
+npm install, npm run dev, API key: [nilai / cara mengatur]
+
+## Struktur Proyek
+[Pohon folder + 1 kalimat tugas tiap lapis]
+
+## Endpoint
+[Tabel: Method, URL, Middleware, Status]
+
+## Aturan Validasi, Aturan Bisnis, dan Kode Error
+[Aturan Joi per field; aturan 409 + alasan tempatnya di service, bukan di Joi; daftar kode error]
+
+## Pengujian
+[Screenshot + satu kalimat keterangan tiap gambar]
+
+## Deklarasi Penggunaan AI
+[Lihat di bawah]
+
+## Kesimpulan &amp; Kendala
+[Apa bedanya sebelum dan sesudah error terpusat? Kendala dan solusinya]</code></pre>
+
+                <h3>Deklarasi Penggunaan AI</h3>
+                <p>AI <strong>boleh</strong> dipakai, tetapi wajib dideklarasikan jujur di README. Yang dinilai kejujuran dan kelengkapan, bukan banyaknya AI.</p>
+<pre><code>| Bagian | Alat AI | Dipakai untuk apa | Cara saya memeriksa hasilnya |
+|--------|---------|-------------------|------------------------------|
+| Skema Joi | ChatGPT | Contoh aturan field tahun | Uji tahun "abc" dan 3000 di requests.http, keduanya 422 |
+| Aturan 409 | - | - | - |
+
+Pernyataan: [Saya menggunakan AI pada bagian yang tertulis di tabel. Bagian lain saya kerjakan sendiri.]</code></pre>
+                <ul>
+                    <li>Cantumkan <strong>setiap bagian</strong> yang dibantu AI, untuk apa, dan cara kalian memeriksanya. Sertakan minimal satu contoh prompt.</li>
+                    <li>Kalau tidak memakai AI: <em>&quot;Saya tidak menggunakan AI dalam mengerjakan tugas ini.&quot;</em></li>
+                    <li>Bersiaplah ditanya, misalnya: &ldquo;kenapa <code>errorHandler</code> dipasang paling akhir?&rdquo; atau &ldquo;kenapa aturan 409 tidak di Joi?&rdquo;. Deklarasi tidak jujur dapat mengurangi nilai.</li>
+                </ul>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr><th>No</th><th>Kriteria</th><th>Bobot</th></tr>
+                    <tr><td>1</td><td>Rute sesuai varian (daftar + filter, detail, POST, DELETE) dengan status yang benar</td><td>15%</td></tr>
+                    <tr><td>2</td><td>Router dan struktur 4 lapis dengan tanggung jawab benar</td><td>15%</td></tr>
+                    <tr><td>3</td><td><code>logger</code> dan <code>cekApiKey</code> bekerja, urutan pemasangan benar</td><td>10%</td></tr>
+                    <tr><td>4</td><td>Validasi Joi sesuai tabel aturan varian</td><td>15%</td></tr>
+                    <tr><td>5</td><td>Aturan bisnis 409 di service</td><td>5%</td></tr>
+                    <tr><td>6</td><td>Error terpusat, format seragam, error 500 tidak membocorkan detail</td><td>10%</td></tr>
+                    <tr><td>7</td><td><code>requests.http</code> lengkap dan screenshot pengujian lengkap</td><td>10%</td></tr>
+                    <tr><td>8</td><td>README.md lengkap di GitHub</td><td>10%</td></tr>
+                    <tr><td>9</td><td>Deklarasi penggunaan AI jujur dan lengkap</td><td>10%</td></tr>
+                    <tr><td colspan="2"><strong>Total</strong></td><td><strong>100%</strong></td></tr>
+                    <tr><td>+</td><td><strong>Bonus:</strong> PUT berlapis</td><td>+5%</td></tr>
+                    <tr><td>+</td><td><strong>Bonus:</strong> API key dari environment</td><td>+5%</td></tr>
+                </table>
+
+                <h3>Submission</h3>
+                <ul>
+                    <li>Satu repository GitHub bernama <strong>T5-MIDDLEWARE-ERROR</strong>, status <strong>Public</strong>, berisi kode, <code>requests.http</code>, screenshot, dan README.</li>
+                    <li>Upload link repository ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">Berajah</a> &mdash; hanya link GitHub, bukan file/ZIP.</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Perhatian:</strong>
+                    <ul>
+                        <li>Repository tetap <strong>public</strong> hingga <strong>akhir semester</strong>.</li>
+                        <li>Proyek harus bisa dijalankan dengan <code>npm install</code> lalu <code>npm run dev</code>; <code>node_modules</code> tidak di-upload.</li>
+                        <li>Kode yang di-commit harus kode yang benar, bukan yang sengaja dirusak untuk uji 500.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Tugas 5 &mdash; Pemrograman Web Lanjut &mdash; Middleware &amp; Penanganan Error Terpusat</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+</body>
+</html>
