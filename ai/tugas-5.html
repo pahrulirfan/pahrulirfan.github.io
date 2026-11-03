@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 5 — Membuat Sistem Pakar Sederhana</title>
+    <link rel="stylesheet" href="tugas.css?v=20261103c">
+</head>
+<body>
+<div class="page">
+
+    <header class="t-hero">
+        <span class="t-tag">Kecerdasan Buatan (Materi 5</span>
+        <h1>Membuat Sistem Pakar Sederhana</h1>
+        <p>Ambil pengetahuan dari internet, jadikan aturan IF-THEN, lalu buat aplikasi sederhana yang menyimpulkan.dikerjakan perorangan dan bebas memilih bahasa pemrograman yg digunakan.</p>
+    </header>
+
+    <nav class="t-nav">
+        <a href="#tugas">Tugas</a>
+        <a href="#contoh">Contoh</a>
+        <a href="#kumpul">Mengumpulkan</a>
+    </nav>
+
+    <main class="t-main">
+
+        <section id="tugas">
+            <h2>Tugas</h2>
+            <ol>
+                <li>Pilih <strong>satu topik</strong> yang <u>bukan kesehatan manusia.</u></li>
+                <li>Cari <strong>minimal 2 sumber di internet</strong>: situs pemerintah, artikel universitas, jurnal, atau dokumentasi resmi. Bukan media sosial atau forum.</li>
+                <li>Tulis <strong>minimal 5 aturan IF-THEN</strong> dengan <strong>minimal 3 kesimpulan</strong> di sebuah file (JSON atau format lain). Setiap aturan mencatat sumbernya, dan minimal satu aturan memakai hasil aturan lain.</li>
+                <li>Buat program yang membaca file itu dan menyimpulkan. Mesinnya ditulis sendiri. Pilih <strong>salah satu</strong>:
+                    <ul>
+                        <li><strong>Forward chaining (FC)</strong>: dari fakta menuju kesimpulan.</li>
+                        <li><strong>Backward chaining (BC)</strong>: dari kesimpulan yang dipilih, program bertanya hanya yang perlu.</li>
+                        <li><strong>Algoritma lain</strong> (Certainty Factor, Dempster-Shafer, Bayes, fuzzy, dan sebagainya). Jelaskan di README: rumusnya, langkahnya, dan satu perhitungan tangan dengan angka.</li>
+                    </ul>
+                </li>
+                <li>Program menampilkan <strong>kesimpulan beserta alasannya</strong> (aturan mana yang dipakai).</li>
+            </ol>
+
+            <div class="t-box">
+                <span class="t-ttl">Contoh topik</span>
+                Hama dan penyakit padi, jagung, atau cabai · jenis pupuk menurut tanah · kesiapsiagaan banjir atau longsor · gangguan WiFi, laptop, atau printer · pompa air atau genset bermasalah · kelayakan penerima bantuan atau beasiswa · prasyarat mengambil mata kuliah (dari pedoman akademik) · masalah kualitas air kolam lele.
+                <br>Jangan pakai tanaman hias (contoh di bawah) dan diagnosis motor (contoh Materi 5).
+            </div>
+        </section>
+
+        <section id="contoh">
+            <h2>Contoh dengan Forward Chaining</h2>
+            <p>Topik: <strong>penyebab daun menguning pada tanaman hias</strong>. Sumbernya tiga artikel University of Maryland Extension. Contoh ini memakai FC saja; Anda boleh memilih BC atau algoritma lain.</p>
+
+            <h3>1. Aturan IF-THEN</h3>
+            <p>Dari artikel sumber, hubungan sebab-akibatnya ditulis sebagai tabel aturan seperti ini:</p>
+            <div class="t-table">
+                <table>
+                    <thead><tr><th>Aturan</th><th>IF</th><th>THEN</th><th>Sumber</th></tr></thead>
+                    <tbody>
+                        <tr><td class="k">R1</td><td>IF lepek tergenang air <strong>OR</strong> media basah terus</td><td>THEN air berlebih</td><td>S1</td></tr>
+                        <tr><td class="k">R2</td><td>IF air berlebih <strong>AND</strong> daun bawah menguning</td><td>THEN kelebihan air</td><td>S1</td></tr>
+                        <tr><td class="k">R3</td><td>IF tulang daun hijau <strong>AND</strong> tanaman penyuka tanah asam</td><td>THEN kekurangan zat besi</td><td>S3</td></tr>
+                        <tr><td class="k">R4</td><td>IF area daun pucat <strong>AND</strong> sinar matahari kuat</td><td>THEN cahaya berlebih</td><td>S2</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>R1 menghasilkan “air berlebih”, yang dipakai R2. Itulah rantai yang dijalankan FC. Setiap aturan menunjuk sumbernya (S1 sampai S3 ada di file aturan di bawah).</p>
+
+            <h3>2. File aturan</h3>
+            <p>Simpan sebagai <code>kb_tanaman.json</code>. <code>mode</code> berisi <code>"dan"</code> (semua syarat harus ada) atau <code>"atau"</code> (salah satu cukup). Fakta yang tidak pernah menjadi hasil aturan (<code>lepek tergenang air</code>, dan seterusnya) ditanyakan ke user.</p>
+<pre data-copy="kb_tanaman.json"><code>{
+  <span class="kw">&quot;judul&quot;</span>: <span class="st">&quot;Penyebab daun menguning pada tanaman hias&quot;</span>,
+  <span class="kw">&quot;batas&quot;</span>: <span class="st">&quot;Aturan berasal dari 3 artikel University of Maryland Extension (iklim sedang) dan hanya mencakup kelebihan air, kekurangan zat besi, dan cahaya berlebih. Hasilnya saran awal, bukan keputusan akhir.&quot;</span>,
+  <span class="kw">&quot;sumber&quot;</span>: {
+    <span class="kw">&quot;S1&quot;</span>: <span class="st">&quot;Overwatered Indoor Plants, University of Maryland Extension, https://extension.umd.edu/resource/overwatered-indoor-plants, diakses 3 Nov 2026&quot;</span>,
+    <span class="kw">&quot;S2&quot;</span>: <span class="st">&quot;Excess Light on Indoor Plants, University of Maryland Extension, https://extension.umd.edu/resource/excess-light-indoor-plants, diakses 3 Nov 2026&quot;</span>,
+    <span class="kw">&quot;S3&quot;</span>: <span class="st">&quot;Nutrient Deficiency of Indoor Plants, University of Maryland Extension, https://extension.umd.edu/resource/nutrient-deficiency-indoor-plants, diakses 3 Nov 2026&quot;</span>
+  },
+  <span class="kw">&quot;aturan&quot;</span>: [
+    {<span class="kw">&quot;id&quot;</span>: <span class="st">&quot;R1&quot;</span>, <span class="kw">&quot;jika&quot;</span>: [<span class="st">&quot;lepek tergenang air&quot;</span>, <span class="st">&quot;media basah terus&quot;</span>], <span class="kw">&quot;mode&quot;</span>: <span class="st">&quot;atau&quot;</span>, <span class="kw">&quot;maka&quot;</span>: <span class="st">&quot;air berlebih&quot;</span>,       <span class="kw">&quot;sumber&quot;</span>: <span class="st">&quot;S1&quot;</span>},
+    {<span class="kw">&quot;id&quot;</span>: <span class="st">&quot;R2&quot;</span>, <span class="kw">&quot;jika&quot;</span>: [<span class="st">&quot;air berlebih&quot;</span>, <span class="st">&quot;daun bawah menguning&quot;</span>],    <span class="kw">&quot;mode&quot;</span>: <span class="st">&quot;dan&quot;</span>,  <span class="kw">&quot;maka&quot;</span>: <span class="st">&quot;kelebihan air&quot;</span>,      <span class="kw">&quot;sumber&quot;</span>: <span class="st">&quot;S1&quot;</span>},
+    {<span class="kw">&quot;id&quot;</span>: <span class="st">&quot;R3&quot;</span>, <span class="kw">&quot;jika&quot;</span>: [<span class="st">&quot;tulang daun hijau&quot;</span>, <span class="st">&quot;tanaman penyuka tanah asam&quot;</span>], <span class="kw">&quot;mode&quot;</span>: <span class="st">&quot;dan&quot;</span>,  <span class="kw">&quot;maka&quot;</span>: <span class="st">&quot;kekurangan zat besi&quot;</span>, <span class="kw">&quot;sumber&quot;</span>: <span class="st">&quot;S3&quot;</span>},
+    {<span class="kw">&quot;id&quot;</span>: <span class="st">&quot;R4&quot;</span>, <span class="kw">&quot;jika&quot;</span>: [<span class="st">&quot;area daun pucat&quot;</span>, <span class="st">&quot;sinar matahari kuat&quot;</span>],  <span class="kw">&quot;mode&quot;</span>: <span class="st">&quot;dan&quot;</span>,  <span class="kw">&quot;maka&quot;</span>: <span class="st">&quot;cahaya berlebih&quot;</span>,    <span class="kw">&quot;sumber&quot;</span>: <span class="st">&quot;S2&quot;</span>}
+  ]
+}</code></pre>
+
+            <h3>3. Cara kerja FC</h3>
+            <p>Mulai dari fakta yang diketahui, jalankan aturan yang cocok, tambahkan hasilnya ke memori, ulangi sampai tidak ada aturan baru. Aturan yang hasilnya sudah ada tidak dijalankan lagi, kalau tidak program tidak pernah berhenti.</p>
+<pre><code>memori ← fakta yang dijawab &quot;ya&quot; oleh user
+<span class="kw">ULANGI</span>:
+    cocok ← aturan yang syaratnya terpenuhi oleh memori <span class="kw">DAN</span> hasilnya belum ada di memori
+    <span class="kw">JIKA</span> cocok kosong:
+        <span class="kw">BERHENTI</span>
+    r ← cocok[0]                          <span class="cm"># ambil aturan pertama</span>
+    <span class="kw">tambahkan</span> r.maka ke memori
+    catat bahwa r.maka berasal dari r     <span class="cm"># bahan &quot;alasan&quot;</span>
+
+  <span class="cm"># syarat terpenuhi: mode &quot;dan&quot; = semua ada di memori, mode &quot;atau&quot; = salah satu ada</span></code></pre>
+
+            <h3>4. Hasil program</h3>
+            <p>Dengan jawaban user: lepek tergenang air dan daun bawah menguning.</p>
+            <div class="t-out-label">keluaran program</div>
+<pre><code>Penyebab daun menguning pada tanaman hias
+Jawab y/t.
+1. Apakah lepek tergenang air? (y/t) &gt; y
+2. Apakah media basah terus? (y/t) &gt; t
+3. Apakah daun bawah menguning? (y/t) &gt; y
+4. Apakah tulang daun hijau? (y/t) &gt; t
+5. Apakah tanaman penyuka tanah asam? (y/t) &gt; t
+6. Apakah area daun pucat? (y/t) &gt; t
+7. Apakah sinar matahari kuat? (y/t) &gt; t
+
+Fakta awal: lepek tergenang air, daun bawah menguning
+
+Siklus 1: R1 -&gt; air berlebih
+Siklus 2: R2 -&gt; kelebihan air
+Siklus 3: tidak ada aturan baru, berhenti
+
+Kesimpulan: kelebihan air
+Alasan:
+  kelebihan air  &lt;- R2 (air berlebih, daun bawah menguning)
+    air berlebih  &lt;- R1 (lepek tergenang air)
+
+Catatan: Aturan berasal dari 3 artikel University of Maryland Extension (iklim sedang) dan hanya mencakup kelebihan air, kekurangan zat besi, dan cahaya berlebih. Hasilnya saran awal, bukan keputusan akhir.</code></pre>
+            <p>Teks tidak harus sama persis. Yang harus ada: pertanyaan, kesimpulan, alasan, dan catatan batas keberlakuan.</p>
+
+            <h3>5. Kasus uji</h3>
+            <p>Coba minimal 3 kasus, termasuk satu yang <strong>tidak</strong> menghasilkan kesimpulan.</p>
+            <div class="t-table">
+<table><thead><tr><th>#</th><th>Jawaban “ya”</th><th>Kesimpulan yang diharapkan</th></tr></thead><tbody>
+<tr><td class="k">1</td><td>lepek tergenang air, daun bawah menguning</td><td>kelebihan air</td></tr>
+<tr><td class="k">2</td><td>area daun pucat saja</td><td><strong>tidak ada</strong> (kasus negatif)</td></tr>
+<tr><td class="k">3</td><td>area daun pucat, sinar matahari kuat, media basah terus, daun bawah menguning</td><td>kelebihan air, cahaya berlebih</td></tr>
+</tbody></table>
+            </div>
+        </section>
+
+        <section id="kumpul">
+            <h2>Mengumpulkan</h2>
+            <p>Kumpulkan lewat <strong>GitHub</strong>: ke LMS cukup kirim tautan repository. Tidak menerima ZIP. Repository harus <strong>Public</strong> dan tetap publik sampai akhir semester. Nama yang disarankan: <code>ai-tugas5-NIM</code>.</p>
+
+            <div class="t-key">
+                <span class="t-ttl">Jangan lupa screenshot</span>
+                <ul>
+                    <li>Minimal <strong>3 screenshot</strong>: dua kasus yang menghasilkan kesimpulan dan satu yang tidak.</li>
+                    <li>Simpan di folder <code>screenshot/</code> di dalam repository, lalu tampilkan di README dengan <code>![judul](screenshot/nama.png)</code>.</li>
+                    <li>Screenshot yang hanya ditempel di LMS tidak dinilai.</li>
+                </ul>
+            </div>
+
+            <h3>Isi README.md</h3>
+            <ol>
+                <li>Nama dan NIM.</li>
+                <li>Topik dan cara menjalankan program (bahasa, versi, perintahnya).</li>
+                <li>Daftar sumber (judul, penerbit, URL, tanggal akses) dan tabel aturan.</li>
+                <li>Metode yang dipilih (FC, BC, atau lainnya) dan alasannya. Bila memakai algoritma lain: rumus, langkah, dan satu perhitungan tangan dengan angka.</li>
+                <li>Tiga kasus uji dan <strong>screenshot</strong>-nya.</li>
+                <li>Batas keberlakuan, satu paragraf: pengetahuan siapa yang dipakai, untuk keadaan apa, dan bahwa hasilnya saran, bukan keputusan akhir. Tampilkan juga di program.</li>
+                <li>Penggunaan alat bantu AI (atau tulis “tidak dipakai”).</li>
+            </ol>
+
+            <h3>Penilaian</h3>
+            <div class="t-table">
+                <table>
+                    <thead><tr><th>Komponen</th><th>Bobot</th></tr></thead>
+                    <tbody>
+                        <tr><td>Sumber dan file aturan (syarat terpenuhi, tiap aturan menunjuk sumber)</td><td>30%</td></tr>
+                        <tr><td>Program berjalan benar sesuai metode yang dipilih</td><td>35%</td></tr>
+                        <tr><td>Kesimpulan disertai alasan</td><td>10%</td></tr>
+                        <tr><td>README.md (penjelasan + screenshot aplikasi) di GitHub</td><td>25%</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <ul>
+                <li><strong>Terlambat:</strong> mengikuti RPS. Pekan tenggat maksimum 100, satu pekan setelahnya maksimum 80, dua pekan setelahnya maksimum 60, setelah itu tidak ada pengumpulan. Tenggat diumumkan di BERAJAH.</li>
+                <li><strong>AI tidak dilarang</strong> sebagai alat belajar dan wajib dicantumkan di README. Yang dianjurkan: buat sendiri agar tidak tergantung. Anda harus bisa menjelaskan kode dan aturan Anda; salinan yang tidak bisa dijelaskan berisiko nilai 0.</li>
+                <li><strong>Menyalin dari teman:</strong> yang menyalin dan yang disalin sama-sama maksimum 50 poin.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <footer class="t-foot">
+        Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·  Pahrul Irfan &amp; Halil Akhyar<br>
+        Aturan contoh adalah parafrasa Indonesia dari artikel University of Maryland Extension (diperbarui 13 Maret 2023), bukan kutipan.
+    </footer>
+
+</div>
+
+<script>
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok ? Promise.resolve() : Promise.reject(new Error('copy gagal'));
+    }
+    document.querySelectorAll('pre[data-copy]').forEach(pre => {
+        const wrap = document.createElement('div');
+        wrap.className = 'code-wrap';
+        const head = document.createElement('div');
+        head.className = 'code-head';
+        head.innerHTML = '<span>' + pre.dataset.copy + '</span>';
+        const btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'copy-btn'; btn.textContent = 'Salin';
+        btn.addEventListener('click', () => {
+            copyText(pre.querySelector('code').textContent).then(
+                () => { btn.textContent = 'Tersalin'; },
+                () => { btn.textContent = 'Gagal, salin manual'; }
+            ).finally(() => setTimeout(() => { btn.textContent = 'Salin'; }, 2000));
+        });
+        head.appendChild(btn);
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(head);
+        wrap.appendChild(pre);
+    });
+</script>
+</body>
+</html>
