@@ -116,7 +116,7 @@
 
     <header>
         <h1>Pertemuan 7: Kueri Lanjutan & Transaksi</h1>
-        <p>Sub-CPMK 4 (bagian 2) &mdash; Minggu 7 &mdash; Pemrograman Web Lanjut</p>
+        <p>Sub-CPMK 4 (bagian 2) &mdash; Pemrograman Web Lanjut</p>
     </header>
 
     <div class="container">
@@ -152,7 +152,7 @@
                 <p>Kita lanjutkan <code>api-mahasiswa</code> dari Pertemuan 6 yang sudah tersambung ke MySQL. Saat ini <code>GET /mahasiswa</code> mengembalikan <strong>semua</strong> data sekaligus. Untuk ribuan data itu tidak realistis: klien menunggu lama dan boros bandwidth. Kita lengkapi bertahap, dan setiap tahap langsung diuji di Postman: <strong>paginasi, filter, lalu pengurutan</strong>.</p>
 
                 <h3>1.1 Siapkan Data yang Lebih Banyak</h3>
-                <p>Paginasi baru terasa kalau datanya banyak. Struktur tabel <code>mahasiswa</code> tidak berubah dari Pertemuan 6; yang kita tambah hanya barisnya, dari 3 menjadi 25. Buka phpMyAdmin, pilih database <code>api_mahasiswa</code>, tab <strong>SQL</strong>, lalu jalankan:</p>
+                <p>Paginasi baru terasa kalau datanya banyak. Struktur tabel <code>mahasiswa</code> tidak berubah dari Pertemuan 6; yang kita tambah hanya barisnya, dari 3 menjadi 25. Syaratnya: tabel kalian sekarang berisi <strong>tepat tiga baris</strong> (Andi, Budi, Citra dengan <code>id</code> 1 sampai 3), seperti di akhir Pertemuan 6. Kalau masih ada baris dari percobaan sebelumnya (misalnya Dewi dengan NIM <code>F1D021004</code>), perintah di bawah gagal dengan <code>Duplicate entry</code>; bersihkan dulu dengan langkah di bagian &ldquo;Menuju Pertemuan 7&rdquo;. Buka phpMyAdmin, pilih database <code>api_mahasiswa</code>, tab <strong>SQL</strong>, lalu jalankan:</p>
 <pre><code><span class="keyword">INSERT INTO</span> mahasiswa (nim, nama, ipk, semester)
 <span class="keyword">WITH RECURSIVE</span> n(i) <span class="keyword">AS</span> (<span class="keyword">SELECT</span> 4 <span class="keyword">UNION ALL</span> <span class="keyword">SELECT</span> i + 1 <span class="keyword">FROM</span> n <span class="keyword">WHERE</span> i &lt; 25)
 <span class="keyword">SELECT</span> CONCAT('F1D0210', LPAD(i, 2, '0')),
@@ -352,7 +352,7 @@
             <section id="relasi-join">
                 <h2>2. Tabel Relasi dan JOIN <span class="badge badge-important">Indikator 4.5</span></h2>
 
-                <p>Mahasiswa bisa mendaftar ke kelas. Satu mahasiswa mengikuti banyak kelas, satu kelas diikuti banyak mahasiswa: relasi banyak-ke-banyak dari Pertemuan 6 (Section 3.2), dengan tabel penghubung <code>pendaftaran</code>. Di section ini kita membuat tabelnya, mengisinya, lalu menampilkan pendaftaran <strong>beserta</strong> data mahasiswa dan kelasnya (inilah JOIN).</p>
+                <p>Mahasiswa bisa mendaftar ke kelas. Satu mahasiswa mengikuti banyak kelas, satu kelas diikuti banyak mahasiswa: relasi banyak-ke-banyak dari Pertemuan 6 (Section 6.2), dengan tabel penghubung <code>pendaftaran</code>. Di section ini kita membuat tabelnya, mengisinya, lalu menampilkan pendaftaran <strong>beserta</strong> data mahasiswa dan kelasnya (inilah JOIN).</p>
 
                 <h3>2.1 Rencana: Tabel yang Akan Dibuat</h3>
                 <div class="erd">
@@ -414,14 +414,14 @@
 
                 <h3>2.2 Tulis Skema dan Jalankan Migrasi</h3>
                 <p>Di <code>prisma/schema.prisma</code>, tambahkan satu baris pada model <code>Mahasiswa</code> dan dua model baru:</p>
-<pre><code><span class=<span class="string">"keyword"</span>>model</span> Mahasiswa {
+<pre><code><span class="keyword">model</span> Mahasiswa {
 <span class="comment">  // ...field yang sudah ada tidak berubah, tambahkan SATU baris ini:</span>
   pendaftaran Pendaftaran[]
 
   <span class="function">@@map</span>(<span class="string">"mahasiswa"</span>)
 }
 
-<span class=<span class="string">"keyword"</span>>model</span> Kelas {
+<span class="keyword">model</span> Kelas {
   id    Int    <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
   nama  String
   kuota Int    <span class="function">@default</span>(30)
@@ -431,7 +431,7 @@
   <span class="function">@@map</span>(<span class="string">"kelas"</span>)
 }
 
-<span class=<span class="string">"keyword"</span>>model</span> Pendaftaran {
+<span class="keyword">model</span> Pendaftaran {
   id            Int      <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
   mahasiswaId   Int
   kelasId       Int
@@ -663,7 +663,7 @@
                     <li>Semua operasi di dalam transaksi memakai <code>tx.namaModel</code>, bukan <code>prisma.namaModel</code>. <code>tx</code> adalah &ldquo;prisma versi transaksi&rdquo; yang dioper ke callback.</li>
                     <li>Kalau ada satu saja yang <code>throw</code>, seluruh transaksi dibatalkan otomatis (rollback), dan errornya diteruskan keluar.</li>
                     <li><code>{ decrement: 1 }</code> berarti &ldquo;kurangi nilai yang ada di database sebanyak 1&rdquo;.</li>
-                    <li>Bagian <code>catch</code> menerjemahkan error <code>P2002</code> (pasangan mahasiswa-kelas sudah ada, dari <code>@@unique</code>) menjadi 409, seperti yang kita lakukan untuk NIM kembar di Pertemuan 6.</li>
+                    <li>Bagian <code>catch</code> menerjemahkan error <code>P2002</code> (pasangan mahasiswa-kelas sudah ada, dari <code>@@unique</code>) menjadi 409, seperti yang kita lakukan untuk NIM kembar di Pertemuan 6 (Section 4.4).</li>
                 </ul>
 
                 <h4>Langkah 3 &mdash; Controller dan route</h4>
@@ -811,7 +811,7 @@
                 </ul>
 
                 <h3>4.2 Daftarkan dan Jalankan</h3>
-                <p>Di Prisma 7, perintah seed didaftarkan di <code>prisma.config.ts</code>, di bawah <code>migrations</code>:</p>
+                <p>Di Prisma 7, perintah seed didaftarkan di <code>prisma.config.js</code>, di bawah <code>migrations</code>:</p>
 <pre><code><span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
 <span class="keyword">import</span> { <span class="variable">defineConfig</span> } <span class="keyword">from</span> <span class="string">'prisma/config'</span>;
 

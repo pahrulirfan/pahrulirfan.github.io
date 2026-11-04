@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETS - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #9333ea 0%, #6b21a8 100%) !important;
+        }
+        section h2 { border-bottom: 3px solid #9333ea !important; }
+        th { background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%) !important; }
+        .badge { background: #7e22ce !important; }
+
+        /* Tanpa sidebar - konten satu kolom, dilebarkan penuh */
+        .container {
+            display: block;
+            max-width: 820px;
+            margin: 100px auto 0;
+        }
+        .content {
+            margin-left: 0;
+            width: auto;
+            padding: 30px 20px;
+        }
+        /* Footer: tanpa sidebar, jadi tidak perlu bergeser 280px */
+        footer { margin-left: 0; }
+        @media (max-width: 768px) {
+            .container { margin-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="text-align:center;">
+        <h1>ETS &mdash; Mini Project REST API (Express.js + MySQL)</h1>
+        <!-- <p>Mencakup Sub-CPMK 1&ndash;4 (Materi Pertemuan 1&ndash;7) &mdash; bobot 22%</p> -->
+    </header>
+
+    <div class="container">
+        <main class="content">
+
+            <section id="ets">
+                <h2>Mini Project ETS <span class="badge">ETS</span></h2>
+
+                <p>Mahasiswa membuat REST API CRUD menggunakan Express.js + MySQL (Prisma), dengan kasus yang dipilih sendiri dari daftar pilihan yang diberikan. Dikerjakan <strong>di rumah</strong>, lalu dilengkapi video presentasi. Setelah itu beberapa mahasiswa diundi secara acak untuk presentasi singkat.</p>
+
+                <h3>Ketentuan Umum</h3>
+                <ol>
+                    <li>Buat REST API menggunakan Express.js dengan struktur berlapis seperti di Pertemuan 5 (<code>routes</code>, <code>controllers</code>, <code>services</code>, <code>data</code>, <code>middleware</code>, <code>validators</code>).</li>
+                    <li>Gunakan MySQL sebagai database, diakses lewat Prisma, dengan <strong>migrasi</strong> (folder <code>prisma/migrations</code> di-commit) dan <strong>seed</strong> yang dapat diulang.</li>
+                    <li>Buat <strong>tabel utama</strong> dengan minimal 6 kolom.
+                        <ul>
+                            <li>Wajib ada kolom angka (contoh: price, stock, gpa, rating).</li>
+                            <li>Wajib ada kolom tanggal (contoh: birthdate, created_at, expired_date).</li>
+                            <li>Kolom lain bisa berupa teks atau boolean. Salah satu kolom teks harus <strong>unik</strong>.</li>
+                        </ul>
+                    </li>
+                    <li>Buat <strong>satu tabel kedua</strong> yang berelasi dengan tabel utama (satu-ke-banyak atau banyak-ke-banyak), misalnya kategori, pelanggan, atau dokter.</li>
+                    <li>Endpoint yang harus ada untuk tabel utama:
+                        <ul>
+                            <li><code>GET /resource</code> dengan <strong>paginasi</strong> (<code>halaman</code> dan <code>ukuran</code>) dan <strong>satu filter</strong> pilihan sendiri (misalnya berdasarkan kategori atau nama)</li>
+                            <li><code>GET /resource/:id</code>, <code>POST /resource</code>, <code>PUT /resource/:id</code>, <code>DELETE /resource/:id</code></li>
+                            <li>Satu endpoint untuk tabel kedua yang menampilkan data beserta relasinya (<code>include</code>)</li>
+                        </ul>
+                    </li>
+                    <li>Satu operasi yang mengubah <strong>dua tabel sekaligus</strong> (misalnya membuat pesanan sambil mengurangi stok) wajib dibungkus <strong>transaksi</strong> (<code>$transaction</code>).</li>
+                    <li>Tambahkan <strong>middleware</strong>: <code>logger</code> (mencatat method + url + status), <code>validasi</code> (Joi, input tidak boleh kosong/salah), dan <code>errorHandler</code> terpusat (format jawaban error seragam; error 500 tidak membocorkan detail).</li>
+                    <li>Gunakan file <strong>.env</strong> untuk konfigurasi database dan port. <code>.env</code> tidak di-commit; sertakan <code>.env.example</code>.</li>
+                    <li>Lakukan uji API dengan Postman atau REST Client (<code>requests.http</code>) dan screenshot hasil ujicoba: berhasil (200/201/204) dan gagal (400/404/409/422).</li>
+                    <li>Hasil screenshot dimasukkan ke folder <code>screenshot</code> yang di-upload ke GitHub dan diberikan penjelasan pada file <strong>README.md</strong>. Setiap gambar memperlihatkan <strong>nama atau NIM kalian</strong> (misalnya pada data yang diuji).</li>
+                    <li>Silakan berkreasi dan buat sebaik mungkin.</li>
+                </ol>
+
+                <h3>Pilihan Kasus</h3>
+                <p>Mahasiswa bebas memilih salah satu kasus di bawah ini (atau membuat kasus lain). Nama kolom boleh disesuaikan; tabel kedua dirancang sendiri.</p>
+                <ol>
+                    <li>Books API: books (id, title, author, year, price, stock)</li>
+                    <li>Students API: students (id, name, nim, major, gpa, birthdate)</li>
+                    <li>Medicines API: medicines (id, name, type, dosage, price, expired_date)</li>
+                    <li>Movies API: movies (id, title, genre, director, release_year, rating)</li>
+                    <li>Products API: products (id, name, category, price, stock, created_at)</li>
+                    <li>Patients API: patients (id, name, gender, birthdate, disease, admitted_date)</li>
+                    <li>Employees API: employees (id, name, position, salary, hire_date, is_active)</li>
+                    <li>Orders API: orders (id, customer_name, product_name, quantity, total_price, order_date)</li>
+                </ol>
+
+                <h3>Video Presentasi</h3>
+                <ol>
+                    <li>Durasi maksimal 15 menit.</li>
+                    <li>Wajib ada bagian <strong>live coding</strong>: menulis ulang satu fungsi CRUD lengkap dari route, controller, service, sampai data, lalu ujicoba di Postman dan buktikan hasilnya di phpMyAdmin. Fungsi yang direkam <strong>ditentukan dari digit terakhir NIM</strong>:
+                        <table>
+                            <tr><th>Digit terakhir NIM</th><th>Fungsi untuk live coding</th></tr>
+                            <tr><td>0, 1</td><td><code>POST</code> (tambah data)</td></tr>
+                            <tr><td>2, 3</td><td><code>PUT</code> (ubah data, termasuk 404 dan 409)</td></tr>
+                            <tr><td>4, 5</td><td><code>GET</code> daftar (paginasi dan filter)</td></tr>
+                            <tr><td>6, 7</td><td><strong>Transaksi</strong>: endpoint yang membuat data di tabel kedua <em>sekaligus</em> mengubah angka di tabel utama (penjelasan di bawah tabel)</td></tr>
+                            <tr><td>8, 9</td><td><code>DELETE</code> beserta alur errornya (404 dan error 500 lewat <code>errorHandler</code>)</td></tr>
+                        </table>
+                        <div class="info-box">
+                            <strong>Untuk NIM 6 dan 7 (transaksi):</strong> yang direkam adalah endpoint yang melakukan <strong>dua langkah sekaligus</strong>: (1) menyimpan baris di tabel kedua, dan (2) mengubah angka di tabel utama. Contoh: <code>POST /orders</code> membuat pesanan <em>dan</em> mengurangi <code>stock</code> produk; <code>POST /peminjaman</code> membuat peminjaman <em>dan</em> mengurangi stok buku. Kalau kasus kalian lain, pakai padanannya.
+                            <br><br><strong>Yang ditulis ulang:</strong> route, validasi, service yang berisi <code>prisma.$transaction</code>, dan lapis data.
+                            <br><br><strong>Yang dijelaskan:</strong>
+                            <ol>
+                                <li>Kenapa dua langkah itu harus berhasil bersama atau gagal bersama: apa yang rusak kalau langkah 1 berhasil tetapi langkah 2 gagal.</li>
+                                <li>Kenapa di dalam transaksi dipakai <code>tx</code>, bukan <code>prisma</code>.</li>
+                                <li>Di mana aturan bisnis (misalnya stok tidak cukup) diperiksa, dan apa yang terjadi pada transaksi kalau ada <code>throw</code> di dalamnya.</li>
+                                <li>Buktikan dua kasus lewat Postman dan phpMyAdmin: <strong>berhasil</strong> (baris baru ada dan angka berkurang) dan <strong>gagal</strong> (misalnya stok kurang, jawaban 409, kedua tabel tidak berubah).</li>
+                            </ol>
+                            Percobaan membuat error untuk fungsi ini: sengaja <code>throw new Error(...)</code> setelah baris tabel kedua dibuat, lalu tunjukkan bahwa baris itu tidak tersimpan. Rujukan: <a href="materi-07-query-lanjutan-transaksi.html">Materi 7, Section 3</a>.
+                        </div>
+                        Hapus dulu kode fungsi itu (misalnya dengan <code>git stash</code>), tulis ulang <strong>sambil menjelaskan alurnya</strong>, dan kembalikan di akhir. Bagian ini <strong>satu kali rekam, tanpa potongan dan tanpa dipercepat</strong>, dengan suara sendiri.
+                    </li>
+                    <li>Setelah berjalan, lakukan <strong>satu percobaan membuat error dengan sengaja</strong> (misalnya melewati pemeriksaan data unik, memasang <code>errorHandler</code> sebelum route, atau melempar error di tengah transaksi), jelaskan akibatnya, lalu kembalikan.</li>
+                    <li>Tampilkan alur project (folder, migrasi, route, controller, service, data, middleware).</li>
+                    <li>Tunjukkan hasil uji API di Postman.</li>
+                    <li>Akhiri dengan kesimpulan pribadi.</li>
+                </ol>
+
+                <h3>Presentasi Acak</h3>
+                <p>Pada jadwal ETS yang diumumkan di Berajah, dosen <strong>mengundi secara acak 6 dari 18 mahasiswa</strong>. Undian dilakukan di tempat, jadi <strong>semua mahasiswa harus siap</strong>. Yang terpilih membagikan layar laptop sendiri (di kelas atau lewat Google Meet/Zoom, sesuai pengumuman), menjalankan project, menjawab beberapa pertanyaan singkat tentang kodenya, dan mengerjakan <strong>satu perubahan kecil</strong> yang tidak diumumkan sebelumnya (misalnya menambah satu filter atau satu aturan validasi). Waktunya sekitar 10 menit per orang. Boleh membuka kode sendiri dan dokumentasi resmi; tidak memakai asisten AI selama presentasi.</p>
+                <p>Presentasi acak tidak punya bobot tersendiri; fungsinya memeriksa keaslian. Mahasiswa terpilih yang tidak mampu menjelaskan atau mengubah kodenya sendiri mendapat nilai ETS <strong>maksimal 50</strong>, berapa pun nilai proyek dan videonya. Yang tidak terpilih dinilai dari kriteria 1&ndash;5.</p>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr><th>No</th><th>Kriteria</th><th>Bobot</th></tr>
+                    <tr><td>1</td><td>Endpoint sesuai ketentuan: CRUD, daftar dengan paginasi dan filter, kode status yang benar</td><td>25%</td></tr>
+                    <tr><td>2</td><td>Struktur berlapis, middleware (<code>logger</code>, <code>validasi</code>), <code>errorHandler</code> terpusat, <code>.env</code></td><td>15%</td></tr>
+                    <tr><td>3</td><td>Basis data: tabel dan kolom sesuai syarat, relasi, migrasi, seed, transaksi</td><td>15%</td></tr>
+                    <tr><td>4</td><td>README.md (identitas, cara menjalankan, endpoint), screenshot pengujian, dan deklarasi penggunaan AI yang jujur</td><td>10%</td></tr>
+                    <tr><td>5</td><td>Video presentasi: live coding (15), alur project (8), hasil uji (5), kesimpulan pribadi (7)</td><td>35%</td></tr>
+                    <tr><td colspan="2"><strong>Total</strong></td><td><strong>100%</strong></td></tr>
+                </table>
+
+                <h3>Deklarasi Penggunaan AI</h3>
+                <p>AI <strong>boleh</strong> dipakai sebagai alat bantu belajar, tetapi wajib dideklarasikan jujur di README: bagian mana, untuk apa, dan bagaimana kalian memeriksa hasilnya. Kalau tidak memakai AI, tulis pernyataannya. Yang dinilai kejujuran dan kelengkapan, bukan banyaknya AI. Video dan presentasi acak memeriksa bahwa kalian mengerti dan bisa mengubah kode kalian sendiri.</p>
+
+                <h3>Kumpulkan</h3>
+                <ol>
+                    <li>Link video presentasi (YouTube <em>Unlisted</em>, atau Google Drive dengan akses <em>siapa saja yang memiliki tautan</em>). Tulis juga di README.</li>
+                    <li>Link GitHub &mdash; nama repository <strong>pwl26-mini-project</strong>, status <strong>Public</strong>.</li>
+                    <li>Upload kedua link ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">Berajah</a> &mdash; hanya link, bukan file/ZIP.</li>
+                    <li><strong>Kerjakan sendiri.</strong></li>
+                </ol>
+
+                <div class="warning-box">
+                    <strong>Perhatian:</strong>
+                    <ul>
+                        <li>Repository dan video tetap <strong>public / dapat diakses</strong> hingga <strong>akhir semester</strong>. <code>node_modules</code> dan <code>.env</code> tidak di-upload.</li>
+                        <li><strong>Terlambat</strong> mengumpulkan link: nilai dikurangi <strong>10 poin per hari</strong>.</li>
+                        <li><strong>Menyalin pekerjaan teman:</strong> baik yang menyalin maupun yang disalin mendapat nilai <strong>maksimal 50</strong>.</li>
+                        <li>Kode yang tidak bisa dijelaskan atau diubah oleh pemiliknya, dari sumber mana pun, berisiko mendapat nilai 0 pada komponen terkait.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>ETS &mdash; Pemrograman Web Lanjut &mdash; Mini Project REST API</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+</body>
+</html>

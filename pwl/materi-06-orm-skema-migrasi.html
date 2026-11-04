@@ -97,19 +97,21 @@
 
     <header>
         <h1>Pertemuan 6: ORM, Skema & Migrasi</h1>
-        <p>Sub-CPMK 4 (bagian 1) &mdash; Minggu 6 &mdash; Pemrograman Web Lanjut</p>
+        <p>Sub-CPMK 4 (bagian 1) &mdash; Pemrograman Web Lanjut</p>
     </header>
 
     <div class="container">
         <nav class="sidebar">
             <h3>Daftar Materi</h3>
             <ul>
-                <li><a href="#orm-padanan" class="active">1. ORM & Padanan Eloquent</a></li>
-                <li><a href="#skema-migrasi">2. Skema & Migrasi</a></li>
-                <li><a href="#relasi">3. Relasi 1-N dan N-N</a></li>
-                <li><a href="#validasi">4. Validasi Masukan</a></li>
-                <li><a href="#praktik">5. Praktik</a></li>
-                <!-- <li><a href="#cpmk">6. Capaian Pembelajaran</a></li> -->
+                <li><a href="#tabel-manual" class="active">1. Database & Tabel Manual</a></li>
+                <li><a href="#sql-js">2. SQL dari JavaScript</a></li>
+                <li><a href="#orm">3. Masuk ke ORM: Prisma</a></li>
+                <li><a href="#crud">4. CRUD Lengkap</a></li>
+                <li><a href="#migrasi">5. Skema & Migrasi</a></li>
+                <li><a href="#relasi">6. Relasi & Normalisasi</a></li>
+                <li><a href="#praktik">7. Latihan Mandiri</a></li>
+                <!-- <li><a href="#cpmk">8. Capaian Pembelajaran</a></li> -->
             </ul>
             <h3>Link Terkait</h3>
             <ul>
@@ -126,129 +128,27 @@
 
         <main class="content">
 
-            <section id="orm-padanan">
-                <h2>1. ORM dan Padanannya dengan Eloquent <span class="badge">Pengantar</span></h2>
+            <section id="tabel-manual">
+                <h2>1. Database dan Tabel Manual <span class="badge badge-important">Indikator 4.1</span></h2>
 
-                <p>Sejak Pertemuan 4, data mahasiswa masih berupa array biasa yang hilang setiap kali server di-restart. Sekarang saatnya menyambungkan API ke <strong>MySQL</strong> yang sudah kalian siapkan di Pertemuan 1, lewat sebuah <strong>ORM</strong> (Object-Relational Mapper).</p>
+                <p>Sampai Pertemuan 5, data mahasiswa di <code>api-mahasiswa</code> berupa array di memori, jadi hilang setiap server di-restart. Hari ini data dipindahkan ke <strong>MySQL</strong> yang sudah kalian siapkan di Pertemuan 1. Urutannya sengaja bertahap, dari yang paling dasar:</p>
+
+                <table>
+                    <tr><th>Tahap</th><th>Yang dikerjakan</th><th>Section</th></tr>
+                    <tr><td>1</td><td>Membuat tabel sendiri di phpMyAdmin dan mengisinya dengan SQL</td><td>1</td></tr>
+                    <tr><td>2</td><td>Menampilkan dan menambah data dari JavaScript memakai SQL, di proyek kecil <code>mysql-mahasiswa</code>, lalu di <code>api-mahasiswa</code></td><td>2</td></tr>
+                    <tr><td>3</td><td>Mengenal ORM (Prisma), lalu mengganti SQL tadi dengan Prisma</td><td>3</td></tr>
+                    <tr><td>4</td><td>Menyelesaikan CRUD (ubah dan hapus) dengan Prisma</td><td>4</td></tr>
+                    <tr><td>5</td><td>Mencatat perubahan struktur tabel dengan migrasi</td><td>5</td></tr>
+                    <tr><td>6</td><td>Relasi antar tabel dan normalisasi</td><td>6</td></tr>
+                </table>
 
                 <div class="info-box">
-                    <strong>ORM itu apa?</strong> Jembatan antara objek JavaScript dan baris tabel SQL. Alih-alih menulis <code>SELECT * FROM mahasiswa WHERE id = 1</code>, kalian menulis <code>prisma.mahasiswa.findUnique({ where: { id: 1 } })</code> &mdash; persis seperti Eloquent menggantikan query SQL mentah di Laravel.
+                    <strong>Kenapa tidak langsung ORM?</strong> ORM menerjemahkan kode JavaScript menjadi SQL. Kalau belum pernah membuat tabel dan menulis SQL sendiri, sulit menilai apa yang dikerjakan ORM dan kenapa ia berguna. Karena itu kita rasakan dulu tanpa ORM. Dari awal sampai akhir, <strong>controller dan routes tidak berubah</strong>; yang diganti hanya lapis data (dan service hanya menambah <code>await</code>).
                 </div>
 
-                <h3>Prisma vs Eloquent: Padanan Konsep</h3>
-                <table>
-                    <tr><th>Eloquent (Laravel)</th><th>Prisma</th></tr>
-                    <tr><td><code>php artisan make:migration</code></td><td>Edit <code>schema.prisma</code> langsung</td></tr>
-                    <tr><td><code>php artisan migrate</code></td><td><code>npx prisma migrate dev</code></td></tr>
-                    <tr><td>Model class (<code>app/Models/Mahasiswa.php</code>)</td><td>Model dideklarasikan di <code>schema.prisma</code></td></tr>
-                    <tr><td><code>Mahasiswa::find(1)</code></td><td><code>prisma.mahasiswa.findUnique({ where: { id: 1 } })</code></td></tr>
-                    <tr><td><code>Mahasiswa::where('semester', 6)->get()</code></td><td><code>prisma.mahasiswa.findMany({ where: { semester: 6 } })</code></td></tr>
-                    <tr><td><code>Mahasiswa::create([...])</code></td><td><code>prisma.mahasiswa.create({ data: {...} })</code></td></tr>
-                    <tr><td><code>$mahasiswa->nilai</code> (relasi)</td><td><code>prisma.mahasiswa.findUnique({ include: { nilai: true } })</code></td></tr>
-                    <tr><td><code>php artisan db:seed</code></td><td><code>prisma/seed.js</code> + <code>npx prisma db seed</code></td></tr>
-                </table>
-
-                <div class="warning-box">
-                    <strong>Perbedaan filosofis penting:</strong> Eloquent bersifat <em>active record</em> &mdash; model class-nya sendiri tahu cara query dirinya. Prisma bersifat lebih terpisah: skema hanya mendefinisikan <strong>bentuk data</strong>, sedangkan <strong>Prisma Client</strong> (yang di-generate otomatis dari skema) adalah objek terpisah yang dipakai untuk semua query. Tidak ada "class Mahasiswa extends Model" &mdash; hanya <code>prisma.mahasiswa</code>.
-                </div>
-
-                <h3>Kenapa ORM, Bukan SQL Mentah?</h3>
-                <table>
-                    <tr><th>Keuntungan</th><th>Penjelasan</th></tr>
-                    <tr><td>Aman dari SQL Injection</td><td>Nilai dari pengguna dikirim <em>terpisah</em> dari perintah SQL sebagai parameter, sehingga tidak pernah dianggap perintah. Contohnya tepat di bawah tabel ini (dibahas mendalam di Pertemuan 10)</td></tr>
-                    <tr><td>Autocomplete &amp; type-checking</td><td>Editor tahu field apa saja yang ada di setiap model</td></tr>
-                    <tr><td>Migrasi terlacak</td><td>Setiap perubahan skema tercatat sebagai riwayat, bisa di-rollback</td></tr>
-                    <tr><td>Lintas basis data</td><td>Skema yang sama bisa diarahkan ke PostgreSQL, MySQL, atau SQLite dengan sedikit perubahan</td></tr>
-                </table>
-
-                <h3>Contoh: Apa Itu SQL Injection?</h3>
-                <p>Baris pertama di tabel itu perlu dilihat langsung supaya terasa. <strong>SQL injection</strong> adalah serangan ketika input dari pengguna ikut dibaca sebagai <em>perintah</em> SQL, bukan sebagai <em>data</em>. Kita buktikan dengan data yang sama seperti di Pertemuan 4: tabel <code>mahasiswa</code> berisi Andi, Budi, dan Citra.</p>
-
-                <h4>Skenario: fitur pencarian tanpa ORM</h4>
-                <p>Misalkan kita menambah endpoint pencarian ke <code>api-mahasiswa</code>, ditulis dengan SQL mentah yang menggabungkan input ke dalam teks query:</p>
-<pre><code><span class="comment">// ❌ RENTAN: input pengguna digabung langsung ke teks SQL</span>
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa/cari'</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> { <span class="variable">nama</span> } = <span class="variable">req</span>.<span class="variable">query</span>;
-    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">query</span>(<span class="string">`SELECT * FROM mahasiswa WHERE nama = '${nama}'`</span>);
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span>.<span class="variable">rows</span> });
-});</code></pre>
-                <p>Pencarian biasa bekerja seperti yang diharapkan. Untuk <code>GET /mahasiswa/cari?nama=Andi</code>, SQL yang terbentuk dan hasilnya:</p>
-<div class="terminal"><span class="out">SQL yang dijalankan:</span>
-<span class="out">SELECT * FROM mahasiswa WHERE nama = 'Andi'</span>
-
-<span class="out">Hasil:</span>
-<span class="out">[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75}]</span></div>
-                <h4>Serangan: input yang &ldquo;bukan nama&rdquo;</h4>
-                <p>Sekarang penyerang tidak mengetik nama, melainkan <code>' OR '1'='1</code> di kolom pencarian:</p>
-<div class="terminal"><span class="out">SQL yang dijalankan:</span>
-<span class="out">SELECT * FROM mahasiswa WHERE nama = '' OR '1'='1'</span>
-
-<span class="out">Hasil:</span>
-<span class="out">[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75},</span>
-<span class="out"> {"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2},</span>
-<span class="out"> {"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9}]</span></div>
-                <p>Semua mahasiswa keluar, padahal tidak ada yang bernama &ldquo;&rdquo; (kosong). Penyebabnya: tanda kutip <code>'</code> di awal input <strong>menutup string lebih awal</strong>, sehingga sisa input menjadi bagian dari perintah SQL. Syarat <code>'1'='1'</code> selalu benar, jadi <code>WHERE</code> meloloskan setiap baris. Penyerang tidak perlu menembus server atau password; cukup mengetik di kolom pencarian.</p>
-
-                <p>Yang lebih merusak: kalau driver mengizinkan beberapa perintah sekaligus (beberapa driver atau pengaturan mengizinkannya, misalnya PostgreSQL <code>pg</code> pada query biasa atau MySQL dengan opsi <code>multipleStatements</code>), input <code>x'; DROP TABLE mahasiswa; --</code> menyisipkan perintah baru:</p>
-<div class="terminal"><span class="out">SQL yang dijalankan:</span>
-<span class="out">SELECT * FROM mahasiswa WHERE nama = 'x'; DROP TABLE mahasiswa; --'</span>
-
-<span class="out">Setelah itu, SELECT * FROM mahasiswa:</span>
-<span class="out">no such table: mahasiswa</span></div>
-                <p>Tabel hilang. Tanda <code>--</code> adalah komentar SQL, dipakai untuk membuang sisa kutip penutup yang tidak diperlukan.</p>
-
-                <div class="warning-box">
-                    <strong>Akar masalahnya:</strong> data (apa yang diketik pengguna) dan perintah (SQL) <strong>dicampur dalam satu teks</strong>, sehingga database tidak bisa membedakan keduanya. Semua serangan di atas hanya menyebabkan masalah itu.
-                </div>
-
-                <h4>Perbaikan: pisahkan perintah dan data</h4>
-                <p>Solusinya <strong>query berparameter</strong>. Perintah SQL ditulis dengan penanda (<code>?</code> di MySQL, <code>$1</code> di PostgreSQL), nilainya dikirim terpisah:</p>
-<pre><code><span class="comment">// ✅ AMAN: perintah SQL dan nilainya dikirim terpisah</span>
-<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">query</span>(<span class="string">'SELECT * FROM mahasiswa WHERE nama = ?'</span>, [<span class="variable">nama</span>]);</code></pre><div class="terminal"><span class="out">SQL yang dijalankan:   SELECT * FROM mahasiswa WHERE nama = ?     parameter: "' OR '1'='1"</span>
-
-<span class="out">Hasil:</span>
-<span class="out">[]</span></div>
-                <p>Input jahat yang sama kini hanya dianggap <em>nama seseorang yang aneh</em>. Karena tidak ada mahasiswa dengan nama itu, hasilnya kosong. Tanda kutip di dalamnya tidak lagi bisa menutup apa pun.</p>
-                <p style="font-size:0.85em;color:#777;">Catatan: keluaran pada bagian ini berasal dari database SQLite di memori, yang menandai parameter dengan <code>?</code>, sama seperti MySQL. PostgreSQL memakai <code>$1</code>, <code>$2</code>, dst.; perilakunya sama.</p>
-
-                <h4>Di mana ORM berperan?</h4>
-                <p>Prisma <strong>selalu</strong> memakai cara kedua: nilai yang kita berikan di <code>where</code> dikirim ke database sebagai parameter, tanpa pernah digabung ke teks SQL. Kita tidak perlu ingat melakukannya, jadi tidak bisa lupa:</p>
-<pre><code><span class="comment">// ✅ AMAN: Prisma selalu mengirim nilai sebagai parameter</span>
-<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>({ <span class="variable">where</span>: { <span class="variable">nama</span> } });</code></pre>
-                <table>
-                    <tr><th>Cara</th><th>Input <code>' OR '1'='1</code> dianggap...</th><th>Hasil</th></tr>
-                    <tr><td>SQL mentah, digabung string</td><td>perintah SQL</td><td>semua baris bocor</td></tr>
-                    <tr><td>SQL mentah, berparameter</td><td>data (sebuah nama)</td><td>kosong</td></tr>
-                    <tr><td>Prisma <code>findMany({ where })</code></td><td>data (sebuah nama)</td><td>kosong</td></tr>
-                </table>
-
-                <div class="warning-box">
-                    <strong>ORM bukan jaminan otomatis.</strong> Prisma menyediakan jalur SQL mentah, dan pemakaiannya bisa membuat lubang yang sama kembali:
-<pre><code><span class="comment">// ❌ RENTAN lagi: $queryRawUnsafe + template string = SQL mentah yang digabung</span>
-<span class="keyword">await</span> <span class="variable">prisma</span>.<span class="function">$queryRawUnsafe</span>(<span class="string">`SELECT * FROM "Mahasiswa" WHERE nama = '${nama}'`</span>);
-
-<span class="comment">// ✅ AMAN: $queryRaw dengan tagged template, ${nama} otomatis menjadi parameter</span>
-<span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">$queryRaw</span><span class="string">`SELECT * FROM "Mahasiswa" WHERE nama = ${nama}`</span>;</code></pre>
-                    Aturannya: <strong>jangan pernah menggabungkan input pengguna ke dalam string SQL</strong>, di ORM mana pun. Validasi masukan seperti di Pertemuan 5 tetap dipakai sebagai lapisan tambahan, bukan pengganti.
-                </div>
-
-                <div class="interactive-demo">
-                    <h5>Coba Langsung: SQL Injection pada Pencarian Mahasiswa</h5>
-                    <button onclick="demoSqli('normal')">Input normal: Andi</button>
-                    <button onclick="demoSqli('serang')">Input jahat: ' OR '1'='1</button>
-                    <button onclick="demoSqli('drop')">Input jahat: DROP TABLE</button>
-                    <button onclick="demoSqli('aman')">Input jahat, query berparameter</button>
-                    <div class="console-output" id="demo-sqli-out">Klik salah satu tombol...</div>
-                </div>
-            </section>
-
-            <section id="skema-migrasi">
-                <h2>2. Skema dan Migrasi <span class="badge badge-important">Indikator 4.1 &amp; 4.2</span></h2>
-
-                <p>Di section ini kita membuat tabel <code>mahasiswa</code> di MySQL, mengisinya lewat phpMyAdmin, lalu menampilkannya lewat API. Kita pakai <strong>proyek baru bernama <code>prisma-mahasiswa</code></strong>, jadi <code>api-mahasiswa</code> tidak diubah sama sekali (proyek itu disambungkan ke database di Section 5). Urutannya sederhana: rencana tabel &rarr; database kosong &rarr; proyek &rarr; skema &rarr; migrasi &rarr; isi data &rarr; tampilkan data.</p>
-
-                <h3>2.1 Rencana: Tabel yang Akan Dibuat</h3>
-                <p>Sebelum menulis kode, lihat dulu bentuk tabel yang kita tuju. Isinya sama dengan array mahasiswa di Pertemuan 4, hanya sekarang tersimpan di database dan tidak hilang saat server restart.</p>
+                <h3>1.1 Rencana: Tabel yang Akan Dibuat</h3>
+                <p>Sebelum menulis apa pun, lihat dulu bentuk tabel yang kita tuju. Isinya sama dengan array mahasiswa di Pertemuan 5, hanya sekarang tersimpan di database dan tidak hilang saat server restart.</p>
 
                 <div class="erd">
                     <div class="erd-entity">
@@ -267,14 +167,14 @@
                 <table>
                     <tr><th>Kolom</th><th>Tipe di MySQL</th><th>Aturan</th><th>Contoh</th></tr>
                     <tr><td><code>id</code></td><td><code>INT</code></td><td>primary key, naik otomatis</td><td>1</td></tr>
-                    <tr><td><code>nim</code></td><td><code>VARCHAR(191)</code></td><td>wajib, tidak boleh kembar</td><td>F1D021001</td></tr>
-                    <tr><td><code>nama</code></td><td><code>VARCHAR(191)</code></td><td>wajib</td><td>Andi</td></tr>
+                    <tr><td><code>nim</code></td><td><code>VARCHAR(20)</code></td><td>wajib, tidak boleh kembar</td><td>F1D021001</td></tr>
+                    <tr><td><code>nama</code></td><td><code>VARCHAR(100)</code></td><td>wajib</td><td>Andi</td></tr>
                     <tr><td><code>ipk</code></td><td><code>DOUBLE</code></td><td>kalau tidak diisi, bernilai 0</td><td>3.75</td></tr>
                     <tr><td><code>semester</code></td><td><code>INT</code></td><td>kalau tidak diisi, bernilai 1</td><td>6</td></tr>
-                    <tr><td><code>createdAt</code></td><td><code>DATETIME(3)</code></td><td>diisi otomatis saat baris dibuat</td><td>2026-10-29 06:37:31.557</td></tr>
+                    <tr><td><code>createdAt</code></td><td><code>DATETIME(3)</code></td><td>diisi otomatis saat baris dibuat</td><td>2026-11-04 22:24:29.463</td></tr>
                 </table>
 
-                <p>Data yang nanti kita isi ke tabel ini:</p>
+                <p>Data yang akan kita isi:</p>
                 <table>
                     <tr><th>id</th><th>nim</th><th>nama</th><th>ipk</th><th>semester</th></tr>
                     <tr><td>1</td><td>F1D021001</td><td>Andi</td><td>3.75</td><td>6</td></tr>
@@ -282,46 +182,476 @@
                     <tr><td>3</td><td>F1D021003</td><td>Citra</td><td>3.9</td><td>4</td></tr>
                 </table>
 
-                <h3>2.2 Siapkan Database Kosong di phpMyAdmin</h3>
+                <h3>1.2 Buat Database di phpMyAdmin</h3>
                 <p>Server MySQL yang kalian siapkan di Pertemuan 1 harus menyala. Buka phpMyAdmin (di Laragon biasanya <code>http://localhost/phpmyadmin</code>), lalu:</p>
                 <ol>
                     <li>Klik tab <strong>Databases</strong> (Basis data).</li>
-                    <li>Isi nama database: <code>prisma_mahasiswa</code>. Pilih collation <code>utf8mb4_unicode_ci</code>.</li>
+                    <li>Isi nama database: <code>api_mahasiswa</code>. Pilih collation <code>utf8mb4_unicode_ci</code>.</li>
                     <li>Klik <strong>Create</strong> (Buat).</li>
                 </ol>
                 <div class="warning-box">
-                    <strong>Cukup databasenya saja, jangan buat tabel.</strong> Tabel <code>mahasiswa</code> akan dibuat oleh Prisma lewat migrasi di 2.5.
+                    <strong>Cukup databasenya saja.</strong> Database itu seperti folder kosong. Tabel di dalamnya kita buat sendiri di 1.3.
                 </div>
 
-                <h3>2.3 Buat Proyek Baru dan Pasang Prisma</h3>
-                <p>Di luar folder <code>api-mahasiswa</code>, buat proyek baru:</p>
-<div class="terminal"><span class="prompt">$</span> mkdir prisma-mahasiswa
-<span class="prompt">$</span> cd prisma-mahasiswa
+                <h3>1.3 Buat Tabel <code>mahasiswa</code></h3>
+                <p>SQL adalah bahasa untuk berbicara dengan database. Perintah <code>CREATE TABLE</code> membuat tabel baru. Pilih database <code>api_mahasiswa</code> di sisi kiri, klik tab <strong>SQL</strong>, ketik perintah berikut, lalu klik <strong>Go</strong> (Kirim):</p>
+<pre><code><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> mahasiswa (
+    id        <span class="function">INT</span>          <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">AUTO_INCREMENT</span>,
+    nim       <span class="function">VARCHAR</span>(<span class="number">20</span>)  <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+    nama      <span class="function">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+    ipk       <span class="function">DOUBLE</span>       <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,
+    semester  <span class="function">INT</span>          <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="number">1</span>,
+    createdAt <span class="function">DATETIME</span>(<span class="number">3</span>)  <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="function">CURRENT_TIMESTAMP</span>(<span class="number">3</span>),
+    <span class="keyword">PRIMARY</span> <span class="keyword">KEY</span> (id),
+    <span class="keyword">UNIQUE</span> <span class="keyword">KEY</span> mahasiswa_nim_key (nim)
+);</code></pre>
+                <table>
+                    <tr><th>Bagian</th><th>Artinya</th></tr>
+                    <tr><td><code>CREATE TABLE mahasiswa ( ... )</code></td><td>Buat tabel bernama <code>mahasiswa</code>, kolomnya ditulis di dalam kurung</td></tr>
+                    <tr><td><code>INT</code>, <code>VARCHAR(20)</code>, <code>DOUBLE</code></td><td>Tipe kolom: bilangan bulat, teks maksimal 20 karakter, bilangan desimal</td></tr>
+                    <tr><td><code>NOT NULL</code></td><td>Kolom wajib terisi</td></tr>
+                    <tr><td><code>AUTO_INCREMENT</code></td><td>Nomor naik sendiri setiap ada baris baru (1, 2, 3, ...)</td></tr>
+                    <tr><td><code>DEFAULT 0</code></td><td>Nilai bawaan kalau kolom tidak diisi</td></tr>
+                    <tr><td><code>DEFAULT CURRENT_TIMESTAMP(3)</code></td><td>Diisi waktu saat baris dibuat, teliti sampai milidetik</td></tr>
+                    <tr><td><code>PRIMARY KEY (id)</code></td><td><code>id</code> adalah pengenal unik setiap baris</td></tr>
+                    <tr><td><code>UNIQUE KEY ... (nim)</code></td><td>Tidak boleh ada dua baris dengan <code>nim</code> yang sama</td></tr>
+                </table>
+                <p>Klik tabel <code>mahasiswa</code> yang kini muncul di sisi kiri, tab <strong>Structure</strong> (Struktur). Cocokkan dengan tabel rencana di 1.1:</p>
+                <table>
+                    <tr><th>Field</th><th>Type</th><th>Null</th><th>Key</th><th>Default</th><th>Extra</th></tr>
+                    <tr><td>id</td><td>int</td><td>NO</td><td>PRI</td><td>NULL</td><td>auto_increment</td></tr>
+                    <tr><td>nim</td><td>varchar(20)</td><td>NO</td><td>UNI</td><td>NULL</td><td></td></tr>
+                    <tr><td>nama</td><td>varchar(100)</td><td>NO</td><td></td><td>NULL</td><td></td></tr>
+                    <tr><td>ipk</td><td>double</td><td>NO</td><td></td><td>0</td><td></td></tr>
+                    <tr><td>semester</td><td>int</td><td>NO</td><td></td><td>1</td><td></td></tr>
+                    <tr><td>createdAt</td><td>datetime(3)</td><td>NO</td><td></td><td>CURRENT_TIMESTAMP(3)</td><td>DEFAULT_GENERATED</td></tr>
+                </table>
+                <div class="info-box">
+                    Tabel yang sama bisa dibuat dengan klik-klik lewat tab <strong>Create new table</strong>. SQL dipilih karena bisa disimpan di file dan diulang di komputer lain, sedangkan klik-klik tidak meninggalkan catatan. Masalah ini muncul lagi di Section 5.
+                </div>
+
+                <h3>1.4 Mengisi dan Mengelola Data dengan SQL</h3>
+                <p>Empat operasi dasar data (CRUD) masing-masing punya satu perintah SQL. Keempatnya akan terus kita temui sampai akhir pertemuan, dengan wujud yang berbeda-beda:</p>
+                <table>
+                    <tr><th>Operasi</th><th>Perintah SQL</th><th>Contoh</th></tr>
+                    <tr><td>Create (tambah)</td><td><code>INSERT INTO</code></td><td><code>INSERT INTO mahasiswa (nim, nama) VALUES ('F1D021050', 'Gita')</code></td></tr>
+                    <tr><td>Read (baca)</td><td><code>SELECT</code></td><td><code>SELECT * FROM mahasiswa WHERE semester = 6</code></td></tr>
+                    <tr><td>Update (ubah)</td><td><code>UPDATE</code></td><td><code>UPDATE mahasiswa SET ipk = 4 WHERE id = 1</code></td></tr>
+                    <tr><td>Delete (hapus)</td><td><code>DELETE FROM</code></td><td><code>DELETE FROM mahasiswa WHERE id = 1</code></td></tr>
+                </table>
+
+                <h4>a. Isi data awal (INSERT)</h4>
+                <p>Tab <strong>SQL</strong>, ketik, lalu <strong>Go</strong>. Kolom <code>id</code> dan <code>createdAt</code> sengaja tidak ditulis karena terisi otomatis:</p>
+<pre><code><span class="keyword">INSERT</span> <span class="keyword">INTO</span> mahasiswa (nim, nama, ipk, semester) <span class="keyword">VALUES</span>
+(<span class="string">'F1D021001'</span>, <span class="string">'Andi'</span>,  <span class="number">3.75</span>, <span class="number">6</span>),
+(<span class="string">'F1D021002'</span>, <span class="string">'Budi'</span>,  <span class="number">3.20</span>, <span class="number">6</span>),
+(<span class="string">'F1D021003'</span>, <span class="string">'Citra'</span>, <span class="number">3.90</span>, <span class="number">4</span>);</code></pre>
+                <p>Buka tab <strong>Browse</strong>; seharusnya tampil tiga baris:</p>
+                <table>
+                    <tr><th>id</th><th>nim</th><th>nama</th><th>ipk</th><th>semester</th><th>createdAt</th></tr>
+                    <tr><td>1</td><td>F1D021001</td><td>Andi</td><td>3.75</td><td>6</td><td>2026-11-04 22:24:29.463</td></tr>
+                    <tr><td>2</td><td>F1D021002</td><td>Budi</td><td>3.2</td><td>6</td><td>2026-11-04 22:24:29.463</td></tr>
+                    <tr><td>3</td><td>F1D021003</td><td>Citra</td><td>3.9</td><td>4</td><td>2026-11-04 22:24:29.463</td></tr>
+                </table>
+                <p>Kolom <code>createdAt</code> kalian akan berisi waktu saat kalian menjalankan perintah.</p>
+
+                <h4>b. Baca data (SELECT)</h4>
+                <p>Jalankan satu per satu di tab <strong>SQL</strong> dan amati hasilnya:</p>
+<pre><code><span class="keyword">SELECT</span> * <span class="keyword">FROM</span> mahasiswa;                              <span class="comment">-- semua kolom, semua baris</span>
+<span class="keyword">SELECT</span> nama, ipk <span class="keyword">FROM</span> mahasiswa <span class="keyword">WHERE</span> semester = <span class="number">6</span>;   <span class="comment">-- dua kolom, hanya semester 6</span>
+<span class="keyword">SELECT</span> * <span class="keyword">FROM</span> mahasiswa <span class="keyword">ORDER</span> <span class="keyword">BY</span> ipk <span class="keyword">DESC</span>;            <span class="comment">-- IPK tertinggi lebih dulu</span></code></pre>
+                <h4>c. Ubah data (UPDATE)</h4>
+<pre><code><span class="keyword">UPDATE</span> mahasiswa <span class="keyword">SET</span> ipk = <span class="number">4.00</span> <span class="keyword">WHERE</span> id = <span class="number">1</span>;
+<span class="keyword">SELECT</span> id, nama, ipk <span class="keyword">FROM</span> mahasiswa <span class="keyword">WHERE</span> id = <span class="number">1</span>;     <span class="comment">-- IPK Andi sekarang 4</span>
+<span class="keyword">UPDATE</span> mahasiswa <span class="keyword">SET</span> ipk = <span class="number">3.75</span> <span class="keyword">WHERE</span> id = <span class="number">1</span>;         <span class="comment">-- kembalikan</span></code></pre>
+                <h4>d. Hapus data (DELETE)</h4>
+                <p>Tambah satu baris percobaan, lalu hapus:</p>
+<pre><code><span class="keyword">INSERT</span> <span class="keyword">INTO</span> mahasiswa (nim, nama) <span class="keyword">VALUES</span> (<span class="string">'F1D021099'</span>, <span class="string">'Sementara'</span>);
+<span class="keyword">DELETE</span> <span class="keyword">FROM</span> mahasiswa <span class="keyword">WHERE</span> nim = <span class="string">'F1D021099'</span>;
+<span class="keyword">SELECT</span> id, nim, nama <span class="keyword">FROM</span> mahasiswa;                  <span class="comment">-- kembali tiga baris</span></code></pre>
+                <p><code>nim</code> dan <code>nama</code> saja yang diisi, jadi <code>ipk</code> dan <code>semester</code> terisi nilai bawaan (0 dan 1). Setelah dihapus, tabel kembali berisi tiga baris. Satu hal yang perlu diperhatikan: baris percobaan tadi mendapat <code>id</code> 4, dan <strong>nomor 4 tidak dipakai lagi</strong>. Mahasiswa berikutnya akan mendapat <code>id</code> 5. MySQL tidak mendaur ulang nomor yang sudah terpakai, jadi <code>id</code> boleh punya &ldquo;lubang&rdquo; dan itu normal.</p>
+
+                <div class="warning-box">
+                    <strong>Jangan lupa <code>WHERE</code>.</strong> <code>UPDATE mahasiswa SET ipk = 4</code> tanpa <code>WHERE</code> mengubah IPK <em>semua</em> mahasiswa, dan <code>DELETE FROM mahasiswa</code> tanpa <code>WHERE</code> menghapus <em>semua</em> baris. Tidak ada tombol undo.
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> database <code>api_mahasiswa</code> berisi tabel <code>mahasiswa</code> dengan struktur sesuai rencana dan tiga baris (Andi, Budi, Citra), dan kalian sudah mencoba keempat perintah CRUD. Tabel inilah yang akan dibaca oleh API di section berikutnya.
+                </div>
+            </section>
+
+            <section id="sql-js">
+                <h2>2. Menampilkan dan Menambah Data dari JavaScript (Tanpa ORM) <span class="badge badge-new">Praktik</span></h2>
+
+                <p>Tabel sudah ada dan terisi. Sekarang JavaScript harus bisa membacanya. Kita mulai dari <strong>proyek Node.js baru yang kecil</strong>, <code>mysql-mahasiswa</code>, supaya setiap hal baru (koneksi, file <code>.env</code>, SQL dari JavaScript) bisa dilihat sendiri tanpa terganggu kode API. Setelah semuanya jelas, tabel yang sama kita sambungkan ke <code>api-mahasiswa</code> di 2.6.</p>
+
+                <h3>2.1 Buat Proyek Baru</h3>
+                <p>Di luar folder <code>api-mahasiswa</code>, buat proyek baru dan pasang dua paket:</p>
+<div class="terminal"><span class="prompt">$</span> mkdir mysql-mahasiswa
+<span class="prompt">$</span> cd mysql-mahasiswa
 <span class="prompt">$</span> npm init -y
 <span class="prompt">$</span> npm pkg set type=module
-<span class="prompt">$</span> npm pkg set scripts.dev="node --watch index.js"
-<span class="prompt">$</span> npm install prisma@7 --save-dev
-<span class="prompt">$</span> npm install @prisma/client@7 @prisma/adapter-mariadb dotenv express</div>
+<span class="prompt">$</span> npm install mysql2 dotenv</div>
+                <table>
+                    <tr><th>Perintah / paket</th><th>Fungsinya</th></tr>
+                    <tr><td><code>npm pkg set type=module</code></td><td>Mengaktifkan <code>import</code> / <code>export</code> (ES Module), seperti di proyek-proyek sebelumnya</td></tr>
+                    <tr><td><code>mysql2</code></td><td>Driver: pustaka yang mengirim perintah SQL dari Node.js ke MySQL dan membawa hasilnya kembali</td></tr>
+                    <tr><td><code>dotenv</code></td><td>Membaca isi file <code>.env</code> (dijelaskan di 2.2)</td></tr>
+                </table>
+
+                <h3>2.2 Alamat Database dan File <code>.env</code></h3>
+                <p>Agar program bisa terhubung ke MySQL, ia perlu tahu: di mana servernya, port, user, password, dan database mana yang dipakai. Kelima keterangan itu bisa ditulis dalam satu alamat:</p>
+                <table>
+                    <tr><th>Bagian alamat</th><th>Contoh</th><th>Artinya</th></tr>
+                    <tr><td colspan="3"><code>mysql://root:passwordku@localhost:3306/api_mahasiswa</code></td></tr>
+                    <tr><td><code>mysql://</code></td><td></td><td>Jenis database</td></tr>
+                    <tr><td><code>root:passwordku</code></td><td>user <code>root</code>, password <code>passwordku</code></td><td>Siapa yang masuk. Kalau MySQL kalian tanpa password, tulis <code>root</code> saja, tanpa titik dua</td></tr>
+                    <tr><td><code>@localhost:3306</code></td><td>komputer sendiri, port 3306</td><td>Di mana servernya</td></tr>
+                    <tr><td><code>/api_mahasiswa</code></td><td>database yang dibuat di 1.2</td><td>Database mana yang dipakai</td></tr>
+                </table>
+                <p>Alamat ini mengandung password. Kalau ditulis langsung di kode lalu kode itu di-push ke GitHub (repositori kalian publik), password ikut terbuka bagi siapa saja. Alamat ini juga berbeda di setiap komputer: milik kalian, milik teman satu tim, dan milik server nanti. Karena itu alamat disimpan di <strong>file <code>.env</code></strong> (singkatan <em>environment</em>, lingkungan), yang <strong>tidak ikut ke Git</strong>, lalu dibaca saat program berjalan lewat <code>process.env</code>. Kalian sudah memakai <code>process.env.PORT</code> di Pertemuan 4; <code>.env</code> adalah cara mengisi <code>process.env</code> dari sebuah file.</p>
+
+                <p>Coba langsung. Buat file <code>cek-env.js</code>:</p>
+<pre><code><span class="comment">// cek-env.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);</code></pre>
+                <p><code>import 'dotenv/config'</code> membaca file <code>.env</code> (kalau ada) dan memasukkan isinya ke <code>process.env</code>. Jalankan sebelum file <code>.env</code> dibuat:</p>
+<div class="terminal"><span class="prompt">$</span> node cek-env.js
+<span class="out">undefined</span></div>
+                <p>Belum ada apa-apa. Sekarang buat file <code>.env</code> di folder yang sama. Tulis alamat database kalian (sesuaikan password):</p>
+<pre><code><span class="comment"># .env  (root tanpa password)</span>
+DATABASE_URL="mysql://root@localhost:3306/api_mahasiswa"
+
+<span class="comment"># .env  (root dengan password)</span>
+DATABASE_URL="mysql://root:passwordku@localhost:3306/api_mahasiswa"</code></pre>
+                <p>Pilih salah satu baris saja (buang yang tidak dipakai). Jalankan lagi:</p>
+<div class="terminal"><span class="prompt">$</span> node cek-env.js
+<span class="out">mysql://root@localhost:3306/api_mahasiswa</span></div>
+                <p>Alamat terbaca dari file, bukan dari kode. Terakhir, buat file <code>.gitignore</code> supaya <code>.env</code> dan <code>node_modules</code> tidak ikut ke Git:</p>
+<pre><code>node_modules
+.env</code></pre>
+                <div class="warning-box">
+                    <strong><code>.env</code> tidak pernah di-commit.</strong> Setiap anggota tim membuat <code>.env</code>-nya sendiri sesuai komputernya. Hapus <code>cek-env.js</code> setelah dicoba.
+                </div>
+
+                <h3>2.3 Menyambung ke MySQL dan Menampilkan Data</h3>
+                <p>File kecil yang membuat koneksi, dipisah supaya bisa dipakai dari banyak file:</p>
+<pre><code><span class="comment">// db.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> <span class="variable">mysql</span> <span class="keyword">from</span> <span class="string">'mysql2/promise'</span>;
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">db</span> = <span class="variable">mysql</span>.<span class="function">createPool</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);</code></pre>
+                <p><code>createPool</code> membuat <em>kolam koneksi</em>: beberapa koneksi ke MySQL yang dipakai bergantian, jadi tidak perlu membuka koneksi baru setiap kali. Import dari <code>mysql2/promise</code> membuat semua fungsinya mengembalikan promise, sehingga bisa dipakai dengan <code>await</code> seperti di Pertemuan 3. Sekarang buktikan JavaScript bisa membaca tabel. Buat <code>tes-koneksi.js</code>:</p>
+<pre><code><span class="comment">// tes-koneksi.js</span>
+<span class="keyword">import</span> { <span class="variable">db</span> } <span class="keyword">from</span> <span class="string">'./db.js'</span>;
+
+<span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT * FROM mahasiswa'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="variable">baris</span>);
+
+<span class="keyword">await</span> <span class="variable">db</span>.<span class="function">end</span>();</code></pre>
+<div class="terminal"><span class="prompt">$</span> node tes-koneksi.js
+<span class="out">[</span>
+<span class="out">  {</span>
+<span class="out">    id: 1,</span>
+<span class="out">    nim: 'F1D021001',</span>
+<span class="out">    nama: 'Andi',</span>
+<span class="out">    ipk: 3.75,</span>
+<span class="out">    semester: 6,</span>
+<span class="out">    createdAt: 2026-11-04T14:24:29.463Z</span>
+<span class="out">  },</span>
+<span class="out">  {</span>
+<span class="out">    id: 2,</span>
+<span class="out">    nim: 'F1D021002',</span>
+<span class="out">    nama: 'Budi',</span>
+<span class="out">    ipk: 3.2,</span>
+<span class="out">    semester: 6,</span>
+<span class="out">    createdAt: 2026-11-04T14:24:29.463Z</span>
+<span class="out">  },</span>
+<span class="out">  {</span>
+<span class="out">    id: 3,</span>
+<span class="out">    nim: 'F1D021003',</span>
+<span class="out">    nama: 'Citra',</span>
+<span class="out">    ipk: 3.9,</span>
+<span class="out">    semester: 4,</span>
+<span class="out">    createdAt: 2026-11-04T14:24:29.463Z</span>
+<span class="out">  }</span>
+<span class="out">]</span></div>
+                <p>Tiga baris dari phpMyAdmin kini menjadi array berisi tiga objek JavaScript. <code>db.execute()</code> menjalankan SQL dan mengembalikan dua hal (baris hasil, dan keterangan kolom), karena itu ditulis <code>const [baris] = ...</code> untuk mengambil yang pertama. Perhatikan juga <code>ipk</code> sudah berupa angka, dan <code>createdAt</code> berupa objek tanggal (nanti diubah menjadi teks saat dikirim sebagai JSON). <code>await db.end()</code> menutup kolam koneksi supaya program bisa selesai.</p>
+
+                <p>Satu langkah lagi: memilih kolom dan mengambil data dengan syarat. Buat <code>tampil.js</code>:</p>
+<pre><code><span class="comment">// tampil.js</span>
+<span class="keyword">import</span> { <span class="variable">db</span> } <span class="keyword">from</span> <span class="string">'./db.js'</span>;
+
+<span class="keyword">const</span> [<span class="variable">semua</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT id, nama, semester FROM mahasiswa'</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Semua mahasiswa:'</span>, <span class="variable">semua</span>);
+
+<span class="keyword">const</span> <span class="variable">semester</span> = <span class="number">6</span>;
+<span class="keyword">const</span> [<span class="variable">sem6</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT nama, ipk FROM mahasiswa WHERE semester = ?'</span>, [<span class="variable">semester</span>]);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Semester 6:'</span>, <span class="variable">sem6</span>);
+
+<span class="keyword">await</span> <span class="variable">db</span>.<span class="function">end</span>();</code></pre>
+<div class="terminal"><span class="prompt">$</span> node tampil.js
+<span class="out">Semua mahasiswa: [</span>
+<span class="out">  { id: 1, nama: 'Andi', semester: 6 },</span>
+<span class="out">  { id: 2, nama: 'Budi', semester: 6 },</span>
+<span class="out">  { id: 3, nama: 'Citra', semester: 4 }</span>
+<span class="out">]</span>
+<span class="out">Semester 6: [ { nama: 'Andi', ipk: 3.75 }, { nama: 'Budi', ipk: 3.2 } ]</span></div>
+                <p>Dua hal baru di sini. Pertama, <code>SELECT id, nama, semester</code> hanya mengambil kolom yang disebut, bukan semuanya. Kedua, bentuk lengkap <code>db.execute(sql, [nilai, ...])</code>: perintah SQL ditulis dengan tanda <code>?</code> sebagai <strong>tempat nilai</strong>, dan nilainya diberikan terpisah di dalam array (di sini <code>semester</code> menggantikan <code>?</code>). Mengapa nilai tidak ditulis langsung di dalam teks SQL dijelaskan di 2.5, dan itu penting.</p>
+
+                <h3>2.4 Menambah Data</h3>
+                <p>Perintah <code>INSERT</code> dari 1.4, kini dari JavaScript. Buat <code>tambah.js</code>:</p>
+<pre><code><span class="comment">// tambah.js</span>
+<span class="keyword">import</span> { <span class="variable">db</span> } <span class="keyword">from</span> <span class="string">'./db.js'</span>;
+
+<span class="keyword">const</span> [<span class="variable">hasil</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(
+    <span class="string">'INSERT INTO mahasiswa (nim, nama) VALUES (?, ?)'</span>,
+    [<span class="string">'F1D021004'</span>, <span class="string">'Dewi'</span>]
+);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'id baru        :'</span>, <span class="variable">hasil</span>.<span class="variable">insertId</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'baris tertambah:'</span>, <span class="variable">hasil</span>.<span class="variable">affectedRows</span>);
+
+<span class="keyword">await</span> <span class="variable">db</span>.<span class="function">end</span>();</code></pre>
+<div class="terminal"><span class="prompt">$</span> node tambah.js
+<span class="out">id baru        : 5</span>
+<span class="out">baris tertambah: 1</span></div>
+                <p>Dua tanda <code>?</code> diisi oleh isi array sesuai urutannya (<code>nim</code>, lalu <code>nama</code>). Hasil <code>INSERT</code> berupa keterangan, bukan baris: <code>insertId</code> adalah <code>id</code> yang diberikan MySQL untuk baris baru, dan <code>affectedRows</code> jumlah baris yang tertambah. Buka phpMyAdmin (tab Browse): Dewi ada di tabel dengan <code>ipk</code> 0 dan <code>semester</code> 1, nilai <code>DEFAULT</code> dari 1.3. <code>id</code>-nya <strong>5</strong>, bukan 4, karena nomor 4 sudah terpakai oleh baris percobaan di 1.4.</p>
+                <div class="info-box">
+                    Jangan jalankan <code>tambah.js</code> dua kali. Pada percobaan kedua MySQL menolak karena <code>nim</code> sudah ada (kita memasang <code>UNIQUE</code> di 1.3), dan nomor <code>id</code> berikutnya ikut melompat satu. Itu wajar, tetapi angka <code>id</code> di bagian selanjutnya akan berbeda dari contoh.
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> JavaScript membaca tabel (<code>tes-koneksi.js</code>, <code>tampil.js</code>) dan menambah baris (<code>tambah.js</code>) yang langsung terlihat di phpMyAdmin. Tabel kini berisi empat mahasiswa, termasuk Dewi.
+                </div>
+
+                <h3>2.5 Bahaya Menggabungkan Input ke Teks SQL: SQL Injection</h3>
+                <p>Di <code>tampil.js</code> dan <code>tambah.js</code>, nilai dikirim lewat tanda <code>?</code>, bukan ditulis langsung ke dalam teks SQL. Itu bukan sekadar gaya. Kita buktikan dengan <code>sqli-uji.js</code>, berisi dua cara mencari mahasiswa berdasarkan nama. Cara pertama sengaja salah: nama digabung ke teks SQL, dan dijalankan dengan <code>db.query</code> (fungsi yang menjalankan teks SQL apa adanya). Cara kedua memakai <code>db.execute</code> dengan <code>?</code>, seperti di <code>tampil.js</code>:</p>
+<pre><code><span class="comment">// sqli-uji.js</span>
+<span class="keyword">import</span> { <span class="variable">db</span> } <span class="keyword">from</span> <span class="string">'./db.js'</span>;
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">cariRentan</span>(<span class="variable">nama</span>) {
+    <span class="comment">// nama pengguna DIGABUNG ke dalam teks SQL</span>
+    <span class="keyword">const</span> <span class="variable">sql</span> = <span class="string">`SELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = '${nama}'`</span>;
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'SQL:'</span>, <span class="variable">sql</span>);
+    <span class="keyword">try</span> {
+        <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">query</span>(<span class="variable">sql</span>);
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Hasil:'</span>, <span class="variable">JSON</span>.<span class="function">stringify</span>(<span class="variable">baris</span>));
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Error:'</span>, <span class="variable">err</span>.<span class="variable">code</span>);
+    }
+    <span class="variable">console</span>.<span class="function">log</span>();
+}
+
+<span class="keyword">async</span> <span class="keyword">function</span> <span class="function">cariAman</span>(<span class="variable">nama</span>) {
+    <span class="comment">// nama pengguna dikirim TERPISAH lewat tanda ?</span>
+    <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = ?'</span>, [<span class="variable">nama</span>]);
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Hasil:'</span>, <span class="variable">JSON</span>.<span class="function">stringify</span>(<span class="variable">baris</span>));
+}
+
+<span class="keyword">await</span> <span class="function">cariRentan</span>(<span class="string">'Andi'</span>);
+<span class="keyword">await</span> <span class="function">cariRentan</span>(<span class="string">"' OR '1'='1"</span>);
+<span class="keyword">await</span> <span class="function">cariRentan</span>(<span class="string">"x'; DROP TABLE mahasiswa; #"</span>);
+<span class="keyword">await</span> <span class="function">cariAman</span>(<span class="string">"' OR '1'='1"</span>);
+
+<span class="keyword">await</span> <span class="variable">db</span>.<span class="function">end</span>();</code></pre>
+                <p>Pemanggilan pertama adalah pencarian biasa. Pemanggilan kedua dan ketiga adalah masukan penyerang. Jalankan:</p>
+<div class="terminal"><span class="prompt">$</span> node sqli-uji.js
+<span class="out">SQL: SELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = 'Andi'</span>
+<span class="out">Hasil: [{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75}]</span>
+
+<span class="out">SQL: SELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = '' OR '1'='1'</span>
+<span class="out">Hasil: [{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75},{"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2},{"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9},{"id":5,"nim":"F1D021004","nama":"Dewi","ipk":0}]</span>
+
+<span class="out">SQL: SELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = 'x'; DROP TABLE mahasiswa; #'</span>
+<span class="out">Error: ER_PARSE_ERROR</span>
+
+<span class="out">Hasil: []</span></div>
+                <h4>Serangan 1: input yang &ldquo;bukan nama&rdquo;</h4>
+                <p>Penyerang mengetik <code>' OR '1'='1</code> di kolom pencarian. Semua mahasiswa keluar, padahal tidak ada yang bernama kosong. Penyebabnya: tanda kutip <code>'</code> di awal input <strong>menutup string lebih awal</strong>, sehingga sisa input menjadi bagian dari perintah SQL. Syarat <code>'1'='1'</code> selalu benar, jadi <code>WHERE</code> meloloskan setiap baris. Penyerang tidak perlu menembus server atau password; cukup mengetik di kolom pencarian.</p>
+
+                <h4>Serangan 2: menyisipkan perintah baru</h4>
+                <p>Input <code>x'; DROP TABLE mahasiswa; #</code> mencoba menyelipkan perintah kedua (<code>DROP TABLE</code> menghapus tabel). Tanda <code>#</code> adalah komentar di MySQL, dipakai untuk membuang sisa kutip penutup. Pada percobaan di atas serangan ini <strong>gagal</strong> (<code>ER_PARSE_ERROR</code>) karena <code>mysql2</code> secara bawaan menolak beberapa perintah dalam satu kiriman. Tetapi itu hanya pengaman bawaan: kalau koneksi dibuat dengan opsi <code>multipleStatements: true</code> (opsi ini ada, dan kadang diaktifkan demi kemudahan), perintah kedua dijalankan dan tabel benar-benar hilang. Kita tidak mengaktifkannya, tetapi kita juga tidak boleh bergantung pada itu.</p>
+                <div class="info-box">
+                    Di MySQL, komentar gaya <code>--</code> harus diikuti spasi (<code>-- </code>), sedangkan <code>#</code> tidak. Karena itu contoh di atas memakai <code>#</code>.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Akar masalahnya:</strong> data (apa yang diketik pengguna) dan perintah (SQL) <strong>dicampur dalam satu teks</strong>, sehingga database tidak bisa membedakan keduanya. Kedua serangan di atas hanya menyebabkan masalah itu.
+                </div>
+
+                <h4>Perbaikan: pisahkan perintah dan data</h4>
+                <p>Baris terakhir di percobaan tadi, <code>cariAman</code>, memberi hasil <code>[]</code> untuk input jahat yang sama. Perintah SQL ditulis dengan penanda <code>?</code> dan nilainya dikirim terpisah. Dengan <code>db.execute</code>, MySQL menerima kerangka perintahnya dan nilainya secara terpisah, sehingga kutip di dalam nilai tidak pernah bisa menutup apa pun. Input jahat tadi hanya dianggap <em>nama seseorang yang aneh</em>; karena tidak ada mahasiswa dengan nama itu, hasilnya kosong.</p>
+                <p><strong>Aturannya:</strong> jangan pernah menggabungkan input pengguna ke dalam teks SQL. Hapus <code>sqli-uji.js</code> setelah dicoba.</p>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: SQL Injection pada Pencarian Mahasiswa</h5>
+                    <button onclick="demoSqli('normal')">Input normal: Andi</button>
+                    <button onclick="demoSqli('serang')">Input jahat: ' OR '1'='1</button>
+                    <button onclick="demoSqli('drop')">Input jahat: DROP TABLE</button>
+                    <button onclick="demoSqli('aman')">Input jahat, query berparameter</button>
+                    <div class="console-output" id="demo-sqli-out">Klik salah satu tombol...</div>
+                </div>
+
+                <h3>2.6 Sambungkan ke <code>api-mahasiswa</code></h3>
+                <p>Semua yang tadi dipelajari kini dipakai di API dari Pertemuan 5. Karena sudah dibagi empat lapis, yang diganti hanya <strong>lapis data</strong> (<code>src/data/mahasiswa.data.js</code>): array diganti perintah SQL. Controller, routes, middleware, dan validator tidak disentuh. Pindah ke folder <code>api-mahasiswa</code> (yang sejajar dengan <code>mysql-mahasiswa</code>) dan ulangi persiapannya (paket dari 2.1, <code>.env</code> dari 2.2, koneksi dari 2.3):</p>
+<div class="terminal"><span class="prompt">$</span> cd ../api-mahasiswa
+<span class="prompt">$</span> npm install mysql2 dotenv</div>
+                <ul>
+                    <li><code>.env</code>: buat file baru di akar <code>api-mahasiswa</code>, isi sama persis dengan <code>.env</code> di <code>mysql-mahasiswa</code>.</li>
+                    <li><code>.gitignore</code>: buat file ini di akar <code>api-mahasiswa</code> kalau belum ada, isi dengan <code>node_modules</code> dan <code>.env</code> (seperti di 2.2).</li>
+                    <li><code>src/lib/db.js</code>: buat folder <code>src/lib</code>, lalu file <code>db.js</code> dengan isi yang sama seperti <code>db.js</code> di 2.3.</li>
+                </ul>
+                <p>Buka <code>src/data/mahasiswa.data.js</code>. Isinya masih array dengan empat fungsi (enam kalau kalian sudah mengerjakan PUT dan DELETE dari Latihan 1 Pertemuan 5). Ganti seluruhnya dengan versi SQL; untuk sementara hanya tiga fungsi baca, <code>simpan()</code> menyusul sebentar lagi:</p>
+<pre><code><span class="comment">// src/data/mahasiswa.data.js</span>
+<span class="keyword">import</span> { <span class="variable">db</span> } <span class="keyword">from</span> <span class="string">'../lib/db.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">semua</span>() {
+    <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT * FROM mahasiswa'</span>);
+    <span class="keyword">return</span> <span class="variable">baris</span>;
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT * FROM mahasiswa WHERE id = ?'</span>, [<span class="variable">id</span>]);
+    <span class="keyword">return</span> <span class="variable">baris</span>[<span class="number">0</span>];
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">cariByNim</span>(<span class="variable">nim</span>) {
+    <span class="keyword">const</span> [<span class="variable">baris</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(<span class="string">'SELECT * FROM mahasiswa WHERE nim = ?'</span>, [<span class="variable">nim</span>]);
+    <span class="keyword">return</span> <span class="variable">baris</span>[<span class="number">0</span>];
+}</code></pre>
+                <ul>
+                    <li><code>baris[0]</code> mengambil baris pertama, atau <code>undefined</code> kalau tidak ada. Persis perilaku <code>array.find()</code> di versi sebelumnya.</li>
+                    <li>Nama dan bentuk fungsi sama dengan versi array. Hanya isinya yang berubah, dan kini semuanya <code>async</code>.</li>
+                </ul>
+
+                <p>Satu hal harus disesuaikan di <strong>service</strong>: fungsi data kini mengembalikan <em>promise</em>, bukan nilai langsung. Tanpa <code>await</code>, service bekerja dengan promise, bukan dengan datanya. Tambahkan tiga <code>await</code>:</p>
+<pre><code><span class="comment">// src/services/mahasiswa.service.js</span>
+<span class="keyword">import</span> * <span class="keyword">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>({ <span class="variable">semester</span> }) {
+    <span class="keyword">const</span> <span class="variable">semua</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">semua</span>();                          <span class="comment">// ← await</span>
+    <span class="keyword">return</span> <span class="variable">semester</span>
+        ? <span class="variable">semua</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">semester</span>))
+        : <span class="variable">semua</span>;
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariById</span>(<span class="function">Number</span>(<span class="variable">id</span>));                 <span class="comment">// ← await</span>
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">m</span>;
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
+    <span class="keyword">if</span> (<span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>)) {                     <span class="comment">// ← await</span>
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
+}</code></pre>
+                <p>Kalau satu <code>await</code> terlewat, error-nya licin: <code>semua.filter</code> gagal karena promise tidak punya <code>filter</code> (<code>GET /mahasiswa?semester=4</code> menjawab 500 dengan <code>TypeError: semua.filter is not a function</code> di terminal), dan <code>if (data.cariByNim(...))</code> selalu benar karena promise adalah objek, sehingga setiap POST dianggap NIM kembar.</p>
+
+                <div class="warning-box">
+                    <strong>Kalau <code>api-mahasiswa</code> kalian sudah punya PUT dan DELETE (Latihan 1 Pertemuan 5):</strong> fungsi <code>ubah()</code> dan <code>hapus()</code> ikut hilang bersama array, jadi untuk sementara <code>PUT</code> menjawab 409 yang keliru (pemeriksaan NIM di <code>ubahMahasiswa</code> belum memakai <code>await</code>) dan <code>DELETE</code> menjawab 500 (<code>data.hapus is not a function</code>). Jangan diuji dulu dan biarkan kodenya; keduanya kita ganti dengan versi Prisma di Section 4. Router <code>/mata-kuliah</code> (Latihan 2) tidak terpengaruh.
+                </div>
+
+                <p>Jalankan server dan uji:</p>
+<div class="terminal"><span class="prompt">$</span> npm run dev
+<span class="out">Server jalan di http://localhost:3000</span>
+
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/2
+<span class="out">{"data":{"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2,"semester":6,"createdAt":"2026-11-04T14:24:29.463Z"}}</span>
+
+<span class="prompt">$</span> curl "http://localhost:3000/mahasiswa?semester=4"
+<span class="out">{"data":[{"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9,"semester":4,"createdAt":"2026-11-04T14:24:29.463Z"}],"meta":{"total":1}}</span>
+
+<span class="prompt">$</span> curl http://localhost:3000/mahasiswa/99
+<span class="out">{"error":{"pesan":"Mahasiswa tidak ditemukan","kode":"NOT_FOUND"}}</span></div>
+                <p>Perilakunya sama seperti Pertemuan 5, tetapi datanya kini dari MySQL (<code>GET /mahasiswa</code> juga menampilkan Dewi yang ditambah lewat <code>tambah.js</code>). Dua percobaan untuk membuktikannya:</p>
+                <ol>
+                    <li>Di phpMyAdmin, ubah IPK Andi menjadi 4 (tab Browse &rarr; Edit). Kirim ulang <code>GET /mahasiswa/1</code>: IPK Andi berubah, <strong>tanpa merestart server</strong>.</li>
+                    <li>Restart server (Ctrl + C, lalu <code>npm run dev</code>). Data tetap ada. Bandingkan dengan array di Pertemuan 5 yang kembali ke awal setiap restart. Setelah selesai, kembalikan IPK Andi ke 3.75.</li>
+                </ol>
+                <p>Coba juga <code>POST /mahasiswa</code> (dengan header <code>x-api-key</code> dan body JSON dari Pertemuan 5). Jawabannya 500 dengan pesan umum, dan di terminal server tercatat <code>TypeError: data.simpan is not a function</code>. Wajar: fungsi <code>simpan()</code> belum kita tulis. Inilah gunanya <code>errorHandler</code> dari Pertemuan 5: klien hanya menerima kalimat umum, sedangkan detailnya masuk ke terminal.</p>
+
+                <p>Tambahkan <code>simpan()</code> di akhir <code>src/data/mahasiswa.data.js</code>:</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">simpan</span>({ <span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span> }) {
+    <span class="keyword">const</span> [<span class="variable">hasil</span>] = <span class="keyword">await</span> <span class="variable">db</span>.<span class="function">execute</span>(
+        <span class="string">'INSERT INTO mahasiswa (nim, nama, ipk, semester) VALUES (?, ?, ?, ?)'</span>,
+        [<span class="variable">nim</span>, <span class="variable">nama</span>, <span class="variable">ipk</span>, <span class="variable">semester</span>]
+    );
+    <span class="keyword">return</span> <span class="function">cariById</span>(<span class="variable">hasil</span>.<span class="variable">insertId</span>);
+}</code></pre>
+                <p>Sama seperti <code>tambah.js</code>, hanya kini dengan empat kolom. <code>hasil.insertId</code> dipakai untuk mengambil baris lengkapnya (termasuk <code>createdAt</code>) dan mengembalikannya, seperti versi array dulu mengembalikan objek baru. Karena Joi di Pertemuan 5 sudah memastikan keempat field ada (dengan nilai bawaan), tidak ada yang <code>undefined</code>.</p>
+                <p>Uji dengan Postman atau <code>requests.http</code> (Pertemuan 5): <code>POST http://localhost:3000/mahasiswa</code>, header <code>x-api-key: rahasia123</code>.</p>
+                <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; header x-api-key: rahasia123 diisi di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">http://localhost:3000/mahasiswa</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{ "nim": "F1D021006", "nama": "Eko" }</div><div class="req-res"><span>Response</span><span class="st s2">201 Created</span></div><div class="req-resbody">{
+  "data": { "id": 6, "nim": "F1D021006", "nama": "Eko", "ipk": 0, "semester": 1, "createdAt": "2026-11-04T14:25:39.170Z" }
+}</div></div>
+                <p>Kirim sekali lagi dengan body yang sama: 409 <code>NIM_DUPLIKAT</code>, karena service memeriksa dulu dengan <code>cariByNim</code>. Buka phpMyAdmin (tab Browse): Eko ada di tabel. <code>id</code>-nya 6, karena 5 sudah dipakai Dewi.</p>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> <code>GET /mahasiswa</code> di <code>api-mahasiswa</code> menampilkan data dari MySQL, <code>POST /mahasiswa</code> menambah baris yang langsung terlihat di phpMyAdmin, dan data bertahan setelah server restart.
+                </div>
+
+                <h3>2.7 Apa yang Terasa Merepotkan?</h3>
+                <p>API sudah berjalan dengan SQL biasa. Sebelum melangkah, perhatikan apa yang terasa tidak nyaman, karena itulah yang akan diselesaikan ORM:</p>
+                <table>
+                    <tr><th>Yang merepotkan</th><th>Contohnya di kode tadi</th></tr>
+                    <tr><td>SQL hanyalah teks</td><td>Salah ketik <code>nmaa</code> tidak ketahuan editor; baru error saat query dijalankan</td></tr>
+                    <tr><td>Urutan <code>?</code> harus cocok dengan urutan nilai</td><td>Menukar <code>nim</code> dan <code>nama</code> di array tidak menimbulkan error, hanya data yang tertukar</td></tr>
+                    <tr><td>Editor tidak tahu bentuk tabel</td><td>Tidak ada autocomplete untuk nama kolom</td></tr>
+                    <tr><td>Menambah kolom berarti mengubah banyak tempat</td><td>Setiap <code>SELECT</code>, <code>INSERT</code>, dan <code>UPDATE</code> yang menyentuh tabel perlu disunting</td></tr>
+                    <tr><td>Keamanan bergantung pada disiplin penulis</td><td>Satu kali lupa memakai <code>?</code> membuka lubang SQL injection</td></tr>
+                    <tr><td>Perubahan struktur tabel tidak tercatat</td><td>Tabel dibuat dengan klik dan SQL di phpMyAdmin; teman satu tim tidak punya catatannya (dibahas di Section 5)</td></tr>
+                </table>
+            </section>
+
+            <section id="orm">
+                <h2>3. Masuk ke ORM: Prisma <span class="badge badge-important">Indikator 4.1</span></h2>
+
+                <p>Di Section 2, setiap operasi data adalah sepotong teks SQL. <strong>ORM</strong> (Object-Relational Mapper) menggantinya dengan pemanggilan fungsi JavaScript biasa, lalu menerjemahkannya menjadi SQL untuk kita.</p>
+
+                <div class="info-box">
+                    <strong>ORM itu apa?</strong> Jembatan antara objek JavaScript dan baris tabel SQL. Alih-alih menulis <code>SELECT * FROM mahasiswa WHERE id = 1</code>, kalian menulis <code>prisma.mahasiswa.findUnique({ where: { id: 1 } })</code> &mdash; persis seperti Eloquent menggantikan query SQL mentah di Laravel.
+                </div>
+
+                <h3>3.1 Prisma dan Eloquent: Padanan Konsep</h3>
+                <p>Kita memakai <strong>Prisma</strong>. Untuk yang sudah mengenal Laravel, ini padanannya:</p>
+                <table>
+                    <tr><th>Eloquent (Laravel)</th><th>Prisma</th></tr>
+                    <tr><td><code>php artisan make:migration</code></td><td>Edit <code>schema.prisma</code> lalu <code>npx prisma migrate dev</code> (Section 5)</td></tr>
+                    <tr><td>Model class (<code>app/Models/Mahasiswa.php</code>)</td><td>Model dideklarasikan di <code>schema.prisma</code></td></tr>
+                    <tr><td><code>Mahasiswa::all()</code></td><td><code>prisma.mahasiswa.findMany()</code></td></tr>
+                    <tr><td><code>Mahasiswa::find(1)</code></td><td><code>prisma.mahasiswa.findUnique({ where: { id: 1 } })</code></td></tr>
+                    <tr><td><code>Mahasiswa::where('semester', 6)->get()</code></td><td><code>prisma.mahasiswa.findMany({ where: { semester: 6 } })</code></td></tr>
+                    <tr><td><code>Mahasiswa::create([...])</code></td><td><code>prisma.mahasiswa.create({ data: {...} })</code></td></tr>
+                    <tr><td><code>$mahasiswa->update([...])</code></td><td><code>prisma.mahasiswa.update({ where, data })</code></td></tr>
+                    <tr><td><code>$mahasiswa->delete()</code></td><td><code>prisma.mahasiswa.delete({ where })</code></td></tr>
+                    <tr><td><code>$mahasiswa->nilai</code> (relasi)</td><td><code>prisma.mahasiswa.findUnique({ include: { nilai: true } })</code> (Section 6)</td></tr>
+                    <tr><td><code>php artisan db:seed</code></td><td><code>prisma/seed.js</code> + <code>npx prisma db seed</code> (Pertemuan 7)</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>Perbedaan filosofis penting:</strong> Eloquent bersifat <em>active record</em> &mdash; model class-nya sendiri tahu cara query dirinya. Prisma lebih terpisah: skema hanya mendefinisikan <strong>bentuk data</strong>, sedangkan <strong>Prisma Client</strong> (yang di-generate otomatis dari skema) adalah objek terpisah yang dipakai untuk semua query. Tidak ada &ldquo;class Mahasiswa extends Model&rdquo; &mdash; hanya <code>prisma.mahasiswa</code>.
+                </div>
+
+                <h3>3.2 Pasang Prisma di <code>api-mahasiswa</code></h3>
+<div class="terminal"><span class="prompt">$</span> npm install prisma@7 --save-dev
+<span class="prompt">$</span> npm install @prisma/client@7 @prisma/adapter-mariadb</div>
                 <table>
                     <tr><th>Paket</th><th>Fungsinya</th></tr>
-                    <tr><td><code>prisma</code></td><td>Perintah <code>npx prisma ...</code> (membuat migrasi, membuat client). Dipasang sebagai <code>devDependency</code> karena hanya dipakai saat pengembangan</td></tr>
+                    <tr><td><code>prisma</code></td><td>Perintah <code>npx prisma ...</code> (membaca tabel, membuat migrasi, membuat client). Dipasang sebagai <code>devDependency</code> karena hanya dipakai saat pengembangan</td></tr>
                     <tr><td><code>@prisma/client</code></td><td>Kode yang kita pakai untuk query dari JavaScript</td></tr>
                     <tr><td><code>@prisma/adapter-mariadb</code></td><td>Penghubung Prisma 7 ke MySQL (dipakai juga untuk MySQL, bukan hanya MariaDB)</td></tr>
-                    <tr><td><code>dotenv</code></td><td>Membaca isi file <code>.env</code></td></tr>
-                    <tr><td><code>express</code></td><td>Server API dari Pertemuan 4</td></tr>
                 </table>
                 <div class="info-box">
                     Prisma mungkin menampilkan pesan <em>&ldquo;Update available 7.x &rarr; 8.x&rdquo;</em>. Abaikan, materi ini memakai Prisma versi 7 (itu sebabnya perintah di atas memakai <code>@7</code>).
                 </div>
-
-                <p>Sekarang buat tiga file kecil. Pertama <code>.env</code>, berisi alamat database. Sesuaikan dengan MySQL kalian (pakai yang sama dengan Pertemuan 1):</p>
-<pre><code><span class="comment"># .env  (root tanpa password)</span>
-DATABASE_URL="mysql://root@localhost:3306/prisma_mahasiswa"
-
-<span class="comment"># .env  (root dengan password)</span>
-DATABASE_URL="mysql://root:passwordku@localhost:3306/prisma_mahasiswa"</code></pre>
-                <p>Kedua, <code>prisma.config.ts</code> di akar proyek. File ini memberi tahu perintah <code>npx prisma</code> di mana skema berada dan ke database mana ia terhubung. Cukup ditulis apa adanya:</p>
-<pre><code><span class="comment">// prisma.config.ts</span>
+                <p>Buat file <code>prisma.config.js</code> di akar proyek. File ini memberi tahu perintah <code>npx prisma</code> di mana skema berada dan ke database mana ia terhubung. <code>.env</code> yang sama dari 2.2 dipakai lagi. Cukup ditulis apa adanya (Prisma menerima <code>.js</code> maupun <code>.ts</code>; dokumentasi resminya sering memakai <code>.ts</code> karena Prisma banyak dipakai bersama TypeScript, sedangkan kita memakai JavaScript biasa):</p>
+<pre><code><span class="comment">// prisma.config.js</span>
 <span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
 <span class="keyword">import</span> { <span class="variable">defineConfig</span> } <span class="keyword">from</span> <span class="string">'prisma/config'</span>;
 
@@ -331,74 +661,339 @@ DATABASE_URL="mysql://root:passwordku@localhost:3306/prisma_mahasiswa"</code></p
     <span class="variable">url</span>: <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>,
   },
 });</code></pre>
-                <p>Ketiga, <code>.gitignore</code>, agar file rahasia dan hasil generate tidak ikut ke Git:</p>
+                <p>Tambahkan satu baris di <code>.gitignore</code> untuk folder hasil generate:</p>
 <pre><code>node_modules
 .env
 generated</code></pre>
-                <h3>2.4 Menulis Skema</h3>
-                <p>Skema adalah deskripsi tabel dalam bahasa Prisma. Buat folder <code>prisma</code>, lalu file <code>prisma/schema.prisma</code>. Bandingkan dengan tabel rencana di 2.1: isinya sama.</p>
+
+                <h3>3.3 Biarkan Prisma Membaca Tabel yang Sudah Kita Buat</h3>
+                <p>Tabel <code>mahasiswa</code> sudah ada, jadi kita tidak perlu menulis skemanya dari nol. Buat folder <code>prisma</code> dan file <code>prisma/schema.prisma</code> yang baru berisi dua blok pengaturan (belum ada model):</p>
 <pre><code><span class="comment">// prisma/schema.prisma</span>
-<span class=<span class="string">"keyword"</span>>generator</span> client {
+<span class="keyword">generator</span> client {
   provider = <span class="string">"prisma-client"</span>
   output   = <span class="string">"../generated/prisma"</span>
 }
 
-<span class=<span class="string">"keyword"</span>>datasource</span> db {
+<span class="keyword">datasource</span> db {
   provider = <span class="string">"mysql"</span>
-}
+}</code></pre>
+                <p>Lalu minta Prisma membaca tabel di database dan menuliskan modelnya sendiri. Proses ini disebut <strong>introspeksi</strong>:</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma db pull
+<span class="out">Loaded Prisma config from prisma.config.js.</span>
+<span class="out">Prisma schema loaded from prisma/schema.prisma.</span>
+<span class="out">Datasource "db": MySQL database "api_mahasiswa" at "localhost:3306"</span>
 
-<span class=<span class="string">"keyword"</span>>model</span> Mahasiswa {
+<span class="out">- Introspecting based on datasource defined in prisma/schema.prisma</span>
+<span class="out">✔ Introspected 1 model and wrote it into prisma/schema.prisma in 52ms</span>
+
+<span class="out">Run prisma generate to generate Prisma Client.</span></div>
+                <p>Buka <code>prisma/schema.prisma</code>. Di bawah dua blok tadi, Prisma menambahkan model:</p>
+<pre><code><span class="keyword">model</span> mahasiswa {
   id        Int      <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
-  nim       String   <span class="function">@unique</span>
-  nama      String
+  nim       String   <span class="function">@unique</span> <span class="function">@db</span>.VarChar(20)
+  nama      String   <span class="function">@db</span>.VarChar(100)
+  ipk       Float    <span class="function">@default</span>(0)
+  semester  Int      <span class="function">@default</span>(1)
+  createdAt DateTime <span class="function">@default</span>(now())
+}</code></pre>
+                <p>Bandingkan dengan <code>CREATE TABLE</code> di 1.3: isinya sama, hanya ditulis dalam bahasa Prisma.</p>
+                <table>
+                    <tr><th>Di skema</th><th>Artinya</th><th>Di tabel MySQL</th></tr>
+                    <tr><td><code>model</code></td><td>Satu model = satu tabel</td><td>tabel <code>mahasiswa</code></td></tr>
+                    <tr><td><code>Int</code>, <code>String</code>, <code>Float</code>, <code>DateTime</code></td><td>Tipe field</td><td><code>INT</code>, <code>VARCHAR</code>, <code>DOUBLE</code>, <code>DATETIME(3)</code></td></tr>
+                    <tr><td><code>@id</code></td><td>Primary key</td><td><code>PRIMARY KEY</code></td></tr>
+                    <tr><td><code>@default(autoincrement())</code></td><td>Nomor naik otomatis</td><td><code>AUTO_INCREMENT</code></td></tr>
+                    <tr><td><code>@unique</code></td><td>Tidak boleh kembar</td><td><code>UNIQUE KEY</code></td></tr>
+                    <tr><td><code>@db.VarChar(20)</code></td><td>Panjang teks tepat sesuai tabel</td><td><code>VARCHAR(20)</code></td></tr>
+                    <tr><td><code>@default(0)</code>, <code>@default(1)</code></td><td>Nilai bawaan kalau tidak diisi</td><td><code>DEFAULT 0</code>, <code>DEFAULT 1</code></td></tr>
+                    <tr><td><code>@default(now())</code></td><td>Waktu saat baris dibuat</td><td><code>DEFAULT CURRENT_TIMESTAMP(3)</code></td></tr>
+                </table>
+                <p>Satu penyesuaian kecil. Prisma menamai model sama dengan nama tabel (<code>mahasiswa</code>, huruf kecil). Konvensinya, nama model diawali huruf besar, sedangkan nama tabel tetap kita jaga lewat <code>@@map</code>. Ubah baris pertama menjadi <code>model Mahasiswa {</code> dan tambahkan <code>@@map</code> di bagian bawah:</p>
+<pre><code><span class="keyword">model</span> Mahasiswa {
+  id        Int      <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  nim       String   <span class="function">@unique</span> <span class="function">@db</span>.VarChar(20)
+  nama      String   <span class="function">@db</span>.VarChar(100)
   ipk       Float    <span class="function">@default</span>(0)
   semester  Int      <span class="function">@default</span>(1)
   createdAt DateTime <span class="function">@default</span>(now())
 
   <span class="function">@@map</span>(<span class="string">"mahasiswa"</span>)
 }</code></pre>
+                <p><code>@@map("mahasiswa")</code> berarti &ldquo;model <code>Mahasiswa</code> ini adalah tabel <code>mahasiswa</code>&rdquo;. Di JavaScript tetap ditulis <code>prisma.mahasiswa</code> (huruf kecil di depan). Terakhir, minta Prisma membuat <strong>client</strong>, yaitu kode yang tahu bentuk tabel kita (hasilnya masuk folder <code>generated/</code>). Ulangi perintah ini setiap kali skema berubah:</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma generate
+<span class="out">✔ Generated Prisma Client (7.10.1) to ./generated/prisma in 13ms</span></div>
+
+                <h3>3.4 Koneksi Prisma</h3>
+                <p>File kecil yang membuat koneksi, sejajar dengan <code>db.js</code> dari 2.6:</p>
+<pre><code><span class="comment">// src/lib/prisma.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> { <span class="variable">PrismaMariaDb</span> } <span class="keyword">from</span> <span class="string">'@prisma/adapter-mariadb'</span>;
+<span class="keyword">import</span> { <span class="variable">PrismaClient</span> } <span class="keyword">from</span> <span class="string">'../../generated/prisma/client.ts'</span>;
+
+<span class="keyword">const</span> <span class="variable">adapter</span> = <span class="keyword">new</span> <span class="function">PrismaMariaDb</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">prisma</span> = <span class="keyword">new</span> <span class="function">PrismaClient</span>({ <span class="variable">adapter</span> });</code></pre>
+                <p>File di folder <code>generated/</code> ditulis dalam TypeScript, itulah sebabnya yang diimpor adalah <code>client.ts</code>. Node 24 bisa langsung menjalankan file <code>.ts</code>, jadi tidak ada yang perlu diubah atau di-compile.</p>
+
+                <h3>3.5 Ganti Lapis Data: dari SQL ke Prisma</h3>
+                <p>Inilah saatnya. Empat fungsi di <code>mahasiswa.data.js</code> kita tulis ulang dengan Prisma. Bandingkan sisi kiri dan kanan:</p>
                 <table>
-                    <tr><th>Di skema</th><th>Artinya</th><th>Di tabel MySQL</th></tr>
-                    <tr><td><code>model Mahasiswa</code> + <code>@@map("mahasiswa")</code></td><td>Satu model = satu tabel; <code>@@map</code> menentukan nama tabelnya</td><td>tabel <code>mahasiswa</code></td></tr>
-                    <tr><td><code>Int</code>, <code>String</code>, <code>Float</code>, <code>DateTime</code></td><td>Tipe field</td><td><code>INT</code>, <code>VARCHAR(191)</code>, <code>DOUBLE</code>, <code>DATETIME(3)</code></td></tr>
-                    <tr><td><code>@id</code></td><td>Primary key</td><td><code>PRIMARY KEY</code></td></tr>
-                    <tr><td><code>@default(autoincrement())</code></td><td>Nomor naik otomatis</td><td><code>AUTO_INCREMENT</code></td></tr>
-                    <tr><td><code>@unique</code></td><td>Tidak boleh kembar</td><td><code>UNIQUE</code></td></tr>
-                    <tr><td><code>@default(0)</code>, <code>@default(1)</code></td><td>Nilai bawaan kalau tidak diisi</td><td><code>DEFAULT 0</code>, <code>DEFAULT 1</code></td></tr>
-                    <tr><td><code>@default(now())</code></td><td>Waktu saat baris dibuat</td><td><code>DEFAULT CURRENT_TIMESTAMP</code></td></tr>
+                    <tr><th>Fungsi</th><th>Dengan SQL (Section 2)</th><th>Dengan Prisma</th></tr>
+                    <tr><td><code>semua()</code></td><td><code>SELECT * FROM mahasiswa</code></td><td><code>prisma.mahasiswa.findMany()</code></td></tr>
+                    <tr><td><code>cariById(id)</code></td><td><code>SELECT * FROM mahasiswa WHERE id = ?</code></td><td><code>prisma.mahasiswa.findUnique({ where: { id } })</code></td></tr>
+                    <tr><td><code>cariByNim(nim)</code></td><td><code>SELECT * FROM mahasiswa WHERE nim = ?</code></td><td><code>prisma.mahasiswa.findUnique({ where: { nim } })</code></td></tr>
+                    <tr><td><code>simpan(input)</code></td><td><code>INSERT INTO ... VALUES (?, ?, ?, ?)</code>, lalu ambil lagi lewat <code>insertId</code></td><td><code>prisma.mahasiswa.create({ data: input })</code></td></tr>
+                </table>
+                <p>Ganti seluruh isi <code>src/data/mahasiswa.data.js</code>:</p>
+<pre><code><span class="comment">// src/data/mahasiswa.data.js — SEKARANG memakai Prisma</span>
+<span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">semua</span>() {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>();
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariByNim</span>(<span class="variable">nim</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">nim</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>(<span class="variable">input</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">create</span>({ <span class="variable">data</span>: <span class="variable">input</span> });
+}</code></pre>
+                <div class="info-box">
+                    <strong>Perhatikan:</strong> nama dan bentuk fungsi (<code>semua()</code>, <code>cariById()</code>, <code>cariByNim()</code>, <code>simpan()</code>) sama persis dengan dua versi sebelumnya (array dan SQL). Service, controller, dan routes tidak tahu bahwa data kini berasal dari Prisma. Inilah manfaat memisahkan lapis data sejak Pertemuan 5. Tidak ada lagi teks SQL, tidak perlu menjaga urutan <code>?</code>, dan editor mengenali nama kolom.
+                </div>
+                <p>File <code>src/lib/db.js</code> (mysql2) tidak dipakai lagi oleh lapis data. Biarkan dulu atau hapus; keduanya tidak mengganggu.</p>
+
+                <h3>3.6 Uji, dan Dua Hal yang Berbeda</h3>
+                <p>Jalankan <code>npm run dev</code>, lalu ulangi permintaan yang sama seperti di 2.6. Hasilnya sama:</p>
+<div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/2
+<span class="out">{"data":{"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2,"semester":6,"createdAt":"2026-11-04T22:24:29.463Z"}}</span>
+
+<span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021007","nama":"Fitri"}'
+<span class="out">{"data":{"id":7,"nim":"F1D021007","nama":"Fitri","ipk":0,"semester":1,"createdAt":"2026-11-04T14:28:40.358Z"}}</span></div>
+                <p>Ada dua hal yang berbeda dari sebelumnya.</p>
+
+                <h4>Perbedaan 1: waktu <code>createdAt</code> bergeser</h4>
+                <p>Perhatikan <code>createdAt</code> Budi sekarang <code>22:24:29.463Z</code>, padahal di 2.6 baris yang sama tampil <code>14:24:29.463Z</code>. Kolom <code>DATETIME</code> di MySQL tidak menyimpan zona waktu. <code>mysql2</code> menganggap nilainya waktu lokal komputer, sedangkan Prisma menganggapnya UTC. Di WITA (UTC+8), selisihnya 8 jam. Hal serupa terjadi saat menulis: Fitri yang baru ditambah lewat Prisma tersimpan sebagai <code>14:28:40</code> di tabel (UTC), sedangkan baris yang diisi lewat phpMyAdmin atau <code>tambah.js</code> tersimpan sebagai <code>22:2x</code> (waktu server MySQL, yaitu WITA), karena Prisma menuliskan waktu dalam UTC sedangkan <code>CURRENT_TIMESTAMP</code> di MySQL mengikuti zona waktu server MySQL. Buka phpMyAdmin untuk melihat selisihnya sendiri. Ini wajar dan belum perlu dikhawatirkan sekarang; yang penting kalian tahu sumbernya kalau suatu saat melihat selisih jam.</p>
+
+                <h4>Perbedaan 2: <code>GET /mahasiswa/abc</code> menjadi 500</h4>
+                <p>Coba <code>GET /mahasiswa/abc</code>. Dengan array dan dengan SQL, hasilnya 404. Dengan Prisma:</p>
+<div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/abc
+<span class="out">{"error":{"pesan":"Terjadi kesalahan pada server","kode":"INTERNAL_ERROR"}}</span></div>
+                <p>Di terminal server tercatat:</p>
+<div class="terminal"><span class="out">PrismaClientValidationError:</span>
+<span class="out">Invalid `prisma.mahasiswa.findUnique()` invocation:</span>
+
+<span class="out">{</span>
+<span class="out">  where: {</span>
+<span class="out">+   id: Int</span>
+<span class="out">  }</span>
+<span class="out">}</span>
+
+<span class="out">Argument `id` is missing.</span></div>
+                <p><code>Number('abc')</code> menghasilkan <code>NaN</code>, dan Prisma menolak <code>NaN</code> sebagai <code>id</code>. Database yang berbeda memperlakukan masukan yang sama dengan cara berbeda, jadi jangan bergantung pada database untuk menolak masukan yang buruk; periksa di service. Tambahkan fungsi kecil di bagian atas <code>src/services/mahasiswa.service.js</code> (setelah <code>import</code>), lalu pakai di <code>detailMahasiswa</code>:</p>
+<pre><code><span class="keyword">function</span> <span class="function">ambilId</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">angka</span> = <span class="function">Number</span>(<span class="variable">id</span>);
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">Number</span>.<span class="function">isInteger</span>(<span class="variable">angka</span>)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">400</span>, <span class="string">'id harus berupa bilangan bulat'</span>, <span class="string">'ID_TIDAK_VALID'</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">angka</span>;
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariById</span>(<span class="function">ambilId</span>(<span class="variable">id</span>));                <span class="comment">// ← dulu: Number(id)</span>
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);
+    }
+    <span class="keyword">return</span> <span class="variable">m</span>;
+}</code></pre>
+<div class="terminal"><span class="prompt">$</span> curl http://localhost:3000/mahasiswa/abc
+<span class="out">{"error":{"pesan":"id harus berupa bilangan bulat","kode":"ID_TIDAK_VALID"}}</span></div>
+                <p>Kini ditolak dengan 400, status yang tepat untuk kesalahan klien.</p>
+
+                <h3>3.7 Bagaimana dengan SQL Injection?</h3>
+                <p>Prisma <strong>selalu</strong> mengirim nilai sebagai parameter, tanpa pernah menggabungkannya ke teks SQL, jadi kita tidak perlu ingat untuk memakai <code>?</code>. Input jahat dari 2.5 diperlakukan sebagai data:</p>
+<pre><code><span class="comment">// AMAN: Prisma selalu mengirim nilai sebagai parameter</span>
+<span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>({ <span class="variable">where</span>: { <span class="variable">nama</span>: <span class="string">"' OR '1'='1"</span> } });
+<span class="comment">// hasil: []   (tidak ada mahasiswa bernama aneh itu)</span></code></pre>
+                <table>
+                    <tr><th>Cara</th><th>Input <code>' OR '1'='1</code> dianggap...</th><th>Hasil</th></tr>
+                    <tr><td>SQL mentah, digabung string</td><td>perintah SQL</td><td>semua baris bocor</td></tr>
+                    <tr><td>SQL mentah, berparameter (<code>?</code>)</td><td>data (sebuah nama)</td><td>kosong</td></tr>
+                    <tr><td>Prisma <code>findMany({ where })</code></td><td>data (sebuah nama)</td><td>kosong</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>ORM bukan jaminan otomatis.</strong> Prisma menyediakan jalur SQL mentah, dan pemakaiannya bisa membuka lubang yang sama kembali:
+<pre><code><span class="comment">// RENTAN lagi: $queryRawUnsafe + template string = SQL mentah yang digabung</span>
+<span class="keyword">await</span> <span class="variable">prisma</span>.<span class="function">$queryRawUnsafe</span>(<span class="string">`SELECT * FROM mahasiswa WHERE nama = '${nama}'`</span>);
+
+<span class="comment">// AMAN: $queryRaw dengan tagged template, ${nama} otomatis menjadi parameter</span>
+<span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">$queryRaw</span><span class="string">`SELECT * FROM mahasiswa WHERE nama = ${nama}`</span>;</code></pre>
+                    Dengan input <code>' OR '1'='1</code>, versi <code>$queryRawUnsafe</code> mengembalikan semua baris tabel, sedangkan <code>$queryRaw</code> dan <code>findMany</code> mengembalikan kosong. Aturannya sama seperti di 2.5: <strong>jangan pernah menggabungkan input pengguna ke dalam string SQL</strong>, di ORM mana pun. Validasi masukan seperti di Pertemuan 5 tetap dipakai sebagai lapisan tambahan, bukan pengganti.
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> <code>api-mahasiswa</code> kini memakai Prisma untuk membaca dan menambah data. Semua permintaan dari 2.6 memberi hasil yang sama, dan <code>GET /mahasiswa/abc</code> ditolak dengan 400.
+                </div>
+            </section>
+
+            <section id="crud">
+                <h2>4. CRUD Lengkap dengan Prisma <span class="badge badge-important">Indikator 4.4</span></h2>
+
+                <p>Sejauh ini API kita baru bisa membaca dan menambah. Dua operasi CRUD yang tersisa, <strong>ubah</strong> dan <strong>hapus</strong>, adalah Latihan 1 di Pertemuan 5. Kalau kalian sudah mengerjakannya, <strong>ganti</strong> isi fungsi atau baris yang namanya sama dengan versi di bawah, jangan menambah dobel (nama yang sama dua kali menimbulkan error). Kalau belum, kerjakan sekarang. Peta lengkapnya:</p>
+
+                <table>
+                    <tr><th>Operasi</th><th>Endpoint</th><th>Fungsi di lapis data</th><th>Prisma</th><th>SQL di baliknya</th></tr>
+                    <tr><td>Read (daftar)</td><td><code>GET /mahasiswa</code></td><td><code>semua()</code></td><td><code>findMany()</code></td><td><code>SELECT</code></td></tr>
+                    <tr><td>Read (satu)</td><td><code>GET /mahasiswa/:id</code></td><td><code>cariById()</code></td><td><code>findUnique()</code></td><td><code>SELECT ... WHERE</code></td></tr>
+                    <tr><td>Create</td><td><code>POST /mahasiswa</code></td><td><code>simpan()</code></td><td><code>create()</code></td><td><code>INSERT</code></td></tr>
+                    <tr><td>Update</td><td><code>PUT /mahasiswa/:id</code></td><td><code>ubah()</code></td><td><code>update()</code></td><td><code>UPDATE ... WHERE</code></td></tr>
+                    <tr><td>Delete</td><td><code>DELETE /mahasiswa/:id</code></td><td><code>hapus()</code></td><td><code>delete()</code></td><td><code>DELETE ... WHERE</code></td></tr>
                 </table>
 
-                <h3>2.5 Menjalankan Migrasi</h3>
-                <p>Satu perintah mengubah skema tadi menjadi tabel sungguhan di MySQL:</p>
-<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name buat_tabel_mahasiswa
-<span class="out">Loaded Prisma config from prisma.config.ts.</span>
-<span class="out">Prisma schema loaded from prisma/schema.prisma.</span>
-<span class="out">Datasource "db": MySQL database "prisma_mahasiswa" at "localhost:3306"</span>
+                <h3>4.1 Lapis Data: <code>ubah()</code> dan <code>hapus()</code></h3>
+                <p>Tambahkan dua fungsi di akhir <code>src/data/mahasiswa.data.js</code>:</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">function</span> <span class="function">ubah</span>(<span class="variable">id</span>, <span class="variable">input</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">update</span>({ <span class="variable">where</span>: { <span class="variable">id</span> }, <span class="variable">data</span>: <span class="variable">input</span> });
+}
 
-<span class="out">Applying migration `20261028223726_buat_tabel_mahasiswa`</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hapus</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">delete</span>({ <span class="variable">where</span>: { <span class="variable">id</span> } });
+}</code></pre>
+                <p><code>update</code> dan <code>delete</code> sama-sama butuh <code>where</code> untuk menunjuk baris mana. Persis seperti perintah SQL di 1.4: tanpa penunjuk, yang kena adalah semuanya. Prisma sengaja mewajibkan <code>where</code> di keduanya.</p>
 
-<span class="out">The following migration(s) have been created and applied from new schema changes:</span>
+                <h3>4.2 Lapis Service, Controller, dan Routes</h3>
+                <p>Di <code>src/services/mahasiswa.service.js</code>, tambahkan dua fungsi di akhir (atau ganti <code>ubahMahasiswa</code> dan <code>hapusMahasiswa</code> yang sudah ada dari Latihan 1):</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ubahMahasiswa</span>(<span class="variable">id</span>, <span class="variable">input</span>) {
+    <span class="keyword">const</span> <span class="variable">lama</span> = <span class="keyword">await</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>);                    <span class="comment">// 400 / 404 bila id keliru atau tidak ada</span>
 
-<span class="out">prisma/migrations/</span>
-<span class="out">  └─ 20261028223726_buat_tabel_mahasiswa/</span>
-<span class="out">    └─ migration.sql</span>
+    <span class="keyword">const</span> <span class="variable">bentrok</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>);
+    <span class="keyword">if</span> (<span class="variable">bentrok</span> <span class="operator">&amp;&amp;</span> <span class="variable">bentrok</span>.<span class="variable">id</span> <span class="operator">!==</span> <span class="variable">lama</span>.<span class="variable">id</span>) {                   <span class="comment">// NIM dipakai mahasiswa LAIN</span>
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah dipakai mahasiswa lain`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
+    }
 
-<span class="out">Your database is now in sync with your schema.</span></div>
-                <p>Angka di depan nama folder adalah waktu migrasi dibuat, jadi milik kalian akan berbeda. Prisma membuat file <code>prisma/migrations/.../migration.sql</code> lalu langsung menjalankannya. Isinya SQL biasa, silakan dibaca:</p>
-<pre><code><span class="comment">-- CreateTable</span>
-<span class="keyword">CREATE TABLE</span> `mahasiswa` (
-    `id` INTEGER <span class="keyword">NOT NULL</span> <span class="keyword">AUTO_INCREMENT</span>,
-    `nim` VARCHAR(191) <span class="keyword">NOT NULL</span>,
-    `nama` VARCHAR(191) <span class="keyword">NOT NULL</span>,
-    `ipk` DOUBLE <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> 0,
-    `semester` INTEGER <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> 1,
-    `createdAt` DATETIME(3) <span class="keyword">NOT NULL</span> <span class="keyword">DEFAULT</span> CURRENT_TIMESTAMP(3),
+    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">ubah</span>(<span class="variable">lama</span>.<span class="variable">id</span>, <span class="variable">input</span>);
+}
 
-    <span class="keyword">UNIQUE INDEX</span> `mahasiswa_nim_key`(`nim`),
-    <span class="keyword">PRIMARY KEY</span> (`id`)
-) <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER SET</span> utf8mb4 <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;</code></pre>
-                <h4>Kenapa Pakai Migrasi? (Dan Apakah Wajib?)</h4>
-                <p><strong>Tidak wajib.</strong> Tabel tadi bisa saja dibuat langsung di phpMyAdmin dengan klik-klik. Migrasi dipilih karena beberapa kelebihan, yang terasa ketika proyek mulai dikerjakan lebih dari satu orang atau berumur lebih dari satu minggu:</p>
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">hapusMahasiswa</span>(<span class="variable">id</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>);
+    <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">hapus</span>(<span class="variable">m</span>.<span class="variable">id</span>);
+}</code></pre>
+                <ul>
+                    <li><code>detailMahasiswa()</code> dipakai ulang, jadi urusan id yang bukan angka (400) dan id yang tidak ada (404) cukup ditulis satu kali.</li>
+                    <li><code>bentrok.id !== lama.id</code>: mahasiswa boleh mengirim ulang NIM-nya sendiri. Yang ditolak hanya NIM milik orang lain.</li>
+                    <li>Alternatifnya, langsung memanggil <code>update</code> atau <code>delete</code> dan menangkap error <code>P2025</code> (&ldquo;baris tidak ditemukan&rdquo;) yang dilempar Prisma. Pemeriksaan di muka memberi pesan yang lebih rapi dan kendali penuh atas kode statusnya.</li>
+                </ul>
+                <p>Controller dan routes, di akhir file masing-masing (ganti <code>ubah</code>, <code>hapus</code>, dan dua baris <code>router.put</code> / <code>router.delete</code> kalau sudah ada):</p>
+<pre><code><span class="comment">// src/controllers/mahasiswa.controller.js</span>
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">ubah</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">ubahMahasiswa</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>, <span class="variable">req</span>.<span class="variable">body</span>);
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">m</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">hapus</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">hapusMahasiswa</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">204</span>).<span class="function">end</span>();                    <span class="comment">// 204 No Content: berhasil, tidak ada isi</span>
+}</code></pre>
+<pre><code><span class="comment">// src/routes/mahasiswa.routes.js — tambahkan di bawah router.post(...)</span>
+<span class="variable">router</span>.<span class="function">put</span>(<span class="string">'/:id'</span>, <span class="variable">cekApiKey</span>, <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), <span class="variable">ctrl</span>.<span class="variable">ubah</span>);
+<span class="variable">router</span>.<span class="function">delete</span>(<span class="string">'/:id'</span>, <span class="variable">cekApiKey</span>, <span class="variable">ctrl</span>.<span class="variable">hapus</span>);</code></pre>
+                <p>Urutannya sama seperti POST: cek kunci dulu, baru validasi isi, baru handler. <code>PUT</code> mengganti seluruh data mahasiswa, jadi skema Joi-nya sama dengan POST (semua field wajib). Untuk <code>DELETE</code> tidak ada body, jadi tidak ada validasi.</p>
+
+                <h3>4.3 Uji Semua Kasus</h3>
+                <p>Server dijalankan ulang otomatis oleh <code>--watch</code>. Contoh yang berhasil, mengubah Citra:</p>
+<div class="terminal"><span class="prompt">$</span> curl -X PUT http://localhost:3000/mahasiswa/3 -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021003","nama":"Citra Lestari","ipk":3.95,"semester":4}'
+<span class="out">{"data":{"id":3,"nim":"F1D021003","nama":"Citra Lestari","ipk":3.95,"semester":4,"createdAt":"2026-11-04T22:24:29.463Z"}}</span></div>
+                <p>Lalu semua kasus lainnya. Kirim satu per satu dan cocokkan hasilnya:</p>
+                <table>
+                    <tr><th>Permintaan</th><th>Hasil</th><th>Penjelasan</th></tr>
+                    <tr><td><code>PUT /mahasiswa/99</code> (body valid)</td><td>404 <code>NOT_FOUND</code></td><td>id tidak ada</td></tr>
+                    <tr><td><code>PUT /mahasiswa/abc</code></td><td>400 <code>ID_TIDAK_VALID</code></td><td>id bukan angka</td></tr>
+                    <tr><td><code>PUT /mahasiswa/3</code> dengan NIM milik Andi (<code>F1D021001</code>)</td><td>409 <code>NIM_DUPLIKAT</code></td><td>NIM dipakai mahasiswa lain</td></tr>
+                    <tr><td><code>PUT /mahasiswa/3</code> tanpa <code>x-api-key</code></td><td>401 <code>UNAUTHORIZED</code></td><td>ditolak <code>cekApiKey</code></td></tr>
+                    <tr><td><code>PUT /mahasiswa/3</code> dengan body <code>{ "nim": "1" }</code></td><td>422 <code>VALIDATION_ERROR</code></td><td>ditolak Joi sebelum sampai ke service</td></tr>
+                    <tr><td><code>DELETE /mahasiswa/7</code> (Fitri, ditambah di 3.6)</td><td>204, tanpa isi</td><td>berhasil dihapus</td></tr>
+                    <tr><td><code>DELETE /mahasiswa/7</code> (kirim lagi)</td><td>404 <code>NOT_FOUND</code></td><td>sudah tidak ada</td></tr>
+                    <tr><td><code>DELETE /mahasiswa/5</code> tanpa <code>x-api-key</code></td><td>401 <code>UNAUTHORIZED</code></td><td>ditolak <code>cekApiKey</code></td></tr>
+                </table>
+                <p>Terakhir buka phpMyAdmin (tab Browse): Citra kini bernama &ldquo;Citra Lestari&rdquo; dengan IPK 3.95, dan Fitri sudah tidak ada. Dewi (id 5) dan Eko (id 6) masih ada.</p>
+                <p>Kebiasaan dari Pertemuan 5 berlaku lagi: setiap endpoint baru dibawa ke <code>requests.http</code>, termasuk minimal satu kasus yang sengaja gagal. Tambahkan:</p>
+<pre><code><span class="comment">### Ubah mahasiswa: harus 200</span>
+PUT {{baseUrl}}/mahasiswa/3
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{ "nim": "F1D021003", "nama": "Citra Lestari", "ipk": 3.95, "semester": 4 }
+
+<span class="comment">### Ubah mahasiswa yang tidak ada: harus 404</span>
+PUT {{baseUrl}}/mahasiswa/99
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{ "nim": "F1D021003", "nama": "Citra Lestari" }
+
+<span class="comment">### Hapus mahasiswa: harus 204</span>
+DELETE {{baseUrl}}/mahasiswa/5
+x-api-key: {{apiKey}}
+
+<span class="comment">### Hapus mahasiswa yang tidak ada: harus 404</span>
+DELETE {{baseUrl}}/mahasiswa/999
+x-api-key: {{apiKey}}</code></pre>
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> kelima endpoint CRUD bekerja, semua kasus gagal di tabel memberi jawaban yang benar, dan perubahan terlihat di phpMyAdmin.
+                </div>
+
+                <h3>4.4 Tiga Lapis Penjaga Data</h3>
+                <p>Joi sudah memeriksa bentuk data sejak <a href="materi-05-middleware-error-terpusat.html#validasi">Pertemuan 5, Section 4</a> dan tetap berlaku setelah memakai database. Database menambah satu lapis pengaman lagi. Ketiganya punya tugas berbeda:</p>
+                <table>
+                    <tr><th>Lapis</th><th>Memeriksa</th><th>Contoh</th><th>Hasil bila gagal</th></tr>
+                    <tr><td>Joi (middleware)</td><td>Bentuk data</td><td>NIM bukan 9 karakter, IPK 9</td><td>422</td></tr>
+                    <tr><td>Service</td><td>Aturan bisnis</td><td>NIM sudah dipakai mahasiswa lain</td><td>409</td></tr>
+                    <tr><td>Database</td><td>Constraint tabel</td><td><code>UNIQUE</code> pada <code>nim</code></td><td>error Prisma</td></tr>
+                </table>
+
+                <h4>Mengapa database tetap perlu menjaga?</h4>
+                <p>Service sudah memeriksa NIM kembar sebelum menyimpan. Tetapi bayangkan dua permintaan dengan NIM yang sama tiba bersamaan: keduanya memeriksa, keduanya belum menemukan NIM itu, lalu keduanya menyimpan. Yang menyelamatkan data adalah <code>UNIQUE</code> di tabel (yang kita tulis sendiri di 1.3): penyimpanan kedua ditolak. Kita tiru situasinya dengan melewati pemeriksaan service. Di <code>buatMahasiswa</code>, ubah sementara barisnya menjadi <code>if (false &amp;&amp; await data.cariByNim(input.nim)) {</code>, lalu kirim POST dengan NIM yang sudah ada (misalnya <code>F1D021001</code>):</p>
+<div class="terminal"><span class="prompt">$</span> curl -X POST http://localhost:3000/mahasiswa -H "Content-Type: application/json" -H "x-api-key: rahasia123" -d '{"nim":"F1D021001","nama":"Kembar"}'
+<span class="out">{"error":{"pesan":"Terjadi kesalahan pada server","kode":"INTERNAL_ERROR"}}</span></div>
+                <p>Data memang selamat, tetapi klien menerima 500. Di terminal server terlihat penyebabnya:</p>
+<div class="terminal"><span class="out">PrismaClientKnownRequestError:</span>
+<span class="out">  ...</span>
+<span class="out">  code: 'P2002',</span></div>
+                <p><code>P2002</code> adalah kode Prisma untuk pelanggaran <code>UNIQUE</code>. Ini kesalahan klien (409), bukan kesalahan server (500). Tangkap dan terjemahkan di service, sehingga <code>buatMahasiswa</code> menjadi:</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
+    <span class="keyword">if</span> (<span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
+    }
+
+    <span class="keyword">try</span> {
+        <span class="keyword">return</span> <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="keyword">if</span> (<span class="variable">err</span>.<span class="variable">code</span> <span class="operator">===</span> <span class="string">'P2002'</span>) {   <span class="comment">// kode Prisma untuk pelanggaran UNIQUE</span>
+            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
+        }
+        <span class="keyword">throw</span> <span class="variable">err</span>;   <span class="comment">// error lain diteruskan ke errorHandler (Pertemuan 5)</span>
+    }
+}</code></pre>
+                <p>Kirim ulang POST yang sama (pemeriksaan <code>false &amp;&amp;</code> masih aktif): kini jawabannya 409 <code>NIM_DUPLIKAT</code>. <strong>Kembalikan barisnya menjadi <code>if (await data.cariByNim(input.nim)) {</code></strong> setelah selesai mencoba. Prisma juga menolak tipe data yang salah, misalnya teks untuk kolom <code>Float</code>: <code>Argument `ipk`: Invalid value provided. Expected Float, provided String.</code> Karena Joi sudah menyaringnya lebih awal, error ini hampir tidak pernah sampai ke Prisma.</p>
+
+                <div class="info-box">
+                    <strong>Pembagian tanggung jawab:</strong> Joi memberi pesan yang ramah dan lengkap sebelum permintaan menyentuh database. Constraint database (<code>UNIQUE</code>, <code>NOT NULL</code>) adalah jaring pengaman terakhir, bukan satu-satunya validasi.
+                </div>
+            </section>
+
+            <section id="migrasi">
+                <h2>5. Skema dan Migrasi <span class="badge badge-important">Indikator 4.2</span></h2>
+
+                <p>Tabel <code>mahasiswa</code> kita buat dengan tangan di phpMyAdmin. Selama tabelnya tidak pernah berubah, tidak ada masalah. Tetapi kebutuhan berubah: sekarang mahasiswa perlu punya <strong>email</strong>. Kalau kolom itu ditambahkan dengan klik-klik di phpMyAdmin, apa yang terjadi pada teman satu tim, pada komputer kalian yang lain, atau pada server tempat aplikasi nanti dipasang? Mereka tidak tahu ada kolom baru, dan tidak ada catatan yang bisa mereka jalankan.</p>
+
+                <p><strong>Migrasi</strong> menjawab hal ini: setiap perubahan struktur tabel ditulis sebagai file SQL yang bernomor urut waktu dan disimpan di proyek. Menjalankan semua migrasi berurutan menghasilkan struktur tabel yang persis sama di komputer mana pun.</p>
+
+                <h3>5.1 Migrasi vs Tabel Manual</h3>
                 <table>
                     <tr><th>&nbsp;</th><th>Dengan migrasi</th><th>Tabel dibuat manual di phpMyAdmin</th></tr>
                     <tr><td><strong>Riwayat perubahan</strong></td><td>Tercatat berurutan di folder <code>prisma/migrations</code></td><td>Tidak ada catatan</td></tr>
@@ -407,121 +1002,120 @@ generated</code></pre>
                     <tr><td><strong>Server produksi</strong></td><td>Perintah yang sama dijalankan di server (<code>migrate deploy</code>)</td><td>Harus mengulang manual di server</td></tr>
                     <tr><td><strong>Cocok untuk</strong></td><td>Proyek sungguhan dan tugas kelompok</td><td>Belajar cepat dan coba-coba</td></tr>
                 </table>
+                <p>Tabel manual tidak salah; kita memakainya di Section 1 untuk belajar. Sekarang kita pindah ke jalur migrasi.</p>
 
-                <div class="info-box">
-                    <strong>Kalau memilih membuat tabel manual:</strong> buat tabelnya di phpMyAdmin, lalu minta Prisma membaca tabel itu dan menuliskan skemanya sendiri (arah kebalikan dari migrasi):
-<div class="terminal"><span class="prompt">$</span> npx prisma db pull
-<span class="out">Introspected 1 model and wrote it into prisma/schema.prisma</span>
-<span class="prompt">$</span> npx prisma generate</div>
-                    Skema hasil <code>db pull</code> berisi model <code>mahasiswa</code> dengan tipe sesuai tabel kalian. Setelah itu kode di 2.7 bisa dipakai apa adanya. Pilih <strong>satu jalur per proyek</strong>: kalau sudah memakai migrasi, jangan ubah struktur tabel lewat phpMyAdmin, karena skema dan database jadi berbeda dan Prisma akan meminta database di-reset. Materi ini memakai jalur migrasi.
+                <h3>5.2 Pindah ke Jalur Migrasi</h3>
+                <p>Coba dulu langsung. Perintah <code>migrate dev</code> membuat dan menjalankan migrasi dari skema:</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name buat_tabel_mahasiswa
+<span class="out">Loaded Prisma config from prisma.config.js.</span>
+<span class="out">Prisma schema loaded from prisma/schema.prisma.</span>
+<span class="out">Datasource "db": MySQL database "api_mahasiswa" at "localhost:3306"</span>
+
+<span class="out">Drift detected: Your database schema is not in sync with your migration history.</span>
+
+<span class="out">The following is a summary of the differences between the expected database schema given your migrations files, and the actual schema of the database.</span>
+
+<span class="out">It should be understood as the set of changes to get from the expected schema to the actual schema.</span>
+
+<span class="out">If you are running this the first time on an existing database, please make sure to read this documentation page:</span>
+<span class="out">https://www.prisma.io/docs/guides/database/developing-with-prisma-migrate/troubleshooting-development</span>
+
+<span class="out">[+] Added tables</span>
+<span class="out">  - mahasiswa</span>
+
+<span class="out">We need to reset the MySQL database "api_mahasiswa" at "localhost:3306"</span>
+
+<span class="out">You may use prisma migrate reset to drop the development database.</span>
+<span class="out">All data will be lost.</span></div>
+                <p>Prisma menolak. (Kalau terminal kalian menawarkan untuk mereset database lalu menunggu jawaban, jawab <code>n</code>; kita lakukan sendiri langkahnya supaya jelas apa yang terjadi.) Alasannya: ia belum punya riwayat migrasi sama sekali, tetapi di database sudah ada tabel <code>mahasiswa</code> yang tidak ia kenal (<em>drift</em>, artinya database dan catatan migrasi tidak sejalan). Untuk database latihan seperti ini, jalan paling sederhana adalah menghapus tabel manualnya dan membiarkan Prisma membuatnya, sehingga lahir catatan migrasi pertama. Datanya bisa diisi lagi karena perintah <code>INSERT</code> dari 1.4 masih ada.</p>
+
+                <div class="warning-box">
+                    <strong>Langkah ini menghapus semua data di tabel <code>mahasiswa</code>.</strong> Aman untuk database latihan sendiri. Di proyek nyata yang datanya tidak boleh hilang ada cara lain yang disebut <em>baselining</em>; panduannya ada di halaman dokumentasi Prisma yang dirujuk pesan di atas.
                 </div>
 
-                <h3>2.6 Cek Hasilnya dan Isi Data di phpMyAdmin</h3>
-                <p>Buka phpMyAdmin dan muat ulang halamannya. Di database <code>prisma_mahasiswa</code> sekarang ada dua tabel:</p>
-                <ul>
-                    <li><code>mahasiswa</code>: tabel kita.</li>
-                    <li><code>_prisma_migrations</code>: catatan migrasi milik Prisma. Jangan diubah.</li>
-                </ul>
-                <p>Klik tabel <code>mahasiswa</code>, tab <strong>Structure</strong> (Struktur). Cocokkan dengan tabel rencana di 2.1:</p>
-                <table>
-                    <tr><th>Field</th><th>Type</th><th>Null</th><th>Key</th><th>Default</th><th>Extra</th></tr>
-                    <tr><td>id</td><td>int</td><td>NO</td><td>PRI</td><td>NULL</td><td>auto_increment</td></tr>
-                    <tr><td>nim</td><td>varchar(191)</td><td>NO</td><td>UNI</td><td>NULL</td><td></td></tr>
-                    <tr><td>nama</td><td>varchar(191)</td><td>NO</td><td></td><td>NULL</td><td></td></tr>
-                    <tr><td>ipk</td><td>double</td><td>NO</td><td></td><td>0</td><td></td></tr>
-                    <tr><td>semester</td><td>int</td><td>NO</td><td></td><td>1</td><td></td></tr>
-                    <tr><td>createdAt</td><td>datetime(3)</td><td>NO</td><td></td><td>CURRENT_TIMESTAMP(3)</td><td>DEFAULT_GENERATED</td></tr>
-                </table>
-                <p>Sekarang isi datanya. Klik tab <strong>SQL</strong>, tempel perintah berikut, lalu klik <strong>Go</strong> (Kirim). Kolom <code>id</code> dan <code>createdAt</code> sengaja tidak ditulis karena terisi otomatis:</p>
-<pre><code><span class="keyword">INSERT INTO</span> mahasiswa (nim, nama, ipk, semester) <span class="keyword">VALUES</span>
-('F1D021001', 'Andi',  3.75, 6),
-('F1D021002', 'Budi',  3.20, 6),
-('F1D021003', 'Citra', 3.90, 4);</code></pre>
-                <p>Alternatifnya lewat tab <strong>Insert</strong> (Sisipkan), isi satu baris per kali dengan mengosongkan <code>id</code> dan <code>createdAt</code>. Setelah itu buka tab <strong>Browse</strong>; seharusnya tampil tiga baris:</p>
-                <table>
-                    <tr><th>id</th><th>nim</th><th>nama</th><th>ipk</th><th>semester</th><th>createdAt</th></tr>
-                    <tr><td>1</td><td>F1D021001</td><td>Andi</td><td>3.75</td><td>6</td><td>2026-10-29 06:37:31.557</td></tr>
-                    <tr><td>2</td><td>F1D021002</td><td>Budi</td><td>3.2</td><td>6</td><td>2026-10-29 06:37:31.557</td></tr>
-                    <tr><td>3</td><td>F1D021003</td><td>Citra</td><td>3.9</td><td>4</td><td>2026-10-29 06:37:31.557</td></tr>
-                </table>
-                <div class="success-box">
-                    <strong>Checkpoint:</strong> tabel <code>mahasiswa</code> ada dengan struktur sesuai rencana, dan berisi tiga baris. Kolom <code>createdAt</code> kalian akan berisi waktu saat kalian menjalankan perintah.
-                </div>
+                <p>Di phpMyAdmin, pilih database <code>api_mahasiswa</code>, tab <strong>SQL</strong>, lalu jalankan:</p>
+<pre><code><span class="keyword">DROP</span> <span class="keyword">TABLE</span> mahasiswa;</code></pre>
+                <p>Database kini kosong lagi. Jalankan migrasinya:</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name buat_tabel_mahasiswa
+<span class="out">Loaded Prisma config from prisma.config.js.</span>
+<span class="out">Prisma schema loaded from prisma/schema.prisma.</span>
+<span class="out">Datasource "db": MySQL database "api_mahasiswa" at "localhost:3306"</span>
 
-                <h3>2.7 Praktik: Menampilkan Data dari Database</h3>
-                <p>Saatnya JavaScript membaca tabel itu. Pertama, minta Prisma membuat <strong>client</strong>, yaitu kode yang tahu bentuk tabel kita (hasilnya masuk folder <code>generated/</code>). Ulangi perintah ini setiap kali skema berubah:</p>
-<div class="terminal"><span class="prompt">$</span> npx prisma generate
-<span class="out">✔ Generated Prisma Client (7.10.1) to ./generated/prisma in 12ms</span></div>
-                <p>Kedua, file kecil yang membuat koneksi. Dipisah supaya bisa dipakai dari banyak file nanti:</p>
-<pre><code><span class="comment">// src/prisma.js</span>
-<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
-<span class="keyword">import</span> { <span class="variable">PrismaMariaDb</span> } <span class="keyword">from</span> <span class="string">'@prisma/adapter-mariadb'</span>;
-<span class="keyword">import</span> { <span class="variable">PrismaClient</span> } <span class="keyword">from</span> <span class="string">'../generated/prisma/client.ts'</span>;
-
-<span class="keyword">const</span> <span class="variable">adapter</span> = <span class="keyword">new</span> <span class="function">PrismaMariaDb</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);
-
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">prisma</span> = <span class="keyword">new</span> <span class="function">PrismaClient</span>({ <span class="variable">adapter</span> });</code></pre>
-                <p>Ketiga, server dengan satu endpoint. <code>prisma.mahasiswa.findMany()</code> artinya &ldquo;ambil semua baris tabel <code>mahasiswa</code>&rdquo; (SQL: <code>SELECT * FROM mahasiswa</code>; Eloquent: <code>Mahasiswa::all()</code>). Karena membaca database butuh waktu, dipakai <code>await</code> seperti di Pertemuan 3.</p>
-<pre><code><span class="comment">// index.js</span>
-<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
-<span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'./src/prisma.js'</span>;
-
-<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
-
-<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/mahasiswa'</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
-    <span class="keyword">const</span> <span class="variable">data</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>();
-    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span> });
-});
-
-<span class="keyword">const</span> <span class="variable">PORT</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">PORT</span> <span class="operator">??</span> <span class="number">3000</span>;
-<span class="variable">app</span>.<span class="function">listen</span>(<span class="variable">PORT</span>, () <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">log</span>(<span class="string">`Server jalan di http://localhost:${PORT}`</span>));</code></pre>
-                <p>Jalankan server, lalu uji di <strong>Postman</strong>: <code>GET http://localhost:3000/mahasiswa</code>.</p>
-<div class="terminal"><span class="prompt">$</span> npm run dev
-<span class="out">Server jalan di http://localhost:3000</span></div><div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/mahasiswa</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
-  "data": [
-    { "id": 1, "nim": "F1D021001", "nama": "Andi",  "ipk": 3.75, "semester": 6, "createdAt": "2026-10-29T06:37:31.557Z" },
-    { "id": 2, "nim": "F1D021002", "nama": "Budi",  "ipk": 3.2,  "semester": 6, "createdAt": "2026-10-29T06:37:31.557Z" },
-    { "id": 3, "nim": "F1D021003", "nama": "Citra", "ipk": 3.9,  "semester": 4, "createdAt": "2026-10-29T06:37:31.557Z" }
-  ]
-}</div></div>
-                <p>Isinya sama dengan yang kalian lihat di phpMyAdmin. Dua percobaan untuk membuktikan data benar-benar dari database:</p>
-                <ol>
-                    <li>Di phpMyAdmin, ubah IPK Andi menjadi 4 (tab Browse &rarr; Edit). Kirim ulang request di Postman: IPK Andi berubah, <strong>tanpa merestart server</strong>.</li>
-                    <li>Restart server (Ctrl + C, lalu <code>npm run dev</code>). Data tetap ada. Bandingkan dengan array di Pertemuan 4 yang kembali ke awal setiap restart.</li>
-                </ol>
-                <div class="success-box">
-                    <strong>Checkpoint:</strong> Postman menampilkan tiga mahasiswa dari database, dan perubahan di phpMyAdmin langsung terlihat. Inilah dasar yang kita pakai untuk menyambungkan <code>api-mahasiswa</code> di Section 5.
-                </div>
-
-                <h3>2.8 Mengubah Skema: Menambah Kolom</h3>
-                <p>Kebutuhan berubah: mahasiswa perlu punya email. Alurnya selalu sama: <strong>edit skema, buat migrasi baru</strong>. Tambahkan satu baris di model <code>Mahasiswa</code>:</p>
-<pre><code>  email     String?</code></pre>
-                <p>Tanda <code>?</code> berarti kolom boleh kosong. Ini perlu karena tabel sudah berisi tiga baris yang belum punya email; kolom wajib tanpa nilai bawaan tidak bisa ditambahkan ke tabel yang sudah berisi data.</p>
-<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name tambah_kolom_email
-<span class="out">Applying migration `20261028223801_tambah_kolom_email`</span>
+<span class="out">Applying migration `20261104135010_buat_tabel_mahasiswa`</span>
 
 <span class="out">The following migration(s) have been created and applied from new schema changes:</span>
 
 <span class="out">prisma/migrations/</span>
-<span class="out">  └─ 20261028223801_tambah_kolom_email/</span>
+<span class="out">  └─ 20261104135010_buat_tabel_mahasiswa/</span>
+<span class="out">    └─ migration.sql</span>
+
+<span class="out">Your database is now in sync with your schema.</span></div>
+                <p>Angka di depan nama folder adalah waktu migrasi dibuat, jadi milik kalian akan berbeda. Prisma membuat file <code>prisma/migrations/.../migration.sql</code> lalu langsung menjalankannya. Isinya SQL biasa, silakan dibaca dan bandingkan dengan <code>CREATE TABLE</code> yang kalian ketik sendiri di 1.3:</p>
+<pre><code><span class="comment">-- CreateTable</span>
+<span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `mahasiswa` (
+    `id` <span class="function">INTEGER</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">AUTO_INCREMENT</span>,
+    `nim` <span class="function">VARCHAR</span>(<span class="number">20</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+    `nama` <span class="function">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span>,
+    `ipk` <span class="function">DOUBLE</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="number">0</span>,
+    `semester` <span class="function">INTEGER</span> <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="number">1</span>,
+    `createdAt` <span class="function">DATETIME</span>(<span class="number">3</span>) <span class="keyword">NOT</span> <span class="keyword">NULL</span> <span class="keyword">DEFAULT</span> <span class="function">CURRENT_TIMESTAMP</span>(<span class="number">3</span>),
+
+    <span class="keyword">UNIQUE</span> <span class="keyword">INDEX</span> `mahasiswa_nim_key`(`nim`),
+    <span class="keyword">PRIMARY</span> <span class="keyword">KEY</span> (`id`)
+) <span class="keyword">DEFAULT</span> <span class="keyword">CHARACTER</span> <span class="keyword">SET</span> utf8mb4 <span class="keyword">COLLATE</span> utf8mb4_unicode_ci;</code></pre>
+                <p>Hasilnya sama, hanya sekarang ada catatannya. Buka phpMyAdmin dan muat ulang. Di database <code>api_mahasiswa</code> ada dua tabel:</p>
+                <ul>
+                    <li><code>mahasiswa</code>: tabel kita, kini kosong.</li>
+                    <li><code>_prisma_migrations</code>: catatan migrasi milik Prisma. Jangan diubah.</li>
+                </ul>
+                <p>Isi lagi datanya dengan <code>INSERT</code> dari 1.4 (tab <strong>SQL</strong>):</p>
+<pre><code><span class="keyword">INSERT</span> <span class="keyword">INTO</span> mahasiswa (nim, nama, ipk, semester) <span class="keyword">VALUES</span>
+(<span class="string">'F1D021001'</span>, <span class="string">'Andi'</span>,  <span class="number">3.75</span>, <span class="number">6</span>),
+(<span class="string">'F1D021002'</span>, <span class="string">'Budi'</span>,  <span class="number">3.20</span>, <span class="number">6</span>),
+(<span class="string">'F1D021003'</span>, <span class="string">'Citra'</span>, <span class="number">3.90</span>, <span class="number">4</span>);</code></pre>
+                <p>Karena tabelnya baru, <code>id</code> kembali dimulai dari 1. Muat ulang <code>GET /mahasiswa</code>: tiga mahasiswa, id 1 sampai 3.</p>
+
+                <h3>5.3 Mengubah Skema: Menambah Kolom</h3>
+                <p>Sekarang kebutuhan email tadi. Alurnya selalu sama: <strong>edit skema, buat migrasi baru</strong>. Tambahkan satu baris di model <code>Mahasiswa</code> pada <code>prisma/schema.prisma</code>, tepat di bawah <code>createdAt</code>:</p>
+<pre><code>  email     String?  <span class="function">@db</span>.VarChar(100)</code></pre>
+                <p>Tanda <code>?</code> berarti kolom boleh kosong. Ini perlu karena tabel sudah berisi tiga baris yang belum punya email; kolom wajib tanpa nilai bawaan tidak bisa ditambahkan ke tabel yang sudah berisi data.</p>
+<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name tambah_kolom_email
+<span class="out">Loaded Prisma config from prisma.config.js.</span>
+<span class="out">Prisma schema loaded from prisma/schema.prisma.</span>
+<span class="out">Datasource "db": MySQL database "api_mahasiswa" at "localhost:3306"</span>
+
+<span class="out">Applying migration `20261104135025_tambah_kolom_email`</span>
+
+<span class="out">The following migration(s) have been created and applied from new schema changes:</span>
+
+<span class="out">prisma/migrations/</span>
+<span class="out">  └─ 20261104135025_tambah_kolom_email/</span>
 <span class="out">    └─ migration.sql</span>
 
 <span class="out">Your database is now in sync with your schema.</span>
 
-<span class="prompt">$</span> npx prisma generate</div>
+<span class="prompt">$</span> npx prisma generate
+<span class="out">✔ Generated Prisma Client (7.10.1) to ./generated/prisma in 18ms</span></div>
                 <p>Prisma membuat migrasi <strong>tambahan</strong>, bukan menimpa yang lama. Isinya hanya perubahan yang diperlukan:</p>
 <pre><code><span class="comment">-- AlterTable</span>
-<span class="keyword">ALTER TABLE</span> `mahasiswa` <span class="keyword">ADD COLUMN</span> `email` VARCHAR(191) <span class="keyword">NULL</span>;</code></pre>
-                <p>Cek di phpMyAdmin: tabel <code>mahasiswa</code> kini punya kolom <code>email</code> (kosong), dan request Postman tadi sekarang ikut menampilkan <code>"email": null</code>.</p>
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> `mahasiswa` <span class="keyword">ADD</span> <span class="keyword">COLUMN</span> `email` <span class="function">VARCHAR</span>(<span class="number">100</span>) <span class="keyword">NULL</span>;</code></pre>
+                <p>Cek di phpMyAdmin: tabel <code>mahasiswa</code> kini punya kolom <code>email</code> (kosong), dan <code>GET /mahasiswa/1</code> sekarang ikut menampilkan <code>"email": null</code>. Teman satu tim cukup menjalankan <code>npx prisma migrate dev</code> setelah menarik proyek dari Git, dan kolom itu muncul di database mereka. Itulah gunanya riwayat.</p>
+
                 <div class="warning-box">
-                    <strong>Selama memakai migrasi, ubah struktur lewat skema, bukan lewat phpMyAdmin.</strong> Kalau kolom ditambah manual di phpMyAdmin, skema dan database menjadi berbeda, dan Prisma baru memberi tahu belakangan dengan pesan yang membingungkan. <strong>Folder <code>prisma/migrations</code> wajib di-commit ke Git</strong>, sama seperti <code>package-lock.json</code>. Untuk melihat data tanpa phpMyAdmin tersedia juga <code>npx prisma studio</code>.
+                    <strong>Selama memakai migrasi, ubah struktur lewat skema, bukan lewat phpMyAdmin.</strong> Kalau kolom ditambah manual di phpMyAdmin, skema dan database menjadi berbeda, dan Prisma akan melaporkan <em>drift</em> seperti di 5.2. <strong>Folder <code>prisma/migrations</code> wajib di-commit ke Git</strong>, sama seperti <code>package-lock.json</code>. Untuk melihat data tanpa phpMyAdmin tersedia juga <code>npx prisma studio</code>.
+                </div>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> folder <code>prisma/migrations</code> berisi dua migrasi (<code>buat_tabel_mahasiswa</code> dan <code>tambah_kolom_email</code>), tabel <code>mahasiswa</code> berisi tiga baris dengan kolom <code>email</code>, dan API tetap bekerja seperti di Section 4.
                 </div>
             </section>
 
             <section id="relasi">
-                <h2>3. Relasi Satu-ke-Banyak dan Banyak-ke-Banyak <span class="badge badge-important">Indikator 4.3</span></h2>
+                <h2>6. Relasi dan Normalisasi <span class="badge badge-important">Indikator 4.3</span></h2>
 
-                <h3>3.1 Relasi Satu-ke-Banyak (1&ndash;N)</h3>
+                <p>Sampai sekarang kita hanya punya satu tabel. Aplikasi sungguhan hampir selalu punya beberapa tabel yang saling berhubungan. Bagian ini membahas cara memodelkan hubungan itu di Prisma dan kenapa tabel perlu dipecah. Contoh di sini untuk dipahami dan diskemakan dulu; Pertemuan 7 membangun relasi banyak-ke-banyak sungguhan.</p>
+
+                <h3>6.1 Relasi Satu-ke-Banyak (1&ndash;N)</h3>
                 <p>Satu mahasiswa punya banyak nilai. Satu nilai hanya milik satu mahasiswa.</p>
 
                 <div class="erd">
@@ -549,29 +1143,29 @@ generated</code></pre>
                     </div>
                 </div>
 
-                <pre><code>model Mahasiswa {
-  id     Int     @id @default(autoincrement())
-  nim    String  @unique
+<pre><code><span class="keyword">model</span> Mahasiswa {
+  id     Int     <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  nim    String  <span class="function">@unique</span>
   nama   String
   nilai  Nilai[]              <span class="comment">// sisi "banyak" — array</span>
 }
 
-model Nilai {
-  id          Int       @id @default(autoincrement())
+<span class="keyword">model</span> Nilai {
+  id          Int       <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
   mataKuliah  String
   skor        Float
-  mahasiswa   Mahasiswa @relation(fields: [mahasiswaId], references: [id])
+  mahasiswa   Mahasiswa <span class="function">@relation</span>(fields: [mahasiswaId], references: [id])
   mahasiswaId Int                                          <span class="comment">// foreign key</span>
 }</code></pre>
-
-                <pre><code><span class="comment">// Mengambil mahasiswa BESERTA seluruh nilainya</span>
+                <p>Dua baris kuncinya: <code>mahasiswaId Int</code> adalah kolom <em>foreign key</em> yang benar-benar ada di tabel <code>Nilai</code>, dan <code>@relation(fields: [mahasiswaId], references: [id])</code> menyatakan &ldquo;kolom itu menunjuk ke <code>id</code> di <code>Mahasiswa</code>&rdquo;. Baris <code>nilai Nilai[]</code> di sisi lain hanya penanda, tidak membuat kolom.</p>
+<pre><code><span class="comment">// Mengambil mahasiswa BESERTA seluruh nilainya</span>
 <span class="keyword">const</span> <span class="variable">mhs</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({
     <span class="variable">where</span>: { <span class="variable">id</span>: <span class="number">1</span> },
-    <span class="variable">include</span>: { <span class="variable">nilai</span>: <span class="keyword">true</span> }         <span class="comment">// padanan Eloquent: ->load('nilai')</span>
+    <span class="variable">include</span>: { <span class="variable">nilai</span>: <span class="keyword">true</span> }         <span class="comment">// padanan Eloquent: -&gt;load('nilai')</span>
 });
 <span class="comment">// { id: 1, nim: "...", nama: "...", nilai: [{ id:1, mataKuliah:"PWL", skor:88 }, ...] }</span></code></pre>
 
-                <h3>3.2 Relasi Banyak-ke-Banyak (N&ndash;N)</h3>
+                <h3>6.2 Relasi Banyak-ke-Banyak (N&ndash;N)</h3>
                 <p>Satu mahasiswa mengikuti banyak kelas. Satu kelas diikuti banyak mahasiswa. Butuh <strong>tabel penghubung</strong> di antara keduanya.</p>
 
                 <div class="erd">
@@ -597,34 +1191,35 @@ model Nilai {
                 </div>
                 <p style="text-align:center;font-size:0.82em;color:#777;">Prisma membuat tabel penghubung <code>_KelasToMahasiswa</code> secara otomatis (relasi implisit), atau kalian bisa mendefinisikan sendiri (relasi eksplisit) kalau tabel penghubung butuh kolom tambahan &mdash; misalnya tanggal pendaftaran.</p>
 
-                <pre><code><span class="comment">// Relasi EKSPLISIT — dipakai kalau tabel penghubung butuh field tambahan</span>
-model Mahasiswa {
-  id         Int          @id @default(autoincrement())
-  nama       String
+<pre><code><span class="comment">// Relasi EKSPLISIT — dipakai kalau tabel penghubung butuh field tambahan</span>
+<span class="keyword">model</span> Mahasiswa {
+  id          Int           <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  nama        String
   pendaftaran Pendaftaran[]
 }
 
-model Kelas {
-  id          Int           @id @default(autoincrement())
+<span class="keyword">model</span> Kelas {
+  id          Int           <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
   nama        String
   pendaftaran Pendaftaran[]
 }
 
 <span class="comment">// Tabel penghubung — punya field TAMBAHAN: tanggalDaftar</span>
-model Pendaftaran {
-  id            Int       @id @default(autoincrement())
-  mahasiswa     Mahasiswa @relation(fields: [mahasiswaId], references: [id])
+<span class="keyword">model</span> Pendaftaran {
+  id            Int       <span class="function">@id</span> <span class="function">@default</span>(autoincrement())
+  mahasiswa     Mahasiswa <span class="function">@relation</span>(fields: [mahasiswaId], references: [id])
   mahasiswaId   Int
-  kelas         Kelas     @relation(fields: [kelasId], references: [id])
+  kelas         Kelas     <span class="function">@relation</span>(fields: [kelasId], references: [id])
   kelasId       Int
-  tanggalDaftar DateTime  @default(now())
+  tanggalDaftar DateTime  <span class="function">@default</span>(now())
 
-  @@unique([mahasiswaId, kelasId])   <span class="comment">// satu mahasiswa tak bisa daftar 2x di kelas sama</span>
+  <span class="function">@@unique</span>([mahasiswaId, kelasId])   <span class="comment">// satu mahasiswa tak bisa daftar 2x di kelas sama</span>
 }</code></pre>
-
                 <div class="info-box">
-                    <strong>Kapan pakai relasi implisit vs eksplisit?</strong> Implisit (<code>Kelas[]</code> langsung di kedua sisi) cukup kalau tabel penghubung hanya berisi dua foreign key. Begitu butuh field tambahan (tanggal daftar, status, nilai akhir) &mdash; wajib eksplisit seperti contoh di atas. 
-                <h3>3.3 Normalisasi: Mengapa Tabel Harus Dipecah</h3>
+                    <strong>Kapan pakai relasi implisit vs eksplisit?</strong> Implisit (<code>Kelas[]</code> langsung di kedua sisi) cukup kalau tabel penghubung hanya berisi dua foreign key. Begitu butuh field tambahan (tanggal daftar, status, nilai akhir) &mdash; wajib eksplisit seperti contoh di atas. Pertemuan 7 memakai pola eksplisit ini untuk pendaftaran mahasiswa ke kelas.
+                </div>
+
+                <h3>6.3 Normalisasi: Mengapa Tabel Harus Dipecah</h3>
                 <p>Dua bagian sebelumnya menunjukkan <em>cara</em> menulis relasi di Prisma. Sekarang pertanyaan yang lebih mendasar: bagaimana kita tahu sebuah tabel <strong>perlu</strong> dipecah? Jawabannya adalah <strong>normalisasi</strong> &mdash; serangkaian aturan untuk menata tabel agar tidak ada data yang tersimpan berulang.</p>
                 <p>Mulai dari tabel mentah seperti yang biasa kalian temui di spreadsheet:</p>
 
@@ -641,7 +1236,7 @@ model Pendaftaran {
                 <p>Aturan pertama: tidak boleh ada kolom yang menampung lebih dari satu nilai. Kolom <code>mata_kuliah</code> yang berisi &ldquo;PWL, Basis Data, Mobile&rdquo; melanggar aturan ini, sehingga barisnya dipecah &mdash; Dimas menjadi tiga baris, masing-masing satu mata kuliah.</p>
 
                 <h4>2NF &mdash; setiap entitas punya kunci sendiri</h4>
-                <p>Aturan kedua: penuhi 1NF, lalu pastikan setiap kolom bergantung penuh pada satu <em>primary key</em>. Di tabel kita jelas ada dua hal berbeda yang tercampur: <strong>mahasiswa</strong> dan <strong>mata kuliah</strong>. Keduanya dipisah menjadi tabel sendiri-sendiri, masing-masing dengan <code>id</code>. Karena hubungan keduanya banyak-ke-banyak, muncul tabel ketiga sebagai penghubung &mdash; persis tabel <code>KRS</code> pada bagian 3.2.</p>
+                <p>Aturan kedua: penuhi 1NF, lalu pastikan setiap kolom bergantung penuh pada satu <em>primary key</em>. Di tabel kita jelas ada dua hal berbeda yang tercampur: <strong>mahasiswa</strong> dan <strong>mata kuliah</strong>. Keduanya dipisah menjadi tabel sendiri-sendiri, masing-masing dengan <code>id</code>. Karena hubungan keduanya banyak-ke-banyak, muncul tabel ketiga sebagai penghubung &mdash; persis tabel <code>Pendaftaran</code> pada bagian 6.2.</p>
 
                 <h4>3NF &mdash; buang ketergantungan berantai</h4>
                 <p>Aturan ketiga: penuhi 2NF, lalu buang kolom yang bergantung pada kolom <em>non-kunci</em> lain. Lihat <code>nama_dosen_wali</code>: ia sebenarnya tidak bergantung pada mahasiswa, melainkan pada <code>prodi</code> &mdash; <em>prodi menentukan dosen wali</em>. Rantai seperti ini (<code>mahasiswa &rarr; prodi &rarr; dosen_wali</code>) yang harus diputus, dengan memindahkan <code>nama_dosen_wali</code> ke tabel <code>Prodi</code>.</p>
@@ -660,170 +1255,38 @@ model Pendaftaran {
                 <div class="warning-box">
                     <strong>Prisma tidak menormalkan skema untuk kalian.</strong> ORM hanya menerjemahkan skema yang kalian tulis. Kalau <code>schema.prisma</code> berisi satu model raksasa dengan kolom <code>mataKuliah String</code> berisi daftar dipisah koma, Prisma akan membuat tabel itu apa adanya. Normalisasi adalah keputusan perancangan yang tetap ada di tangan kalian.
                 </div>
-
-Latihan pada Pertemuan 7 memakai pola eksplisit ini.
-                </div>
-            </section>
-
-            <section id="validasi">
-                <h2>4. Validasi Masukan Sebelum Disimpan <span class="badge">Indikator 4.4</span></h2>
-
-                <p>Validasi bentuk data (NIM 9 karakter, IPK 0&ndash;4, nama wajib ada) sudah dikerjakan oleh Joi di <a href="materi-05-middleware-error-terpusat.html#validasi">Pertemuan 5, Section 4</a> dan tetap berlaku setelah memakai database. Database menambah satu lapis pengaman lagi. Ketiganya punya tugas berbeda:</p>
-                <table>
-                    <tr><th>Lapis</th><th>Memeriksa</th><th>Contoh</th><th>Hasil bila gagal</th></tr>
-                    <tr><td>Joi (middleware)</td><td>Bentuk data</td><td>NIM bukan 9 karakter, IPK 9</td><td>422</td></tr>
-                    <tr><td>Service</td><td>Aturan bisnis</td><td>NIM sudah dipakai mahasiswa lain</td><td>409</td></tr>
-                    <tr><td>Database</td><td>Constraint tabel</td><td><code>UNIQUE</code> pada <code>nim</code></td><td>error Prisma</td></tr>
-                </table>
-
-                <h3>Mengapa Database Tetap Perlu Menjaga?</h3>
-                <p>Service sudah memeriksa NIM kembar sebelum menyimpan. Tetapi bayangkan dua permintaan dengan NIM yang sama tiba bersamaan: keduanya memeriksa, keduanya belum menemukan NIM itu, lalu keduanya menyimpan. Yang menyelamatkan data adalah <code>UNIQUE</code> di database: penyimpanan kedua ditolak. Prisma melaporkannya sebagai error dengan kode <code>P2002</code>:</p>
-<div class="terminal"><span class="out">code: P2002 | name: PrismaClientKnownRequestError</span></div>
-                <p>Kalau dibiarkan, error ini akan sampai ke <code>errorHandler</code> sebagai error tak dikenal dan dijawab <strong>500</strong>, padahal ini kesalahan klien (409). Tangkap dan terjemahkan di service:</p>
-<pre><code><span class="comment">// src/services/mahasiswa.service.js</span>
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
-    <span class="keyword">if</span> (<span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>)) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
-    }
-
-    <span class="keyword">try</span> {
-        <span class="keyword">return</span> <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
-    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
-        <span class="keyword">if</span> (<span class="variable">err</span>.<span class="variable">code</span> <span class="operator">===</span> <span class="string">'P2002'</span>) {   <span class="comment">// kode Prisma untuk pelanggaran UNIQUE</span>
-            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
-        }
-        <span class="keyword">throw</span> <span class="variable">err</span>;   <span class="comment">// error lain diteruskan ke errorHandler (Pertemuan 5)</span>
-    }
-}</code></pre>
-                <p>Prisma juga menolak tipe data yang salah, misalnya teks untuk kolom <code>Float</code>: <code>Argument `ipk`: Invalid value provided. Expected Float, provided String.</code> Karena Joi sudah menyaringnya lebih awal, error ini hampir tidak pernah sampai ke Prisma.</p>
-
-                <div class="info-box">
-                    <strong>Pembagian tanggung jawab:</strong> Joi memberi pesan yang ramah dan lengkap sebelum permintaan menyentuh database. Constraint database (<code>UNIQUE</code>, <code>NOT NULL</code>) adalah jaring pengaman terakhir, bukan satu-satunya validasi.
-                </div>
             </section>
 
             <section id="praktik">
-                <h2>5. Praktik: Menyambungkan API ke MySQL <span class="badge badge-new">Latihan</span></h2>
-
-                <p>Sekarang <code>api-mahasiswa</code> dari Pertemuan 5 kita sambungkan ke database, memakai langkah yang sudah dilatih di Section 2. Idenya: ganti lapis <code>data/mahasiswa.data.js</code> (array di memori) menjadi Prisma. Yang berubah dan tidak berubah:</p>
-                <table>
-                    <tr><th>File</th><th>Perubahan</th></tr>
-                    <tr><td><code>src/data/mahasiswa.data.js</code></td><td>Diganti: array menjadi query Prisma</td></tr>
-                    <tr><td><code>src/services/mahasiswa.service.js</code></td><td>Hanya menambah tiga <code>await</code></td></tr>
-                    <tr><td><code>.env</code>, <code>prisma.config.ts</code>, <code>prisma/schema.prisma</code>, <code>src/lib/prisma.js</code></td><td>Baru</td></tr>
-                    <tr><td>Controller, routes, middleware, validator, <code>index.js</code></td><td><strong>Tidak berubah</strong></td></tr>
-                </table>
-
-                <h3>Langkah 1 &mdash; Database kosong</h3>
-                <p>Di phpMyAdmin, buat database baru <code>api_mahasiswa</code> (collation <code>utf8mb4_unicode_ci</code>), tanpa tabel, persis seperti 2.2.</p>
-
-                <h3>Langkah 2 &mdash; Pasang Prisma di <code>api-mahasiswa</code></h3>
-<div class="terminal"><span class="prompt">$</span> cd api-mahasiswa
-<span class="prompt">$</span> npm install prisma@7 --save-dev
-<span class="prompt">$</span> npm install @prisma/client@7 @prisma/adapter-mariadb dotenv</div>
-                <ul>
-                    <li><code>.env</code>: <code>DATABASE_URL="mysql://root@localhost:3306/api_mahasiswa"</code> (sesuaikan user dan password seperti 2.3).</li>
-                    <li><code>prisma.config.ts</code>: isi sama persis dengan 2.3.</li>
-                    <li><code>prisma/schema.prisma</code>: isi sama persis dengan 2.4 (model <code>Mahasiswa</code>).</li>
-                    <li><code>.gitignore</code>: tambahkan baris <code>.env</code> dan <code>generated</code>.</li>
-                </ul>
-
-                <h3>Langkah 3 &mdash; Migrasi, client, dan data awal</h3>
-<div class="terminal"><span class="prompt">$</span> npx prisma migrate dev --name buat_tabel_mahasiswa
-<span class="prompt">$</span> npx prisma generate</div>
-                <p>Buka phpMyAdmin, pastikan tabel <code>mahasiswa</code> ada di database <code>api_mahasiswa</code>, lalu isi dengan perintah <code>INSERT</code> yang sama seperti di 2.6 (Andi, Budi, Citra).</p>
-
-                <h3>Langkah 4 &mdash; Koneksi Prisma</h3>
-<pre><code><span class="comment">// src/lib/prisma.js</span>
-<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
-<span class="keyword">import</span> { <span class="variable">PrismaMariaDb</span> } <span class="keyword">from</span> <span class="string">'@prisma/adapter-mariadb'</span>;
-<span class="keyword">import</span> { <span class="variable">PrismaClient</span> } <span class="keyword">from</span> <span class="string">'../../generated/prisma/client.ts'</span>;
-
-<span class="keyword">const</span> <span class="variable">adapter</span> = <span class="keyword">new</span> <span class="function">PrismaMariaDb</span>(<span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">DATABASE_URL</span>);
-
-<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">prisma</span> = <span class="keyword">new</span> <span class="function">PrismaClient</span>({ <span class="variable">adapter</span> });</code></pre>
-                <h3>Langkah 5 &mdash; Ganti lapis data (bukan service!)</h3>
-<pre><code><span class="comment">// src/data/mahasiswa.data.js — SEKARANG memakai Prisma</span>
-<span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
-
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">semua</span>() {
-    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findMany</span>();
-}
-
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
-    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span> } });
-}
-
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariByNim</span>(<span class="variable">nim</span>) {
-    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">nim</span> } });
-}
-
-<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>(<span class="variable">input</span>) {
-    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">mahasiswa</span>.<span class="function">create</span>({ <span class="variable">data</span>: <span class="variable">input</span> });
-}</code></pre>
-                <div class="info-box">
-                    <strong>Perhatikan:</strong> nama dan bentuk fungsi (<code>semua()</code>, <code>cariById()</code>, <code>cariByNim()</code>, <code>simpan()</code>) sama persis dengan versi array. Controller dan routes tidak tahu bahwa data kini berasal dari database. Inilah manfaat memisahkan lapis data sejak Pertemuan 5.
-                </div>
-
-                <h3>Langkah 6 &mdash; Tambahkan <code>await</code> di service</h3>
-                <p>Satu hal yang memang harus disesuaikan: Prisma selalu mengembalikan <em>promise</em>, sedangkan fungsi data versi array mengembalikan nilai langsung. Tanpa <code>await</code>, service bekerja dengan promise, bukan dengan datanya:</p>
-                <ul>
-                    <li><code>semua.filter(...)</code> gagal karena promise tidak punya <code>filter</code>: <code>GET /mahasiswa?semester=4</code> menjawab 500.</li>
-                    <li><code>if (data.cariByNim(...))</code> selalu benar karena promise adalah objek: setiap POST dianggap NIM kembar.</li>
-                </ul>
-<pre><code><span class="comment">// src/services/mahasiswa.service.js</span>
-<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/mahasiswa.data.js'</span>;
-<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">daftarMahasiswa</span>({ <span class="variable">semester</span> }) {
-    <span class="keyword">const</span> <span class="variable">semua</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">semua</span>();                       <span class="comment">// ← await</span>
-    <span class="keyword">return</span> <span class="variable">semester</span>
-        ? <span class="variable">semua</span>.<span class="function">filter</span>(<span class="variable">m</span> <span class="operator">=&gt;</span> <span class="variable">m</span>.<span class="variable">semester</span> <span class="operator">===</span> <span class="function">Number</span>(<span class="variable">semester</span>))
-        : <span class="variable">semua</span>;
-}
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">detailMahasiswa</span>(<span class="variable">id</span>) {
-    <span class="keyword">const</span> <span class="variable">m</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariById</span>(<span class="function">Number</span>(<span class="variable">id</span>));              <span class="comment">// ← await</span>
-    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">m</span>) {
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">404</span>, <span class="string">'Mahasiswa tidak ditemukan'</span>, <span class="string">'NOT_FOUND'</span>);
-    }
-    <span class="keyword">return</span> <span class="variable">m</span>;
-}
-
-<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">buatMahasiswa</span>(<span class="variable">input</span>) {
-    <span class="keyword">if</span> (<span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByNim</span>(<span class="variable">input</span>.<span class="variable">nim</span>)) {                  <span class="comment">// ← await</span>
-        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">`NIM ${input.nim} sudah terdaftar`</span>, <span class="string">'NIM_DUPLIKAT'</span>);
-    }
-    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">simpan</span>(<span class="variable">input</span>);
-}</code></pre>
-                <h3>Langkah 7 &mdash; Uji</h3>
-                <p>Jalankan <code>npm run dev</code>, lalu ulangi seluruh permintaan di <code>requests.http</code> dari Pertemuan 5 (atau Postman). Hasil yang diharapkan:</p>
-                <table>
-                    <tr><th>Permintaan</th><th>Hasil</th></tr>
-                    <tr><td><code>GET /mahasiswa?semester=4</code></td><td>200, hanya Citra</td></tr>
-                    <tr><td><code>GET /mahasiswa/99</code></td><td>404 <code>NOT_FOUND</code></td></tr>
-                    <tr><td><code>POST /mahasiswa</code> dengan NIM baru + <code>x-api-key</code></td><td>201</td></tr>
-                    <tr><td><code>POST /mahasiswa</code> dengan NIM yang sudah ada</td><td>409 <code>NIM_DUPLIKAT</code></td></tr>
-                </table>
-                <p>Lalu dua pembuktian: (1) matikan dan nyalakan ulang server, <code>GET /mahasiswa</code> masih menampilkan mahasiswa yang baru ditambah; (2) buka phpMyAdmin, mahasiswa itu ada di tabel <code>mahasiswa</code>.</p>
-                <div class="info-box">
-                    Kolom <code>createdAt</code> untuk baris yang ditambah lewat API bisa berselisih beberapa jam dengan baris yang diisi lewat phpMyAdmin. Prisma menyimpan waktu dalam UTC, sedangkan <code>CURRENT_TIMESTAMP</code> di MySQL mengikuti zona waktu server MySQL. Ini wajar dan belum perlu dikhawatirkan sekarang.
-                </div>
+                <h2>7. Latihan Mandiri <span class="badge badge-new">Latihan</span></h2>
 
                 <div class="success-box">
-                    <strong>Selesai kalau:</strong> semua permintaan memberi hasil seperti tabel di atas, data bertahan setelah restart, dan kalian bisa menunjukkan datanya di phpMyAdmin.
+                    <strong>Selesai kalau:</strong> <code>api-mahasiswa</code> tersambung ke MySQL lewat Prisma dengan CRUD lengkap (GET daftar, GET detail, POST, PUT, DELETE); data bertahan setelah restart dan terlihat di phpMyAdmin; folder <code>prisma/migrations</code> berisi migrasi tabel dan kolom <code>email</code>; dan <code>requests.http</code> memuat kasus berhasil serta gagal untuk setiap endpoint.
                 </div>
 
-                <h3>Latihan Mandiri</h3>
+                <h3>Latihan</h3>
                 <ol>
-                    <li>Tambahkan model <code>Nilai</code> dengan relasi satu-ke-banyak ke <code>Mahasiswa</code> (Section 3.1), lalu jalankan migrasi baru.</li>
-                    <li>Tambahkan endpoint <code>GET /mahasiswa/:id/nilai</code> yang mengembalikan mahasiswa beserta seluruh nilainya (pakai <code>include</code>).</li>
-                    <li>Sementara matikan pemeriksaan <code>cariByNim</code> di service, kirim NIM kembar, lalu pastikan error <code>P2002</code> tetap menjadi 409 (Section 4). Kembalikan pemeriksaannya.</li>
-                    <li>Ubah IPK seorang mahasiswa langsung di phpMyAdmin, lalu buktikan perubahannya muncul lewat <code>GET /mahasiswa/:id</code>.</li>
+                    <li><strong>Email lewat API.</strong> Kolom <code>email</code> sudah ada di database, tetapi API belum menerimanya. Tambahkan field <code>email</code> (opsional, harus berbentuk email) ke skema Joi, lalu buktikan POST dan PUT bisa menyimpannya dan GET menampilkannya. Tambahkan permintaan ujinya, termasuk email yang tidak valid, ke <code>requests.http</code>.</li>
+                    <li><strong>Kolom baru lewat migrasi.</strong> Tambahkan kolom <code>angkatan</code> (bilangan bulat, boleh kosong) lewat jalur yang benar: edit skema, <code>migrate dev</code>, <code>generate</code>. Buka file <code>migration.sql</code> yang dihasilkan dan jelaskan satu baris SQL di dalamnya.</li>
+                    <li><strong>Model relasi.</strong> Tambahkan model <code>Nilai</code> dengan relasi satu-ke-banyak ke <code>Mahasiswa</code> (Section 6.1), lalu jalankan migrasi baru.</li>
+                    <li><strong>Mahasiswa beserta nilai.</strong> Tambahkan endpoint <code>GET /mahasiswa/:id/nilai</code> yang mengembalikan mahasiswa beserta seluruh nilainya (pakai <code>include</code>). Isi beberapa nilai lewat phpMyAdmin untuk mengujinya.</li>
+                    <li><strong>Normalisasi.</strong> Seorang teman membuat tabel <code>krs</code> dengan kolom <code>nim</code>, <code>nama_mahasiswa</code>, <code>kode_mk</code>, <code>nama_mk</code>, <code>sks</code>, <code>nama_dosen</code>. Tunjukkan bagian mana yang melanggar 1NF, 2NF, atau 3NF, lalu gambarkan tabel hasil pemecahannya.</li>
                 </ol>
 
                 <div class="info-box">
-                    <strong>Menuju Pertemuan 7:</strong> pertemuan berikutnya menambahkan relasi banyak-ke-banyak sungguhan (pendaftaran mahasiswa ke kelas), kueri lanjutan (paginasi, filter, urut), dan transaksi, supaya operasi yang menyentuh lebih dari satu tabel aman dari kegagalan sebagian.
+                    <strong>Menuju Pertemuan 7:</strong> pertemuan berikutnya melanjutkan <code>api-mahasiswa</code> dari titik ini. Ia mengharapkan tabel <code>mahasiswa</code> berisi <strong>tepat tiga baris</strong> (Andi, Budi, Citra dengan <code>id</code> 1 sampai 3), lalu menambah relasi banyak-ke-banyak sungguhan (pendaftaran mahasiswa ke kelas), kueri lanjutan (paginasi, filter, urut), dan transaksi. Kalau ada baris tambahan dari percobaan kalian, bersihkan dulu di phpMyAdmin (tab <strong>SQL</strong>):
+<pre><code><span class="keyword">TRUNCATE</span> <span class="keyword">TABLE</span> mahasiswa;
+<span class="keyword">INSERT</span> <span class="keyword">INTO</span> mahasiswa (nim, nama, ipk, semester) <span class="keyword">VALUES</span>
+(<span class="string">'F1D021001'</span>, <span class="string">'Andi'</span>,  <span class="number">3.75</span>, <span class="number">6</span>),
+(<span class="string">'F1D021002'</span>, <span class="string">'Budi'</span>,  <span class="number">3.20</span>, <span class="number">6</span>),
+(<span class="string">'F1D021003'</span>, <span class="string">'Citra'</span>, <span class="number">3.90</span>, <span class="number">4</span>);</code></pre>
+                    <code>TRUNCATE</code> mengosongkan tabel <em>dan</em> mengembalikan penomoran <code>id</code> ke 1, hal yang tidak dilakukan <code>DELETE</code> (ingat &ldquo;lubang&rdquo; di 1.4).
+                </div>
+                <div class="warning-box">
+                    <strong>Kalau kalian mengerjakan Latihan 3 (tabel <code>Nilai</code>):</strong> MySQL menolak <code>TRUNCATE</code> dengan error <code>Cannot truncate a table referenced in a foreign key constraint</code>, karena tabel <code>mahasiswa</code> kini dirujuk tabel lain. Pakai cara ini sebagai gantinya (kosongkan tabel anak lebih dulu, lalu hapus baris selebihnya dan atur ulang penomoran):
+<pre><code><span class="keyword">DELETE</span> <span class="keyword">FROM</span> Nilai;
+<span class="keyword">DELETE</span> <span class="keyword">FROM</span> mahasiswa <span class="keyword">WHERE</span> id &gt; <span class="number">3</span>;
+<span class="keyword">ALTER</span> <span class="keyword">TABLE</span> mahasiswa <span class="keyword">AUTO_INCREMENT</span> = <span class="number">4</span>;</code></pre>
                 </div>
             </section>
 
@@ -834,29 +1297,33 @@ Latihan pada Pertemuan 7 memakai pola eksplisit ini.
 
                 <table>
                     <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
-                    <tr><td>4.1</td><td>Merancang skema basis data sesuai kebutuhan aplikasi</td><td>Section 2</td></tr>
-                    <tr><td>4.2</td><td>Menulis dan menjalankan migrasi serta menjelaskan kelebihan migrasi dibanding mengubah tabel manual</td><td>Section 2</td></tr>
-                    <tr><td>4.3</td><td>Memodelkan relasi satu-ke-banyak dan banyak-ke-banyak</td><td>Section 3</td></tr>
-                    <tr><td>4.4</td><td>Memvalidasi masukan sebelum data disimpan</td><td>Section 4</td></tr>
+                    <tr><td>4.1</td><td>Merancang skema basis data sesuai kebutuhan aplikasi</td><td>Section 1 dan 3</td></tr>
+                    <tr><td>4.2</td><td>Menulis dan menjalankan migrasi serta menjelaskan kelebihan migrasi dibanding mengubah tabel manual</td><td>Section 5</td></tr>
+                    <tr><td>4.3</td><td>Memodelkan relasi satu-ke-banyak dan banyak-ke-banyak</td><td>Section 6</td></tr>
+                    <tr><td>4.4</td><td>Memvalidasi masukan sebelum data disimpan</td><td>Section 2.5, 3.7, dan 4</td></tr>
                 </table>
 
                 <h3>Daftar Periksa Akhir Pertemuan</h3>
                 <div class="info-box">
                     <ul>
-                        <li>Prisma terpasang, <code>schema.prisma</code> berisi minimal satu model dengan migrasi yang berhasil dijalankan</li>
-                        <li>Bisa menjelaskan kelebihan migrasi, dan alternatifnya (membuat tabel di phpMyAdmin lalu <code>prisma db pull</code>)</li>
-                        <li>Bisa memodelkan relasi 1&ndash;N dengan benar (foreign key, <code>@relation</code>)</li>
-                        <li>API mahasiswa dari Pertemuan 5 sudah tersambung ke MySQL sungguhan, data bertahan setelah restart dan terlihat di phpMyAdmin</li>
+                        <li>Bisa membuat database dan tabel di phpMyAdmin, dan menjalankan <code>INSERT</code>, <code>SELECT</code>, <code>UPDATE</code>, <code>DELETE</code> dengan <code>WHERE</code></li>
+                        <li>Bisa menjelaskan SQL injection dan mengapa nilai dikirim lewat <code>?</code> atau lewat ORM, bukan digabung ke teks SQL</li>
+                        <li>Prisma terpasang, <code>schema.prisma</code> berisi model dari tabel kita, dan <code>api-mahasiswa</code> memakai Prisma untuk CRUD lengkap</li>
+                        <li>Bisa menjelaskan kelebihan migrasi dibanding mengubah tabel manual, dan sudah menjalankan minimal dua migrasi</li>
+                        <li>Bisa memodelkan relasi 1&ndash;N dengan benar (foreign key, <code>@relation</code>) dan menunjukkan pelanggaran 1NF, 2NF, 3NF</li>
+                        <li>Tabel <code>mahasiswa</code> berisi tiga baris dan siap dipakai Pertemuan 7</li>
                     </ul>
                 </div>
 
-                <h3>&#128218; Referensi</h3>
+                <h3><i class="fa-solid fa-book"></i> Referensi</h3>
                 <ul>
                     <li><a href="https://www.prisma.io/docs/orm/prisma-schema" target="_blank">Prisma &mdash; Schema Reference</a> [5]</li>
                     <li><a href="https://www.prisma.io/docs/orm/prisma-migrate" target="_blank">Prisma &mdash; Migrate</a> [5]</li>
+                    <li><a href="https://github.com/sidorares/node-mysql2" target="_blank">mysql2 &mdash; driver MySQL untuk Node.js</a></li>
                     <li><a href="https://dev.mysql.com/doc/refman/9.4/en/" target="_blank">MySQL Reference Manual</a></li>
                 </ul>
             </section>
+
 
         </main>
     </div>
@@ -869,10 +1336,10 @@ Latihan pada Pertemuan 7 memakai pola eksplisit ini.
     <script>
         function demoSqli(mode) {
             var out = {
-                normal: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : Andi\n\nSQL yang dijalankan:\nSELECT * FROM mahasiswa WHERE nama = \'Andi\'\n\nHasil (1 baris):\n[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75}]\n\n→ Sesuai harapan.',
-                serang: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : \' OR \'1\'=\'1\n\nSQL yang dijalankan:\nSELECT * FROM mahasiswa WHERE nama = \'\' OR \'1\'=\'1\'\n\nHasil (3 baris):\n[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75},\n {"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2},\n {"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9}]\n\n→ ❌ Semua data bocor. Kutip pertama menutup string, \'1\'=\'1\' selalu benar.',
-                drop: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : x\'; DROP TABLE mahasiswa; --\n\nSQL yang dijalankan:\nSELECT * FROM mahasiswa WHERE nama = \'x\'; DROP TABLE mahasiswa; --\'\n\nSetelah itu, SELECT * FROM mahasiswa:\nno such table: mahasiswa\n\n→ ❌ Tabel terhapus (pada driver yang mengizinkan banyak perintah sekaligus).',
-                aman: 'Kode aman  : WHERE nama = ?   (nilai dikirim terpisah)\nInput nama : \' OR \'1\'=\'1\n\nSQL yang dijalankan:\nSELECT * FROM mahasiswa WHERE nama = ?\nparameter: "\' OR \'1\'=\'1"\n\nHasil (0 baris):\n[]\n\n→ ✅ Input hanya dianggap sebuah nama yang tidak ada. Prisma bekerja dengan cara ini.'
+                normal: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : Andi\n\nSQL yang dijalankan:\nSELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = \'Andi\'\n\nHasil (1 baris):\n[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75}]\n\n→ Sesuai harapan.',
+                serang: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : \' OR \'1\'=\'1\n\nSQL yang dijalankan:\nSELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = \'\' OR \'1\'=\'1\'\n\nHasil (4 baris):\n[{"id":1,"nim":"F1D021001","nama":"Andi","ipk":3.75},\n {"id":2,"nim":"F1D021002","nama":"Budi","ipk":3.2},\n {"id":3,"nim":"F1D021003","nama":"Citra","ipk":3.9},\n {"id":5,"nim":"F1D021004","nama":"Dewi","ipk":0}]\n\n→ BAHAYA: semua data bocor. Kutip pertama menutup string, \'1\'=\'1\' selalu benar.',
+                drop: 'Kode rentan: WHERE nama = \'${nama}\'\nInput nama : x\'; DROP TABLE mahasiswa; #\n\nSQL yang dijalankan:\nSELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = \'x\'; DROP TABLE mahasiswa; #\'\n\nDengan mysql2 bawaan:\nError: ER_PARSE_ERROR  (beberapa perintah sekaligus ditolak)\n\nDengan multipleStatements: true:\nperintah DROP TABLE ikut dijalankan, tabel hilang.\n\n→ Selamat hanya karena pengaman bawaan driver. Jangan bergantung pada itu.',
+                aman: 'Kode aman  : WHERE nama = ?   (nilai dikirim terpisah)\nInput nama : \' OR \'1\'=\'1\n\nSQL yang dijalankan:\nSELECT id, nim, nama, ipk FROM mahasiswa WHERE nama = ?\nparameter: "\' OR \'1\'=\'1"\n\nHasil (0 baris):\n[]\n\n→ AMAN: input hanya dianggap sebuah nama yang tidak ada. Prisma bekerja dengan cara ini.'
             };
             document.getElementById('demo-sqli-out').textContent = out[mode];
         }
@@ -888,7 +1355,7 @@ Latihan pada Pertemuan 7 memakai pola eksplisit ini.
 
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
-            showSection('orm-padanan');
+            showSection('tabel-manual');
             document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
                 link.addEventListener('click', function(e) {
                     e.preventDefault();
