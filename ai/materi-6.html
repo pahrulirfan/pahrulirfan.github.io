@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Materi 6 — Penalaran dalam Ketidakpastian: Certainty Factor, Peluang &amp; Teorema Bayes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css?v=20260927a">
+    <style>
+        /* ---- Inline styles khusus materi-6 ---- */
+
+        /* daftar isi kecil di dalam satu bagian (tidak menambah menu sidebar) */
+        .mini-toc {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px;
+            background: #f5f8ff; border: 1px solid #d6e2f3; border-radius: 10px;
+            padding: 8px 12px; margin: 0 0 18px; font-size: 0.86em;
+        }
+        .mini-toc > span { font-weight: 700; color: #1a2a4a; margin-right: 4px; }
+        .mini-toc button {
+            background: #fff; border: 1px solid #b0c4de; border-radius: 14px;
+            padding: 3px 11px; font: inherit; font-size: 0.95em; color: #1565c0; cursor: pointer;
+        }
+        .mini-toc button:hover { background: #e3f2fd; }
+
+        /* aturan IF-THEN */
+        .rule-box {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: #fff; border: 1px solid #d6e2f3; border-left: 4px solid #1565c0;
+            border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 14px 0;
+            line-height: 1.9; font-size: 0.95em; color: #1a2a4a;
+        }
+        .rule-box .kw { color: #1565c0; font-weight: 700; }
+        .rule-box .ind { display: block; padding-left: 2em; }
+        .rule-box small { font-family: 'Segoe UI', sans-serif; color: #607d8b; }
+
+        /* peta mata kuliah */
+        .peta { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 14px 0; }
+        .peta div { background: #fff; border: 1px solid #d6e2f3; border-radius: 8px; padding: 8px 10px; font-size: 0.84em; color: #546e7a; }
+        .peta div b { display: block; color: #1a2a4a; font-size: 0.95em; }
+        .peta div.now { background: #fff3e0; border-color: #e65100; color: #7a3300; }
+        .peta div.now b { color: #bf360c; }
+        .peta div.gap { opacity: 0.55; border-style: dashed; }
+
+        /* diagram alur dari kotak */
+        .flow-row { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: center; gap: 8px; margin: 14px 0; }
+        .flow-box {
+            flex: 1 1 150px; max-width: 235px; background: #fff; border: 1.5px solid #b0c4de;
+            border-radius: 10px; padding: 10px 12px; text-align: center; font-size: 0.88em;
+        }
+        .flow-box b { display: block; color: #1a2a4a; margin-bottom: 3px; }
+        .flow-box small { color: #607d8b; display: block; line-height: 1.4; }
+        .flow-box.hl { border-color: #2e7d32; background: #f1f8f1; }
+        .flow-box.or { border-color: #e65100; background: #fff8f0; }
+        .flow-box.pu { border-color: #6a1b9a; background: #faf4fc; }
+        .flow-arrow { align-self: center; font-size: 1.4em; color: #1565c0; font-weight: 700; }
+
+        /* percakapan */
+        .dlg { display: flex; flex-direction: column; gap: 7px; margin: 14px 0; }
+        .dlg > div { max-width: 86%; padding: 8px 12px; border-radius: 12px; font-size: 0.92em; line-height: 1.5; }
+        .dlg .a { align-self: flex-start; background: #e3f2fd; border-bottom-left-radius: 3px; }
+        .dlg .b { align-self: flex-end; background: #e8f5e9; border-bottom-right-radius: 3px; }
+        .dlg small { display: block; font-weight: 700; color: #546e7a; margin-bottom: 2px; }
+
+        /* dua kolom perbandingan */
+        .compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 15px 0; }
+        .compare-col { background: #fff; border-radius: 10px; padding: 16px 18px; box-shadow: 0 2px 10px rgba(0,0,0,0.09); }
+        .compare-col.fw { border-top: 4px solid #2e7d32; }
+        .compare-col.bw { border-top: 4px solid #e65100; }
+        .compare-col h4 { margin-bottom: 8px; }
+        .compare-col ul { margin: 0 0 0 18px; font-size: 0.92em; }
+        .compare-col li { margin-bottom: 4px; }
+
+        /* diagram SVG statis */
+        .fig { background: #fff; border: 1px solid #e3e8f0; border-radius: 10px; padding: 8px; margin: 14px 0; overflow-x: auto; }
+        .fig svg { display: block; width: 100%; height: auto; min-width: 520px; }
+        .fig figcaption { font-size: 0.82em; color: #607d8b; padding: 4px 6px 0; }
+        .fig.fig-sm svg { min-width: 0; max-width: 460px; margin: 0 auto; }
+        .fig.fig-sm .vn-t { font-size: 12px; }
+        .fig.fig-sm .vn-i { font-size: 11.5px; }
+        .fig.fig-sm .vn-c { font-size: 12px; }
+        .fig text { font-family: 'Segoe UI', Tahoma, sans-serif; }
+        .vn-t { font-size: 13px; font-weight: 700; }
+        .vn-i { font-size: 12px; fill: #37474f; }
+        .vn-c { font-size: 12.5px; font-weight: 700; fill: #4a148c; }
+
+        /* tabel kecil */
+        .tbl-wrap { overflow-x: auto; margin: 12px 0; }
+        .tbl-wrap table { margin: 0; }
+        .small-table { font-size: 0.88em; }
+        .small-table td:first-child { font-weight: 700; color: #1a2a4a; }
+
+        /* peringatan pada antarmuka sistem pakar */
+        .ui-mock {
+            border: 2px solid #f9a825; background: #fffde7; border-radius: 10px;
+            padding: 12px 16px; margin: 14px 0; font-size: 0.92em;
+        }
+        .ui-mock strong { color: #7a4f00; }
+        .ui-mock ul { margin: 6px 0 0 18px; }
+
+        /* kunci jawaban latihan */
+        details.kunci {
+            margin-top: 10px; background: #fff; border: 1px solid #d6e2f3;
+            border-radius: 8px; padding: 8px 12px;
+        }
+        details.kunci summary { cursor: pointer; font-weight: 600; color: #1565c0; }
+        details.kunci[open] summary { margin-bottom: 6px; }
+        details.kunci ul, details.kunci ol { margin: 0 0 0 18px; font-size: 0.92em; }
+        details.kunci p { font-size: 0.92em; margin: 4px 0; text-align: left; }
+
+        /* blok kode yang bisa disalin (pre[data-copy]) */
+        .code-wrap { margin: 15px 0; }
+        .code-head {
+            display: flex; justify-content: space-between; align-items: center; gap: 10px;
+            background: #10203d; color: #cfd8dc; padding: 7px 10px 7px 16px;
+            border-radius: 8px 8px 0 0; font-family: 'Consolas', 'Monaco', monospace; font-size: 0.85em;
+        }
+        .code-head .fa-python { color: #ffd54f; margin-right: 6px; }
+        .code-head .fa-file-code { color: #81d4fa; margin-right: 6px; }
+        .code-wrap pre { margin: 0; border-radius: 0 0 8px 8px; }
+        .copy-btn {
+            display: inline-flex; align-items: center; gap: 6px; background: #1565c0; color: #fff;
+            border: 0; border-radius: 6px; padding: 5px 12px; font-family: 'Segoe UI', sans-serif;
+            font-size: 0.95em; font-weight: 600; cursor: pointer;
+        }
+        .copy-btn:hover { background: #0d47a1; }
+        .copy-btn.done { background: #2e7d32; }
+
+        /* ---- Keterbacaan: huruf lebih besar (lebar kolom baca tetap seperti materi lain) ---- */
+        .content { font-size: 1.125rem; line-height: 1.75; }
+        .content section p { margin-bottom: 1.1em; }
+        .content section li { margin: 0.55em 0; }
+        .content section h3 {
+            margin-top: 2.2em; padding-top: 0.7em; border-top: 1px solid #dde6f1;
+        }
+        .content section .mini-toc + h3,
+        .content section h2 + h3 { margin-top: 1.4em; border-top: 0; padding-top: 0; }
+        .content section h4 { margin-top: 1.6em; }
+        .mini-toc { font-size: 0.8em; }
+
+        @media (max-width: 700px) {
+            .compare-cols { grid-template-columns: 1fr; }
+            .dlg > div { max-width: 96%; }
+        }
+        @media (max-width: 700px) {
+            .content { font-size: 1.04rem; }
+        }
+
+        /* ---- Tambahan khusus materi-6 ---- */
+
+        /* rumus */
+        .rumus {
+            background: #fff; border: 1px solid #d6e2f3; border-left: 4px solid #1565c0;
+            border-radius: 0 8px 8px 0; padding: 10px 16px; margin: 14px 0; overflow-x: auto;
+            font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif;
+            font-size: 1.12em; line-height: 2.1; color: #1a2a4a;
+        }
+        .rumus .baris { display: block; margin: 2px 0; }
+        .rumus .ket { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 0.74em; color: #607d8b; font-style: normal; margin-left: 14px; }
+        .rumus .frac { display: inline-flex; flex-direction: column; align-items: center; vertical-align: middle; margin: 0 0.3em; line-height: 1.4; }
+        .rumus .frac > span:first-child { border-bottom: 1.5px solid #1a2a4a; padding: 0 0.35em 2px; text-align: center; }
+        .rumus .frac > span:last-child { padding: 2px 0.35em 0; text-align: center; }
+        .rumus.merah { border-left-color: #c62828; }
+        .rumus.hijau { border-left-color: #2e7d32; }
+        .rumus.oranye { border-left-color: #e65100; }
+
+        /* skala istilah (SVG statis) */
+        .fig .sk-j { font: 700 14px 'Segoe UI', sans-serif; fill: #1a2a4a; }
+        .fig .sk-s { font: 600 11px 'Segoe UI', sans-serif; fill: #607d8b; }
+        .fig .sk-ax { stroke: #37474f; stroke-width: 2; }
+        .fig .sk-t { stroke: #37474f; stroke-width: 1; }
+        .fig .sk-n { font: 600 11px 'Segoe UI', sans-serif; fill: #455a64; }
+        .fig .sk-d { stroke: #1565c0; stroke-width: 1.5; stroke-dasharray: 5 4; }
+        .fig .sk-l { font: 600 12.5px 'Segoe UI', sans-serif; fill: #1a2a4a; }
+        .fig .sk-v { fill: #607d8b; font-weight: 400; }
+        .fig .sk-u { fill: #eceff1; stroke: #90a4ae; }
+        .fig .sk-lu { fill: #607d8b; font-style: italic; font-weight: 400; }
+
+        /* dua pesan antarmuka: buruk dan baik */
+        .ui-banding { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+        .ui-banding > div { border-radius: 10px; padding: 12px 16px; font-size: 0.92em; }
+        .ui-banding .buruk { background: #fce4ec; border: 1.5px solid #ef9a9a; }
+        .ui-banding .baik { background: #e8f5e9; border: 1.5px solid #81c784; }
+        .ui-banding b.t { display: block; margin-bottom: 4px; }
+        @media (max-width: 700px) { .ui-banding { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Kecerdasan Buatan — Pertemuan 11</h1>
+        <p>Sub-CPMK6 · Penalaran dalam Ketidakpastian: Certainty Factor, Peluang &amp; Teorema Bayes</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#cpmk" class="active">0. Capaian &amp; Peta</a></li>
+                <li><a href="#cf">1. Ketidakpastian &amp; Certainty Factor</a></li>
+                <li><a href="#peluang">2. Peluang &amp; Teorema Bayes</a></li>
+                <li><a href="#bayes">3. Penalaran Bayes &amp; Jaringan Bayes</a></li>
+                <li><a href="#batas">4. Batas, Perbandingan &amp; CF pada Basis Aturan</a></li>
+                <li><a href="#latihan">5. Latihan &amp; Rangkuman</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <!-- ============================================================ -->
+            <!-- 0. CPMK -->
+            <!-- ============================================================ -->
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran <span class="badge">Sub-CPMK6</span></h2>
+                <div class="success-box">
+                    <strong>Kemampuan Akhir yang Diharapkan:</strong>
+                    <p style="margin-top:8px;">Mahasiswa mampu <strong>menalar dalam kondisi tidak pasti</strong> menggunakan <strong>probabilitas, teorema Bayes, dan faktor kepastian (certainty factor)</strong>, serta menjelaskan <strong>asumsi dan keterbatasan</strong> setiap pendekatan tersebut. <em>(C3/C4)</em></p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-circle-half-stroke"></i></div>
+                        <h4>6.1 Dua Jenis Ketidakpastian</h4>
+                        <p>Membedakan informasi yang belum lengkap dari batas kategori yang tidak tegas.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+                        <h4>6.2 Memutakhirkan Keyakinan</h4>
+                        <p>Menerapkan teorema Bayes: peluang awal diperbarui oleh bukti.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-link-slash"></i></div>
+                        <h4>6.3 Kebebasan Bersyarat</h4>
+                        <p>Menjelaskan asumsi bukti saling bebas dan akibatnya bila dilanggar.</p>
+                    </div>
+                    <div class="card card-purple">
+                        <div class="card-icon"><i class="fa-solid fa-calculator"></i></div>
+                        <h4>6.4 Menghitung CF</h4>
+                        <p>Menghitung dan menggabungkan CF pada aturan berantai.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-scroll"></i></div>
+                        <h4>6.5 CF pada Basis Aturan</h4>
+                        <p>Menambahkan derajat keyakinan pada basis aturan pertemuan 9–10.</p>
+                    </div>
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                        <h4>6.6 Keterbatasan CF</h4>
+                        <p>Menjelaskan mengapa CF tidak berdasar probabilitas yang ketat.</p>
+                    </div>
+                </div>
+
+                <h3>Peta: Kita di Mana?</h3>
+                <p>Pada pertemuan 9–10, aturan pakar dianggap <em>benar atau salah</em>: IF dolar naik THEN suku bunga turun. Pertemuan ini menambahkan satu hal pada aturan yang sama: <strong>seberapa yakin</strong> kita pada aturan itu dan pada faktanya.</p>
+                <div class="peta">
+                    <div><b>Minggu 1–7</b>Agen, pencarian, minimax</div>
+                    <div><b>Minggu 9–10</b>Sistem pakar berbasis aturan (basis aturan RTM III)</div>
+                    <div class="now"><b>Minggu 11 — di sini</b>Aturan diberi derajat keyakinan: CF dan Bayes</div>
+                    <div><b>Minggu 12–13</b>Logika fuzzy (batas kategori yang kabur)</div>
+                    <div class="gap"><b>Minggu 14–15</b>Optimasi: GA dan PSO</div>
+                </div>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-circle-info"></i> Cara memakai halaman ini:</strong>
+                    <p style="margin-top:6px;">Urutan bagian mengikuti slide <em>Metode untuk Ketidakpastian</em>: certainty factor dahulu (Bagian 1), kemudian dasar peluang dan teorema Bayes (Bagian 2), penalaran Bayes dan jaringan Bayes (Bagian 3). Bagian 4 melengkapi dengan hal yang diminta RPS tetapi tidak ada di slide: perbedaan dua jenis ketidakpastian, asumsi kebebasan bersyarat, perbandingan CF dengan Bayes, dan memasang CF pada basis aturan Anda. Hampir setiap rumus punya simulasi; ubah angkanya dan amati apa yang berubah.</p>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Koreksi terhadap slide 2022:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>Hasil gabungan CF 0,6 dan −0,3 adalah 0,4286, dibulatkan <strong>0,43</strong> (slide menulis 0,42 karena dipotong, bukan dibulatkan). Posterior Bayes juga dibulatkan, bukan dipotong.</li>
+                        <li>Slide menyamakan “independen” dengan “saling lepas”. Keduanya <strong>berbeda</strong> (Bagian 2).</li>
+                        <li>Baris terakhir tabel peluang rumput basah pada slide jaringan Bayes tertulis T = 1,0 dan F = 0,0; yang benar <strong>T = 0,0 dan F = 1,0</strong> (Bagian 3).</li>
+                        <li>Rumus MB dan MD pada slide ditulis tanpa <em>max</em> dan <em>min</em>; di sini dipakai bentuk bakunya (Bagian 1).</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 1. Ketidakpastian & Certainty Factor -->
+            <!-- ============================================================ -->
+            <section id="cf">
+                <h2>1. Ketidakpastian &amp; Certainty Factor <span class="badge">Inti</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="u-sumber">Sumber ketidakpastian</button>
+                    <button type="button" data-goto="cf-beda">CF atau fuzzy?</button>
+                    <button type="button" data-goto="cf-apa">Apa itu CF</button>
+                    <button type="button" data-goto="cf-skala">Kata ke angka</button>
+                    <button type="button" data-goto="cf-hitung">MB, MD, CF</button>
+                    <button type="button" data-goto="cf-gabung">Menggabungkan</button>
+                    <button type="button" data-goto="cf-rantai">Rantai aturan</button>
+                    <button type="button" data-goto="cf-andor">AND dan OR</button>
+                    <button type="button" data-goto="cf-flu">Contoh lengkap</button>
+                </nav>
+
+                <h3 id="u-sumber">Mengapa Aturan Pakar Tidak Selalu Pasti</h3>
+                <p>Aturan pada pertemuan sebelumnya berbentuk tegas: <code>IF dolar naik THEN suku bunga turun</code>. Pakar sungguhan jarang bicara setegas itu. Mereka bilang “<em>biasanya</em> suku bunga turun”, “<em>kemungkinan besar</em> hama wereng”, “<em>hampir pasti</em> penyebabnya busi”. Kalau sistem pakar memperlakukan semua aturan sebagai kepastian, ia akan memberi kesimpulan yang tampak yakin padahal tidak seyakin itu.</p>
+                <p>Ada empat sumber ketidakpastian pada sistem cerdas:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Sumber</th><th>Contoh</th><th>Akibat pada aturan</th></tr></thead>
+                        <tbody>
+                            <tr><td>Informasi tidak lengkap</td><td>Sensor kelembapan rusak; petani tidak tahu varietas padinya</td><td>Premis tidak dapat dipastikan benar atau salah</td></tr>
+                            <tr><td>Data tidak akurat</td><td>Pengukuran yang mengandung error; jawaban user “sepertinya iya”</td><td>Premis benar hanya “sampai tingkat tertentu”</td></tr>
+                            <tr><td>Pengetahuan pakar berupa kecenderungan</td><td>“Daun menguning biasanya kelebihan air”</td><td>Aturan benar <em>pada umumnya</em>, bukan selalu</td></tr>
+                            <tr><td>Aturan punya pengecualian</td><td>“Dolar naik, suku bunga turun”, kecuali pada krisis</td><td>Kesimpulan bisa meleset walau premis terpenuhi</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Ketidakpastian bukan cacat yang harus disembunyikan. Yang berbahaya adalah sistem yang <em>menyembunyikannya</em>. Karena itu sistem perlu cara untuk <strong>mewakili</strong> derajat keyakinan, <strong>menghitungnya</strong> sepanjang rantai penalaran, dan <strong>menyampaikannya</strong> kepada user (Bagian 4).</p>
+
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>Certainty factor (CF)</b><small>Satu angka −1 sampai 1 per aturan dan fakta. Heuristik dari pakar. Bagian 1.</small></div>
+                    <div class="flow-arrow">+</div>
+                    <div class="flow-box or"><b>Peluang dan Bayes</b><small>Peluang bersyarat; keyakinan diperbarui oleh bukti. Bagian 2 dan 3.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box pu"><b>Batas dan perbandingan</b><small>Asumsi, kapan masing-masing cocok, cara menyampaikan. Bagian 4.</small></div>
+                </div>
+
+                <h3 id="cf-beda">Sebelum Menghitung: CF Menjawab Pertanyaan Apa?</h3>
+                <p>Sebelum masuk ke rumus, pastikan dulu <em>untuk masalah apa</em> CF dipakai. Bandingkan dua kalimat ini. Keduanya terdengar “tidak pasti”, tetapi ketidakpastiannya berbeda jenis:</p>
+                <div class="rule-box">
+                    (1) “Saya <b>belum yakin</b> pasien ini demam; termometernya belum dipakai.”<br>
+                    (2) “Suhu pasien 38,2 °C. Itu <b>agak</b> demam.”
+                </div>
+                <p>Pada kalimat (1), pasien <em>sudah pasti</em> demam atau tidak; kita hanya belum tahu. Pada kalimat (2), tidak ada yang tersembunyi: suhunya sudah terbaca tepat. Yang kabur adalah <em>kata</em> “demam”: 38,2 °C itu demam penuh, atau baru setengah demam? <strong>CF dipakai untuk kasus (1).</strong> Kasus (2) adalah urusan logika fuzzy, topik pertemuan berikutnya (Minggu 12–13).</p>
+
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-box-archive"></i> CF: faktanya belum kita ketahui</h4>
+                        <p style="font-size:0.92em;margin-bottom:6px;"><em>Analogi:</em> amplop hasil lab yang belum dibuka. Isinya sudah ada (positif atau negatif), kita hanya belum membacanya.</p>
+                        <ul>
+                            <li>Dokter: “<em>kemungkinan besar</em> demam berdarah”, sebelum hasil lab keluar.</li>
+                            <li>Petani: “daun padi menguning, <em>hampir pasti</em> kekurangan nitrogen”.</li>
+                            <li>Mekanik: “mesin susah hidup, <em>mungkin</em> businya”.</li>
+                            <li>Prakiraan: “besok <em>kemungkinan besar</em> hujan”.</li>
+                        </ul>
+                        <p style="font-size:0.9em;margin-top:6px;">Satu hal yang pasti: <strong>jawaban akhirnya ya atau tidak</strong>, dan jawaban itu bisa dicari.</p>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-ruler"></i> Fuzzy: kategorinya yang kabur</h4>
+                        <p style="font-size:0.92em;margin-bottom:6px;"><em>Analogi:</em> lampu dengan dimmer. Tidak ada saklar “terang” atau “gelap”; ada banyak tingkat di antaranya.</p>
+                        <ul>
+                            <li>Suhu ruangan 26 °C: dingin, hangat, atau panas?</li>
+                            <li>IPK 3,45: “berprestasi”?</li>
+                            <li>Motor 55 km/jam: “cepat”?</li>
+                            <li>Cucian 3 kg: “sedikit” atau “banyak”?</li>
+                        </ul>
+                        <p style="font-size:0.9em;margin-top:6px;">Angkanya <strong>sudah diketahui tepat</strong>. Tidak ada tes atau sensor tambahan yang bisa menjawab “jadi, panas atau tidak?”, karena memang tidak ada batas yang tegas.</p>
+                    </div>
+                </div>
+
+                <h4>Tiga Pertanyaan untuk Membedakannya</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Tanyakan pada diri sendiri</th><th>Jawabannya “ya” → CF</th><th>Jawabannya “tidak” → fuzzy</th></tr></thead>
+                        <tbody>
+                            <tr><td>1. Adakah tes, sensor, atau pertanyaan yang bisa menuntaskan keraguannya?</td><td>Ada: hasil lab, termometer, bertanya ke user. Setelah itu CF menjadi mendekati 1 atau −1.</td><td>Tidak ada. 38,2 °C tetap “sebagian demam” sebanyak apa pun informasinya.</td></tr>
+                            <tr><td>2. Pada akhirnya, pernyataannya benar atau salah?</td><td>Benar atau salah; kita belum tahu yang mana.</td><td>Bisa “benar sebagian” selamanya.</td></tr>
+                            <tr><td>3. Bagaimana angka 0,7 dibaca?</td><td>“Saya <strong>70% yakin</strong> pernyataan ini benar.”</td><td>“Nilai ini <strong>70% termasuk</strong> kategorinya.”</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Cara mengingat: <strong>CF = “seberapa yakin”</strong>, <strong>fuzzy = “seberapa termasuk”</strong>.</p>
+
+                <h4>Coba Sendiri: Satu Pasien, Dua Jenis “Tidak Pasti” <span class="badge badge-new">Interaktif</span></h4>
+                <div data-viz="cf-vs-fuzzy"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Mulai dari langkah 1 (termometer belum dipakai).</strong>
+                            <p>Geser keyakinan CF. Panel fuzzy menolak menghitung, karena tidak ada suhu yang bisa dinilai.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Pindah ke langkah 2 (pasien diukur).</strong>
+                            <p>Pada suhu bawaan 38,2 °C, CF menjadi <em>pasti</em> (1,0) karena ketidaktahuan sudah selesai. Derajat “demam” justru baru bisa dihitung: 0,60.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Geser suhu melewati 38,0 °C.</strong>
+                            <p>CF melompat dari −1 ke 1 (pertanyaannya tegas: ≥ 38,0 atau bukan). Derajat fuzzy berubah <em>mulus</em>. Itulah perbedaan jenis ketidakpastian.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4>Satu Kasus, Dua Pendekatan</h4>
+                <p>Ambil aturan sederhana <code>IF demam THEN flu</code>, lalu lihat bagaimana CF dan fuzzy memperlakukannya.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>Dengan CF</th><th>Dengan fuzzy (pertemuan berikutnya)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Masalahnya</td><td>Pasien bilang “sepertinya demam” dan belum diukur.</td><td>Termometer menunjukkan 38,2 °C; apakah itu demam?</td></tr>
+                            <tr><td>Angka pada fakta</td><td>CF(demam) = 0,8: pemeriksa cukup yakin.</td><td>μ<sub>demam</sub>(38,2) = 0,6: suhu ini sebagian termasuk “demam”.</td></tr>
+                            <tr><td>Angka pada aturan</td><td>CF(aturan) = 0,7: pakar yakin demam mengarah ke flu.</td><td>Derajat tembak aturan = 0,6 (diambil dari μ premis).</td></tr>
+                            <tr><td>Hasil</td><td>CF(flu) = 0,8 × 0,7 = <strong>0,56</strong>, dibaca “kemungkinan besar flu”.</td><td>Keluaran berupa <strong>nilai tegas</strong>, misalnya dosis obat 450 mg, setelah defuzzifikasi.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Jangan tertukar: operatornya sama, artinya berbeda.</strong>
+                    <ul style="margin-top:6px;">
+                        <li>CF dan fuzzy sama-sama memakai <strong>AND = minimum</strong> dan <strong>OR = maksimum</strong>, dan angkanya sama-sama tampak seperti 0 sampai 1. Ini yang membuat keduanya mudah tertukar.</li>
+                        <li>Bedanya terletak pada <em>arti</em> angka itu. CF 0,8 berarti “80% yakin fakta ini benar”. μ = 0,8 berarti “sebagian besar termasuk kategori ini”.</li>
+                        <li>Rentang juga berbeda: CF −1 sampai 1 (negatif = bukti melawan); derajat fuzzy 0 sampai 1 (tidak ada nilai negatif).</li>
+                    </ul>
+                </div>
+
+                <h4>Latihan Cepat: CF atau Fuzzy?</h4>
+                <p>Untuk tiap situasi, tentukan: ketidakpastiannya <em>CF</em> (belum tahu faktanya) atau <em>fuzzy</em> (kategorinya kabur)? (a) Dokter menduga pasien terkena DBD sebelum hasil lab keluar. (b) Nilai ujian 78 apakah termasuk “baik”? (c) Kamera CCTV mati; apakah pencuri masuk lewat pintu belakang? (d) Kopi dengan dua sendok gula apakah “manis”? (e) Daun padi menguning; apakah penyebabnya kekurangan nitrogen? (f) Sensor suhu punya kesalahan ±1 °C dan membaca 38 °C; apakah pasien demam?</p>
+                <details class="kunci"><summary>Lihat kunci</summary>
+                    <ul>
+                        <li>(a), (c), (e): <strong>CF</strong>. Ada jawaban tegas (DBD atau bukan; lewat pintu belakang atau bukan; kurang nitrogen atau bukan) yang bisa dicari dengan tes tambahan.</li>
+                        <li>(b), (d): <strong>fuzzy</strong>. Nilai 78 dan dua sendok gula sudah diketahui tepat; yang kabur adalah batas “baik” dan “manis”. Tidak ada tes yang menjawabnya.</li>
+                        <li>(f): <strong>keduanya</strong>, dan ini disengaja. Kesalahan sensor membuat suhu sebenarnya tidak pasti (CF atau peluang), sedangkan “demam” sendiri kategori yang kabur (fuzzy). Dunia nyata sering mencampur keduanya; pertemuan ini mengajarkan satu sisinya, pertemuan 12–13 sisi yang lain.</li>
+                    </ul>
+                </details>
+
+                <h3 id="cf-apa">Certainty Factor: Satu Angka untuk Keyakinan</h3>
+                <p>Teori <strong>certainty factor (CF)</strong> mengambil jalan pintas yang praktis. Pakar tidak diminta mengisi tabel peluang; ia cukup menyebut seberapa yakin ia pada kesimpulannya dan pada tiap langkah penalarannya, dengan kata seperti “tidak mungkin”, “mungkin”, “sangat mungkin”, “hampir pasti”. Kata-kata itu kemudian dipetakan ke angka.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Perlu diingat sejak awal:</strong>
+                    <p style="margin-top:6px;">CF adalah <strong>heuristik yang diturunkan dari pengalaman</strong>. CF <em>bukan peluang</em>, dan juga <em>bukan nilai kebenaran</em>. CF mengungkapkan seberapa akurat, benar, dan handal suatu dugaan menurut pakar. Metode ini dipakai pada sistem pakar MYCIN (Shortliffe &amp; Buchanan, 1975) dan sampai sekarang masih dijumpai pada aplikasi sistem pakar sederhana.</p>
+                </div>
+
+                <p>Sistem pakar dengan CF memakai aturan berbentuk:</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span>&nbsp;&nbsp; E &nbsp;&nbsp;<small>(evidence, bukti)</small><br>
+                    <span class="kw">THEN</span> H &nbsp;<span class="kw">{CF = 0,7}</span> &nbsp;<small>(hipotesis; CF = kepercayaan pada H bila E terjadi)</small>
+                </div>
+                <p>Contoh dari bagian sebelumnya: <code>IF dolar turun THEN suku bunga naik {CF = 0,9}</code>. Aturan yang sama dengan pertemuan 9–10, ditambah satu angka.</p>
+
+                <h4>CF Dapat Dipasang pada Tiga Hal</h4>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-eye"></i></div>
+                        <h4>Fakta atau premis</h4>
+                        <p>Mewakili <strong>derajat percaya (atau tidak percaya)</strong> pada fakta itu: “demamnya 38 °C, saya cukup yakin” → CF 0,8.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-scroll"></i></div>
+                        <h4>Aturan</h4>
+                        <p>Mewakili <strong>derajat konfirmasi (atau diskonfirmasi)</strong> hipotesis: seberapa kuat premis mendukung kesimpulan.</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-layer-group"></i></div>
+                        <h4>Keduanya</h4>
+                        <p>Fakta tidak pasti <em>dan</em> aturan tidak pasti: CF keduanya dikalikan (pembahasan rantai aturan).</p>
+                    </div>
+                </div>
+
+                <h4>Cara Membaca Nilai CF</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>CF</th><th>Artinya</th></tr></thead>
+                        <tbody>
+                            <tr><td>Mendekati +1</td><td>Fakta (bukti) makin kuat mendukung hipotesis</td></tr>
+                            <tr><td>Mendekati −1</td><td>Kepercayaan yang <em>berlawanan</em> dengan hipotesis makin kuat</td></tr>
+                            <tr><td>Sekitar 0</td><td>Ada bukti yang mendukung dan yang melawan, atau belum ada bukti sama sekali: <strong>belum diketahui</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4>Certainty Factor dan Peluang Bersyarat: Apa Bedanya?</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>Certainty factor</th><th>Peluang bersyarat</th></tr></thead>
+                        <tbody>
+                            <tr><td>Mewakili</td><td>Ukuran kepercayaan pada tingkat kemungkinan hasil</td><td>Tingkat probabilitas hasil</td></tr>
+                            <tr><td>Rentang</td><td>−1 sampai 1</td><td>0 (salah) sampai 1 (benar)</td></tr>
+                            <tr><td>Bisa negatif?</td><td>Ya: negatif berarti bukti melawan hipotesis</td><td>Tidak</td></tr>
+                            <tr><td>Asal angka</td><td>Pengalaman pakar (heuristik)</td><td>Data atau teori probabilitas</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 id="cf-skala">Dari Kata ke Angka: Skala Istilah</h3>
+                <p>Bagaimana “hampir pasti” menjadi angka? Dengan <strong>skala istilah</strong>. Dua contoh skala ada pada gambar berikut (garis putus-putus menunjuk nilai tiap istilah; kotak abu-abu adalah daerah <em>belum diketahui</em>).</p>
+                <figure class="fig">
+                    <svg viewBox="0 0 800 350" role="img" aria-label="Dua skala istilah ketidakpastian dan nilai CF-nya"><text x="70" y="18" text-anchor="middle" class="sk-j">Skala ringkas</text><text x="70" y="34" text-anchor="middle" class="sk-s">belief (percaya)</text><line x1="70" y1="40" x2="70" y2="312" class="sk-ax"/><line x1="62" y1="306.0" x2="78" y2="306.0" class="sk-t"/><line x1="65" y1="293.0" x2="75" y2="293.0" class="sk-t"/><line x1="65" y1="280.0" x2="75" y2="280.0" class="sk-t"/><line x1="65" y1="267.0" x2="75" y2="267.0" class="sk-t"/><line x1="65" y1="254.0" x2="75" y2="254.0" class="sk-t"/><line x1="62" y1="241.0" x2="78" y2="241.0" class="sk-t"/><line x1="65" y1="228.0" x2="75" y2="228.0" class="sk-t"/><line x1="65" y1="215.0" x2="75" y2="215.0" class="sk-t"/><line x1="65" y1="202.0" x2="75" y2="202.0" class="sk-t"/><line x1="65" y1="189.0" x2="75" y2="189.0" class="sk-t"/><line x1="62" y1="176.0" x2="78" y2="176.0" class="sk-t"/><line x1="65" y1="163.0" x2="75" y2="163.0" class="sk-t"/><line x1="65" y1="150.0" x2="75" y2="150.0" class="sk-t"/><line x1="65" y1="137.0" x2="75" y2="137.0" class="sk-t"/><line x1="65" y1="124.0" x2="75" y2="124.0" class="sk-t"/><line x1="62" y1="111.0" x2="78" y2="111.0" class="sk-t"/><line x1="65" y1="98.0" x2="75" y2="98.0" class="sk-t"/><line x1="65" y1="85.0" x2="75" y2="85.0" class="sk-t"/><line x1="65" y1="72.0" x2="75" y2="72.0" class="sk-t"/><line x1="65" y1="59.0" x2="75" y2="59.0" class="sk-t"/><line x1="62" y1="46.0" x2="78" y2="46.0" class="sk-t"/><text x="56" y="50.0" text-anchor="end" class="sk-n">1</text><text x="56" y="115.0" text-anchor="end" class="sk-n">0,5</text><text x="56" y="180.0" text-anchor="end" class="sk-n">0</text><text x="56" y="245.0" text-anchor="end" class="sk-n">−0,5</text><text x="56" y="310.0" text-anchor="end" class="sk-n">−1</text><rect x="64" y="124.0" width="12" height="104.0" class="sk-u"/><text x="92" y="180.0" class="sk-l sk-lu">belum diketahui</text><line x1="78" y1="46.0" x2="180" y2="46.0" class="sk-d"/><text x="186" y="50.0" class="sk-l">pasti <tspan class="sk-v">(1,0)</tspan></text><line x1="78" y1="85.0" x2="180" y2="85.0" class="sk-d"/><text x="186" y="89.0" class="sk-l">hampir pasti <tspan class="sk-v">(0,7)</tspan></text><line x1="78" y1="111.0" x2="180" y2="111.0" class="sk-d"/><text x="186" y="115.0" class="sk-l">mungkin <tspan class="sk-v">(0,5)</tspan></text><line x1="78" y1="241.0" x2="180" y2="241.0" class="sk-d"/><text x="186" y="245.0" class="sk-l">mungkin tidak <tspan class="sk-v">(−0,5)</tspan></text><line x1="78" y1="267.0" x2="180" y2="267.0" class="sk-d"/><text x="186" y="271.0" class="sk-l">hampir pasti tidak <tspan class="sk-v">(−0,7)</tspan></text><line x1="78" y1="306.0" x2="180" y2="306.0" class="sk-d"/><text x="186" y="310.0" class="sk-l">pasti tidak <tspan class="sk-v">(−1,0)</tspan></text><text x="70" y="328" text-anchor="middle" class="sk-s">disbelief (tidak percaya)</text><g transform="translate(390,0)"><text x="70" y="18" text-anchor="middle" class="sk-j">Skala lebih rinci</text><text x="70" y="34" text-anchor="middle" class="sk-s">belief (percaya)</text><line x1="70" y1="40" x2="70" y2="312" class="sk-ax"/><line x1="62" y1="306.0" x2="78" y2="306.0" class="sk-t"/><line x1="65" y1="293.0" x2="75" y2="293.0" class="sk-t"/><line x1="65" y1="280.0" x2="75" y2="280.0" class="sk-t"/><line x1="65" y1="267.0" x2="75" y2="267.0" class="sk-t"/><line x1="65" y1="254.0" x2="75" y2="254.0" class="sk-t"/><line x1="62" y1="241.0" x2="78" y2="241.0" class="sk-t"/><line x1="65" y1="228.0" x2="75" y2="228.0" class="sk-t"/><line x1="65" y1="215.0" x2="75" y2="215.0" class="sk-t"/><line x1="65" y1="202.0" x2="75" y2="202.0" class="sk-t"/><line x1="65" y1="189.0" x2="75" y2="189.0" class="sk-t"/><line x1="62" y1="176.0" x2="78" y2="176.0" class="sk-t"/><line x1="65" y1="163.0" x2="75" y2="163.0" class="sk-t"/><line x1="65" y1="150.0" x2="75" y2="150.0" class="sk-t"/><line x1="65" y1="137.0" x2="75" y2="137.0" class="sk-t"/><line x1="65" y1="124.0" x2="75" y2="124.0" class="sk-t"/><line x1="62" y1="111.0" x2="78" y2="111.0" class="sk-t"/><line x1="65" y1="98.0" x2="75" y2="98.0" class="sk-t"/><line x1="65" y1="85.0" x2="75" y2="85.0" class="sk-t"/><line x1="65" y1="72.0" x2="75" y2="72.0" class="sk-t"/><line x1="65" y1="59.0" x2="75" y2="59.0" class="sk-t"/><line x1="62" y1="46.0" x2="78" y2="46.0" class="sk-t"/><text x="56" y="50.0" text-anchor="end" class="sk-n">1</text><text x="56" y="115.0" text-anchor="end" class="sk-n">0,5</text><text x="56" y="180.0" text-anchor="end" class="sk-n">0</text><text x="56" y="245.0" text-anchor="end" class="sk-n">−0,5</text><text x="56" y="310.0" text-anchor="end" class="sk-n">−1</text><rect x="64" y="150.0" width="12" height="52.0" class="sk-u"/><text x="92" y="180.0" class="sk-l sk-lu">belum diketahui</text><line x1="78" y1="46.0" x2="180" y2="46.0" class="sk-d"/><text x="186" y="50.0" class="sk-l">pasti <tspan class="sk-v">(1,0)</tspan></text><line x1="78" y1="72.0" x2="180" y2="72.0" class="sk-d"/><text x="186" y="76.0" class="sk-l">hampir pasti <tspan class="sk-v">(0,8)</tspan></text><line x1="78" y1="98.0" x2="180" y2="98.0" class="sk-d"/><text x="186" y="102.0" class="sk-l">kemungkinan besar <tspan class="sk-v">(0,6)</tspan></text><line x1="78" y1="124.0" x2="180" y2="124.0" class="sk-d"/><text x="186" y="128.0" class="sk-l">mungkin <tspan class="sk-v">(0,4)</tspan></text><line x1="78" y1="228.0" x2="180" y2="228.0" class="sk-d"/><text x="186" y="232.0" class="sk-l">mungkin tidak <tspan class="sk-v">(−0,4)</tspan></text><line x1="78" y1="254.0" x2="180" y2="254.0" class="sk-d"/><text x="186" y="258.0" class="sk-l">kemungkinan besar tidak <tspan class="sk-v">(−0,6)</tspan></text><line x1="78" y1="280.0" x2="180" y2="280.0" class="sk-d"/><text x="186" y="284.0" class="sk-l">hampir pasti tidak <tspan class="sk-v">(−0,8)</tspan></text><line x1="78" y1="306.0" x2="180" y2="306.0" class="sk-d"/><text x="186" y="310.0" class="sk-l">pasti tidak <tspan class="sk-v">(−1,0)</tspan></text><text x="70" y="328" text-anchor="middle" class="sk-s">disbelief (tidak percaya)</text></g></svg>
+                    <figcaption>Dua skala istilah ketidakpastian. Kiri: skala ringkas dengan empat istilah di tiap sisi. Kanan: skala lebih rinci dengan satu istilah tambahan, “kemungkinan besar”. Nilai dibaca dari gambar pada slide 2022.</figcaption>
+                </figure>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Pemetaan kata ke angka tidak baku.</strong>
+                    <p style="margin-top:6px;">Dua pakar dapat memakai skala yang berbeda: “mungkin” adalah 0,5 pada skala kiri dan 0,4 pada skala kanan. Karena itu <strong>skala yang dipakai harus ditulis pada dokumentasi sistem</strong>, dan pakar yang memberi angka CF sebaiknya memakai skala yang sama. Halaman ini memakai skala kanan.</p>
+                </div>
+
+                <h3 id="cf-hitung">Dari Mana Angka CF Berasal? MB, MD, dan CF</h3>
+                <p>Pada praktiknya, pakar langsung menyebut CF tiap aturan. Tetapi ada pertanyaan yang wajar: <em>apa sebenarnya arti angka itu?</em> Jawabannya dibangun dari dua ukuran yang membandingkan keyakinan pada hipotesis <strong>sebelum</strong> dan <strong>sesudah</strong> mengetahui bukti:</p>
+                <ul>
+                    <li><strong>P(H)</strong>: peluang hipotesis H benar, sebelum ada bukti.</li>
+                    <li><strong>P(H|E)</strong>: peluang H benar bila bukti E diketahui. (Notasi “|” dibaca “bila diketahui”; dibahas penuh pada Bagian 2. Di sini cukup dibaca sebagai keyakinan setelah bukti.)</li>
+                </ul>
+                <div class="rumus">
+                    <div class="baris"><i>MB</i>(<i>H</i>,<i>E</i>) = 1 <span class="ket">jika P(H) = 1</span></div>
+                    <div class="baris"><i>MB</i>(<i>H</i>,<i>E</i>) = <span class="frac"><span>maks{<i>P</i>(<i>H</i>|<i>E</i>), <i>P</i>(<i>H</i>)} − <i>P</i>(<i>H</i>)</span><span>1 − <i>P</i>(<i>H</i>)</span></span> <span class="ket">jika P(H) &lt; 1 &nbsp;·&nbsp; measure of belief: seberapa jauh bukti menaikkan keyakinan</span></div>
+                </div>
+                <div class="rumus merah">
+                    <div class="baris"><i>MD</i>(<i>H</i>,<i>E</i>) = 1 <span class="ket">jika P(H) = 0</span></div>
+                    <div class="baris"><i>MD</i>(<i>H</i>,<i>E</i>) = <span class="frac"><span><i>P</i>(<i>H</i>) − min{<i>P</i>(<i>H</i>|<i>E</i>), <i>P</i>(<i>H</i>)}</span><span><i>P</i>(<i>H</i>)</span></span> <span class="ket">jika P(H) &gt; 0 &nbsp;·&nbsp; measure of disbelief: seberapa jauh bukti menurunkan keyakinan</span></div>
+                </div>
+                <div class="rumus hijau">
+                    <div class="baris"><i>CF</i>(<i>H</i>,<i>E</i>) = <span class="frac"><span><i>MB</i>(<i>H</i>,<i>E</i>) − <i>MD</i>(<i>H</i>,<i>E</i>)</span><span>1 − min{<i>MB</i>(<i>H</i>,<i>E</i>), <i>MD</i>(<i>H</i>,<i>E</i>)}</span></span> <span class="ket">rentang [−1, 1]</span></div>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Slide 2022 menulis pembilang MB sebagai P(H|E) − P(H) dan MD sebagai P(H) − P(H|E), tanpa <em>maks</em> dan <em>min</em>. Bila bukti memang mendukung (untuk MB) atau melawan (untuk MD), hasilnya sama. Bentuk dengan <em>maks</em> dan <em>min</em> adalah bentuk baku Shortliffe dan Buchanan; ia menjamin MB dan MD tidak pernah negatif.</p>
+                <p><strong>Cara membacanya.</strong> MB mengukur berapa bagian dari “ruang keyakinan yang tersisa” (1 − P(H)) yang berhasil diisi bukti. MD mengukur berapa bagian dari keyakinan awal (P(H)) yang dihapus bukti. Salah satu dari keduanya <em>selalu 0</em>: satu bukti hanya dapat mendukung atau melawan, tidak keduanya. Karena itu penyebut rumus CF selalu 1, dan CF = MB − MD.</p>
+
+                <h4>Coba Sendiri: Hitung MB, MD, dan CF <span class="badge badge-new">Interaktif</span></h4>
+                <div data-viz="cf-hitung"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Klik “Bukti mendukung (0,2 → 0,6)”.</strong>
+                            <p>Bukti menaikkan peluang H dari 0,2 menjadi 0,6. MB = (0,6 − 0,2) ÷ (1 − 0,2) = 0,5: bukti mengisi separuh dari ruang yang tersisa. MD = 0. CF = 0,5.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Klik “Bukti melawan (0,5 → 0,2)”.</strong>
+                            <p>Sekarang MD = (0,5 − 0,2) ÷ 0,5 = 0,6 dan MB = 0, sehingga CF = −0,6. Bukti menghapus 60% dari keyakinan awal.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Klik “Bukti tidak berpengaruh”.</strong>
+                            <p>P(H|E) = P(H) menghasilkan MB = MD = 0 dan CF = 0: bukti itu tidak memberi tahu apa-apa tentang H.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Kapan rumus ini dipakai?</strong>
+                    <p style="margin-top:6px;">Rumus MB dan MD hanya dapat dipakai bila P(H) dan P(H|E) <em>diketahui</em>, misalnya dari data historis. Bila tidak, pakar langsung memberi CF: “bila gejala ini ada, saya yakin 0,7 pada kesimpulan ini”. Rumus tadi menerangkan <em>arti</em> angka itu, bukan satu-satunya cara memperolehnya.</p>
+                </div>
+
+                <h3 id="cf-gabung">Dua Aturan, Satu Hipotesis: Menggabungkan CF</h3>
+                <p>Sering kali beberapa aturan menyimpulkan hal yang sama dari bukti yang berbeda:</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span> E1 <span class="kw">THEN</span> H <span class="kw">{CF = 0,5}</span><br>
+                    <span class="kw">IF</span> E2 <span class="kw">THEN</span> H <span class="kw">{CF = 0,6}</span>
+                </div>
+                <p>Bila kedua aturan berlaku, berapa CF untuk H? Bukan 0,5 + 0,6 (hasil 1,1 melewati batas 1), dan bukan rata-rata (dua bukti yang searah seharusnya <em>saling menguatkan</em>, bukan merata-ratakan). Aturan penggabungannya punya tiga kasus menurut tanda kedua CF:</p>
+                <div class="rumus">
+                    <div class="baris"><i>CF</i> = <i>CF</i><sub>1</sub> + <i>CF</i><sub>2</sub> × (1 − <i>CF</i><sub>1</sub>) <span class="ket">jika keduanya &gt; 0 (saling menguatkan)</span></div>
+                    <div class="baris"><i>CF</i> = <i>CF</i><sub>1</sub> + <i>CF</i><sub>2</sub> × (1 + <i>CF</i><sub>1</sub>) <span class="ket">jika keduanya &lt; 0 (saling menguatkan ke arah negatif)</span></div>
+                    <div class="baris"><i>CF</i> = <span class="frac"><span><i>CF</i><sub>1</sub> + <i>CF</i><sub>2</sub></span><span>1 − min{|<i>CF</i><sub>1</sub>|, |<i>CF</i><sub>2</sub>|}</span></span> <span class="ket">jika tandanya berbeda (saling mengurangi)</span></div>
+                </div>
+                <p><strong>Cara membaca rumus pertama.</strong> Bukti pertama membawa keyakinan ke CF<sub>1</sub>. Sisa keyakinan yang belum terisi adalah (1 − CF<sub>1</sub>); bukti kedua mengisi sebagian dari sisa itu sebesar CF<sub>2</sub>. Karena yang diisi hanya sisa, hasilnya tidak pernah melewati 1.</p>
+                <p><strong>Contoh.</strong> 0,5 dan 0,6 → 0,5 + 0,6 × 0,5 = <strong>0,8</strong>. Tanda berbeda, 0,6 dan −0,3 → (0,6 − 0,3) ÷ (1 − 0,3) = 0,3 ÷ 0,7 = 0,4286 ≈ <strong>0,43</strong>. Dua negatif, −0,4 dan −0,5 → −0,4 + (−0,5) × (1 − 0,4) = <strong>−0,7</strong>.</p>
+
+                <h4>Coba Sendiri: Menggabungkan Dua CF <span class="badge badge-new">Interaktif</span></h4>
+                <div data-viz="cf-gabung"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Klik “Bukti yang sama: 0,5 dan 0,5”, lalu ubah CF aturan 2 ke 1.</strong>
+                            <p>Hasilnya 1: satu aturan yang “pasti” sudah mengisi seluruh sisa ruang. Pada nilai di bawah 1, hasil gabungan selalu lebih besar dari kedua masukan, tetapi kenaikannya makin kecil.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Pada tanda berbeda, tukar nilai kedua slider.</strong>
+                            <p>Hasilnya sama: penggabungan <em>tidak bergantung urutan</em> (diperiksa juga untuk tiga aturan sekaligus pada 20.000 kombinasi acak). Jadi urutan aturan yang ditembakkan tidak mengubah CF akhir.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Coba CF aturan 1 = 1 dan aturan 2 = −1.</strong>
+                            <p>Satu aturan menyatakan pasti benar dan yang lain pasti salah: rumus membagi dengan 0. Basis aturan Anda memuat kontradiksi, dan program Anda perlu menanganinya (misalnya dengan melaporkannya, bukan menghasilkan angka).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="cf-rantai">Bila Faktanya Sendiri Tidak Pasti: Rantai Aturan</h3>
+                <p>Sejauh ini aturan dipicu oleh premis yang pasti benar. Bagaimana bila premisnya sendiri hanya diyakini sebagian? Contoh dua aturan berantai:</p>
+                <div class="rule-box">
+                    <b>Rule 1:</b> <span class="kw">IF</span> A <span class="kw">THEN</span> B <span class="kw">{CF = 0,4}</span><br>
+                    <b>Rule 2:</b> <span class="kw">IF</span> B <span class="kw">THEN</span> C <span class="kw">{CF = 0,3}</span>
+                </div>
+                <p>Rule 1 berkata: <em>bila A pasti benar</em>, B diyakini 0,4. Kalau A sendiri hanya diyakini 0,9, maka keyakinan pada B ikut mengecil:</p>
+                <div class="rumus">
+                    <div class="baris"><i>CF</i>(B) = <i>CF</i>(A) × <i>CF</i>(Rule 1) = 0,9 × 0,4 = <b>0,36</b></div>
+                    <div class="baris"><i>CF</i>(C) = <i>CF</i>(B) × <i>CF</i>(Rule 2) = 0,36 × 0,3 = <b>0,108</b></div>
+                </div>
+                <div class="rumus oranye">
+                    <div class="baris"><i>CF</i>(H) = <i>CF</i>(E) × <i>CF</i>(aturan) <span class="ket">jika CF(E) &gt; 0</span></div>
+                    <div class="baris"><i>CF</i>(H) = 0 <span class="ket">jika CF(E) ≤ 0 (aturan tidak berlaku)</span></div>
+                </div>
+                <p><strong>Mengapa CF(E) ≤ 0 membuat aturan tidak berlaku?</strong> Bila CF(E) = −0,2, kita tidak dapat mengatakan E benar, sehingga aturan “IF E THEN H” tidak boleh dipicu. Hasilnya <em>0</em>, bukan angka negatif. Angka 0 di sini berarti <strong>kita tidak tahu apa-apa</strong> akibat penerapan aturan ini (bukan “percaya” dan bukan “tidak percaya”), sehingga pengetahuan yang sudah ada tidak berubah. Aturan “IF E THEN H” tidak berkata bahwa bila E salah maka H salah.</p>
+
+                <h4>Coba Sendiri: Keyakinan Menyusut Sepanjang Rantai <span class="badge badge-new">Interaktif</span></h4>
+                <div data-viz="cf-rantai"></div>
+                <p>Geser CF(A) ke nilai negatif: kedua aturan tidak berlaku sekaligus. Naikkan semua CF mendekati 1: keyakinan menyusut paling lambat. Pada rantai yang panjang, CF yang diteruskan makin kecil walaupun setiap aturannya “cukup yakin”.</p>
+
+                <h3 id="cf-andor">Banyak Premis: AND = Minimum, OR = Maksimum</h3>
+                <p>Satu aturan dapat memiliki beberapa premis. Pada pertemuan 9–10, penghubung menentukan <em>kapan aturan terpenuhi</em>. Dengan CF, penghubung juga menentukan <em>seberapa yakin</em> premis gabungannya:</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-link"></i> AND: minimum</h4>
+                        <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> E1 <span class="kw">AND</span> E2 <span class="kw">AND</span> … <span class="kw">AND</span> En<br><span class="kw">THEN</span> H <span class="kw">{CF}</span></div>
+                        <p style="font-size:0.9em;">CF(H) = min{CF(E1), …, CF(En)} × CF(aturan), bila semua CF(Ei) &gt; 0.</p>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-code-fork"></i> OR: maksimum</h4>
+                        <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> E1 <span class="kw">OR</span> E2 <span class="kw">OR</span> … <span class="kw">OR</span> En<br><span class="kw">THEN</span> H <span class="kw">{CF}</span></div>
+                        <p style="font-size:0.9em;">CF(H) = maks{CF(E1), …, CF(En)} × CF(aturan), bila ada CF(Ei) &gt; 0.</p>
+                    </div>
+                </div>
+                <p><strong>Intuisinya.</strong> AND ibarat rantai: sekuat mata rantai yang paling lemah, jadi diambil <em>minimum</em>. OR ibarat beberapa jalan menuju tujuan yang sama: cukup satu jalan yang terbaik, jadi diambil <em>maksimum</em>. Karena itu, untuk AND, <strong>bila satu premis ≤ 0 maka seluruh aturan tidak berlaku</strong>, dan pemeriksaan premis lain boleh dihentikan.</p>
+                <p><strong>Contoh dari slide:</strong> CF(E1…E5) = 0,8; 0,7; 0,5; 0,3; 0,9 dan CF aturan 0,65. Dengan AND: min = 0,3, sehingga CF(H) = 0,3 × 0,65 = <strong>0,195</strong>. Dengan OR: maks = 0,9, sehingga CF(H) = 0,9 × 0,65 = <strong>0,585</strong>.</p>
+
+                <h4>Coba Sendiri: AND dan OR dengan Lima Premis <span class="badge badge-new">Interaktif</span></h4>
+                <div data-viz="cf-premis"></div>
+                <p>Nilai awal sama dengan contoh slide. Tekan “Jadikan E4 negatif” pada mode AND, lalu pindah ke OR: aturan yang tidak berlaku pada AND tetap berlaku pada OR, selama ada satu premis yang positif.</p>
+
+                <h3 id="cf-flu">Contoh Lengkap: Pohon Inferensi Flu</h3>
+                <p>Semua yang tadi dipelajari bekerja bersama pada satu contoh dari slide. Basis aturannya tujuh aturan; setiap aturan punya CF dari pakar.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Aturan</th><th>IF</th><th>THEN</th><th>CF</th></tr></thead>
+                        <tbody>
+                            <tr><td>Rule 1</td><td>demam &lt; 37,5</td><td>gejala flu</td><td>0,5</td></tr>
+                            <tr><td>Rule 2</td><td>demam &gt; 37,5</td><td>gejala flu</td><td>0,9</td></tr>
+                            <tr><td>Rule 3</td><td>batuk lebih dari 24 jam</td><td>sakit tenggorokan</td><td>0,5</td></tr>
+                            <tr><td>Rule 4</td><td>batuk lebih dari 48 jam</td><td>sakit tenggorokan</td><td>1,0</td></tr>
+                            <tr><td>Rule 5</td><td>gejala flu <b>AND</b> bersin</td><td>terkena flu</td><td>−0,2</td></tr>
+                            <tr><td>Rule 6</td><td>sakit tenggorokan</td><td>terkena flu</td><td>0,5</td></tr>
+                            <tr><td>Rule 7</td><td>sakit kepala <b>AND</b> hidung tersumbat</td><td>terkena flu</td><td>0,7</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Pasien contoh:</strong> demam 37,4 °C; batuk kurang dari 24 jam; bersin-bersin (CF 1,0); sakit kepala dengan CF 0,4; hidung tersumbat dengan CF 0,5. Pertanyaannya: <em>berapa tingkat kepercayaan bahwa pasien terkena flu?</em></p>
+                <p>Perhatikan Rule 5: CF aturannya <strong>negatif</strong>. Pakar menyatakan bahwa gejala flu yang disertai bersin justru sedikit <em>melemahkan</em> dugaan terkena flu. Jadi CF aturan boleh berlawanan arah, dan inilah yang membuat tanda berbeda pada rumus penggabungan perlu ada.</p>
+
+                <h4>Telusuri Langkah demi Langkah <span class="badge badge-new">Interaktif</span></h4>
+                <p>Tekan <strong>Langkah berikutnya</strong> untuk menghitung per tahap, dari fakta sampai penggabungan akhir. Ubah suhu, lama batuk, atau CF fakta kapan saja dan lihat bagian pohon mana yang ikut berubah.</p>
+                <div data-viz="cf-flu"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Telusuri sampai selesai dengan nilai awal.</strong>
+                            <p>Rule 1 berlaku (premis 1,0 × 0,5 = 0,5). Rule 2, 3, 4 tidak berlaku karena premisnya −1,0, sehingga bernilai 0. Rule 5: min{0,5; 1,0} × (−0,2) = −0,1. Rule 7: min{0,4; 0,5} × 0,7 = 0,28. Penggabungan tanda berbeda: (−0,1 + 0,28) ÷ (1 − min{0,1; 0,28}) = 0,18 ÷ 0,9 = <strong>0,2</strong>.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Ubah batuk menjadi “lebih dari 48 jam”.</strong>
+                            <p>Sekarang Rule 3 dan 4 berlaku, sakit tenggorokan menjadi 1,0, dan Rule 6 menambah dukungan. Hasil akhir naik jauh melewati 0,2.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Kembalikan batuk, lalu turunkan CF “sakit kepala” menjadi −0,2.</strong>
+                            <p>Rule 7 tidak berlaku (satu premis AND ≤ 0), sehingga hanya Rule 5 yang tersisa dan hasilnya negatif. Satu fakta saja dapat membalik kesimpulan.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Hanya sebagai ilustrasi teknik.</strong>
+                    <p style="margin-top:6px;">Contoh flu diambil dari slide untuk memperlihatkan hitungan CF. Pada mata kuliah ini, <strong>bidang kesehatan manusia tidak dijadikan tema tugas</strong>, karena keputusan diagnosis memerlukan tanggung jawab profesional. Angka 0,2 di atas juga tidak boleh dibaca sebagai “peluang 20%”.</p>
+                </div>
+
+                <h4>Program: Hitungan Flu dalam Python</h4>
+                <p>Tiga fungsi dasar (<code>gabung</code>, <code>premis_dan</code>, <code>premis_atau</code>) dan hitungan contoh flu. Jalankan, lalu cocokkan angkanya dengan simulasi di atas.</p>
+                <pre data-copy="cf_dasar.py"><code><span class="cm"># Certainty factor: tiga fungsi dasar, lalu contoh flu dari slide.</span>
+
+<span class="kw">def</span> <span class="fn">gabung</span>(a, b):
+    <span class="st">"""Dua CF untuk hipotesis yang sama (tiga kasus tanda)."""</span>
+    <span class="kw">if</span> a == <span class="nm">0</span> <span class="kw">or</span> b == <span class="nm">0</span>:
+        <span class="kw">return</span> a + b                           <span class="cm"># CF 0 tidak menambah apa pun</span>
+    <span class="kw">if</span> a &gt; <span class="nm">0</span> <span class="kw">and</span> b &gt; <span class="nm">0</span>:
+        <span class="kw">return</span> a + b * (<span class="nm">1</span> - a)
+    <span class="kw">if</span> a &lt; <span class="nm">0</span> <span class="kw">and</span> b &lt; <span class="nm">0</span>:
+        <span class="kw">return</span> a + b * (<span class="nm">1</span> + a)
+    <span class="kw">return</span> (a + b) / (<span class="nm">1</span> - <span class="fn">min</span>(<span class="fn">abs</span>(a), <span class="fn">abs</span>(b)))
+
+
+<span class="kw">def</span> <span class="fn">premis_dan</span>(cf_premis):
+    <span class="st">"""AND: minimum; bila ada premis &lt;= 0, aturan tidak berlaku (0)."""</span>
+    m = <span class="fn">min</span>(cf_premis)
+    <span class="kw">return</span> m <span class="kw">if</span> m &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
+
+
+<span class="kw">def</span> <span class="fn">premis_atau</span>(cf_premis):
+    <span class="st">"""OR: maksimum; bila semua premis &lt;= 0, aturan tidak berlaku (0)."""</span>
+    m = <span class="fn">max</span>(cf_premis)
+    <span class="kw">return</span> m <span class="kw">if</span> m &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
+
+
+<span class="cm"># --- contoh flu: demam 37.4, batuk kurang dari 24 jam, bersin, sakit kepala 0.4, hidung tersumbat 0.5</span>
+demam_rendah, demam_tinggi = <span class="nm">1.0</span>, -<span class="nm">1.0</span>
+batuk_24, batuk_48 = -<span class="nm">1.0</span>, -<span class="nm">1.0</span>
+bersin, sakit_kepala, hidung = <span class="nm">1.0</span>, <span class="nm">0.4</span>, <span class="nm">0.5</span>
+
+<span class="kw">def</span> <span class="fn">aturan</span>(cf_premis, cf_aturan):
+    <span class="st">"""Hasil satu aturan: CF premis x CF aturan, bila premis &gt; 0."""</span>
+    <span class="kw">return</span> cf_premis * cf_aturan <span class="kw">if</span> cf_premis &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
+
+r1 = <span class="fn">aturan</span>(demam_rendah, <span class="nm">0.5</span>)
+r2 = <span class="fn">aturan</span>(demam_tinggi, <span class="nm">0.9</span>)
+r3 = <span class="fn">aturan</span>(batuk_24, <span class="nm">0.5</span>)
+r4 = <span class="fn">aturan</span>(batuk_48, <span class="nm">1.0</span>)
+gejala_flu = <span class="fn">gabung</span>(r1, r2)
+sakit_tenggorokan = <span class="fn">gabung</span>(r3, r4)
+<span class="fn">print</span>(<span class="st">f"Rule 1..4        : {r1}, {r2}, {r3}, {r4}"</span>)
+<span class="fn">print</span>(<span class="st">f"gejala flu       : {gejala_flu}"</span>)
+<span class="fn">print</span>(<span class="st">f"sakit tenggorokan: {sakit_tenggorokan}"</span>)
+
+r5 = <span class="fn">premis_dan</span>([gejala_flu, bersin]) * -<span class="nm">0.2</span>
+r6 = <span class="fn">aturan</span>(sakit_tenggorokan, <span class="nm">0.5</span>)
+r7 = <span class="fn">premis_dan</span>([sakit_kepala, hidung]) * <span class="nm">0.7</span>
+<span class="fn">print</span>(<span class="st">f"Rule 5, 6, 7     : {r5:.2f}, {r6}, {r7:.2f}"</span>)
+
+flu = <span class="fn">gabung</span>(<span class="fn">gabung</span>(r5, r6), r7)
+<span class="fn">print</span>(<span class="st">f"CF terkena flu   : {flu:.2f}"</span>)
+
+<span class="cm"># --- beberapa nilai lain untuk diperiksa dengan tangan</span>
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">"gabung(0.5, 0.6)   ="</span>, <span class="fn">round</span>(<span class="fn">gabung</span>(<span class="nm">0.5</span>, <span class="nm">0.6</span>), <span class="nm">4</span>))
+<span class="fn">print</span>(<span class="st">"gabung(0.6, -0.3)  ="</span>, <span class="fn">round</span>(<span class="fn">gabung</span>(<span class="nm">0.6</span>, -<span class="nm">0.3</span>), <span class="nm">4</span>))
+<span class="fn">print</span>(<span class="st">"gabung(-0.4, -0.5) ="</span>, <span class="fn">round</span>(<span class="fn">gabung</span>(-<span class="nm">0.4</span>, -<span class="nm">0.5</span>), <span class="nm">4</span>))</code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>Rule 1..4        : 0.5, 0.0, 0.0, 0.0
+gejala flu       : 0.5
+sakit tenggorokan: 0.0
+Rule 5, 6, 7     : -0.10, 0.0, 0.28
+CF terkena flu   : 0.20
+
+gabung(0.5, 0.6)   = 0.8
+gabung(0.6, -0.3)  = 0.4286
+gabung(-0.4, -0.5) = -0.7</pre>
+                <p style="font-size:0.9em; color:#555;">Nilai <code>-0.10</code> dan <code>0.28</code> adalah CF₁ (Rule 5) dan CF₂ (Rule 7) pada slide. Fakta yang <em>ditolak</em> diberi CF −1,0 (kita tahu ia salah), berbeda dengan fakta yang <em>belum diketahui</em>, yang bernilai 0 atau tidak dimasukkan sama sekali.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 2. Peluang & Teorema Bayes -->
+            <!-- ============================================================ -->
+            <section id="peluang">
+                <h2>2. Peluang &amp; Teorema Bayes <span class="badge badge-algo">Inti</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="p-dasar">Peluang dasar</button>
+                    <button type="button" data-goto="p-kejadian">Dua kejadian</button>
+                    <button type="button" data-goto="p-bersyarat">Peluang bersyarat</button>
+                    <button type="button" data-goto="p-bayes">Teorema Bayes</button>
+                    <button type="button" data-goto="p-bentuk">Bentuk lain</button>
+                </nav>
+
+                <p>CF mengandalkan angka dari pakar. Pendekatan kedua berangkat dari <strong>teori peluang</strong>: keyakinan dinyatakan sebagai peluang, dan diperbarui oleh bukti dengan aturan yang <em>diturunkan</em>, bukan dirancang. Hubungan antara teorema Bayes dan teori peluang sangat erat: untuk membuktikan teorema Bayes, kita tidak lepas dari penggunaan teori peluang. Karena itu mari kita segarkan dahulu kosakatanya (sebagian sudah Anda kenal dari mata kuliah statistika dan probabilitas).</p>
+
+                <h3 id="p-dasar">Peluang: Penyegaran Singkat</h3>
+                <p><strong>Peluang (probabilitas)</strong> adalah proporsi atau persentase terjadinya suatu kejadian, dinyatakan sebagai bilangan real pada rentang <strong>[0, 1]</strong>. Nilai 0 berarti mustahil mutlak; nilai 1 berarti pasti mutlak. Untuk semua kemungkinan hasil pada satu domain (misalnya enam sisi dadu), jumlah peluangnya adalah 1.</p>
+                <p>Setiap kejadian punya dua luaran: <strong>sukses</strong> atau <strong>gagal</strong>.</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(sukses) = <span class="frac"><span>banyaknya hasil sukses</span><span>banyaknya seluruh hasil yang mungkin</span></span> &nbsp;&nbsp;&nbsp; <i>P</i>(gagal) = <span class="frac"><span>banyaknya hasil gagal</span><span>banyaknya seluruh hasil yang mungkin</span></span></div>
+                    <div class="baris"><i>P</i>(sukses) + <i>P</i>(gagal) = 1</div>
+                </div>
+                <p><strong>Contoh: dadu enam sisi.</strong> Misalkan “sukses(2)” berarti sisi 2 muncul. P(sukses(1)) = … = P(sukses(6)) = 1/6, dan P(gagal(2)) = 5/6. Jadi P(sukses(2)) + P(gagal(2)) = 1/6 + 5/6 = 1.</p>
+
+                <h4>Tiga Aksioma Teori Peluang</h4>
+                <ol>
+                    <li><strong>0 ≤ P(E) ≤ 1</strong> untuk setiap kejadian E.</li>
+                    <li><strong>ΣP(E<sub>i</sub>) = 1</strong>: jumlah peluang seluruh kemungkinan hasil yang saling lepas adalah 1.</li>
+                    <li><strong>P(E<sub>1</sub> ∪ E<sub>2</sub>) = P(E<sub>1</sub>) + P(E<sub>2</sub>)</strong> bila E<sub>1</sub> dan E<sub>2</sub> saling lepas (mutually exclusive).</li>
+                </ol>
+                <p style="font-size:0.9em; color:#555;">Dari mana angka peluang berasal? Dari <em>frekuensi data</em> (“dari 1.000 email, 300 adalah spam”) atau dari <em>keyakinan pakar</em> (peluang subjektif). Pada sistem pakar, angka yang diberikan pakar sering berupa peluang subjektif, dan di situlah batas pemakaiannya; kita kembali ke hal ini pada Bagian 4.</p>
+
+                <h3 id="p-kejadian">Dua Kejadian: Saling Lepas, Independen, dan Gabungan</h3>
+                <p>Bila ada dua kejadian A dan B, ada tiga pertanyaan: apakah keduanya dapat terjadi bersamaan, apakah yang satu memengaruhi yang lain, dan berapa peluang <em>salah satu atau keduanya</em> terjadi.</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-ban"></i> Saling lepas (mutually exclusive)</h4>
+                        <p style="font-size:0.92em;">Tidak dapat terjadi <strong>bersamaan</strong>. Contoh: pada satu lemparan dadu, sisi 5 dan sisi 3 tidak mungkin muncul bersamaan.</p>
+                        <p style="font-size:0.92em; margin:0;">P(A ∩ B) = 0</p>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-unlink"></i> Independen</h4>
+                        <p style="font-size:0.92em;">Terjadinya satu kejadian <strong>tidak mengubah</strong> peluang yang lain. Contoh: hasil dadu pertama dan dadu kedua. Bila tidak independen, kejadian itu <em>dependen</em>.</p>
+                        <p style="font-size:0.92em; margin:0;">P(A ∩ B) = P(A) · P(B)</p>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Jangan disamakan: saling lepas bukan independen.</strong>
+                    <p style="margin-top:6px;">Slide 2022 menulis “independen dan mutually exclusive” sebagai satu istilah. Keduanya <em>berbeda</em>, bahkan hampir berlawanan: bila A dan B saling lepas (dan masing-masing mungkin terjadi), mengetahui A terjadi langsung memastikan B <em>tidak</em> terjadi. Itu pengaruh yang sangat kuat, jadi keduanya dependen. Kesalahan ini membawa akibat nyata pada Bagian 3, karena contoh Bayes memakai asumsi “independen” dalam arti <strong>bebas bersyarat</strong>.</p>
+                </div>
+                <p>Untuk peluang gabungan (salah satu atau keduanya) dan peluang kedua-duanya:</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A</i> ∩ <i>B</i>) = <i>P</i>(<i>A</i>) · <i>P</i>(<i>B</i>) <span class="ket">hanya untuk kejadian independen</span></div>
+                    <div class="baris"><i>P</i>(<i>A</i> ∪ <i>B</i>) = <i>P</i>(<i>A</i>) + <i>P</i>(<i>B</i>) − <i>P</i>(<i>A</i> ∩ <i>B</i>) <span class="ket">selalu berlaku; dikurangi irisan agar tidak terhitung dua kali</span></div>
+                    <div class="baris"><i>P</i>(<i>A</i> ∪ <i>B</i> ∪ <i>C</i>) = <i>P</i>(<i>A</i>) + <i>P</i>(<i>B</i>) + <i>P</i>(<i>C</i>) − <i>P</i>(<i>A</i>∩<i>B</i>) − <i>P</i>(<i>A</i>∩<i>C</i>) − <i>P</i>(<i>B</i>∩<i>C</i>) + <i>P</i>(<i>A</i>∩<i>B</i>∩<i>C</i>)</div>
+                </div>
+
+                <h4>Lihat Peluang sebagai Luas: Kotak Peluang <span class="badge badge-new">Interaktif</span></h4>
+                <p>Seluruh kotak berluas 1 (semesta). Lebar kolom kiri = P(A); tinggi bagian biru = P(B|A) dan tinggi bagian oranye = P(B|¬A). <strong>Luas tiap bagian adalah peluang gabungannya.</strong> Dua kejadian independen bila kedua kolom terbelah pada tinggi yang sama.</p>
+                <div data-viz="bayes-lab" data-fokus="peluang"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Skenario “dua dadu”: dua kolom terbelah sama tinggi.</strong>
+                            <p>P(B|A) = P(B|¬A) = 0,5: mengetahui dadu pertama genap tidak mengubah peluang dadu kedua genap. Simulasi menyatakan <em>independen: ya</em>, dan P(A∩B) = 0,5 × 0,5 = 0,25.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Skenario “muncul 5 dan muncul 3”: bagian biru atas hilang.</strong>
+                            <p>A dan B <em>saling lepas</em> (P(A∩B) = 0), tetapi simulasi tetap menyatakan <em>independen: tidak</em>. Cocokkan dengan peringatan di atas.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Skenario “muncul 6 dan angka genap”.</strong>
+                            <p>Bila A terjadi, B pasti terjadi (P(B|A) = 1), tetapi A dan B <em>tidak</em> saling lepas. Dependen, dan bukan saling lepas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="p-bersyarat">Peluang Bersyarat dan Joint Probability</h3>
+                <p>Pada kejadian yang tidak independen, muncul <strong>peluang bersyarat</strong>: peluang A terjadi <em>jika B sudah terjadi</em>, ditulis <strong>P(A|B)</strong>. Cara menghitungnya: dari semua kasus yang B, berapa bagian yang juga A?</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A</i>|<i>B</i>) = <span class="frac"><span>banyaknya kali A dan B terjadi bersama</span><span>banyaknya kali B terjadi</span></span> = <span class="frac"><span><i>P</i>(<i>A</i> ∩ <i>B</i>)</span><span><i>P</i>(<i>B</i>)</span></span></div>
+                </div>
+                <p>Banyaknya kali A dan B dapat terjadi bersama disebut <strong>joint probability</strong> (atau <em>compound probability</em>) dari A dan B, yaitu <strong>P(A ∩ B)</strong>.</p>
+                <p><strong>Contoh dengan hitungan langsung.</strong> Dari 1.000 email masuk, 300 adalah spam, dan kata “GRATIS” muncul pada 180 email spam serta 35 email biasa:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>Memuat “GRATIS”</th><th>Tidak memuat</th><th>Jumlah</th></tr></thead>
+                        <tbody>
+                            <tr><td>Spam</td><td>180</td><td>120</td><td>300</td></tr>
+                            <tr><td>Bukan spam</td><td>35</td><td>665</td><td>700</td></tr>
+                            <tr><td>Jumlah</td><td>215</td><td>785</td><td>1.000</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul>
+                    <li>Joint: P(spam ∩ GRATIS) = 180 ÷ 1.000 = <strong>0,18</strong>.</li>
+                    <li>P(GRATIS | spam) = 180 ÷ 300 = <strong>0,60</strong>: dari semua spam, 60% memuat kata itu.</li>
+                    <li>P(spam | GRATIS) = 180 ÷ 215 = <strong>0,837</strong>: dari semua email ber-“GRATIS”, 83,7% adalah spam.</li>
+                </ul>
+                <p>Perhatikan: kedua peluang bersyarat itu <strong>tidak sama</strong> (0,60 dan 0,837), karena pembaginya berbeda (300 dan 215). Inilah pintu masuk ke teorema Bayes.</p>
+
+                <h3 id="p-bayes">Teorema Bayes: Membalik Arah Peluang</h3>
+                <p>Joint probability tidak peduli urutan: “A dan B” sama dengan “B dan A”. Dari definisi peluang bersyarat kita dapat dua cara menulis joint yang sama:</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A</i> ∩ <i>B</i>) = <i>P</i>(<i>A</i>|<i>B</i>) · <i>P</i>(<i>B</i>) &nbsp;&nbsp;dan&nbsp;&nbsp; <i>P</i>(<i>B</i> ∩ <i>A</i>) = <i>P</i>(<i>B</i>|<i>A</i>) · <i>P</i>(<i>A</i>)</div>
+                </div>
+                <p>Karena keduanya sama, kita bisa menyamakan ruas kanannya dan menyelesaikan untuk P(A|B). Hasilnya <strong>aturan (teorema) Bayes</strong>:</p>
+                <div class="rumus hijau">
+                    <div class="baris"><i>P</i>(<i>A</i>|<i>B</i>) = <span class="frac"><span><i>P</i>(<i>B</i>|<i>A</i>) · <i>P</i>(<i>A</i>)</span><span><i>P</i>(<i>B</i>)</span></span> <span class="ket">dengan P(B) ≠ 0</span></div>
+                </div>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Simbol</th><th>Nama</th><th>Artinya</th></tr></thead>
+                        <tbody>
+                            <tr><td>P(A)</td><td><em>prior</em> (peluang awal)</td><td>Peluang kejadian A <strong>sebelum</strong> bukti diketahui</td></tr>
+                            <tr><td>P(B|A)</td><td><em>likelihood</em></td><td>Seberapa sering bukti B muncul bila A benar</td></tr>
+                            <tr><td>P(B)</td><td>peluang bukti</td><td>Seberapa sering B muncul secara keseluruhan; berfungsi sebagai pembagi agar hasilnya berjumlah 1</td></tr>
+                            <tr><td>P(A|B)</td><td><em>posterior</em></td><td>Peluang A <strong>setelah</strong> bukti B diketahui</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Aturan penjumlahan tetap berlaku: <strong>P(A|B) + P(¬A|B) = 1</strong>. Bila bukti B diketahui, A pasti benar atau salah, dan kedua peluangnya berjumlah satu.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Mengapa Bayes berguna?</strong>
+                    <p style="margin-top:6px;">Pakar dan data biasanya menjawab pertanyaan “<em>bila A benar, seberapa sering B muncul?</em>” (misalnya “kalau spam, 60% memuat GRATIS”). Padahal yang kita butuhkan di sistem adalah arah sebaliknya: “<em>bila B muncul, seberapa mungkin A benar?</em>”. Teorema Bayes adalah jembatan di antara dua arah itu, dan itulah cara <strong>memutakhirkan keyakinan</strong>: prior diubah menjadi posterior oleh bukti.</p>
+                </div>
+
+                <h4>Coba Sendiri: Dari Prior ke Posterior <span class="badge badge-new">Interaktif</span></h4>
+                <p>Bayangkan 10.000 kasus. Kotak peluang yang sama kini dibaca sebagai “berapa banyak kasus yang berada di baris B”, dan posterior adalah bagian biru dari baris B itu.</p>
+                <div data-viz="bayes-lab" data-fokus="bayes"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Skenario “Email spam dan kata GRATIS”.</strong>
+                            <p>Dari 10.000 email, 3.000 spam; 1.800 spam dan 350 email biasa memuat kata itu, jadi 2.150 email ber-“GRATIS”. Posterior = 1.800 ÷ 2.150 = <strong>83,7%</strong>, sama dengan hitungan tabel di atas.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Skenario “Kejadian langka: penipuan transaksi”.</strong>
+                            <p>Alat deteksi tampak bagus (90% penipuan terdeteksi, hanya 5% transaksi biasa salah ditandai), tetapi karena penipuan hanya 1%, <strong>posteriornya hanya 15,4%</strong>. Dari 585 transaksi yang ditandai, 90 penipuan dan 495 transaksi biasa. Ini yang disebut <em>base rate</em> (prior) yang sering diabaikan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Skenario “Bukti tidak informatif”.</strong>
+                            <p>Bila P(B|A) = P(B|¬A), posterior sama dengan prior: bukti yang sama sering muncul pada kedua keadaan tidak memberi tahu apa-apa.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Kesalahan paling umum: menukar P(B|A) dengan P(A|B).</strong>
+                    <p style="margin-top:6px;">“Alat ini mendeteksi 90% penipuan” adalah P(ditandai | penipuan). Ia <em>bukan</em> berarti “90% transaksi yang ditandai adalah penipuan”, yaitu P(penipuan | ditandai). Perbedaan keduanya ditentukan oleh prior. Kesalahan ini muncul pada penilaian bukti hukum, tes diagnostik, dan peringatan keamanan, dan selalu berasal dari melupakan prior.</p>
+                </div>
+
+                <h3 id="p-bentuk">Bentuk Lain dan Generalisasi</h3>
+                <p>Pada soal nyata, penyebut P(B) jarang diketahui langsung. Kita menghitungnya dari yang kita punya, yaitu prior dan likelihood semua hipotesis.</p>
+                <h4>1. Dua kemungkinan: A dan bukan A</h4>
+                <p>Bila A dan ¬A adalah dua kemungkinan yang saling lepas, peluang bukti diuraikan menjadi dua bagian (<em>peluang total</em>):</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>B</i>) = <i>P</i>(<i>B</i>|<i>A</i>) <i>P</i>(<i>A</i>) + <i>P</i>(<i>B</i>|¬<i>A</i>) <i>P</i>(¬<i>A</i>)</div>
+                    <div class="baris"><i>P</i>(<i>A</i>|<i>B</i>) = <span class="frac"><span><i>P</i>(<i>B</i>|<i>A</i>) <i>P</i>(<i>A</i>)</span><span><i>P</i>(<i>B</i>|<i>A</i>) <i>P</i>(<i>A</i>) + <i>P</i>(<i>B</i>|¬<i>A</i>) <i>P</i>(¬<i>A</i>)</span></span></div>
+                </div>
+                <p>Bentuk inilah yang dipakai pada contoh spam di atas: 0,6 × 0,3 = 0,18 dan 0,05 × 0,7 = 0,035, sehingga P(spam|GRATIS) = 0,18 ÷ (0,18 + 0,035) = 0,837.</p>
+
+                <h4>2. Banyak hipotesis, satu bukti</h4>
+                <p>Bila ada hipotesis saling lepas A<sub>1</sub>, A<sub>2</sub>, …, A<sub>n</sub> dan satu bukti B:</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A<sub>i</sub></i>|<i>B</i>) = <span class="frac"><span><i>P</i>(<i>B</i>|<i>A<sub>i</sub></i>) <i>P</i>(<i>A<sub>i</sub></i>)</span><span>Σ<sub><i>k</i>=1</sub><sup><i>n</i></sup> <i>P</i>(<i>B</i>|<i>A<sub>k</sub></i>) <i>P</i>(<i>A<sub>k</sub></i>)</span></span></div>
+                </div>
+                <p>Penyebutnya adalah jumlah pembilang semua hipotesis. Akibatnya, posterior semua hipotesis <strong>selalu berjumlah 1</strong>.</p>
+
+                <h4>3. Banyak hipotesis, banyak bukti</h4>
+                <p>Bila bukti ada banyak (B<sub>1</sub>, …, B<sub>n</sub>), pembilang memuat peluang <em>semua bukti sekaligus</em> pada hipotesis itu:</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A<sub>i</sub></i>|<i>B</i><sub>1</sub>…<i>B<sub>n</sub></i>) = <span class="frac"><span><i>P</i>(<i>B</i><sub>1</sub>…<i>B<sub>n</sub></i>|<i>A<sub>i</sub></i>) <i>P</i>(<i>A<sub>i</sub></i>)</span><span>Σ<sub><i>k</i>=1</sub><sup><i>m</i></sup> <i>P</i>(<i>B</i><sub>1</sub>…<i>B<sub>n</sub></i>|<i>A<sub>k</sub></i>) <i>P</i>(<i>A<sub>k</sub></i>)</span></span></div>
+                </div>
+                <p>Mengisi <em>P(B<sub>1</sub>…B<sub>n</sub> | A<sub>i</sub>)</em> sangat berat: untuk n bukti ya/tidak, kita butuh peluang bagi 2<sup>n</sup> kombinasi per hipotesis. Jalan pintasnya: <strong>anggap bukti saling bebas bila hipotesis diketahui</strong> (<em>conditional independence</em>), sehingga peluang bersama menjadi hasil kali:</p>
+                <div class="rumus oranye">
+                    <div class="baris"><i>P</i>(<i>A<sub>i</sub></i>|<i>B</i><sub>1</sub>…<i>B<sub>n</sub></i>) = <span class="frac"><span><i>P</i>(<i>B</i><sub>1</sub>|<i>A<sub>i</sub></i>) · <i>P</i>(<i>B</i><sub>2</sub>|<i>A<sub>i</sub></i>) ⋯ <i>P</i>(<i>B<sub>n</sub></i>|<i>A<sub>i</sub></i>) · <i>P</i>(<i>A<sub>i</sub></i>)</span><span>Σ<sub><i>k</i>=1</sub><sup><i>m</i></sup> <i>P</i>(<i>B</i><sub>1</sub>|<i>A<sub>k</sub></i>) ⋯ <i>P</i>(<i>B<sub>n</sub></i>|<i>A<sub>k</sub></i>) · <i>P</i>(<i>A<sub>k</sub></i>)</span></span></div>
+                </div>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Bentuk hasil kali ini adalah asumsi, bukan kebenaran umum.</strong>
+                    <p style="margin-top:6px;">Ia hanya sah bila bukti saling bebas <em>setelah hipotesisnya diketahui</em>. Slide 2022 menuliskannya seolah-olah selalu berlaku. Akibat melanggar asumsi ini dibahas pada Bagian 4 dan dapat dicoba langsung pada simulasi di sana.</p>
+                </div>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 3. Penalaran Bayes & Jaringan Bayes -->
+            <!-- ============================================================ -->
+            <section id="bayes">
+                <h2>3. Penalaran Bayes &amp; Jaringan Bayes <span class="badge badge-algo">Inti</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="b-aturan">Aturan berpeluang</button>
+                    <button type="button" data-goto="b-contoh">Contoh tiga hipotesis</button>
+                    <button type="button" data-goto="b-nol">Peluang 0</button>
+                    <button type="button" data-goto="b-jaringan">Jaringan Bayes</button>
+                    <button type="button" data-goto="b-python">Python</button>
+                </nav>
+
+                <h3 id="b-aturan">Aturan IF-THEN yang Membawa Peluang</h3>
+                <p>Bagaimana teorema Bayes masuk ke sistem pakar? Bayangkan aturan berbentuk IF-THEN yang membawa peluang:</p>
+                <div class="rule-box">
+                    <span class="kw">IF</span> hipotesis H benar<br>
+                    <span class="kw">THEN</span> bukti E muncul <span class="kw">[dengan peluang P]</span>
+                </div>
+                <p>Arahnya <em>berlawanan</em> dengan aturan pada pertemuan 9–10. Di sana aturan berjalan dari bukti ke kesimpulan; di sini pakar mengisi peluang pada arah <strong>sebab ke akibat</strong> (“bila hipotesis ini benar, seberapa sering bukti itu muncul”), karena itulah pertanyaan yang paling mudah dijawab pakar. Sistem lalu membalik arahnya dengan Bayes. Pembagian kerjanya:</p>
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>Pakar</b><small>menyediakan prior P(H) dan peluang bersyarat P(E|H)</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box or"><b>User</b><small>memberi informasi bukti yang teramati</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box pu"><b>Sistem pakar</b><small>menghitung peluang bersyarat hipotesis</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>Posterior</b><small>peringkat hipotesis setelah bukti</small></div>
+                </div>
+
+                <h3 id="b-contoh">Contoh: Tiga Hipotesis dan Tiga Bukti</h3>
+                <p>Pakar menyusun tiga hipotesis <strong>A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub></strong> (saling lepas) berdasarkan tiga bukti <strong>B<sub>1</sub>, B<sub>2</sub>, B<sub>3</sub></strong>, dan menyediakan peluang berikut. Bukti dianggap bebas bila hipotesis diketahui.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th></th><th>A<sub>1</sub></th><th>A<sub>2</sub></th><th>A<sub>3</sub></th></tr></thead>
+                        <tbody>
+                            <tr><td>P(A<sub>i</sub>) (prior)</td><td>0,5</td><td>0,3</td><td>0,2</td></tr>
+                            <tr><td>P(B<sub>1</sub>|A<sub>i</sub>)</td><td>0,6</td><td>0,7</td><td>0,1</td></tr>
+                            <tr><td>P(B<sub>2</sub>|A<sub>i</sub>)</td><td>0,3</td><td>0,3</td><td>0,9</td></tr>
+                            <tr><td>P(B<sub>3</sub>|A<sub>i</sub>)</td><td>0,0</td><td>0,5</td><td>0,4</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <h4>Langkah 1: bukti pertama B<sub>1</sub></h4>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(<i>A</i><sub>1</sub>|<i>B</i><sub>1</sub>) = <span class="frac"><span>0,6 · 0,5</span><span>0,6 · 0,5 + 0,7 · 0,3 + 0,1 · 0,2</span></span> = <span class="frac"><span>0,3</span><span>0,53</span></span> = 0,566</div>
+                    <div class="baris"><i>P</i>(<i>A</i><sub>2</sub>|<i>B</i><sub>1</sub>) = <span class="frac"><span>0,21</span><span>0,53</span></span> = 0,396 &nbsp;&nbsp;&nbsp; <i>P</i>(<i>A</i><sub>3</sub>|<i>B</i><sub>1</sub>) = <span class="frac"><span>0,02</span><span>0,53</span></span> = 0,038</div>
+                </div>
+                <p>Penyebut 0,53 dihitung sekali untuk ketiga hipotesis. Jumlah ketiga posterior = 1. Bukti kedua dan ketiga ditambahkan dengan cara yang sama: pembilang dikali P(B<sub>2</sub>|A<sub>i</sub>) lalu P(B<sub>3</sub>|A<sub>i</sub>).</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Bukti diketahui</th><th>Penyebut</th><th>P(A<sub>1</sub>|…)</th><th>P(A<sub>2</sub>|…)</th><th>P(A<sub>3</sub>|…)</th></tr></thead>
+                        <tbody>
+                            <tr><td>belum ada (prior)</td><td>–</td><td>0,500</td><td>0,300</td><td>0,200</td></tr>
+                            <tr><td>B<sub>1</sub></td><td>0,53</td><td>0,566</td><td>0,396</td><td>0,038</td></tr>
+                            <tr><td>B<sub>1</sub>, B<sub>2</sub></td><td>0,171</td><td>0,526</td><td>0,368</td><td>0,105</td></tr>
+                            <tr><td>B<sub>1</sub>, B<sub>2</sub>, B<sub>3</sub></td><td>0,0387</td><td>0,000</td><td>0,814</td><td>0,186</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Slide 2022 menulis 0,56 / 0,39 / 0,037 dan 0,52 / 0,36 / 0,10: angka itu dipotong, bukan dibulatkan. Tabel di sini dibulatkan ke tiga desimal; selisihnya tidak mengubah kesimpulan.</p>
+
+                <h4>Coba Sendiri: Bukti Datang Satu per Satu <span class="badge badge-new">Interaktif</span></h4>
+                <p>Klik B<sub>1</sub>, B<sub>2</sub>, B<sub>3</sub> dalam urutan yang Anda mau. Grafik batang menunjukkan keyakinan pada tiap hipotesis setelah bukti terakhir, dan tabel riwayat menunjukkan bagaimana keyakinan bergeser tiap bukti.</p>
+                <div data-viz="bayes-update"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Klik B<sub>1</sub> saja.</strong>
+                            <p>A<sub>1</sub> naik sedikit (50% → 56,6%), A<sub>2</sub> naik (30% → 39,6%), A<sub>3</sub> turun tajam (20% → 3,8%): B<sub>1</sub> jauh lebih sering muncul bila A<sub>1</sub> atau A<sub>2</sub> benar daripada bila A<sub>3</sub> benar (0,6 dan 0,7 dibanding 0,1).</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Tambahkan B<sub>2</sub>.</strong>
+                            <p>B<sub>2</sub> justru khas A<sub>3</sub> (0,9). A<sub>3</sub> bangkit lagi menjadi 10,5%. Satu bukti dapat menghidupkan kembali hipotesis yang tampak sudah kalah.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Tambahkan B<sub>3</sub>.</strong>
+                            <p>A<sub>1</sub> yang semula paling mungkin (prior 0,5) langsung <em>gugur</em> karena P(B<sub>3</sub>|A<sub>1</sub>) = 0, dan A<sub>2</sub> menjadi 81,4%. Hanya A<sub>2</sub> dan A<sub>3</sub> yang masih dipertimbangkan.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Ulangi dengan urutan B<sub>3</sub>, B<sub>2</sub>, B<sub>1</sub>.</strong>
+                            <p>Angka akhirnya sama persis. Mengamati bukti dalam urutan apa pun memberi posterior yang sama (di bawah asumsi bebas bersyarat).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="b-nol">Peluang 0 dan 1 Itu Berbahaya</h3>
+                <p>Pada simulasi di atas, centang <em>“Ubah P(B<sub>3</sub>|A<sub>1</sub>) dari 0,0 menjadi 0,1”</em>, lalu amati tiga bukti sekaligus. Hasil akhirnya berubah dari (0%; 81,4%; 18,6%) menjadi <strong>(18,9%; 66,0%; 15,1%)</strong>. Perubahan 0,1 pada satu angka mengembalikan A<sub>1</sub> dari kegugurannya.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Pelajarannya:</strong>
+                    <p style="margin-top:6px;">Peluang bersyarat <strong>tepat 0</strong> adalah <em>veto</em>: satu bukti yang “mustahil” pada sebuah hipotesis membuat seluruh hasil kali menjadi 0, dan tidak ada bukti berikutnya yang dapat memulihkannya. Karena itu pakar sebaiknya memberi 0 hanya bila memang mustahil secara logika (bukan sekadar “jarang sekali”), dan memberi nilai kecil, misalnya 0,01, untuk yang jarang. Ini dikenal sebagai aturan Cromwell.</p>
+                </div>
+
+                <h3 id="b-jaringan">Jaringan Bayes: Menuliskan Keterkaitan Secara Eksplisit</h3>
+                <p>Asumsi “semua bukti saling bebas bila hipotesis diketahui” sering terlalu kuat. <strong>Jaringan Bayes (Bayesian network)</strong> adalah alat untuk mengevaluasi hubungan antarvariabel dalam jumlah besar tanpa asumsi sekuat itu. Ia punya dua elemen:</p>
+                <ol>
+                    <li><strong>Struktur jaringan</strong>: graf berarah tanpa siklus. Simpul adalah variabel; panah dari X ke Y berarti “Y bergantung langsung pada X”. Struktur ini memperlihatkan <em>independensi kondisional</em>: variabel tidak bergantung pada simpul lain yang tidak terhubung langsung dengannya.</li>
+                    <li><strong>Distribusi peluang tiap variabel</strong>: tabel peluang yang bergantung hanya pada <em>induk</em>-nya (disebut tabel peluang bersyarat atau CPT).</li>
+                </ol>
+                <p><strong>Contoh klasik: rumput basah.</strong> Langit berawan memengaruhi apakah <em>sprinkler</em> dinyalakan (orang tidak menyiram saat mendung) dan apakah hujan turun. Sprinkler dan hujan, masing-masing atau keduanya, membuat rumput basah.</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(Berawan, Sprinkler, Hujan, Basah) = <i>P</i>(Berawan) · <i>P</i>(Sprinkler|Berawan) · <i>P</i>(Hujan|Berawan) · <i>P</i>(Basah|Sprinkler, Hujan)</div>
+                </div>
+                <p>Seluruh jaringan hanya menyimpan <strong>9 angka</strong> (1 + 2 + 2 + 4), padahal tabel peluang gabungan empat variabel ya/tidak butuh 15 angka. Selisih ini makin besar pada jaringan yang lebih banyak simpul: itulah gunanya menuliskan keterkaitan secara eksplisit.</p>
+
+                <h4>Coba Sendiri: Bertanya kepada Jaringan <span class="badge badge-new">Interaktif</span></h4>
+                <p>Klik sebuah simpul pada barisan tombol untuk menyatakan bukti: <em>ya</em>, <em>tidak</em>, atau kembali ke <em>tidak diketahui</em>. Simpul yang belum diketahui menunjukkan peluang “ya”-nya setelah bukti, dihitung dengan menjumlahkan semua kombinasi yang cocok.</p>
+                <div data-viz="bayes-net"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Klik “Rumput basah”.</strong>
+                            <p>Peluang hujan naik dari 50% menjadi <strong>70,8%</strong>, dan peluang sprinkler menyala naik dari 30% menjadi <strong>43,0%</strong>. Bukti pada akibat menaikkan keyakinan pada kedua kemungkinan penyebab.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Klik “Basah dan sprinkler menyala”.</strong>
+                            <p>Peluang hujan <em>turun</em> menjadi <strong>32,0%</strong>. Sprinkler sudah cukup menjelaskan rumput basah, sehingga hujan tidak lagi diperlukan sebagai penjelasan. Gejala ini disebut <em>explaining away</em>, dan tidak dapat ditangkap oleh model yang menganggap penyebab-penyebab itu saling lepas atau saling bebas begitu saja.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Klik “Basah dan sprinkler mati”.</strong>
+                            <p>Peluang hujan menjadi <strong>100%</strong>: rumput tidak mungkin basah tanpa sprinkler dan tanpa hujan. Angka ini hanya benar karena baris terakhir tabel rumput basah diisi 0,0 (bukan 1,0 seperti salah ketik pada slide). Tabel peluang yang salah menghasilkan penalaran yang salah, walaupun rumusnya benar.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Kaitan dengan pertemuan 9–10:</strong>
+                    <p style="margin-top:6px;">Sistem berbasis aturan hanya dapat bertanya “apa kesimpulannya?” dalam satu arah penelusuran. Jaringan Bayes menjawab pertanyaan dari arah mana saja (dari penyebab ke akibat, dari akibat ke penyebab) dengan satu model yang sama, dan memberi angka keyakinan yang konsisten secara probabilitas. Harganya: semua tabel peluang harus tersedia dan benar.</p>
+                </div>
+
+                <h3 id="b-python">Program: Posterior Tiga Hipotesis dalam Python</h3>
+                <p>Fungsi <code>posterior</code> mengimplementasikan rumus hasil kali di Bagian 2: pembilang = prior × hasil kali likelihood, penyebut = jumlah pembilang. Jalankan dan cocokkan dengan tabel di atas.</p>
+                <pre data-copy="bayes_hitung.py"><code><span class="kw">from</span> math <span class="kw">import</span> prod
+
+<span class="cm"># Peluang dari pakar (contoh slide): 3 hipotesis, 3 bukti</span>
+PRIOR = {<span class="st">'A1'</span>: <span class="nm">0.5</span>, <span class="st">'A2'</span>: <span class="nm">0.3</span>, <span class="st">'A3'</span>: <span class="nm">0.2</span>}
+KEMUNGKINAN = {                       <span class="cm"># P(Bj | Ai)</span>
+    <span class="st">'B1'</span>: {<span class="st">'A1'</span>: <span class="nm">0.6</span>, <span class="st">'A2'</span>: <span class="nm">0.7</span>, <span class="st">'A3'</span>: <span class="nm">0.1</span>},
+    <span class="st">'B2'</span>: {<span class="st">'A1'</span>: <span class="nm">0.3</span>, <span class="st">'A2'</span>: <span class="nm">0.3</span>, <span class="st">'A3'</span>: <span class="nm">0.9</span>},
+    <span class="st">'B3'</span>: {<span class="st">'A1'</span>: <span class="nm">0.0</span>, <span class="st">'A2'</span>: <span class="nm">0.5</span>, <span class="st">'A3'</span>: <span class="nm">0.4</span>},
+}
+
+
+<span class="kw">def</span> <span class="fn">posterior</span>(bukti):
+    <span class="st">"""P(Ai | bukti) untuk semua hipotesis. Bukti dianggap bebas bila hipotesis diketahui."""</span>
+    pembilang = {a: PRIOR[a] * <span class="fn">prod</span>(KEMUNGKINAN[b][a] <span class="kw">for</span> b <span class="kw">in</span> bukti) <span class="kw">for</span> a <span class="kw">in</span> PRIOR}
+    penyebut = <span class="fn">sum</span>(pembilang.<span class="fn">values</span>())          <span class="cm"># jumlah pembilang = P(bukti)</span>
+    <span class="kw">return</span> pembilang, penyebut, {a: pembilang[a] / penyebut <span class="kw">for</span> a <span class="kw">in</span> PRIOR}
+
+
+<span class="kw">for</span> bukti <span class="kw">in</span> ([<span class="st">'B1'</span>], [<span class="st">'B1'</span>, <span class="st">'B2'</span>], [<span class="st">'B1'</span>, <span class="st">'B2'</span>, <span class="st">'B3'</span>]):
+    pembilang, penyebut, post = <span class="fn">posterior</span>(bukti)
+    <span class="fn">print</span>(<span class="st">'Bukti'</span>, <span class="st">'+'</span>.<span class="fn">join</span>(bukti))
+    <span class="fn">print</span>(<span class="st">'  pembilang:'</span>, {a: <span class="fn">round</span>(v, <span class="nm">4</span>) <span class="kw">for</span> a, v <span class="kw">in</span> pembilang.<span class="fn">items</span>()}, <span class="st">'| penyebut:'</span>, <span class="fn">round</span>(penyebut, <span class="nm">4</span>))
+    <span class="fn">print</span>(<span class="st">'  posterior:'</span>, {a: <span class="st">f'{v:.1%}'</span> <span class="kw">for</span> a, v <span class="kw">in</span> post.<span class="fn">items</span>()})
+
+<span class="cm"># Akibat peluang tepat 0: ubah P(B3|A1) dari 0.0 menjadi 0.1</span>
+KEMUNGKINAN[<span class="st">'B3'</span>][<span class="st">'A1'</span>] = <span class="nm">0.1</span>
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">'Dengan P(B3|A1) = 0.1:'</span>, {a: <span class="st">f'{v:.1%}'</span> <span class="kw">for</span> a, v <span class="kw">in</span> <span class="fn">posterior</span>([<span class="st">'B1'</span>, <span class="st">'B2'</span>, <span class="st">'B3'</span>])[<span class="nm">2</span>].<span class="fn">items</span>()})</code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>Bukti B1
+  pembilang: {'A1': 0.3, 'A2': 0.21, 'A3': 0.02} | penyebut: 0.53
+  posterior: {'A1': '56.6%', 'A2': '39.6%', 'A3': '3.8%'}
+Bukti B1+B2
+  pembilang: {'A1': 0.09, 'A2': 0.063, 'A3': 0.018} | penyebut: 0.171
+  posterior: {'A1': '52.6%', 'A2': '36.8%', 'A3': '10.5%'}
+Bukti B1+B2+B3
+  pembilang: {'A1': 0.0, 'A2': 0.0315, 'A3': 0.0072} | penyebut: 0.0387
+  posterior: {'A1': '0.0%', 'A2': '81.4%', 'A3': '18.6%'}
+
+Dengan P(B3|A1) = 0.1: {'A1': '18.9%', 'A2': '66.0%', 'A3': '15.1%'}</pre>
+                <p style="font-size:0.9em; color:#555;">Perhatikan baris terakhir: dengan P(B3|A1) = 0,1 keluarannya <code>18.9%</code> / <code>66.0%</code> / <code>15.1%</code>, sama dengan simulasi. Karena <code>prod</code> mengalikan semua likelihood, menambah bukti tinggal menambah satu elemen pada daftar <code>bukti</code>; program tidak perlu diubah.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 4. Batas, Perbandingan & CF pada Basis Aturan -->
+            <!-- ============================================================ -->
+            <section id="batas">
+                <h2>4. Batas, Perbandingan &amp; CF pada Basis Aturan <span class="badge badge-tip">Penting</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="t-dua">Dua jenis ketidakpastian</button>
+                    <button type="button" data-goto="t-bebas">Kebebasan bersyarat</button>
+                    <button type="button" data-goto="t-banding">CF atau Bayes</button>
+                    <button type="button" data-goto="t-masalah">Kapan CF bermasalah</button>
+                    <button type="button" data-goto="t-aturan">CF pada basis aturan</button>
+                    <button type="button" data-goto="t-sampaikan">Menyampaikan keyakinan</button>
+                </nav>
+
+                <p>Bagian ini menjawab pertanyaan yang sering dilewatkan: <em>kapan angka-angka tadi boleh dipercaya?</em> Rumus yang benar secara aritmetika belum tentu menghasilkan kesimpulan yang pantas dipercaya. Sub-CPMK6 meminta Anda menjelaskan asumsi dan keterbatasan, bukan hanya menghitung.</p>
+
+                <h3 id="t-dua">Dua Jenis Ketidakpastian</h3>
+                <p>Kata “tidak pasti” dipakai untuk dua hal yang berbeda, dan keduanya sering tertukar. (Perkenalan dengan contoh dan simulasinya ada di awal Bagian 1, “CF atau fuzzy?”; di sini dirangkum dan dikaitkan dengan peluang.)</p>
+                <div class="compare-cols">
+                    <div class="compare-col fw">
+                        <h4><i class="fa-solid fa-magnifying-glass"></i> Informasi belum lengkap</h4>
+                        <ul>
+                            <li>Faktanya sudah ditentukan, tetapi <strong>kita belum tahu</strong>.</li>
+                            <li>Contoh: apakah besok hujan? Apakah transaksi ini penipuan?</li>
+                            <li>Ditangani dengan <strong>peluang</strong> dan <strong>certainty factor</strong> (pertemuan ini).</li>
+                        </ul>
+                    </div>
+                    <div class="compare-col bw">
+                        <h4><i class="fa-solid fa-sliders"></i> Batas kategori tidak tegas</h4>
+                        <ul>
+                            <li>Faktanya <strong>kita ketahui tepat</strong>, tetapi kategorinya kabur.</li>
+                            <li>Contoh: suhu 18 °C itu “dingin”? Nilai 78 itu “baik”?</li>
+                            <li>Ditangani dengan <strong>logika fuzzy</strong> (pertemuan 12–13).</li>
+                        </ul>
+                    </div>
+                </div>
+                <p>Suhu 18 °C bukan “tidak dingin” dan bukan “dingin sepenuhnya”, walaupun suhu itu terukur tepat. Tidak ada informasi yang kurang; yang kabur adalah <em>kata</em> “dingin”. Sebaliknya, “apakah besok hujan?” akan terjawab jelas besok pagi: yang kurang adalah informasi hari ini.</p>
+                <div class="warning-box">
+                    <strong><i class="fa-solid fa-triangle-exclamation"></i> Derajat keanggotaan fuzzy bukan peluang.</strong>
+                    <p style="margin-top:6px;">Pada pertemuan berikutnya Anda akan melihat angka 0 sampai 1 yang tampak seperti peluang, tetapi artinya berbeda: “derajat keanggotaan 0,7 pada himpunan dingin” berarti suhu itu <em>cukup termasuk</em> kategori dingin, bukan “70% kemungkinan dingin”. Tugas RTM IV meminta Anda menjelaskan perbedaan ini dengan contoh dari kasus kelompok sendiri.</p>
+                </div>
+                <h4>Latihan Cepat: Jenis yang Mana?</h4>
+                <p>Tentukan jenis ketidakpastian pada tiap pertanyaan: (a) “Apakah email ini spam?” (b) “Apakah ruangan 26 °C itu hangat?” (c) “Sensor ketinggian air mati; apakah sungai aman?” (d) “Apakah nilai 78 itu baik?”</p>
+                <details class="kunci"><summary>Lihat kunci</summary>
+                    <ul>
+                        <li>(a) dan (c): <strong>informasi belum lengkap</strong> (peluang atau CF). Fakta sebenarnya ada tetapi tidak kita ketahui.</li>
+                        <li>(b) dan (d): <strong>batas kategori tidak tegas</strong> (fuzzy). Suhu dan nilainya diketahui tepat; yang kabur adalah batas “hangat” dan “baik”.</li>
+                        <li>Pertanyaan “apakah pasien <em>agak</em> demam?” juga fuzzy bila suhunya terukur; tetapi “apakah ini flu?” tetap peluang atau CF.</li>
+                    </ul>
+                </details>
+
+                <h3 id="t-bebas">Asumsi Kebebasan Bersyarat dan Akibatnya</h3>
+                <p>Contoh tiga hipotesis pada Bagian 3 mengalikan P(B<sub>1</sub>|A<sub>i</sub>), P(B<sub>2</sub>|A<sub>i</sub>), dan P(B<sub>3</sub>|A<sub>i</sub>). Perkalian itu sah <strong>hanya bila bukti saling bebas setelah hipotesisnya diketahui</strong>: mengetahui B<sub>1</sub> muncul tidak memberi tahu apa-apa tentang B<sub>2</sub>, selama hipotesisnya sudah ditetapkan. Slide menulis “tiga fakta independen” tanpa menyebut bahwa ini <em>asumsi</em>. Metode yang memakai asumsi ini secara menyeluruh dinamai <em>naive Bayes</em>; kata “naif” menunjuk pada asumsi tersebut.</p>
+                <p>Bagaimana bila asumsinya dilanggar? Ambil email promo. Kata “GRATIS”, “HADIAH”, dan “MENANGKAN” cenderung muncul <em>bersamaan</em> pada email spam, karena semuanya berasal dari satu templat. Bila ketiganya dianggap tiga bukti terpisah, perkalian menghitung <strong>pengaruh yang hampir sama sebanyak tiga kali</strong>, dan hasilnya terlalu yakin.</p>
+
+                <h4>Coba Sendiri: Bukti yang Sama Dihitung Berulang <span class="badge badge-new">Interaktif</span></h4>
+                <p>Kasus ekstremnya: satu bukti yang sebenarnya <em>sama</em> dicatat n kali (misalnya lima gejala yang semuanya cermin dari satu penyebab). Bandingkan tiga cara menghitung.</p>
+                <div data-viz="dup-lab"></div>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Geser dari 1 ke 5.</strong>
+                            <p>Posterior Bayes dengan asumsi bebas naik dari 66,7% sampai 97,0%, padahal pengetahuan kita <em>tidak bertambah</em> sama sekali: bukti itu tetap satu. Hasil yang benar tetap 66,7%.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Perhatikan kolom CF gabungan.</strong>
+                            <p>Rumus penggabungan CF juga menganggap tiap aturan membawa bukti <em>baru</em>. Lima aturan 0,5 yang memakai gejala yang sama menghasilkan 0,969, jauh di atas 0,5 yang semestinya.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Apa obatnya?</strong>
+                    <ul style="margin-top:6px;">
+                        <li><strong>Pilih bukti yang memang berbeda.</strong> Jangan menulis tiga aturan untuk tiga gejala yang selalu datang bersama.</li>
+                        <li><strong>Satukan bukti yang berkorelasi</strong> menjadi satu aturan dengan premis AND (CF dihitung dengan minimum, bukan dijumlahkan).</li>
+                        <li><strong>Tuliskan keterkaitannya secara eksplisit</strong> dengan jaringan Bayes (Bagian 3): panah antarvariabel menggantikan asumsi bebas.</li>
+                    </ul>
+                    <p style="margin-top:6px;">Catatan: pada tugas klasifikasi, naive Bayes sering tetap mengurutkan hipotesis dengan benar walau asumsinya dilanggar. Yang rusak adalah <em>angkanya</em>: peluang yang dilaporkan menjadi terlalu dekat ke 0 atau 1, sehingga tidak boleh dibaca sebagai peluang sungguhan.</p>
+                </div>
+
+                <h3 id="t-banding">Certainty Factor atau Bayes? Perbandingan</h3>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Aspek</th><th>Certainty factor</th><th>Teorema Bayes</th></tr></thead>
+                        <tbody>
+                            <tr><td>Dasar</td><td>Heuristik dari pengalaman pakar</td><td>Teori probabilitas</td></tr>
+                            <tr><td>Rentang</td><td>−1 sampai 1</td><td>0 sampai 1</td></tr>
+                            <tr><td>Masukan dari pakar</td><td>Satu angka per aturan</td><td>Peluang awal dan peluang bersyarat tiap bukti pada tiap hipotesis</td></tr>
+                            <tr><td>Menggabungkan bukti</td><td>Rumus min, maks, dan penggabungan tiga kasus</td><td>Perkalian, dengan asumsi kebebasan bersyarat (atau jaringan Bayes)</td></tr>
+                            <tr><td>Arti angka hasil</td><td>Ukuran keyakinan; tidak dapat ditafsirkan sebagai peluang</td><td>Peluang; dapat dikalikan dengan biaya untuk menghitung nilai harapan</td></tr>
+                            <tr><td>Kelebihan</td><td>Ringan; pakar mudah memberi satu angka; cocok dengan basis aturan</td><td>Konsisten secara matematis; dapat diperbarui dari data</td></tr>
+                            <tr><td>Kelemahan</td><td>Tidak berdasar probabilitas yang ketat</td><td>Peluang sulit diperoleh; asumsi kebebasan sering dilanggar</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Mengapa CF tidak punya dasar probabilistik yang ketat?</strong> Rumus penggabungan CF dirancang agar berperilaku masuk akal, bukan diturunkan dari aksioma peluang. Heckerman (1986) menunjukkan bahwa CF hanya dapat ditafsirkan sebagai peluang di bawah asumsi kebebasan yang sangat kuat. Walau begitu, CF dipakai luas pada sistem pakar awal seperti MYCIN karena pakar lebih mudah memberi satu angka per aturan daripada mengisi tabel peluang yang lengkap.</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-scroll"></i></div>
+                        <h4>Pilih CF bila…</h4>
+                        <p>Pengetahuan berupa aturan kualitatif dari pakar, tidak ada data historis, dan hasil dipakai sebagai saran awal.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-chart-column"></i></div>
+                        <h4>Pilih peluang bila…</h4>
+                        <p>Ada data untuk memperkirakan peluang, dan hasilnya dipakai untuk keputusan berbiaya (nilai harapan).</p>
+                    </div>
+                    <div class="card card-orange">
+                        <div class="card-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                        <h4>Pilih jaringan Bayes bila…</h4>
+                        <p>Variabel saling bergantung dan Anda perlu menalar dari akibat ke penyebab maupun sebaliknya.</p>
+                    </div>
+                </div>
+
+                <h3 id="t-masalah">Kapan CF Menjadi Masalah</h3>
+                <p>Karena CF tidak berdasar probabilitas yang ketat, ada tiga keadaan yang perlu diwaspadai:</p>
+                <ol>
+                    <li><strong>Banyak aturan memakai bukti yang sama.</strong> Rumus penggabungan menganggap tiap aturan membawa bukti baru, sehingga keyakinan naik terlalu tinggi (simulasi “bukti yang sama” di atas).</li>
+                    <li><strong>Rantai aturan panjang.</strong> Keyakinan menyusut pada tiap langkah (0,9 → 0,36 → 0,108), sehingga kesimpulan akhir bergantung pada <em>panjang rantai</em>, bukan hanya pada kuatnya bukti. Dua sistem dengan basis aturan yang disusun berbeda dapat memberi angka berbeda untuk fakta yang sama.</li>
+                    <li><strong>Hasil dipakai untuk keputusan berisiko.</strong> Peluang dapat dikalikan dengan biaya dan manfaat; CF tidak dapat, karena angkanya bukan peluang. CF 0,2 tidak sama dengan “peluang 20%”, sehingga tidak boleh dimasukkan ke perhitungan nilai harapan.</li>
+                </ol>
+
+                <h3 id="t-aturan">Memasang CF pada Basis Aturan Anda</h3>
+                <p>Inilah indikator 6.5: menambahkan derajat keyakinan pada basis aturan pertemuan 9–10. Basis aturan RTM III yang Anda kumpulkan pekan ini akan dipakai kembali sebagai bahan latihan. Langkahnya:</p>
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>1 · Beri id</b><small>Tiap aturan punya id yang mudah ditunjuk (R1, R2, …).</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>2 · Beri CF</b><small>Tiap aturan diberi CF dari pakar, memakai skala yang Anda tulis.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>3 · Fakta tak pasti</b><small>Fakta dari user boleh punya CF (sangat yakin, ragu-ragu).</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>4 · Hitung dan jelaskan</b><small>Mesin menghitung CF dan penjelasan menyertakannya.</small></div>
+                </div>
+                <p>Kita memakai lagi basis aturan obligasi dari pertemuan 9–10. Aturannya sama dengan sebelumnya; yang bertambah hanya kolom <code>cf</code>, satu aturan baru (R7) yang memberi bukti kedua untuk kesimpulan “beli obligasi”, dan fakta dari user yang sekarang berupa pasangan fakta dan CF.</p>
+
+                <h4>Langkah 1: Basis aturan dengan CF (file JSON)</h4>
+                <pre data-copy="aturan_obligasi_cf.json"><code>{
+  <span class="st">"aturan"</span>: [
+    {<span class="st">"id"</span>: <span class="st">"R1"</span>, <span class="st">"jika"</span>: [<span class="st">"suku bunga turun"</span>],         <span class="st">"maka"</span>: <span class="st">"harga obligasi naik"</span>,  <span class="st">"cf"</span>: 0.8},
+    {<span class="st">"id"</span>: <span class="st">"R2"</span>, <span class="st">"jika"</span>: [<span class="st">"suku bunga naik"</span>],          <span class="st">"maka"</span>: <span class="st">"harga obligasi turun"</span>, <span class="st">"cf"</span>: 0.8},
+    {<span class="st">"id"</span>: <span class="st">"R4"</span>, <span class="st">"jika"</span>: [<span class="st">"dolar naik"</span>],               <span class="st">"maka"</span>: <span class="st">"suku bunga turun"</span>,     <span class="st">"cf"</span>: 0.9},
+    {<span class="st">"id"</span>: <span class="st">"R5"</span>, <span class="st">"jika"</span>: [<span class="st">"dolar turun"</span>],              <span class="st">"maka"</span>: <span class="st">"suku bunga naik"</span>,      <span class="st">"cf"</span>: 0.9},
+    {<span class="st">"id"</span>: <span class="st">"R6"</span>, <span class="st">"jika"</span>: [<span class="st">"harga obligasi turun"</span>],     <span class="st">"maka"</span>: <span class="st">"beli obligasi"</span>,        <span class="st">"cf"</span>: 0.7},
+    {<span class="st">"id"</span>: <span class="st">"R7"</span>, <span class="st">"jika"</span>: [<span class="st">"analis menyarankan beli"</span>],  <span class="st">"maka"</span>: <span class="st">"beli obligasi"</span>,        <span class="st">"cf"</span>: 0.6}
+  ]
+}</code></pre>
+
+                <h4>Langkah 2: Mesin forward chaining dengan CF</h4>
+                <pre data-copy="mesin_cf.py"><code><span class="kw">import</span> json
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="st">'aturan_obligasi_cf.json'</span>, encoding=<span class="st">'utf-8'</span>) <span class="kw">as</span> f:
+    ATURAN = json.<span class="fn">load</span>(f)[<span class="st">'aturan'</span>]
+
+
+<span class="kw">def</span> <span class="fn">gabung</span>(a, b):
+    <span class="kw">if</span> a == <span class="nm">0</span> <span class="kw">or</span> b == <span class="nm">0</span>:
+        <span class="kw">return</span> a + b
+    <span class="kw">if</span> a &gt; <span class="nm">0</span> <span class="kw">and</span> b &gt; <span class="nm">0</span>:
+        <span class="kw">return</span> a + b * (<span class="nm">1</span> - a)
+    <span class="kw">if</span> a &lt; <span class="nm">0</span> <span class="kw">and</span> b &lt; <span class="nm">0</span>:
+        <span class="kw">return</span> a + b * (<span class="nm">1</span> + a)
+    <span class="kw">return</span> (a + b) / (<span class="nm">1</span> - <span class="fn">min</span>(<span class="fn">abs</span>(a), <span class="fn">abs</span>(b)))
+
+
+<span class="kw">def</span> <span class="fn">maju_cf</span>(fakta_awal):
+    <span class="st">"""Forward chaining dengan CF. fakta_awal: {fakta: CF}."""</span>
+    fakta = <span class="fn">dict</span>(fakta_awal)                  <span class="cm"># memori kerja: fakta -&gt; CF</span>
+    asal = {f: [] <span class="kw">for</span> f <span class="kw">in</span> fakta}             <span class="cm"># fakta -&gt; daftar (id aturan, CF kontribusi)</span>
+    sudah = <span class="fn">set</span>()                             <span class="cm"># aturan yang sudah dijalankan (refraction)</span>
+    <span class="kw">while</span> <span class="kw">True</span>:
+        <span class="cm"># Aturan siap bila tiap premisnya fakta dasar, atau SEMUA aturan penyimpulnya sudah jalan.</span>
+        <span class="cm"># Syarat ini menjamin CF sebuah premis sudah final sebelum dipakai.</span>
+        siap = [a <span class="kw">for</span> a <span class="kw">in</span> ATURAN <span class="kw">if</span> a[<span class="st">'id'</span>] <span class="kw">not</span> <span class="kw">in</span> sudah <span class="kw">and</span> <span class="fn">all</span>(
+            p <span class="kw">in</span> fakta_awal <span class="kw">or</span> <span class="fn">all</span>(b[<span class="st">'id'</span>] <span class="kw">in</span> sudah <span class="kw">for</span> b <span class="kw">in</span> ATURAN <span class="kw">if</span> b[<span class="st">'maka'</span>] == p)
+            <span class="kw">for</span> p <span class="kw">in</span> a[<span class="st">'jika'</span>])]
+        <span class="kw">if</span> <span class="kw">not</span> siap:
+            <span class="kw">return</span> fakta, asal
+        a = siap[<span class="nm">0</span>]
+        sudah.<span class="fn">add</span>(a[<span class="st">'id'</span>])
+        cf_premis = <span class="fn">min</span>(fakta.<span class="fn">get</span>(p, <span class="nm">0.0</span>) <span class="kw">for</span> p <span class="kw">in</span> a[<span class="st">'jika'</span>])      <span class="cm"># AND = minimum</span>
+        hasil = cf_premis * a[<span class="st">'cf'</span>] <span class="kw">if</span> cf_premis &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
+        <span class="fn">print</span>(<span class="st">f"{a['id']}: min{[round(fakta.get(p, 0.0), 4) for p in a['jika']]} x {a['cf']} = {hasil:.4f}"</span>
+              + (<span class="st">''</span> <span class="kw">if</span> cf_premis &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="st">'  (premis &lt;= 0, tidak berlaku)'</span>))
+        <span class="kw">if</span> hasil != <span class="nm">0</span>:
+            fakta[a[<span class="st">'maka'</span>]] = <span class="fn">gabung</span>(fakta.<span class="fn">get</span>(a[<span class="st">'maka'</span>], <span class="nm">0.0</span>), hasil)
+            asal.<span class="fn">setdefault</span>(a[<span class="st">'maka'</span>], []).<span class="fn">append</span>((a[<span class="st">'id'</span>], hasil))
+
+
+<span class="kw">def</span> <span class="fn">jelaskan</span>(fakta, cf, asal, tingkat=<span class="nm">0</span>):
+    pad = <span class="st">'  '</span> * tingkat
+    <span class="kw">if</span> <span class="kw">not</span> asal[fakta]:
+        <span class="fn">print</span>(<span class="st">f'{pad}{fakta} (CF {cf[fakta]}): fakta dari user'</span>)
+        <span class="kw">return</span>
+    <span class="fn">print</span>(<span class="st">f"{pad}{fakta} (CF {cf[fakta]:.4f}), dari: "</span> + <span class="st">', '</span>.<span class="fn">join</span>(<span class="st">f'{i} -&gt; {h:.4f}'</span> <span class="kw">for</span> i, h <span class="kw">in</span> asal[fakta]))
+    <span class="kw">for</span> a <span class="kw">in</span> ATURAN:
+        <span class="kw">if</span> a[<span class="st">'maka'</span>] == fakta <span class="kw">and</span> <span class="fn">any</span>(i == a[<span class="st">'id'</span>] <span class="kw">for</span> i, _ <span class="kw">in</span> asal[fakta]):
+            <span class="kw">for</span> p <span class="kw">in</span> a[<span class="st">'jika'</span>]:
+                <span class="fn">jelaskan</span>(p, cf, asal, tingkat + <span class="nm">1</span>)
+
+
+cf, asal = <span class="fn">maju_cf</span>({<span class="st">'dolar turun'</span>: <span class="nm">0.8</span>, <span class="st">'analis menyarankan beli'</span>: <span class="nm">0.5</span>})
+<span class="fn">print</span>()
+<span class="fn">print</span>(<span class="st">'CF "beli obligasi" ='</span>, <span class="fn">round</span>(cf[<span class="st">'beli obligasi'</span>], <span class="nm">4</span>))
+<span class="fn">print</span>()
+<span class="fn">jelaskan</span>(<span class="st">'beli obligasi'</span>, cf, asal)</code></pre>
+                <h5 style="margin-top:14px;">Keluaran yang diharapkan</h5>
+                <pre>R4: min[0.0] x 0.9 = 0.0000  (premis &lt;= 0, tidak berlaku)
+R1: min[0.0] x 0.8 = 0.0000  (premis &lt;= 0, tidak berlaku)
+R5: min[0.8] x 0.9 = 0.7200
+R2: min[0.72] x 0.8 = 0.5760
+R6: min[0.576] x 0.7 = 0.4032
+R7: min[0.5] x 0.6 = 0.3000
+
+CF "beli obligasi" = 0.5822
+
+beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
+  harga obligasi turun (CF 0.5760), dari: R2 -&gt; 0.5760
+    suku bunga naik (CF 0.7200), dari: R5 -&gt; 0.7200
+      dolar turun (CF 0.8): fakta dari user
+  analis menyarankan beli (CF 0.5): fakta dari user</pre>
+
+                <h4>Cara Membaca Kodenya</h4>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Bagian kode</th><th>Setara dengan</th></tr></thead>
+                        <tbody>
+                            <tr><td><code>fakta_awal = {'dolar turun': 0.8, ...}</code></td><td>Fakta dari user, <strong>masing-masing dengan CF</strong> (derajat percaya pada fakta)</td></tr>
+                            <tr><td><code>siap = [a for a in ATURAN if ... all(b['id'] in sudah ...)]</code></td><td>Aturan baru boleh jalan bila <strong>semua aturan penyimpul premisnya sudah jalan</strong>. Tanpa syarat ini, CF sebuah premis bisa dipakai sebelum semua kontribusinya digabung, dan hasilnya salah</td></tr>
+                            <tr><td><code>sudah.add(a['id'])</code></td><td>Pengganti <em>refraction</em> pertemuan 9–10. Syarat <code>not in memori</code> tidak bisa dipakai lagi, karena satu fakta kini boleh menerima kontribusi dari beberapa aturan</td></tr>
+                            <tr><td><code>cf_premis = min(...)</code></td><td>Premis AND: <strong>minimum</strong>. Fakta yang tidak ada pada memori dihitung <strong>0</strong> (belum diketahui), bukan −1</td></tr>
+                            <tr><td><code>hasil = cf_premis * a['cf'] if cf_premis &gt; 0 else 0.0</code></td><td>CF(H) = CF(E) × CF(aturan), dan aturan <strong>tidak berlaku</strong> bila CF premis ≤ 0</td></tr>
+                            <tr><td><code>fakta[a['maka']] = gabung(...)</code></td><td>Beberapa aturan untuk hipotesis yang sama digabung dengan rumus tiga kasus (di sini R6 dan R7 untuk “beli obligasi”)</td></tr>
+                            <tr><td><code>asal[...]</code> dan <code>jelaskan()</code></td><td>Fasilitas penjelasan “Bagaimana?” yang sekarang <strong>menampilkan CF pada tiap langkah</strong></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Baca hasilnya: rantai R5 → R2 → R6 menyusutkan keyakinan 0,8 → 0,72 → 0,576 → 0,4032, lalu R7 (saran analis, 0,5 × 0,6 = 0,3) menguatkannya menjadi 0,4032 + 0,3 × (1 − 0,4032) = <strong>0,5822</strong>. R4 dan R1 tidak berlaku karena “dolar naik” tidak diketahui (0), bukan karena ditolak.</p>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Yang masih harus Anda tambahkan pada tugas Anda sendiri:</strong>
+                    <ul style="margin-top:6px;">
+                        <li>Gerbang <strong>OR</strong> dengan maksimum (mengganti <code>min</code> untuk aturan bermode atau).</li>
+                        <li><strong>Skala istilah</strong> yang Anda pakai untuk memberi CF, ditulis pada dokumentasi.</li>
+                        <li>Pemeriksaan <strong>kontradiksi</strong> (dua aturan dengan CF +1 dan −1 untuk hipotesis yang sama).</li>
+                        <li><strong>Kasus uji</strong>: tambahkan satu gejala lalu catat kesimpulan mana yang berubah dan mengapa; ubah satu CF aturan dan catat pengaruhnya.</li>
+                    </ul>
+                </div>
+
+                <h3 id="t-sampaikan">Menyampaikan Keyakinan kepada User</h3>
+                <p>Angka CF atau peluang yang dikeluarkan sistem akan dibaca orang. Cara menyampaikannya menentukan apakah orang menjadi lebih tahu atau justru tersesat. Tiga prinsip:</p>
+                <div class="card-grid">
+                    <div class="card card-blue">
+                        <div class="card-icon"><i class="fa-solid fa-comment"></i></div>
+                        <h4>1. Kata, bukan angka mentah</h4>
+                        <p>CF 0,2 ditampilkan sebagai “dugaan lemah”, bukan “peluang 20%”. Pakai skala istilah yang sama dengan yang dipakai pakar.</p>
+                    </div>
+                    <div class="card card-green">
+                        <div class="card-icon"><i class="fa-solid fa-circle-question"></i></div>
+                        <h4>2. Tampilkan alasannya</h4>
+                        <p>Sebutkan aturan dan bukti yang dipakai, lewat fasilitas penjelasan: “karena R6 dan R7”.</p>
+                    </div>
+                    <div class="card card-red">
+                        <div class="card-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h4>3. Nyatakan batasnya</h4>
+                        <p>Keluaran adalah saran. Keputusan akhir tetap pada manusia, dan asumsi yang paling menentukan disebutkan.</p>
+                    </div>
+                </div>
+                <div class="ui-banding">
+                    <div class="buruk">
+                        <b class="t"><i class="fa-solid fa-xmark"></i> Kurang baik</b>
+                        “Beli obligasi: 58,22%.”<br>
+                        <small>Dua desimal memberi kesan ketelitian yang tidak ada (angka CF berasal dari taksiran pakar), dan “%” membuatnya terbaca sebagai peluang.</small>
+                    </div>
+                    <div class="baik">
+                        <b class="t"><i class="fa-solid fa-check"></i> Lebih baik</b>
+                        “Saran: <em>beli obligasi</em>, kemungkinan besar (CF kira-kira 0,6). Alasan: harga obligasi diperkirakan turun (R2 dan R6) dan analis menyarankan beli (R7). Perkiraan harga turun bergantung pada dugaan dolar turun yang diyakini 0,8. Ini saran; keputusan tetap pada Anda.”
+                    </div>
+                </div>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Nilai CF (kira-kira)</th><th>Kata yang ditampilkan</th><th>Arti bagi user</th></tr></thead>
+                        <tbody>
+                            <tr><td>0,9 – 1,0</td><td>pasti</td><td>Hampir tidak ada yang melawan</td></tr>
+                            <tr><td>0,7 – 0,9</td><td>hampir pasti</td><td>Kuat, tetapi masih ada pengecualian</td></tr>
+                            <tr><td>0,5 – 0,7</td><td>kemungkinan besar</td><td>Arah yang masuk akal, perlu dicek</td></tr>
+                            <tr><td>0,2 – 0,5</td><td>mungkin</td><td>Dugaan lemah; jangan diputuskan dari ini saja</td></tr>
+                            <tr><td>−0,2 – 0,2</td><td>belum dapat dikatakan</td><td>Sistem tidak punya pegangan; minta bukti tambahan</td></tr>
+                            <tr><td>di bawah −0,2</td><td>cermin dari sisi positif (mungkin tidak … pasti tidak)</td><td>Bukti lebih banyak melawan daripada mendukung</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Batas pada tabel mengikuti skala kanan pada Bagian 1. Bila skala yang Anda pilih berbeda, tuliskan tabel Anda sendiri dan pakai konsisten.</p>
+            </section>
+
+            <!-- ============================================================ -->
+            <!-- 5. Latihan & Rangkuman -->
+            <!-- ============================================================ -->
+            <section id="latihan">
+                <h2>5. Latihan &amp; Rangkuman <span class="badge badge-new">Praktik</span></h2>
+
+                <nav class="mini-toc" aria-label="Isi bagian ini">
+                    <span>Di bagian ini:</span>
+                    <button type="button" data-goto="l-ringkas">Rangkuman</button>
+                    <button type="button" data-goto="l-latihan">Latihan mandiri</button>
+                    <button type="button" data-goto="l-kelas">Kegiatan kelas</button>
+                    <button type="button" data-goto="l-lanjut">Pertemuan berikutnya</button>
+                    <button type="button" data-goto="l-ref">Referensi</button>
+                </nav>
+
+                <h3 id="l-ringkas">Rangkuman</h3>
+                <div class="success-box">
+                    <strong><i class="fa-solid fa-circle-check"></i> Poin-poin Kunci:</strong>
+                    <ul style="margin-top:10px;">
+                        <li>Ketidakpastian berasal dari <strong>informasi tidak lengkap, data tidak akurat, pengetahuan berupa kecenderungan, dan aturan yang punya pengecualian</strong>. Sistem harus mewakili, menghitung, dan menyampaikannya.</li>
+                        <li><strong>Certainty factor</strong> adalah ukuran keyakinan heuristik pada rentang −1 sampai 1, melekat pada fakta dan aturan. CF bukan peluang. CF = MB − MD menjelaskan artinya, tetapi pakar biasanya langsung memberi angkanya.</li>
+                        <li>Menghitung CF: <strong>CF(H) = CF(E) × CF(aturan)</strong> bila CF(E) &gt; 0, selain itu 0. Premis <strong>AND = minimum</strong>, <strong>OR = maksimum</strong>. Beberapa aturan untuk hipotesis yang sama digabung dengan tiga kasus tanda. Penggabungan tidak bergantung urutan.</li>
+                        <li>Rantai aturan menyusutkan keyakinan pada tiap langkah. CF 0 berarti <em>tidak tahu</em>, bukan <em>salah</em>.</li>
+                        <li><strong>Teorema Bayes</strong>: P(A|B) = P(B|A) P(A) / P(B). Prior diubah menjadi posterior oleh bukti. Jangan menukar P(B|A) dengan P(A|B); prior (base rate) menentukan perbedaannya.</li>
+                        <li>Posterior banyak hipotesis: pembilang = prior × hasil kali likelihood, penyebut = jumlah pembilang. Peluang tepat 0 adalah veto yang tidak dapat dipulihkan.</li>
+                        <li>Hasil kali likelihood mengasumsikan <strong>kebebasan bersyarat</strong>. Bila dilanggar (bukti yang sama dihitung berulang), hasilnya terlalu yakin. <strong>Jaringan Bayes</strong> menuliskan keterkaitan secara eksplisit.</li>
+                        <li>Tiga pertanyaan penutup: apakah ketidakpastiannya berasal dari informasi yang kurang atau batas kategori yang kabur; apakah buktinya sungguh berbeda; dan bagaimana keyakinan itu disampaikan kepada user (kata, alasan, batas).</li>
+                    </ul>
+                </div>
+
+                <h3 id="l-latihan">Latihan Mandiri</h3>
+                <p>Kerjakan di kertas terlebih dahulu, lalu periksa dengan simulasi atau kunci jawaban.</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Gabungkan CF dari dua aturan: (a) 0,7 dan 0,4; (b) 0,7 dan −0,4.</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>(a) keduanya positif: 0,7 + 0,4 × (1 − 0,7) = 0,7 + 0,12 = <strong>0,82</strong>.</li>
+                                    <li>(b) tanda berbeda: (0,7 − 0,4) ÷ (1 − min{0,7; 0,4}) = 0,3 ÷ 0,6 = <strong>0,5</strong>.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Aturan: IF (E1 AND E2) OR E3 THEN H {CF = 0,8}. Diketahui CF(E1) = 0,9; CF(E2) = 0,6; CF(E3) = 0,5. Berapa CF(H)?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>Kurung dahulu (AND): min{0,9; 0,6} = 0,6.</li>
+                                    <li>Lalu OR: maks{0,6; 0,5} = 0,6.</li>
+                                    <li>CF(H) = 0,6 × 0,8 = <strong>0,48</strong>.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Rantai: A (CF 0,8) → B (CF aturan 0,5) → C (CF aturan 0,6). Berapa CF(B) dan CF(C)? Bagaimana bila CF(A) = −0,3?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>CF(B) = 0,8 × 0,5 = <strong>0,4</strong>; CF(C) = 0,4 × 0,6 = <strong>0,24</strong>.</li>
+                                    <li>Bila CF(A) = −0,3 (≤ 0), Rule 1 tidak berlaku: CF(B) = 0, lalu Rule 2 juga tidak berlaku: CF(C) = <strong>0</strong>.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">4</div>
+                        <div class="step-content">
+                            <strong>Dua kejadian pada dadu: (i) dua lemparan, A = lemparan pertama muncul 6, B = lemparan kedua muncul 6; (ii) satu lemparan, A = muncul 2, B = muncul angka ganjil. Untuk tiap pasangan, apakah saling lepas dan apakah independen?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>(i) P(A∩B) = 1/36 = 1/6 × 1/6, jadi <strong>independen</strong>; tetapi P(A∩B) ≠ 0, jadi <strong>tidak saling lepas</strong> (kedua 6 dapat muncul bersamaan).</li>
+                                    <li>(ii) P(A∩B) = 0 (2 bukan ganjil), jadi <strong>saling lepas</strong>; tetapi P(A) × P(B) = 1/6 × 1/2 = 1/12 ≠ 0, jadi <strong>tidak independen</strong>.</li>
+                                    <li>Pelajaran: saling lepas bukan independen.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">5</div>
+                        <div class="step-content">
+                            <strong>Satu dari lima email adalah spam (P = 0,2). Tautan mencurigakan muncul pada 70% spam dan 10% email biasa. Bila sebuah email memuat tautan itu, berapa peluang email itu spam?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>Pembilang: 0,7 × 0,2 = 0,14. Penyebut: 0,14 + 0,1 × 0,8 = 0,14 + 0,08 = 0,22.</li>
+                                    <li>P(spam | tautan) = 0,14 ÷ 0,22 = <strong>0,636 (63,6%)</strong>.</li>
+                                    <li>Cek dengan 1.000 email: 200 spam → 140 bertautan; 800 biasa → 80 bertautan; 140 ÷ 220 = 63,6%.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">6</div>
+                        <div class="step-content">
+                            <strong>Pada contoh tiga hipotesis (Bagian 3), hitung posterior bila <em>hanya</em> B<sub>2</sub> yang diamati. Hipotesis mana yang kini tertinggi?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>Pembilang: A<sub>1</sub> = 0,5 × 0,3 = 0,15; A<sub>2</sub> = 0,3 × 0,3 = 0,09; A<sub>3</sub> = 0,2 × 0,9 = 0,18. Penyebut = 0,42.</li>
+                                    <li>Posterior: A<sub>1</sub> = 0,357; A<sub>2</sub> = 0,214; A<sub>3</sub> = <strong>0,429</strong>. Hipotesis A<sub>3</sub>, yang prior-nya paling kecil (0,2), menjadi tertinggi.</li>
+                                    <li>Periksa dengan simulasi: klik hanya B<sub>2</sub>.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">7</div>
+                        <div class="step-content">
+                            <strong>Sebuah sistem diagnosis kerusakan motor memakai lima aturan, dan lima gejala di dalamnya sebenarnya semua muncul karena satu penyebab: aki lemah. Mengapa sistem itu terlalu yakin bahwa aki yang rusak, dan apa dua cara memperbaikinya?</strong>
+                            <details class="kunci"><summary>Lihat kunci</summary>
+                                <ul>
+                                    <li>Kelima gejala berkorelasi (bukan bebas bersyarat), tetapi rumus (perkalian pada Bayes, penggabungan pada CF) memperlakukannya sebagai lima bukti terpisah. Pengaruh satu penyebab terhitung lima kali.</li>
+                                    <li>Perbaikan: (a) satukan gejala yang selalu datang bersama menjadi satu aturan dengan premis AND; (b) modelkan keterkaitannya dengan jaringan Bayes; (c) pilih gejala yang benar-benar berbeda sumbernya.</li>
+                                </ul>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 id="l-kelas">Kegiatan Kelas: CF pada Basis Aturan RTM III</h3>
+                <p>Kegiatan terbimbing pada pertemuan ini, dikerjakan per kelompok pada basis aturan RTM III yang sudah dikumpulkan:</p>
+                <div class="flow-row">
+                    <div class="flow-box hl"><b>1 · Ambil basis aturan</b><small>Pakai basis aturan pertemuan 9–10 milik kelompok.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>2 · Beri CF</b><small>Beri CF pada tiap aturan dan pada fakta yang tidak pasti. Tulis skalanya.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>3 · Jalankan</b><small>Hitung CF kesimpulan, termasuk penggabungan dan rantai aturan.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box hl"><b>4 · Tambah satu gejala</b><small>Catat kesimpulan mana yang berubah dan mengapa.</small></div>
+                </div>
+                <ul>
+                    <li>Tuliskan pula <strong>cara hasilnya disampaikan kepada user</strong> (kata, alasan, batas) dan nilai CF yang Anda pilih beserta alasannya.</li>
+                    <li>Yang diharapkan ditemukan: satu gejala tambahan dapat mengubah urutan kesimpulan, dan pemilihan nilai CF mengubah hasil. Itu bukan kesalahan sistem; itu sifat ukuran keyakinan yang heuristik, dan karena itu pilihan CF harus dijustifikasi.</li>
+                    <li>Bidang kesehatan manusia tetap tidak dijadikan tema (alasannya di Bagian 1 dan pada pertemuan 9–10).</li>
+                </ul>
+
+                <h3 id="l-lanjut">Persiapan Pertemuan Berikutnya</h3>
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-book"></i> Minggu 12–13 — Logika Fuzzy dan Sistem Inferensi Fuzzy:</strong>
+                    <ul style="margin-top:8px;">
+                        <li>Pertemuan berikutnya membahas jenis ketidakpastian yang <em>lain</em>: batas kategori yang kabur (Bagian 4, “Dua Jenis Ketidakpastian”). Himpunan fuzzy, fungsi keanggotaan, variabel linguistik, model Mamdani dan Sugeno, dan defuzzifikasi.</li>
+                        <li><strong>RTM III</strong> (sistem pakar berbasis aturan) jatuh tempo pada Minggu 11. <strong>RTM IV</strong> (inferensi fuzzy Mamdani, kelompok) diberikan pada Minggu 12 dan salah satu butirnya meminta Anda menjelaskan perbedaan fuzzy dengan probabilitas pada kasus kelompok sendiri.</li>
+                        <li><strong>Kuis 2</strong> pada Minggu 13 mencakup materi Minggu 9–12: sistem pakar, certainty factor, dan Bayes termasuk di dalamnya.</li>
+                    </ul>
+                </div>
+
+                <h3 id="l-ref">Referensi Utama</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Referensi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>1</td><td>Russell, S. J., &amp; Norvig, P. (2021). <em>Artificial Intelligence: A Modern Approach</em> (4th ed.). Pearson. — Bab 12 (<em>Quantifying Uncertainty</em>) dan Bab 13 (<em>Probabilistic Reasoning</em>)</td></tr>
+                        <tr><td>2</td><td>Negnevitsky, M. (2011). <em>Artificial Intelligence: A Guide to Intelligent Systems</em> (3rd ed.). Addison-Wesley. — Bab 3: <em>Uncertainty management in rule-based expert systems</em> (certainty factor dan penalaran Bayes)</td></tr>
+                        <tr><td>3</td><td>Poole, D. L., &amp; Mackworth, A. K. (2023). <em>Artificial Intelligence: Foundations of Computational Agents</em> (3rd ed.). Cambridge University Press. — bagian <em>Reasoning Under Uncertainty</em></td></tr>
+                        <tr><td>4</td><td>Giarratano, J. C., &amp; Riley, G. D. (2005). <em>Expert Systems: Principles and Programming</em> (4th ed.). Thomson Course Technology.</td></tr>
+                        <tr><td>5</td><td>Shortliffe, E. H., &amp; Buchanan, B. G. (1975). A Model of Inexact Reasoning in Medicine. <em>Mathematical Biosciences</em>, 23(3–4), 351–379. — asal certainty factor (sistem MYCIN)</td></tr>
+                        <tr><td>6</td><td>Heckerman, D. (1986). Probabilistic Interpretation for MYCIN’s Certainty Factors. Dalam L. N. Kanal &amp; J. F. Lemmer (Eds.), <em>Uncertainty in Artificial Intelligence</em>. North-Holland. — syarat agar CF dapat ditafsirkan sebagai peluang</td></tr>
+                        <tr><td>7</td><td>Materi kuliah “Metode untuk Ketidakpastian” (2022), Teknik Informatika, Fakultas Teknik, Universitas Mataram — sumber urutan materi, contoh flu, contoh tiga hipotesis dan tiga bukti, serta jaringan Bayes rumput basah. Empat koreksi terhadap slide itu dicatat di bagian Capaian.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Kecerdasan Buatan · MKL1303131 · Teknik Informatika UNRAM ·
+           <a href="index.html">Daftar Materi</a> ·
+           Pahrul Irfan &amp; Halil Akhyar</p>
+    </footer>
+
+    <script src="ketidakpastian-viz.js?v=20261108a"></script>
+    <script>
+        function toggleMobileMenu() {
+            document.querySelector('.sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
+        function closeMobileMenu() {
+            document.querySelector('.sidebar').classList.remove('active');
+            document.querySelector('.sidebar-overlay').classList.remove('active');
+        }
+
+        // ---- Perkecil/perbesar sidebar (desktop), diingat lewat localStorage ----
+        function toggleSidebarCollapse() {
+            document.body.classList.toggle('sidebar-collapsed');
+            try {
+                localStorage.setItem('ai-sidebar-collapsed', document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+            } catch (e) {}
+        }
+        try {
+            if (localStorage.getItem('ai-sidebar-collapsed') === '1') document.body.classList.add('sidebar-collapsed');
+        } catch (e) {}
+
+        // ---- Tombol "Salin kode" untuk blok kode yang bisa dijalankan (pre[data-copy]) ----
+        // navigator.clipboard hanya tersedia di konteks aman (https/localhost); selain itu pakai execCommand.
+        function copyText(text) {
+            if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return ok ? Promise.resolve() : Promise.reject(new Error('copy gagal'));
+        }
+        document.querySelectorAll('pre[data-copy]').forEach(pre => {
+            const wrap = document.createElement('div');
+            wrap.className = 'code-wrap';
+            const head = document.createElement('div');
+            head.className = 'code-head';
+            const icon = /\.py$/.test(pre.dataset.copy) ? 'fa-brands fa-python' : 'fa-solid fa-file-code';
+            head.innerHTML = '<span><i class="' + icon + '"></i>' + pre.dataset.copy + '</span>';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'copy-btn';
+            const label = '<i class="fa-regular fa-copy"></i> Salin kode';
+            btn.innerHTML = label;
+            btn.addEventListener('click', () => {
+                copyText(pre.querySelector('code').textContent).then(() => {
+                    btn.classList.add('done');
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> Tersalin';
+                }, () => {
+                    btn.innerHTML = '<i class="fa-solid fa-xmark"></i> Gagal, salin manual';
+                }).finally(() => setTimeout(() => { btn.classList.remove('done'); btn.innerHTML = label; }, 2000));
+            });
+            head.appendChild(btn);
+            pre.parentNode.insertBefore(wrap, pre);
+            wrap.appendChild(head);
+            wrap.appendChild(pre);
+        });
+
+        // ---- Daftar isi kecil di dalam bagian: gulir ke subbagian (tanpa mengubah hash) ----
+        document.querySelectorAll('.mini-toc button[data-goto]').forEach(b => {
+            b.addEventListener('click', () => {
+                const t = document.getElementById(b.dataset.goto);
+                if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // ---- Tampilkan satu bagian materi saja (sesuai pilihan di sidebar) ----
+        document.body.classList.add('materi-tab');
+        const sections = Array.from(document.querySelectorAll('.content section[id]'));
+        const navLinks = Array.from(document.querySelectorAll('.sidebar ul li a[href^="#"]'));
+
+        function sectionTitle(section) {
+            const h2 = section.querySelector('h2');
+            if (!h2) return section.id;
+            const clone = h2.cloneNode(true);
+            clone.querySelectorAll('.badge').forEach(b => b.remove());
+            return clone.textContent.trim();
+        }
+
+        function showSection(id, push) {
+            const target = sections.find(s => s.id === id) || sections[0];
+            sections.forEach(s => s.classList.toggle('section-active', s === target));
+            navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + target.id));
+            if (push !== false && ('#' + target.id) !== location.hash) {
+                history.pushState(null, '', '#' + target.id);
+            }
+            window.scrollTo(0, 0);
+        }
+
+        navLinks.forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                showSection(a.getAttribute('href').slice(1));
+                closeMobileMenu();
+            });
+        });
+
+        // Navigasi "Sebelumnya / Selanjutnya" di tiap bagian
+        sections.forEach((section, i) => {
+            const nav = document.createElement('div');
+            nav.className = 'section-nav';
+
+            const prev = document.createElement('button');
+            prev.className = 'prev';
+            if (i > 0) {
+                prev.innerHTML = '<small>&larr; Sebelumnya</small>' + sectionTitle(sections[i - 1]);
+                prev.addEventListener('click', () => showSection(sections[i - 1].id));
+            } else {
+                prev.disabled = true;
+                prev.innerHTML = '<small>&nbsp;</small>Awal materi';
+            }
+
+            const next = document.createElement('button');
+            next.className = 'next';
+            if (i < sections.length - 1) {
+                next.innerHTML = '<small>Selanjutnya &rarr;</small>' + sectionTitle(sections[i + 1]);
+                next.addEventListener('click', () => showSection(sections[i + 1].id));
+            } else {
+                next.disabled = true;
+                next.innerHTML = '<small>&nbsp;</small>Akhir materi';
+            }
+
+            nav.appendChild(prev);
+            nav.appendChild(next);
+            section.appendChild(nav);
+        });
+
+        window.addEventListener('hashchange', () => {
+            showSection(location.hash.slice(1) || sections[0].id, false);
+        });
+
+        showSection(location.hash.slice(1) || sections[0].id, false);
+    </script>
+</body>
+</html>
