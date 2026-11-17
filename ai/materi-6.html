@@ -338,6 +338,7 @@
                     <button type="button" data-goto="cf-peta">Tiga operasi</button>
                     <button type="button" data-goto="cf-sapi">Kasus sapi</button>
                     <button type="button" data-goto="cf-dasar">Rumus dasar</button>
+                    <button type="button" data-goto="cf-tiga">Tiga nilai CF</button>
                     <button type="button" data-goto="cf-tunggal">Premis tunggal</button>
                     <button type="button" data-goto="cf-gabung-sapi">Menggabungkan</button>
                     <button type="button" data-goto="cf-majemuk">Premis majemuk</button>
@@ -349,6 +350,7 @@
                     <button type="button" data-goto="cf-rantai">Rantai aturan</button>
                     <button type="button" data-goto="cf-andor">AND dan OR</button>
                     <button type="button" data-goto="cf-flu">Contoh flu</button>
+                    <button type="button" data-goto="cf-maag">Contoh maag</button>
                 </nav>
 
                 <h3 id="u-sumber">Mengapa Aturan Pakar Tidak Selalu Pasti</h3>
@@ -455,7 +457,7 @@
                         <tbody>
                             <tr><td>Masalahnya</td><td>Pasien bilang “sepertinya demam” dan belum diukur.</td><td>Termometer menunjukkan 38,2 °C; apakah itu demam?</td></tr>
                             <tr><td>Angka pada fakta</td><td>CF(demam) = 0,8: pemeriksa cukup yakin.</td><td>μ<sub>demam</sub>(38,2) = 0,6: suhu ini sebagian termasuk “demam”.</td></tr>
-                            <tr><td>Angka pada aturan</td><td>CF(aturan) = 0,7: pakar yakin demam mengarah ke flu.</td><td>Derajat tembak aturan = 0,6 (diambil dari μ premis).</td></tr>
+                            <tr><td>Angka pada aturan</td><td>CF(H|E) = 0,7: pakar yakin demam mengarah ke flu.</td><td>Derajat tembak aturan = 0,6 (diambil dari μ premis).</td></tr>
                             <tr><td>Hasil</td><td>CF(flu) = 0,8 × 0,7 = <strong>0,56</strong>, dibaca “kemungkinan besar flu”.</td><td>Keluaran berupa <strong>nilai tegas</strong>, misalnya dosis obat 450 mg, setelah defuzzifikasi.</td></tr>
                         </tbody>
                     </table>
@@ -556,8 +558,9 @@
                         <li><b>Hipotesis (H)</b>: kesimpulan yang diuji; di sini nama penyakit, misalnya Johne’s Disease.</li>
                         <li><b>Premis atau bukti (E)</b>: kondisi pada bagian IF; di sini gejala yang terlihat pada sapi.</li>
                         <li><b>Aturan</b>: pernyataan IF … THEN … yang diberi CF, misalnya “IF G3 THEN P3 {CF = 0,6}”.</li>
-                        <li><b>CF pakar (CF aturan)</b>: seberapa kuat gejala itu menunjuk ke penyakit; angka ini diberikan pakar.</li>
-                        <li><b>CF(E)</b>: seberapa yakin gejalanya benar-benar ada; angka ini berasal dari jawaban pengguna (peternak atau dokter hewan).</li>
+                        <li><b>CF(E)</b> (CF premis atau CF bukti): seberapa yakin gejalanya benar-benar ada; angka ini berasal dari jawaban pengguna (peternak atau dokter hewan) dan berbeda untuk tiap kasus. Boleh negatif.</li>
+                        <li><b>CF(H|E)</b> (CF rule): seberapa kuat penyakit H bila gejala E pasti benar; angka ini diberikan pakar dan tertulis pada aturan, jadi tetap untuk semua kasus.</li>
+                        <li><b>CF(H)</b>: hasil untuk hipotesis, yaitu CF(E) × CF(H|E). Untuk beberapa aturan, hasilnya ditulis “CF(H) Rule N”.</li>
                         <li><b>Basis aturan</b>: kumpulan semua aturan. <b>Mesin inferensi</b>: bagian program yang menjalankan aturan dan menghitung CF.</li>
                     </ul>
                 </div>
@@ -565,7 +568,7 @@
                     <div class="ops-card">
                         <h4>1 · Kali</h4>
                         <div class="sub">Satu aturan, bukti tidak pasti</div>
-                        <div class="fm"><i>CF</i>(<i>H</i>) = <i>CF</i>(<i>E</i>) × <i>CF</i>(aturan)</div>
+                        <div class="fm"><i>CF</i>(<i>H</i>) = <i>CF</i>(<i>E</i>) × <i>CF</i>(<i>H</i>|<i>E</i>)</div>
                         <div class="ex">Contoh sapi: 0,8 × 0,6 = 0,48</div>
                     </div>
                     <div class="ops-card o2">
@@ -581,14 +584,17 @@
                         <div class="ex">Contoh sapi: 0,48 + 0,7 × 0,52 = 0,844</div>
                     </div>
                 </div>
-                <p><strong>Urutan hitung pada mesin inferensi:</strong> premis dihitung dahulu (min atau maks), hasilnya dikalikan CF aturan, lalu CF dari beberapa aturan yang menyimpulkan hal yang sama digabung. Aturan yang CF premisnya ≤ 0 tidak berlaku.</p>
+                <p><strong>Alur menghitung CF: empat langkah.</strong> Setiap soal dikerjakan dengan urutan yang sama: tiap aturan dahulu (langkah 1 sampai 3), lalu hasilnya digabung. Langkah 2 adalah tempat kesalahan paling sering terjadi: premis yang CF-nya ≤ 0 membuat aturan tidak berlaku, dan hasilnya <b>0</b>, bukan angka negatif.</p>
                 <div class="flow-row">
-                    <div class="flow-box hl"><b>Premis</b><small>Premis majemuk dihitung dengan min (AND) atau maks (OR).</small></div>
+                    <div class="flow-box hl"><b>1 · CF premis</b><small>AND: minimum. OR: maksimum. Satu premis: nilainya sendiri.</small></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-box hl"><b>Kali</b><small>CF premis × CF aturan menghasilkan CF satu aturan.</small></div>
+                    <div class="flow-box hl"><b>2 · Cek tanda</b><small>CF premis ≤ 0: aturan tidak berlaku, CF(H) = 0. Bila &gt; 0, lanjut.</small></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-box or"><b>Gabung</b><small>CF dari beberapa aturan untuk hipotesis yang sama digabung.</small></div>
+                    <div class="flow-box hl"><b>3 · Kalikan</b><small>CF(H) = CF premis × CF rule. CF rule boleh negatif.</small></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-box or"><b>4 · Gabungkan</b><small>Aturan dengan kesimpulan sama digabung dua-dua; tanda sama dan tanda beda memakai rumus berbeda.</small></div>
                 </div>
+                <p style="font-size:0.9em; color:#555;">Tulis hasil akhir dengan dua angka di belakang koma (contoh 0,43). Ketiga operasi di atas (kali, min atau maks, gabung) adalah isi dari empat langkah ini.</p>
 
                 <h4>Tiga Pertanyaan Penuntun: Operasi Mana yang Dipakai?</h4>
                 <p>Saat menghadapi soal, tanyakan tiga hal berikut. Jawabannya menunjukkan operasi yang diperlukan.</p>
@@ -596,7 +602,7 @@
                     <table class="small-table">
                         <thead><tr><th>Pertanyaan</th><th>Bila ya, lakukan</th><th>Contoh sapi</th></tr></thead>
                         <tbody>
-                            <tr><td>Apakah jawaban pengguna tidak pasti (CF(E) kurang dari 1)?</td><td><b>Kali</b> dengan CF pakar</td><td>“yakin” (0,8) × 0,6 = 0,48</td></tr>
+                            <tr><td>Apakah jawaban pengguna tidak pasti (CF(E) kurang dari 1)?</td><td><b>Kali</b> dengan CF rule</td><td>“yakin” (0,8) × 0,6 = 0,48</td></tr>
                             <tr><td>Apakah bagian IF memuat beberapa gejala yang dihubungkan AND atau OR?</td><td>Cari dahulu satu angka untuk premis: <b>min</b> untuk AND, <b>maks</b> untuk OR; baru dikali</td><td>G3 AND G7: min{0,8; 1,0} = 0,8</td></tr>
                             <tr><td>Apakah beberapa aturan menyimpulkan penyakit yang sama?</td><td><b>Gabungkan</b> hasil tiap aturan</td><td>0,48 dan 0,7 menjadi 0,844</td></tr>
                         </tbody>
@@ -651,15 +657,15 @@
                         </tbody>
                     </table>
                 </div>
-                <p>Gejala berwarna biru (G3, G4, G7, G8, G19, G20) muncul pada <strong>lebih dari satu penyakit</strong>, sehingga satu jawaban pengguna dapat ikut menaikkan CF penyakit lain. Tabel aturan ini hanya menyatakan <em>gejala mana milik penyakit mana</em>; kekuatan tiap aturan (CF pakar) ditentukan pada langkah berikutnya.</p>
+                <p>Gejala berwarna biru (G3, G4, G7, G8, G19, G20) muncul pada <strong>lebih dari satu penyakit</strong>, sehingga satu jawaban pengguna dapat ikut menaikkan CF penyakit lain. Tabel aturan ini hanya menyatakan <em>gejala mana milik penyakit mana</em>; kekuatan tiap aturan (CF rule) ditentukan pada langkah berikutnya.</p>
                 </details>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-lightbulb"></i> Tentang angka pada contoh berikutnya</strong>
-                    <p style="margin-top:6px;">Video hanya memuat tabel gejala, penyakit, dan aturan; nilai CF pakar tidak diberikan. Semua nilai CF pakar pada contoh Johne’s di bawah adalah <strong>ilustrasi</strong> untuk belajar menghitung, bukan data pakar sungguhan. Aturan <em>G1 → P3</em> dengan CF negatif ditambahkan sebagai contoh bukti yang melawan hipotesis: Johne’s Disease biasanya ditandai diare kronis dan turun berat badan, bukan demam. Bidang yang dipakai adalah kesehatan hewan; kaidah tema tugas pada materi ini (kesehatan manusia tidak dipakai) tetap berlaku.</p>
+                    <p style="margin-top:6px;">Video hanya memuat tabel gejala, penyakit, dan aturan; nilai CF rule tidak diberikan. Semua nilai CF rule pada contoh Johne’s di bawah adalah <strong>ilustrasi</strong> untuk belajar menghitung, bukan data pakar sungguhan. Aturan <em>G1 → P3</em> dengan CF negatif ditambahkan sebagai contoh bukti yang melawan hipotesis: Johne’s Disease biasanya ditandai diare kronis dan turun berat badan, bukan demam. Bidang yang dipakai adalah kesehatan hewan; kaidah tema tugas pada materi ini (kesehatan manusia tidak dipakai) tetap berlaku.</p>
                 </div>
 
                 <h3 id="cf-dasar">Rumus Dasar: Keyakinan pada Gejala × Kekuatan Aturan</h3>
-                <p>Perhitungan dimulai dari satu aturan. Ada dua angka: <strong>CF(E)</strong>, seberapa yakin gejalanya benar (jawaban pengguna), dan <strong>CF(aturan)</strong>, seberapa kuat gejala itu menunjuk ke penyakit (dari pakar). Pengguna menjawab dengan kata, yang dipetakan ke angka:</p>
+                <p>Perhitungan dimulai dari satu aturan. Dalam satu aturan ada <strong>tiga nilai CF yang berbeda</strong> dan sering tertukar (lihat tabel di bawah rumus). Dua di antaranya sudah diketahui sebelum menghitung: <strong>CF(E)</strong>, seberapa yakin gejalanya benar (jawaban pengguna), dan <strong>CF(H|E)</strong>, seberapa kuat gejala itu menunjuk ke penyakit (dari pakar). Pengguna menjawab dengan kata, yang dipetakan ke angka:</p>
                 <div class="tbl-wrap">
                     <table class="small-table">
                         <thead><tr><th>Jawaban pengguna</th><th>Tidak</th><th>Tidak tahu</th><th>Sedikit yakin</th><th>Cukup yakin</th><th>Yakin</th><th>Sangat yakin</th></tr></thead>
@@ -667,17 +673,31 @@
                     </table>
                 </div>
                 <div class="rumus oranye">
-                    <div class="baris"><i>CF</i>(<i>H</i>) = <i>CF</i>(<i>E</i>) × <i>CF</i>(aturan) <span class="ket">jika CF(E) &gt; 0</span></div>
+                    <div class="baris"><i>CF</i>(<i>H</i>) = <i>CF</i>(<i>E</i>) × <i>CF</i>(<i>H</i>|<i>E</i>) <span class="ket">jika CF(E) &gt; 0</span></div>
                     <div class="baris"><i>CF</i>(<i>H</i>) = 0 <span class="ket">jika CF(E) ≤ 0: aturan tidak berlaku</span></div>
                 </div>
                 <div class="rule-box">
                     <b>R1:</b> <span class="kw">IF</span> G3 (turun berat badan) <span class="kw">THEN</span> P3 <span class="kw">{CF = 0,6}</span><br>
                     Pengguna menjawab “yakin”, jadi CF(E) = 0,8. &nbsp;→&nbsp; CF(P3) = 0,8 × 0,6 = <b>0,48</b>
                 </div>
+                <h4 id="cf-tiga">Tiga Nilai CF dalam Satu Aturan: Jangan Tertukar</h4>
+                <p>Bentuk aturan: <b>IF E THEN H {CF}</b>. Angka di dalam kurung kurawal bukan satu-satunya CF yang ikut dihitung.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Nilai</th><th>Artinya</th><th>Sumber</th><th>Berubah antarkasus?</th><th>Pada R1 sapi</th></tr></thead>
+                        <tbody>
+                            <tr><td><b>CF(E)</b></td><td>Kepercayaan pada bukti (gejala). Boleh negatif.</td><td>Fakta dari pengguna</td><td>Ya, berbeda tiap sapi</td><td>0,8 (“yakin”)</td></tr>
+                            <tr><td><b>CF(H|E)</b>, disebut juga <b>CF rule</b></td><td>Kepercayaan pada H bila E <em>pasti</em> benar.</td><td>Pakar, tertulis pada aturan</td><td>Tidak, tetap pada aturan</td><td>0,6</td></tr>
+                            <tr><td><b>CF(H)</b></td><td>Hasil untuk hipotesis = CF(E) × CF(H|E), bila CF(E) &gt; 0; selain itu 0.</td><td>Hasil hitungan</td><td>Ya, mengikuti CF(E)</td><td>0,8 × 0,6 = 0,48</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p><strong>Cara mengingat:</strong> CF(E) berbeda untuk tiap kasus, CF(H|E) tetap pada aturan, dan CF(H) adalah hasilnya. Pada aturan berpremis banyak, CF(E) adalah minimum (AND) atau maksimum (OR) dari premisnya, lalu dikalikan CF(H|E). Pada rantai aturan, CF(H) sebuah aturan menjadi CF(E) bagi aturan berikutnya.</p>
+
                 <p>Rumus ini sama dengan rumus pada bagian Pendalaman “Rantai Aturan”. Perbedaannya hanya konteks: di sana premisnya hasil aturan lain, di sini premisnya jawaban pengguna. Skala jawaban pengguna di atas diambil dari video; Anda boleh memakai skala istilah pada bagian “Dari Kata ke Angka” sebagai gantinya, asalkan skalanya dinyatakan. Rumus MB dan MD (asal angka CF, juga di Pendalaman) tidak dipakai pada kasus sapi karena data sapi tidak memuat peluang awal P(H).</p>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-pen"></i> Coba dulu</strong>
-                    <p style="margin-top:6px;">Bila G3 dijawab “sedikit yakin” (0,4) dan CF pakar tetap 0,6, berapa CF(P3)? Bagaimana bila G3 dijawab “tidak”?</p>
+                    <p style="margin-top:6px;">Bila G3 dijawab “sedikit yakin” (0,4) dan CF rule tetap 0,6, berapa CF(P3)? Bagaimana bila G3 dijawab “tidak”?</p>
                     <details class="kunci"><summary>Lihat jawaban</summary>
                         <ul>
                             <li>0,4 × 0,6 = <strong>0,24</strong>. Keyakinan pada gejala lebih rendah, hasilnya ikut lebih rendah.</li>
@@ -696,7 +716,7 @@
                 </div>
                 <div class="tbl-wrap">
                     <table class="small-table">
-                        <thead><tr><th>Aturan</th><th>CF pakar</th><th>Jawaban pengguna</th><th>CF(E)</th><th>CF(P3) = CF(E) × CF pakar</th></tr></thead>
+                        <thead><tr><th>Aturan</th><th>CF rule = CF(H|E)</th><th>Jawaban pengguna</th><th>CF(E)</th><th>CF(H) = CF(E) × CF(H|E)</th></tr></thead>
                         <tbody>
                             <tr><td>R1 · G3 Turun berat badan</td><td>0,6</td><td>Yakin</td><td>0,8</td><td><b>0,48</b></td></tr>
                             <tr><td>R2 · G7 Diare</td><td>0,7</td><td>Sangat yakin</td><td>1,0</td><td><b>0,7</b></td></tr>
@@ -705,7 +725,7 @@
                         </tbody>
                     </table>
                 </div>
-                <p>CF aturan positif mendukung P3; CF aturan negatif (baris merah) melawan P3. Pengguna yakin 100% bahwa sapinya demam, tetapi karena pakar menilai demam sebagai bukti yang <em>melawan</em> Johne’s, kontribusinya negatif. Empat angka ini belum menjawab “berapa keyakinan pada P3?”. Untuk itu keempatnya harus digabung.</p>
+                <p>CF rule positif mendukung P3; CF rule negatif (baris merah) melawan P3. Pengguna yakin 100% bahwa sapinya demam, tetapi karena pakar menilai demam sebagai bukti yang <em>melawan</em> Johne’s, kontribusinya negatif. Empat angka ini belum menjawab “berapa keyakinan pada P3?”. Untuk itu keempatnya harus digabung.</p>
 
                 <h3 id="cf-gabung-sapi">Menggabungkan Aturan Tunggal: Cukup Dua Rumus</h3>
                 <p>Sekarang ada empat angka dari R1 sampai R4. Pertanyaannya: berapa keyakinan <em>akhir</em> pada Johne’s Disease bila semua aturan itu berlaku bersamaan? Coba tebak dahulu sebelum membaca rumusnya.</p>
@@ -759,7 +779,7 @@
                 </div>
 
                 <h4>Coba Sendiri: Ubah Jawaban Pengguna, Lihat CF Johne’s <span class="badge badge-new">Interaktif</span></h4>
-                <p>Pilih jawaban pengguna untuk tiap gejala. Hitungan di bawahnya mengikuti urutan: kalikan CF pakar, lalu gabungkan, yang positif lebih dahulu.</p>
+                <p>Pilih jawaban pengguna untuk tiap gejala. Hitungan di bawahnya mengikuti urutan: kalikan CF rule, lalu gabungkan, yang positif lebih dahulu.</p>
                 <div class="sapi-calc" id="sapi-calc"></div>
 
                 <script>
@@ -782,7 +802,7 @@
                         if (a * b >= 0) return a + b * (1 - Math.abs(a));
                         return (a + b) / (1 - Math.min(Math.abs(a), Math.abs(b)));
                     }
-                    var html = '<div class="tbl-wrap"><table class="small-table"><thead><tr><th>Aturan</th><th>CF pakar</th><th>Jawaban pengguna</th><th>CF(E)</th><th>CF aturan</th></tr></thead><tbody>';
+                    var html = '<div class="tbl-wrap"><table class="small-table"><thead><tr><th>Aturan</th><th>CF rule = CF(H|E)</th><th>Jawaban pengguna</th><th>CF(E)</th><th>CF(H)</th></tr></thead><tbody>';
                     aturan.forEach(function (a, i) {
                         html += '<tr id="sc-row-' + i + '"><td>' + a[0] + ' · ' + a[1] + '</td><td>' + f(a[2]) + '</td><td><select data-i="' + i + '">';
                         skala.forEach(function (s, k) { html += '<option value="' + k + '">' + s[0] + '</option>'; });
@@ -841,7 +861,7 @@
                         <div class="step-num">2</div>
                         <div class="step-content">
                             <strong>Ubah G1 menjadi “Tidak tahu” (0,2).</strong>
-                            <p>CF aturan R4 menjadi −0,5 × 0,2 = −0,1 dan hasilnya sekitar 0,87. Bukti yang melawan hanya sedikit dipercaya, jadi pengaruhnya kecil.</p>
+                            <p>CF rule R4 menjadi −0,5 × 0,2 = −0,1 dan hasilnya sekitar 0,87. Bukti yang melawan hanya sedikit dipercaya, jadi pengaruhnya kecil.</p>
                         </div>
                     </div>
                     <div class="algo-step">
@@ -864,13 +884,13 @@
                     <div class="compare-col bw">
                         <h4><i class="fa-solid fa-link"></i> Premis majemuk</h4>
                         <div class="rule-box" style="margin:6px 0;"><b>R5:</b> <span class="kw">IF</span> G3 <span class="kw">AND</span> G7 <span class="kw">THEN</span> P3 <span class="kw">{0,8}</span><br><b>R6:</b> <span class="kw">IF</span> G13 <span class="kw">OR</span> G14 <span class="kw">THEN</span> P4 <span class="kw">{0,5}</span></div>
-                        <p style="font-size:0.9em;">Beberapa kondisi dalam satu aturan. Gejala dihitung sebagai <em>satu paket</em> dengan satu CF aturan; tidak ditumpuk.</p>
+                        <p style="font-size:0.9em;">Beberapa kondisi dalam satu aturan. Gejala dihitung sebagai <em>satu paket</em> dengan satu CF rule; tidak ditumpuk.</p>
                     </div>
                 </div>
                 <div class="rumus">
                     <div class="baris">① <i>CF</i>(premis) = min{<i>CF</i>(<i>E</i><sub>1</sub>), <i>CF</i>(<i>E</i><sub>2</sub>), …} <span class="ket">untuk AND: sekuat mata rantai terlemah</span></div>
                     <div class="baris">① <i>CF</i>(premis) = maks{<i>CF</i>(<i>E</i><sub>1</sub>), <i>CF</i>(<i>E</i><sub>2</sub>), …} <span class="ket">untuk OR: cukup satu yang kuat</span></div>
-                    <div class="baris">② <i>CF</i>(<i>H</i>) = <i>CF</i>(premis) × <i>CF</i>(aturan) <span class="ket">sama seperti premis tunggal; bila CF(premis) ≤ 0, aturan tidak berlaku</span></div>
+                    <div class="baris">② <i>CF</i>(<i>H</i>) = <i>CF</i>(premis) × <i>CF</i>(<i>H</i>|<i>E</i>) <span class="ket">sama seperti premis tunggal; bila CF(premis) ≤ 0, aturan tidak berlaku</span></div>
                 </div>
                 <p>Jadi premis majemuk hanya menambah <em>satu langkah di depan</em> rumus dasar: cari dahulu satu angka yang mewakili seluruh premis, lalu kalikan. Setelah itu, hasilnya dapat digabung dengan aturan lain seperti biasa.</p>
                 <div class="algo-steps">
@@ -943,14 +963,14 @@
                         </tbody>
                     </table>
                 </div>
-                <p>Pada model tunggal, bukti ditumpuk. Pada model majemuk, pakar menyatakan bahwa G3 dan G7 hanya bermakna bila muncul bersama, dengan kekuatan 0,8, dan hasilnya dibatasi gejala yang terlemah. Dalam satu sistem, pilih satu model untuk sekelompok gejala dan jangan mencampurnya. Yang perlu diingat adalah <strong>urutan operasi</strong>: min atau maks untuk premis, kali untuk CF aturan, gabung antaraturan, termasuk bukti negatif.</p>
+                <p>Pada model tunggal, bukti ditumpuk. Pada model majemuk, pakar menyatakan bahwa G3 dan G7 hanya bermakna bila muncul bersama, dengan kekuatan 0,8, dan hasilnya dibatasi gejala yang terlemah. Dalam satu sistem, pilih satu model untuk sekelompok gejala dan jangan mencampurnya. Yang perlu diingat adalah <strong>urutan operasi</strong>: min atau maks untuk premis, kali untuk CF rule, gabung antaraturan, termasuk bukti negatif.</p>
 
                 <h3 id="cf-ringkas-op">Ringkasan: Tiga Operasi dan Kapan Memakainya</h3>
                 <div class="tbl-wrap">
                     <table class="small-table">
                         <thead><tr><th>Operasi</th><th>Dipakai saat</th><th>Rumus</th><th>Contoh sapi</th></tr></thead>
                         <tbody>
-                            <tr><td>Kali</td><td>Satu aturan, bukti tidak pasti</td><td>CF(H) = CF(E) × CF(aturan)</td><td>0,8 × 0,6 = 0,48</td></tr>
+                            <tr><td>Kali</td><td>Satu aturan, bukti tidak pasti</td><td>CF(H) = CF(E) × CF(H|E)</td><td>0,8 × 0,6 = 0,48</td></tr>
                             <tr><td>Min atau maks</td><td>Beberapa premis dalam satu aturan</td><td>AND: min · OR: maks</td><td>min{0,8; 1,0} = 0,8</td></tr>
                             <tr><td>Gabung</td><td>Beberapa aturan, hipotesis yang sama</td><td>Tanda sama: CF₁ + CF₂ × (1 − |CF₁|)<br>Tanda beda: (CF₁ + CF₂) ÷ (1 − min{|CF₁|, |CF₂|})</td><td>0,64 dan 0,24 → 0,726</td></tr>
                         </tbody>
@@ -1022,13 +1042,14 @@ AND: 0.2</pre>
                 <p style="font-size:0.9em; color:#555;">Angka 0,763 pada keluaran adalah CF Johne’s sebelum dibulatkan (0,76 pada slide); 0,45 adalah hasil kasus terpadu.</p>
 
                 <h3 id="cf-pendalaman">Pendalaman: Untuk yang Ingin Tahu Lebih Jauh</h3>
-                <p>Lima bagian berikut tidak wajib pada bacaan pertama. Isinya memperdalam kasus sapi di atas, dan beberapa memuat simulator interaktif.</p>
+                <p>Enam bagian berikut tidak wajib pada bacaan pertama. Isinya memperdalam kasus sapi di atas, dan beberapa memuat simulator interaktif.</p>
                 <ul>
-                    <li><strong>Dari Mana Angka CF Berasal?</strong> Arti angka CF pakar, diturunkan dari peluang (MB, MD).</li>
+                    <li><strong>Dari Mana Angka CF Berasal?</strong> Arti angka CF rule, diturunkan dari peluang (MB, MD).</li>
                     <li><strong>Dua Aturan, Satu Hipotesis.</strong> Rumus gabung dalam tiga kasus, bentuk asli pada slide, dengan kalkulator.</li>
                     <li><strong>Rantai Aturan.</strong> Bila premis sebuah aturan adalah kesimpulan aturan lain.</li>
                     <li><strong>Banyak Premis.</strong> AND = minimum dan OR = maksimum untuk lima premis, dengan simulator.</li>
                     <li><strong>Contoh Lengkap: Pohon Inferensi Flu.</strong> Semua operasi dalam satu pohon, pada domain lain.</li>
+                    <li><strong>Contoh Lengkap Kedua: Pohon Inferensi Maag.</strong> Aturan berantai, satu aturan gugur, dan satu CF rule negatif.</li>
                 </ul>
 
                 <h3 id="cf-hitung">Dari Mana Angka CF Berasal? MB, MD, dan CF</h3>
@@ -1076,6 +1097,14 @@ AND: 0.2</pre>
                         </div>
                     </div>
                 </div>
+                <h4 id="cf-banjir">Contoh: Dugaan Banjir dari Curah Hujan Rendah</h4>
+                <p>Di suatu daerah P(banjir) = 0,3. Setelah indikator menunjukkan curah hujan rendah (bukti E), P(banjir | E) = 0,12. Berapa CF dugaan banjir?</p>
+                <div class="rule-box">
+                    Bukti <b>menurunkan</b> peluang (0,12 &lt; 0,3), jadi MB = 0.<br>
+                    MD = (P(H) − min{P(H|E); P(H)}) ÷ P(H) = (0,3 − 0,12) ÷ 0,3 = <b>0,6</b><br>
+                    CF = (MB − MD) ÷ (1 − min{MB; MD}) = (0 − 0,6) ÷ (1 − 0) = <b>−0,6</b>
+                </div>
+                <p>Bukti menurunkan peluang banjir dari 0,3 menjadi 0,12, sehingga CF negatif: bukti justru menolak dugaan banjir. Dari sinilah asal CF rule negatif: pakar menilai satu bukti melawan hipotesis.</p>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-lightbulb"></i> Kapan rumus ini dipakai?</strong>
                     <p style="margin-top:6px;">Rumus MB dan MD hanya dapat dipakai bila P(H) dan P(H|E) <em>diketahui</em>, misalnya dari data historis. Bila tidak, pakar langsung memberi CF: “bila gejala ini ada, saya yakin 0,7 pada kesimpulan ini”. Rumus tadi menerangkan <em>arti</em> angka itu, bukan satu-satunya cara memperolehnya.</p>
@@ -1106,7 +1135,7 @@ AND: 0.2</pre>
                     <div class="algo-step">
                         <div class="step-num">1</div>
                         <div class="step-content">
-                            <strong>Klik “Bukti yang sama: 0,5 dan 0,5”, lalu ubah CF aturan 2 ke 1.</strong>
+                            <strong>Klik “Bukti yang sama: 0,5 dan 0,5”, lalu ubah CF rule 2 ke 1.</strong>
                             <p>Hasilnya 1: satu aturan yang “pasti” sudah mengisi seluruh sisa ruang. Pada nilai di bawah 1, hasil gabungan selalu lebih besar dari kedua masukan, tetapi kenaikannya makin kecil.</p>
                         </div>
                     </div>
@@ -1120,7 +1149,7 @@ AND: 0.2</pre>
                     <div class="algo-step">
                         <div class="step-num">3</div>
                         <div class="step-content">
-                            <strong>Coba CF aturan 1 = 1 dan aturan 2 = −1.</strong>
+                            <strong>Coba CF rule 1 = 1 dan aturan 2 = −1.</strong>
                             <p>Satu aturan menyatakan pasti benar dan yang lain pasti salah: rumus membagi dengan 0. Basis aturan Anda memuat kontradiksi, dan program Anda perlu menanganinya (misalnya dengan melaporkannya, bukan menghasilkan angka).</p>
                         </div>
                     </div>
@@ -1138,7 +1167,7 @@ AND: 0.2</pre>
                     <div class="baris"><i>CF</i>(C) = <i>CF</i>(B) × <i>CF</i>(Rule 2) = 0,36 × 0,3 = <b>0,108</b></div>
                 </div>
                 <div class="rumus oranye">
-                    <div class="baris"><i>CF</i>(H) = <i>CF</i>(E) × <i>CF</i>(aturan) <span class="ket">jika CF(E) &gt; 0</span></div>
+                    <div class="baris"><i>CF</i>(H) = <i>CF</i>(E) × <i>CF</i>(<i>H</i>|<i>E</i>) <span class="ket">jika CF(E) &gt; 0</span></div>
                     <div class="baris"><i>CF</i>(H) = 0 <span class="ket">jika CF(E) ≤ 0 (aturan tidak berlaku)</span></div>
                 </div>
                 <p><strong>Mengapa CF(E) ≤ 0 membuat aturan tidak berlaku?</strong> Bila CF(E) = −0,2, kita tidak dapat mengatakan E benar, sehingga aturan “IF E THEN H” tidak boleh dipicu. Hasilnya <em>0</em>, bukan angka negatif. Angka 0 di sini berarti <strong>kita tidak tahu apa-apa</strong> akibat penerapan aturan ini (bukan “percaya” dan bukan “tidak percaya”), sehingga pengetahuan yang sudah ada tidak berubah. Aturan “IF E THEN H” tidak berkata bahwa bila E salah maka H salah.</p>
@@ -1154,16 +1183,16 @@ AND: 0.2</pre>
                     <div class="compare-col fw">
                         <h4><i class="fa-solid fa-link"></i> AND: minimum</h4>
                         <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> E1 <span class="kw">AND</span> E2 <span class="kw">AND</span> … <span class="kw">AND</span> En<br><span class="kw">THEN</span> H <span class="kw">{CF}</span></div>
-                        <p style="font-size:0.9em;">CF(H) = min{CF(E1), …, CF(En)} × CF(aturan), bila semua CF(Ei) &gt; 0.</p>
+                        <p style="font-size:0.9em;">CF(H) = min{CF(E1), …, CF(En)} × CF(H|E), bila semua CF(Ei) &gt; 0.</p>
                     </div>
                     <div class="compare-col bw">
                         <h4><i class="fa-solid fa-code-fork"></i> OR: maksimum</h4>
                         <div class="rule-box" style="margin:6px 0;"><span class="kw">IF</span> E1 <span class="kw">OR</span> E2 <span class="kw">OR</span> … <span class="kw">OR</span> En<br><span class="kw">THEN</span> H <span class="kw">{CF}</span></div>
-                        <p style="font-size:0.9em;">CF(H) = maks{CF(E1), …, CF(En)} × CF(aturan), bila ada CF(Ei) &gt; 0.</p>
+                        <p style="font-size:0.9em;">CF(H) = maks{CF(E1), …, CF(En)} × CF(H|E), bila ada CF(Ei) &gt; 0.</p>
                     </div>
                 </div>
                 <p><strong>Intuisinya.</strong> AND ibarat rantai: sekuat mata rantai yang paling lemah, jadi diambil <em>minimum</em>. OR ibarat beberapa jalan menuju tujuan yang sama: cukup satu jalan yang terbaik, jadi diambil <em>maksimum</em>. Karena itu, untuk AND, <strong>bila satu premis ≤ 0 maka seluruh aturan tidak berlaku</strong>, dan pemeriksaan premis lain boleh dihentikan.</p>
-                <p><strong>Contoh dari slide:</strong> CF(E1…E5) = 0,8; 0,7; 0,5; 0,3; 0,9 dan CF aturan 0,65. Dengan AND: min = 0,3, sehingga CF(H) = 0,3 × 0,65 = <strong>0,195</strong>. Dengan OR: maks = 0,9, sehingga CF(H) = 0,9 × 0,65 = <strong>0,585</strong>.</p>
+                <p><strong>Contoh dari slide:</strong> CF(E1…E5) = 0,8; 0,7; 0,5; 0,3; 0,9 dan CF rule 0,65. Dengan AND: min = 0,3, sehingga CF(H) = 0,3 × 0,65 = <strong>0,195</strong>. Dengan OR: maks = 0,9, sehingga CF(H) = 0,9 × 0,65 = <strong>0,585</strong>.</p>
 
                 <h4>Coba Sendiri: AND dan OR dengan Lima Premis <span class="badge badge-new">Interaktif</span></h4>
                 <div data-viz="cf-premis"></div>
@@ -1186,7 +1215,7 @@ AND: 0.2</pre>
                     </table>
                 </div>
                 <p><strong>Pasien contoh:</strong> demam 37,4 °C; batuk kurang dari 24 jam; bersin-bersin (CF 1,0); sakit kepala dengan CF 0,4; hidung tersumbat dengan CF 0,5. Pertanyaannya: <em>berapa tingkat kepercayaan bahwa pasien terkena flu?</em></p>
-                <p>Perhatikan Rule 5: CF aturannya <strong>negatif</strong>. Pakar menyatakan bahwa gejala flu yang disertai bersin justru sedikit <em>melemahkan</em> dugaan terkena flu. Jadi CF aturan boleh berlawanan arah, dan inilah yang membuat tanda berbeda pada rumus penggabungan perlu ada.</p>
+                <p>Perhatikan Rule 5: CF rule-nya <strong>negatif</strong>. Pakar menyatakan bahwa gejala flu yang disertai bersin justru sedikit <em>melemahkan</em> dugaan terkena flu. Jadi CF rule boleh berlawanan arah, dan inilah yang membuat tanda berbeda pada rumus penggabungan perlu ada.</p>
 
                 <h4>Telusuri Langkah demi Langkah <span class="badge badge-new">Interaktif</span></h4>
                 <p>Tekan <strong>Langkah berikutnya</strong> untuk menghitung per tahap, dari fakta sampai penggabungan akhir. Ubah suhu, lama batuk, atau CF fakta kapan saja dan lihat bagian pohon mana yang ikut berubah.</p>
@@ -1252,7 +1281,7 @@ batuk_24, batuk_48 = -<span class="nm">1.0</span>, -<span class="nm">1.0</span>
 bersin, sakit_kepala, hidung = <span class="nm">1.0</span>, <span class="nm">0.4</span>, <span class="nm">0.5</span>
 
 <span class="kw">def</span> <span class="fn">aturan</span>(cf_premis, cf_aturan):
-    <span class="st">"""Hasil satu aturan: CF premis x CF aturan, bila premis &gt; 0."""</span>
+    <span class="st">"""Hasil satu aturan: CF premis x CF rule, bila premis &gt; 0."""</span>
     <span class="kw">return</span> cf_premis * cf_aturan <span class="kw">if</span> cf_premis &gt; <span class="nm">0</span> <span class="kw">else</span> <span class="nm">0.0</span>
 
 r1 = <span class="fn">aturan</span>(demam_rendah, <span class="nm">0.5</span>)
@@ -1289,6 +1318,61 @@ gabung(0.5, 0.6)   = 0.8
 gabung(0.6, -0.3)  = 0.4286
 gabung(-0.4, -0.5) = -0.7</pre>
                 <p style="font-size:0.9em; color:#555;">Nilai <code>-0.10</code> dan <code>0.28</code> adalah CF₁ (Rule 5) dan CF₂ (Rule 7) pada slide. Fakta yang <em>ditolak</em> diberi CF −1,0 (kita tahu ia salah), berbeda dengan fakta yang <em>belum diketahui</em>, yang bernilai 0 atau tidak dimasukkan sama sekali.</p>
+            
+                <h3 id="cf-maag">Contoh Lengkap Kedua: Pohon Inferensi Maag</h3>
+                <p>Contoh ini sengaja lebih rumit daripada flu: aturan berantai (simpul antara), satu aturan yang tidak berlaku, dan satu CF rule negatif. Fakta berasal dari satu pasien; CF fakta positif berarti cenderung benar, negatif cenderung tidak benar.</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Fakta</th><th>CF(E)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Nyeri ulu hati</td><td>0,5</td></tr>
+                            <tr><td>Perut kembung</td><td>0,7</td></tr>
+                            <tr><td>Mual</td><td>0,5</td></tr>
+                            <tr><td>Muntah</td><td>−0,4</td></tr>
+                            <tr><td>Sering telat makan</td><td>0,7</td></tr>
+                            <tr><td>Stres berat</td><td>−1,0 (pasti tidak)</td></tr>
+                            <tr><td>Hasil endoskopi normal</td><td>0,4</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Rule</th><th>IF</th><th>THEN</th><th>CF rule = CF(H|E)</th></tr></thead>
+                        <tbody>
+                            <tr><td>Rule 1</td><td>nyeri ulu hati AND perut kembung</td><td>gangguan lambung</td><td>0,8</td></tr>
+                            <tr><td>Rule 2</td><td>mual OR muntah</td><td>gangguan lambung</td><td>0,5</td></tr>
+                            <tr><td>Rule 3</td><td>sering telat makan</td><td>pola makan buruk</td><td>0,8</td></tr>
+                            <tr><td>Rule 4</td><td>gangguan lambung AND pola makan buruk</td><td>maag</td><td>0,8</td></tr>
+                            <tr><td>Rule 5</td><td>stres berat</td><td>maag</td><td>0,6</td></tr>
+                            <tr><td>Rule 6</td><td>hasil endoskopi normal</td><td>maag</td><td style="color:#c0392b;">−0,5</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Rule 1 sampai 3 menghasilkan simpul antara (<em>gangguan lambung</em> dan <em>pola makan buruk</em>); hasilnya menjadi CF(E) bagi Rule 4. Rule 6 negatif karena endoskopi yang normal melemahkan dugaan maag. Pertanyaan: berapa CF maag?</p>
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Tahap 1: gangguan lambung (Rule 1 dan 2).</strong>
+                            <p>Rule 1 (AND): min{0,5; 0,7} = 0,5, jadi CF(H) Rule 1 = 0,5 × 0,8 = 0,4.<br>Rule 2 (OR): maks{0,5; −0,4} = 0,5, jadi CF(H) Rule 2 = 0,5 × 0,5 = 0,25. Muntah (−0,4) tidak menggugurkan Rule 2, karena OR memakai premis terbesar, yaitu mual.<br>Gabung (keduanya positif): 0,4 + 0,25 × (1 − 0,4) = <b>0,55</b>.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Tahap 2: pola makan buruk dan tiga rule menuju maag.</strong>
+                            <p>Rule 3: 0,7 × 0,8 = <b>0,56</b>.<br>Rule 4 (AND): min{0,55; 0,56} = 0,55, jadi CF(H) Rule 4 = 0,55 × 0,8 = <b>0,44</b>.<br>Rule 5: stres berat = −1,0 ≤ 0, rule tidak berlaku, CF(H) Rule 5 = <b>0</b> (bukan −0,6).<br>Rule 6: CF premis = 0,4 &gt; 0, jadi CF(H) Rule 6 = 0,4 × (−0,5) = <b>−0,2</b>.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Tahap 3: gabungkan rule untuk maag (tanda berbeda).</strong>
+                            <p>Yang digabung hanya Rule 4 (0,44) dan Rule 6 (−0,2); Rule 5 gugur. CF = (0,44 − 0,2) ÷ (1 − min{0,44; 0,2}) = 0,24 ÷ 0,8 = <b>0,30</b>.<br>Dugaan maag didukung tetapi lemah: hasil endoskopi normal menurunkan keyakinan dari 0,44 menjadi 0,30.</p>
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size:0.9em; color:#555;">Seperti contoh flu, ini hanya ilustrasi teknik; kesehatan manusia tidak dijadikan tema tugas pada mata kuliah ini. Angka 0,30 tidak boleh dibaca sebagai “peluang 30%”.</p>
             </section>
 
             <!-- ============================================================ -->
@@ -1847,7 +1931,7 @@ Dengan P(B3|A1) = 0.1: {'A1': '18.9%', 'A2': '66.0%', 'A3': '15.1%'}</pre>
                 </ol>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-lightbulb"></i> Intinya</strong>
-                    <p style="margin-top:6px;">Dengan pengetahuan yang sama, naive Bayes menjawab <em>“seberapa mungkin hipotesis ini benar?”</em> (peluang), sedangkan CF menjawab <em>“seberapa kuat bukti menggeser keyakinan?”</em>. Untuk <strong>meranking</strong> hipotesis hasilnya sering sejalan; untuk <strong>melaporkan angka</strong> atau mengambil keputusan berbiaya, jangan menukar keduanya. Catatan: CF di sini sengaja diturunkan dari peluang agar perbandingan adil. CF pakar sungguhan diberikan langsung dan tidak harus konsisten dengan peluang mana pun, sehingga selisihnya dalam praktik bisa lebih besar.</p>
+                    <p style="margin-top:6px;">Dengan pengetahuan yang sama, naive Bayes menjawab <em>“seberapa mungkin hipotesis ini benar?”</em> (peluang), sedangkan CF menjawab <em>“seberapa kuat bukti menggeser keyakinan?”</em>. Untuk <strong>meranking</strong> hipotesis hasilnya sering sejalan; untuk <strong>melaporkan angka</strong> atau mengambil keputusan berbiaya, jangan menukar keduanya. Catatan: CF di sini sengaja diturunkan dari peluang agar perbandingan adil. CF rule sungguhan diberikan langsung dan tidak harus konsisten dengan peluang mana pun, sehingga selisihnya dalam praktik bisa lebih besar.</p>
                 </div>
 
                 <h3 id="t-masalah">Kapan CF Menjadi Masalah</h3>
@@ -1966,7 +2050,7 @@ beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
                             <tr><td><code>siap = [a for a in ATURAN if ... all(b['id'] in sudah ...)]</code></td><td>Aturan baru boleh jalan bila <strong>semua aturan penyimpul premisnya sudah jalan</strong>. Tanpa syarat ini, CF sebuah premis bisa dipakai sebelum semua kontribusinya digabung, dan hasilnya salah</td></tr>
                             <tr><td><code>sudah.add(a['id'])</code></td><td>Pengganti <em>refraction</em> pertemuan 9–10. Syarat <code>not in memori</code> tidak bisa dipakai lagi, karena satu fakta kini boleh menerima kontribusi dari beberapa aturan</td></tr>
                             <tr><td><code>cf_premis = min(...)</code></td><td>Premis AND: <strong>minimum</strong>. Fakta yang tidak ada pada memori dihitung <strong>0</strong> (belum diketahui), bukan −1</td></tr>
-                            <tr><td><code>hasil = cf_premis * a['cf'] if cf_premis &gt; 0 else 0.0</code></td><td>CF(H) = CF(E) × CF(aturan), dan aturan <strong>tidak berlaku</strong> bila CF premis ≤ 0</td></tr>
+                            <tr><td><code>hasil = cf_premis * a['cf'] if cf_premis &gt; 0 else 0.0</code></td><td>CF(H) = CF(E) × CF(H|E), dan aturan <strong>tidak berlaku</strong> bila CF premis ≤ 0</td></tr>
                             <tr><td><code>fakta[a['maka']] = gabung(...)</code></td><td>Beberapa aturan untuk hipotesis yang sama digabung dengan rumus tiga kasus (di sini R6 dan R7 untuk “beli obligasi”)</td></tr>
                             <tr><td><code>asal[...]</code> dan <code>jelaskan()</code></td><td>Fasilitas penjelasan “Bagaimana?” yang sekarang <strong>menampilkan CF pada tiap langkah</strong></td></tr>
                         </tbody>
@@ -1979,7 +2063,7 @@ beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
                         <li>Gerbang <strong>OR</strong> dengan maksimum (mengganti <code>min</code> untuk aturan bermode atau).</li>
                         <li><strong>Skala istilah</strong> yang Anda pakai untuk memberi CF, ditulis pada dokumentasi.</li>
                         <li>Pemeriksaan <strong>kontradiksi</strong> (dua aturan dengan CF +1 dan −1 untuk hipotesis yang sama).</li>
-                        <li><strong>Kasus uji</strong>: tambahkan satu gejala lalu catat kesimpulan mana yang berubah dan mengapa; ubah satu CF aturan dan catat pengaruhnya.</li>
+                        <li><strong>Kasus uji</strong>: tambahkan satu gejala lalu catat kesimpulan mana yang berubah dan mengapa; ubah satu CF rule dan catat pengaruhnya.</li>
                     </ul>
                 </div>
 
@@ -2050,9 +2134,9 @@ beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
                     <ul style="margin-top:10px;">
                         <li>Ketidakpastian berasal dari <strong>informasi tidak lengkap, data tidak akurat, pengetahuan berupa kecenderungan, dan aturan yang punya pengecualian</strong>. Sistem harus mewakili, menghitung, dan menyampaikannya.</li>
                         <li><strong>Certainty factor</strong> adalah ukuran keyakinan heuristik pada rentang −1 sampai 1, melekat pada fakta dan aturan. CF bukan peluang. CF = MB − MD menjelaskan artinya, tetapi pakar biasanya langsung memberi angkanya.</li>
-                        <li>Menghitung CF: <strong>CF(H) = CF(E) × CF(aturan)</strong> bila CF(E) &gt; 0, selain itu 0. Premis <strong>AND = minimum</strong>, <strong>OR = maksimum</strong>. Beberapa aturan untuk hipotesis yang sama digabung dengan tiga kasus tanda. Penggabungan tidak bergantung urutan.</li>
+                        <li>Menghitung CF: <strong>CF(H) = CF(E) × CF(H|E)</strong> bila CF(E) &gt; 0, selain itu 0. Premis <strong>AND = minimum</strong>, <strong>OR = maksimum</strong>. Beberapa aturan untuk hipotesis yang sama digabung dengan tiga kasus tanda. Penggabungan tidak bergantung urutan.</li>
                         <li>Rantai aturan menyusutkan keyakinan pada tiap langkah. CF 0 berarti <em>tidak tahu</em>, bukan <em>salah</em>.</li>
-                        <li>Semua hitungan CF hanya <strong>tiga operasi</strong>: <strong>kali</strong> (CF(E) × CF(aturan)), <strong>min atau maks</strong> (premis majemuk: AND min, OR maks), dan <strong>gabung</strong> (beberapa aturan, hipotesis sama: CF₁ + CF₂ × (1 − |CF₁|) untuk tanda sama, dan pembagian ruang tersisa untuk tanda berbeda). Aturan tunggal dan majemuk adalah dua cara memodelkan pengetahuan yang sama; jangan menghitung gejala yang sama dua kali.</li>
+                        <li>Semua hitungan CF hanya <strong>tiga operasi</strong>: <strong>kali</strong> (CF(E) × CF(H|E)), <strong>min atau maks</strong> (premis majemuk: AND min, OR maks), dan <strong>gabung</strong> (beberapa aturan, hipotesis sama: CF₁ + CF₂ × (1 − |CF₁|) untuk tanda sama, dan pembagian ruang tersisa untuk tanda berbeda). Aturan tunggal dan majemuk adalah dua cara memodelkan pengetahuan yang sama; jangan menghitung gejala yang sama dua kali.</li>
                         <li><strong>Teorema Bayes</strong>: P(A|B) = P(B|A) P(A) / P(B). Prior diubah menjadi posterior oleh bukti. Jangan menukar P(B|A) dengan P(A|B); prior (base rate) menentukan perbedaannya.</li>
                         <li>Posterior banyak hipotesis: pembilang = prior × hasil kali likelihood, penyebut = jumlah pembilang. Peluang tepat 0 adalah veto yang tidak dapat dipulihkan.</li>
                         <li>Hasil kali likelihood mengasumsikan <strong>kebebasan bersyarat</strong>. Bila dilanggar (bukti yang sama dihitung berulang), hasilnya terlalu yakin. <strong>Jaringan Bayes</strong> menuliskan keterkaitan secara eksplisit.</li>
@@ -2091,7 +2175,7 @@ beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
                     <div class="algo-step">
                         <div class="step-num">3</div>
                         <div class="step-content">
-                            <strong>Rantai: A (CF 0,8) → B (CF aturan 0,5) → C (CF aturan 0,6). Berapa CF(B) dan CF(C)? Bagaimana bila CF(A) = −0,3?</strong>
+                            <strong>Rantai: A (CF 0,8) → B (CF rule 0,5) → C (CF rule 0,6). Berapa CF(B) dan CF(C)? Bagaimana bila CF(A) = −0,3?</strong>
                             <details class="kunci"><summary>Lihat kunci</summary>
                                 <ul>
                                     <li>CF(B) = 0,8 × 0,5 = <strong>0,4</strong>; CF(C) = 0,4 × 0,6 = <strong>0,24</strong>.</li>

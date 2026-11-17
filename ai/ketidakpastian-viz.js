@@ -12,9 +12,9 @@
  *   data-viz="cf-vs-fuzzy"  satu pasien, dua jenis tidak pasti: CF (info belum lengkap) vs derajat fuzzy (kategori kabur)
  *   data-viz="cf-hitung"    MB, MD, dan CF dari peluang awal dan peluang setelah bukti
  *   data-viz="cf-gabung"    menggabungkan dua CF untuk hipotesis yang sama (tiga kasus tanda)
- *   data-viz="cf-premis"    premis banyak: AND = minimum, OR = maksimum, dikali CF aturan
+ *   data-viz="cf-premis"    premis banyak: AND = minimum, OR = maksimum, dikali CF rule
  *   data-viz="cf-rantai"    aturan berantai A -> B -> C: keyakinan menyusut tiap langkah
- *   data-viz="cf-flu"       pohon inferensi contoh flu, langkah demi langkah (CF pakar pada aturan)
+ *   data-viz="cf-flu"       pohon inferensi contoh flu, langkah demi langkah (CF rule pada aturan)
  *   data-viz="bayes-lab"    kotak peluang (mosaik) dua kejadian
  *                           data-fokus="peluang" (gabungan, bersyarat, independen) atau "bayes" (posterior)
  *   data-viz="bayes-update" tiga hipotesis dan tiga bukti; bukti diamati satu per satu
@@ -53,7 +53,7 @@
     const premisDan = list => (Math.min.apply(null, list) > 0 ? Math.min.apply(null, list) : 0);
     /** Premis OR: maksimum, hanya bila ada premis > 0. */
     const premisAtau = list => (Math.max.apply(null, list) > 0 ? Math.max.apply(null, list) : 0);
-    /** Evidence tidak pasti: CF(H) = CF(E) x CF(aturan) bila CF(E) > 0, selain itu 0. */
+    /** Evidence tidak pasti: CF(H) = CF(E) x CF(H|E) bila CF(E) > 0, selain itu 0. */
     const buktiTakPasti = (cfE, cfAturan) => (cfE > 0 ? cfE * cfAturan : 0);
 
     /** Istilah untuk nilai CF, dibaca dari skala istilah slide (sisi kanan). */
@@ -345,7 +345,7 @@
         const st = { a: 0.5, b: 0.6 };
         rootEl.classList.add('viz', 'kp');
         rootEl.innerHTML = presetRow(PRE) +
-            '<div class="kp-grid">' + slider('a', 'CF aturan 1 (bukti E1)', -1, 1, 0.05, 0.5) + slider('b', 'CF aturan 2 (bukti E2)', -1, 1, 0.05, 0.6) + '</div>' +
+            '<div class="kp-grid">' + slider('a', 'CF rule 1 (bukti E1)', -1, 1, 0.05, 0.5) + slider('b', 'CF rule 2 (bukti E2)', -1, 1, 0.05, 0.6) + '</div>' +
             '<div class="kp-out" data-role="out"></div>';
         function render() {
             const { nilai, kasus } = gabungDetail(st.a, st.b);
@@ -381,7 +381,7 @@
             '<button type="button" class="viz-btn secondary" data-mode="or">OR (maksimum)</button>' +
             '<button type="button" class="viz-btn secondary" data-role="neg">Jadikan E4 negatif</button></div>' +
             '<div class="kp-grid">' + [1, 2, 3, 4, 5].map(i => slider('e' + i, 'CF premis E' + i, -1, 1, 0.05, st['e' + i])).join('') +
-            slider('rule', 'CF aturan', -1, 1, 0.05, 0.65) + '</div>' +
+            slider('rule', 'CF rule', -1, 1, 0.05, 0.65) + '</div>' +
             '<div class="kp-out" data-role="out"></div>';
         const list = () => [st.e1, st.e2, st.e3, st.e4, st.e5];
         function render() {
@@ -393,10 +393,10 @@
             const berlaku = dan ? premisDan(l) > 0 : premisAtau(l) > 0;
             const hasil = berlaku ? pick * st.rule : 0;
             $q(rootEl, 'out').innerHTML =
-                '<p>CF(H) = ' + (dan ? 'min' : 'maks') + '{' + ket + '} × CF(aturan) = ' + num(pick) + ' × ' + num(st.rule) + ' = <span class="kp-big">' + num(hasil, 3) + '</span></p>' +
+                '<p>CF(H) = ' + (dan ? 'min' : 'maks') + '{' + ket + '} × CF(H|E) = ' + num(pick) + ' × ' + num(st.rule) + ' = <span class="kp-big">' + num(hasil, 3) + '</span></p>' +
                 (berlaku ? '' : '<div class="kp-warn">' + (dan ? 'Satu premis AND bernilai ≤ 0 (minimum ' + num(pick) + '), jadi gabungannya ≤ 0 dan <b>aturan tidak berlaku</b>: CF(H) = 0 dan pemeriksaan premis lain dapat dihentikan.' : 'Semua premis OR bernilai ≤ 0, jadi <b>aturan tidak berlaku</b>: CF(H) = 0.') + '</div>') +
                 skalaCF([{ v: hasil, label: 'CF(H) ' + num(hasil, 2), cls: 'm3' }]) +
-                '<p class="kp-note">AND ibarat rantai: sekuat mata rantai terlemah (minimum). OR ibarat dua jalan: cukup satu yang terkuat (maksimum). Hasilnya selalu dikalikan CF aturan, sehingga tidak pernah lebih besar daripada CF aturan itu sendiri.</p>';
+                '<p class="kp-note">AND ibarat rantai: sekuat mata rantai terlemah (minimum). OR ibarat dua jalan: cukup satu yang terkuat (maksimum). Hasilnya selalu dikalikan CF rule, sehingga tidak pernah lebih besar daripada CF rule itu sendiri.</p>';
         }
         bindSliders(rootEl, st, render);
         rootEl.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => { mode = b.dataset.mode; render(); }));
@@ -420,7 +420,7 @@
                 '<p>CF(C) = CF(B) × CF(Rule 2) = ' + num(b, 3) + ' × ' + num(st.r2) + ' = <span class="kp-f">' + num(c, 3) + '</span>' + (b <= 0 ? ' <small>(B tidak dipercaya, Rule 2 tidak berlaku)</small>' : '') + '</p>' +
                 '<table class="kp-tab"><thead><tr><th>Fakta</th><th>Keyakinan (hanya bagian positif digambar)</th></tr></thead><tbody>' +
                 '<tr><td>A</td>' + w(st.a) + '</tr><tr><td>B</td>' + w(b) + '</tr><tr><td>C</td>' + w(c) + '</tr></tbody></table>' +
-                '<p class="kp-note">Tiap aturan yang dilewati mengalikan dengan angka yang tidak lebih dari 1 (selama CF aturan di bawah 1), sehingga keyakinan terus menyusut. Pada rantai panjang, kesimpulan akhir bergantung pada panjang rantai, bukan hanya pada kuatnya bukti.</p>';
+                '<p class="kp-note">Tiap aturan yang dilewati mengalikan dengan angka yang tidak lebih dari 1 (selama CF rule di bawah 1), sehingga keyakinan terus menyusut. Pada rantai panjang, kesimpulan akhir bergantung pada panjang rantai, bukan hanya pada kuatnya bukti.</p>';
         }
         bindSliders(rootEl, st, render);
         render();
@@ -501,14 +501,14 @@
             }
             if (step === 1) {
                 const baris = (n, premis, cfp) => '<tr class="' + (cfp > 0 ? 'hit' : 'gone') + '"><td>Rule ' + n + '</td><td>' + premis + ' = ' + A(cfp, 1) + '</td><td>' + (cfp > 0 ? A(cfp, 1) + ' × ' + A(R[n], 1) + ' = <b>' + A(h.r[n], 2) + '</b>' : 'premis ≤ 0, tidak berlaku (0)') + '</td></tr>';
-                return '<table class="kp-tab"><thead><tr><th>Aturan</th><th>CF premis</th><th>CF kesimpulan = CF premis × CF aturan</th></tr></thead><tbody>' +
+                return '<table class="kp-tab"><thead><tr><th>Aturan</th><th>CF premis</th><th>CF kesimpulan = CF premis × CF rule</th></tr></thead><tbody>' +
                     baris(1, 'demam &lt; 37,5', h.leaf.demamRendah) + baris(2, 'demam &gt; 37,5', h.leaf.demamTinggi) + baris(3, 'batuk &gt; 24 jam', h.leaf.batuk24) + baris(4, 'batuk &gt; 48 jam', h.leaf.batuk48) + '</tbody></table>' +
                     '<p style="margin-top:8px">“gejala flu” = gabungan Rule 1 dan 2 = <span class="kp-f">' + A(h.gejala, 2) + '</span>; “sakit tenggorokan” = gabungan Rule 3 dan 4 = <span class="kp-f">' + A(h.tenggorokan, 2) + '</span>. Aturan yang tidak berlaku bernilai 0 dan tidak mengubah apa pun pada gabungan.</p>';
             }
             if (step === 2) {
                 const m = Math.min(h.gejala, st.bersin);
                 return '<p>Rule 5 punya dua premis (AND): gejala flu = ' + A(h.gejala, 2) + ' dan bersin = ' + A(st.bersin, 1) + '.</p>' +
-                    (m > 0 ? '<p>CF₁ = min{' + A(h.gejala, 2) + ', ' + A(st.bersin, 1) + '} × (−0,2) = ' + A(m, 2) + ' × (−0,2) = <span class="kp-f">' + A(h.r[5], 3) + '</span>. CF aturan negatif: kombinasi gejala ini justru sedikit melemahkan dugaan flu (pada contoh pakar, gejala dingin yang disertai bersin lebih mirip alergi).</p>'
+                    (m > 0 ? '<p>CF₁ = min{' + A(h.gejala, 2) + ', ' + A(st.bersin, 1) + '} × (−0,2) = ' + A(m, 2) + ' × (−0,2) = <span class="kp-f">' + A(h.r[5], 3) + '</span>. CF rule negatif: kombinasi gejala ini justru sedikit melemahkan dugaan flu (pada contoh pakar, gejala dingin yang disertai bersin lebih mirip alergi).</p>'
                         : '<p>Salah satu premis ≤ 0, jadi Rule 5 tidak berlaku: CF₁ = <span class="kp-f">0</span>.</p>');
             }
             if (step === 3) {
