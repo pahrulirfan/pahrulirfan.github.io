@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 10: Keamanan Aplikasi & Pengujian - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        header { background: #b91c1c !important; }
+        .sidebar h3 { color: #fca5a5 !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #fca5a5 !important; }
+        .sidebar ul li a.active { background-color: #b91c1c !important; }
+        section h2 { border-bottom: 3px solid #b91c1c !important; }
+        th { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; }
+        .badge { background: #b91c1c !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #fca5a5 !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #b91c1c; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #7f1d1d; margin-bottom: 15px; }
+        .interactive-demo button {
+            padding: 8px 20px; background: #b91c1c; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #7f1d1d; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #fca5a5; }
+        .terminal .out { color: #8a8f98; }
+
+        /* ===== Tampilan Postman (mockup) ===== */
+        .req-mock { border:1px solid #d6dbe4; border-radius:8px; overflow:hidden; margin:12px 0 18px; background:#fff; font-size:0.9em; }
+        .req-cap { padding:6px 14px; background:#eef1f7; color:#64748b; font-size:0.8em; border-bottom:1px solid #e0e5ee; }
+        .req-bar { display:flex; padding:10px 14px; background:#f4f6fa; border-bottom:1px solid #e0e5ee; }
+        .req-method { padding:8px 14px; font-weight:700; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-radius:6px 0 0 6px; }
+        .req-url { flex:1; padding:8px 12px; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-left:none; overflow-x:auto; white-space:nowrap; }
+        .req-send { padding:8px 18px; font-weight:700; color:#fff; background:#ff6c37; border-radius:0 6px 6px 0; }
+        .req-tabs { display:flex; gap:20px; padding:8px 14px 0; border-bottom:1px solid #e0e5ee; color:#64748b; font-size:0.85em; overflow-x:auto; }
+        .req-tabs span { padding-bottom:6px; white-space:nowrap; }
+        .req-tabs .on { color:#0f172a; font-weight:700; border-bottom:2px solid #ff6c37; }
+        .req-pane { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; background:#fafbfd; border-bottom:1px solid #e0e5ee; }
+        .req-res { display:flex; gap:14px; align-items:center; padding:8px 14px; background:#f4f6fa; border-top:1px solid #e0e5ee; border-bottom:1px solid #e0e5ee; font-size:0.85em; color:#475569; }
+        .req-res .st { font-weight:700; }
+        .req-res .s2 { color:#15803d; } .req-res .s4 { color:#b91c1c; } .req-res .s5 { color:#7c2d12; }
+        .req-resbody { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; }
+        .req-empty { padding:10px 14px; font-size:0.85em; color:#94a3b8; font-style:italic; }
+
+        /* Severity chips */
+        .sev { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.75em; font-weight:700; color:#fff; }
+        .sev-critical { background:#7f1d1d; }
+        .sev-high { background:#b91c1c; }
+        .sev-medium { background:#d97706; }
+        .sev-low { background:#65a30d; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 10: Keamanan Aplikasi & Pengujian</h1>
+        <p>Sub-CPMK 5 (bagian 2) &mdash; Minggu 10 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#owasp-top10" class="active">1. OWASP Top 10</a></li>
+                <li><a href="#hardening">2. Header, CORS, Rate Limit &amp; Secret</a></li>
+                <li><a href="#scan-otomatis">3. Scan Otomatis &amp; Pengujian Manual</a></li>
+                <li><a href="#juice-shop">4. Laboratorium Juice Shop</a></li>
+                <li><a href="#referensi">5. Referensi</a></li>
+            </ul>
+            <h3>Link Terkait</h3>
+            <ul>
+                <!-- <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-09-autentikasi-otorisasi.html">&larr; Pertemuan 9</a></li>
+                <li><a href="materi-11-front-end-dasar.html">Pertemuan 11 &rarr;</a></li> -->
+                <li><a href="https://owasp.org/Top10/" target="_blank">OWASP Top 10</a></li>
+                <li><a href="https://owasp.org/www-project-juice-shop/" target="_blank">OWASP Juice Shop</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <section id="owasp-top10">
+                <h2>1. OWASP Top 10 <span class="badge badge-important">Indikator 5.4</span></h2>
+
+                <p>Minggu lalu kalian membangun autentikasi. Minggu ini kalian menyerang dan memperbaiki API kalian sendiri, sekaligus berkenalan dengan tool yang dipakai orang keamanan sungguhan untuk pekerjaan semacam ini. Yang penting bukan menghafal namanya, melainkan tahu apa yang sebenarnya diperiksa masing-masing tool, dan di mana batas kemampuannya.</p>
+
+                <div class="warning-box">
+                    <strong>Aturan etika yang wajib dipahami:</strong> seluruh latihan penyerangan pada mata kuliah ini <strong>hanya boleh dilakukan terhadap API buatan sendiri</strong> atau <strong>OWASP Juice Shop</strong> (Section 4) yang memang dirancang untuk diserang. Menyerang sistem milik pihak lain tanpa izin adalah tindak pidana menurut UU ITE.
+                </div>
+
+                <h3>1.1 Apa Itu OWASP, dan Bagaimana Top 10 Disusun</h3>
+                <p><strong>OWASP</strong> (Open Worldwide Application Security Project) adalah yayasan nonprofit yang menaungi ratusan proyek keamanan aplikasi secara terbuka &mdash; bukan vendor yang menjual produk. Selain daftar Top 10, OWASP juga menaungi <strong>ZAP</strong> (Section 3.1), <strong>Juice Shop</strong> (Section 4), <strong>Cheat Sheet Series</strong> (dirujuk sejak Pertemuan 9), <strong>ASVS</strong> (Application Security Verification Standard, daftar kontrol keamanan yang jauh lebih rinci dari Top 10), dan <strong>Dependency-Check</strong> (sepupu <code>npm audit</code> untuk ekosistem Java/.NET). Semuanya open source, ditulis dan direview oleh komunitas praktisi keamanan di seluruh dunia secara sukarela.</p>
+                <p>Top 10 itu sendiri bukan opini tim penulisnya. Edisi 2021 (yang jadi acuan utama di pertemuan ini) disusun dari <strong>sekitar 125.000 CVE</strong> (celah yang tercatat resmi) yang dipetakan ke hampir 400 <strong>CWE</strong> (<em>Common Weakness Enumeration</em>, katalog jenis kesalahan kode generik; satu CWE bisa melahirkan ribuan CVE berbeda). Delapan dari sepuluh kategori dipilih murni dari data itu &mdash; diberi skor <em>Exploitability</em> (seberapa mudah dieksploitasi) dan <em>Impact</em> (seberapa parah akibatnya) berdasarkan CVSS pada CVE-CVE yang terpetakan ke CWE-nya. Dua kategori sisanya dipilih dari survei terhadap ratusan praktisi keamanan, untuk menangkap risiko yang baru muncul tetapi belum banyak tercatat sebagai CVE. Karena disusun dari data sebanyak itu, daftarnya terasa representatif &mdash; bukan cuma opini sepihak tim penulisnya.</p>
+                <div class="info-box">
+                    <strong>Kenapa dikelompokkan per kategori, bukan per CVE?</strong> Satu CWE (misalnya &ldquo;tidak memeriksa otorisasi&rdquo;) bisa muncul di ribuan aplikasi berbeda dengan detail yang berbeda-beda. Mengelompokkan per <em>akar masalah</em> (root cause) membuat satu pelajaran bisa dipakai mencegah banyak celah sekaligus, bukan menghafal daftar insiden satu per satu.
+                </div>
+
+                <h3>1.2 Dua Edisi yang Beredar: 2021 dan 2025</h3>
+                <p>OWASP Top 10 diperbarui setiap beberapa tahun karena pola serangan ikut berubah. Materi ini memakai <strong>edisi 2021</strong> sebagai acuan utama (dipakai juga oleh Juice Shop dan kebanyakan referensi yang masih beredar), tetapi edisi <strong>2025</strong> sudah terbit dengan penomoran yang bergeser:</p>
+                <table>
+                    <tr><th>2021</th><th>2025</th><th>Yang berubah</th></tr>
+                    <tr><td>A01 Broken Access Control</td><td>A01 Broken Access Control</td><td>Tetap nomor 1 &mdash; kategori paling sering ditemukan di data</td></tr>
+                    <tr><td>A05 Security Misconfiguration</td><td>A02 Security Misconfiguration</td><td>Naik peringkat</td></tr>
+                    <tr><td>A06 Vulnerable &amp; Outdated Components</td><td>A03 Software Supply Chain Failures</td><td>Diperluas: bukan hanya dependency yang usang, tapi seluruh rantai supply chain (termasuk pipeline CI/CD)</td></tr>
+                    <tr><td>A02 Cryptographic Failures</td><td>A04 Cryptographic Failures</td><td>Nama sama, nomor turun</td></tr>
+                    <tr><td>A03 Injection</td><td>A05 Injection</td><td>Nomor turun, bukan berarti kurang penting</td></tr>
+                    <tr><td>A07 Identification &amp; Authentication Failures</td><td>A07 Authentication Failures</td><td>Nama dipersingkat; identifikasi digabung ke kategori ini</td></tr>
+                    <tr><td>A09 Security Logging &amp; Monitoring Failures</td><td>A09 Security Logging &amp; Alerting Failures</td><td>Penekanan bergeser ke <em>alerting</em>: punya log saja tidak cukup kalau tidak ada yang memicu peringatan</td></tr>
+                    <tr><td>A10 Server-Side Request Forgery</td><td>A10 Mishandling of Exceptional Conditions</td><td>SSRF dilebur ke kategori lain; kategori baru fokus ke error yang ditangani asal-asalan</td></tr>
+                </table>
+                <p>Kalau kalian membaca artikel atau dokumentasi tool yang menyebut &ldquo;A03 Injection&rdquo; atau &ldquo;A02 Security Misconfiguration&rdquo;, periksa dulu edisi mana yang dirujuk &mdash; nomornya bisa berarti kategori yang berbeda.</p>
+
+                <h3>1.3 Kategori yang Relevan untuk REST API Kita</h3>
+                <table>
+                    <tr><th>Kategori OWASP (2021)</th><th>Tingkat</th><th>Contoh pada API kita</th></tr>
+                    <tr><td><strong>A01 Broken Access Control</strong></td><td><span class="sev sev-critical">Kritis</span></td><td>Endpoint <code>DELETE /mahasiswa/:id</code> bisa diakses tanpa cek role (lupa <code>butuhRole</code>)</td></tr>
+                    <tr><td><strong>A02 Cryptographic Failures</strong></td><td><span class="sev sev-high">Tinggi</span></td><td>Password disimpan plain text, bukan bcrypt (Pertemuan 9)</td></tr>
+                    <tr><td><strong>A03 Injection</strong></td><td><span class="sev sev-critical">Kritis</span></td><td>SQL Injection lewat query mentah (Prisma aman <em>selama</em> tidak pakai <code>$queryRawUnsafe</code> ceroboh)</td></tr>
+                    <tr><td><strong>A05 Security Misconfiguration</strong></td><td><span class="sev sev-medium">Sedang</span></td><td>Pesan error menampilkan stack trace lengkap ke client di lingkungan produksi</td></tr>
+                    <tr><td><strong>A06 Vulnerable &amp; Outdated Components</strong></td><td><span class="sev sev-high">Tinggi</span></td><td>Dependency di <code>package.json</code> yang punya celah publik, tidak pernah di-<code>npm audit</code></td></tr>
+                    <tr><td><strong>A07 Identification &amp; Auth Failures</strong></td><td><span class="sev sev-high">Tinggi</span></td><td>Token tidak pernah expired, atau pesan error login membedakan email valid/tidak (Pertemuan 9.3.3)</td></tr>
+                    <tr><td><strong>A09 Security Logging Failures</strong></td><td><span class="sev sev-medium">Sedang</span></td><td>Tidak ada catatan siapa mengubah data apa, sehingga insiden tidak bisa ditelusuri</td></tr>
+                </table>
+
+                <h3>1.4 Contoh Konkret: Broken Access Control (A01)</h3>
+                <p>Ini kategori vulnerability <strong>paling sering ditemukan mahasiswa</strong> pada API mereka sendiri &mdash; sering karena lupa, bukan karena tidak tahu caranya. A01 juga kategori dengan insidensi tertinggi di data CVE 2021: hampir 94% aplikasi yang diuji OWASP punya setidaknya satu bentuk broken access control.</p>
+
+                <pre><code><span class="comment">// ❌ RENTAN — endpoint sensitif tanpa proteksi apa pun</span>
+<span class="variable">router</span>.<span class="function">delete</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="variable">ctrl</span>.<span class="variable">hapus</span>);   <span class="comment">// siapa saja bisa hapus data!</span>
+
+<span class="comment">// ❌ RENTAN — IDOR (Insecure Direct Object Reference)</span>
+<span class="comment">// endpoint memeriksa LOGIN, tapi tidak memeriksa KEPEMILIKAN data</span>
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/pesanan/:id'</span>, <span class="variable">butuhLogin</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">pesanan</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pesanan</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span>: <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>) } });
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">pesanan</span> });   <span class="comment">// user A bisa lihat pesanan milik user B!</span>
+});
+
+<span class="comment">// ✅ AMAN — proteksi DAN kepemilikan diperiksa</span>
+<span class="variable">router</span>.<span class="function">delete</span>(<span class="string">'/mahasiswa/:id'</span>, <span class="variable">butuhLogin</span>, <span class="function">butuhRole</span>(<span class="string">'admin'</span>), <span class="variable">ctrl</span>.<span class="variable">hapus</span>);
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/pesanan/:id'</span>, <span class="variable">butuhLogin</span>, <span class="keyword">async</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> <span class="variable">pesanan</span> = <span class="keyword">await</span> <span class="variable">prisma</span>.<span class="variable">pesanan</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span>: <span class="function">Number</span>(<span class="variable">req</span>.<span class="variable">params</span>.<span class="variable">id</span>) } });
+    <span class="keyword">if</span> (<span class="variable">pesanan</span>.<span class="variable">userId</span> <span class="operator">!==</span> <span class="variable">req</span>.<span class="variable">user</span>.<span class="variable">id</span>) {
+        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">403</span>, <span class="string">'Bukan milik Anda'</span>, <span class="string">'FORBIDDEN'</span>));   <span class="comment">// cek KEPEMILIKAN</span>
+    }
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">pesanan</span> });
+});</code></pre>
+
+                <div class="info-box">
+                    <strong>IDOR (Insecure Direct Object Reference)</strong> adalah pola A01 yang paling sering luput: endpoint memeriksa <em>apakah pengguna login</em>, tetapi lupa memeriksa <em>apakah data itu memang miliknya</em>. Cukup mengganti angka di URL (<code>/pesanan/5</code> menjadi <code>/pesanan/6</code>), penyerang bisa melihat data orang lain.
+                </div>
+                <p>Satu prinsip menutup seluruh kategori A01: <strong>default-deny</strong>. Anggap setiap endpoint baru tertutup sampai ada alasan jelas untuk membukanya &mdash; role tertentu, kepemilikan data, atau memang publik &mdash; bukan sebaliknya. <code>butuhLogin</code> dan <code>butuhRole</code> dari Pertemuan 9 adalah cara menuliskan alasan itu secara eksplisit di setiap baris route, bukan membiarkannya jadi asumsi yang mudah terlewat.</p>
+
+                <h3>1.5 Cryptographic Failures (A02): Bukan Cuma Soal Password</h3>
+                <p>Kategori ini mencakup <strong>semua</strong> kegagalan melindungi data yang seharusnya rahasia, bukan hanya password. Tiga pola yang relevan untuk REST API kita:</p>
+                <table>
+                    <tr><th>Pola</th><th>Contoh</th><th>Sudah dicegah di materi mana</th></tr>
+                    <tr><td>Password tidak di-hash</td><td>Kolom <code>passwordHash</code> ternyata berisi teks biasa</td><td>Pertemuan 9.1 (bcrypt)</td></tr>
+                    <tr><td>Secret lemah atau ter-commit</td><td><code>JWT_SECRET=secret</code>, atau ter-push ke GitHub</td><td>Pertemuan 9.4.3, Section 2.4 &amp; 3.3</td></tr>
+                    <tr><td>Data sensitif lewat HTTP polos</td><td>Login dikirim tanpa HTTPS, bisa disadap di jaringan publik</td><td>Dibahas lagi Pertemuan 14 (deploy)</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>Algoritma JWT <code>none</code>.</strong> Spesifikasi JWT membolehkan header <code>{"alg":"none"}</code>, yang berarti &ldquo;token ini tidak ditandatangani&rdquo;. Beberapa library lama (bukan <code>jsonwebtoken</code> versi yang kita pakai) secara keliru tetap menerima token semacam ini kalau dipanggil tanpa menyebut algoritma yang diizinkan. Ini bukan celah di JWT sebagai konsep, melainkan di implementasi yang longgar &mdash; <code>jwt.verify(token, secret)</code> milik <code>jsonwebtoken</code> aman karena secara default menolak <code>alg: none</code>.
+                </div>
+
+                <h3>1.6 Authentication Failures (A07): Celah di Luar Logika Login</h3>
+                <p>Login dan registrasi kalian di Pertemuan 9 sudah benar secara logika (password di-hash, pesan error disamakan). A07 mencakup hal-hal di <em>sekitar</em> logika itu yang sering terlewat:</p>
+                <ul>
+                    <li><strong>Tidak ada pembatasan percobaan</strong> &mdash; endpoint login dicoba ribuan kali per detik (<em>brute-force</em>), ditutup dengan rate limiting (Section 2.3).</li>
+                    <li><strong>Session/token tidak pernah expired</strong> &mdash; token yang bocor sekali berlaku selamanya. Pertemuan 9 menutup ini dengan <code>expiresIn</code>.</li>
+                    <li><strong>Credential stuffing</strong> &mdash; penyerang mencoba kombinasi email/password yang bocor dari situs <em>lain</em> (manusia sering memakai password yang sama di banyak tempat). Rate limiting membantu, tetapi mitigasi penuhnya butuh MFA (<em>multi-factor authentication</em>) &mdash; di luar cakupan wajib mata kuliah ini.</li>
+                    <li><strong>Pesan error yang membedakan</strong> &mdash; &ldquo;email tidak ada&rdquo; vs &ldquo;password salah&rdquo; membocorkan email mana yang terdaftar (<em>user enumeration</em>, sudah ditutup di Pertemuan 9.3.3).</li>
+                </ul>
+
+                <h3>1.7 Security Logging and Alerting Failures (A09): Kalau Insiden Terjadi, Apa yang Kalian Punya?</h3>
+                <p>Sembilan kategori sebelumnya soal mencegah serangan; kategori ini soal apa yang terjadi kalau pencegahannya gagal atau dicoba ditembus. <code>logger</code> middleware dari Pertemuan 5 mencatat setiap request ke terminal (method, URL, status, durasi), dan itu sudah modal awal yang baik &mdash; tapi tiga hal berikut biasanya masih hilang pada proyek mahasiswa:</p>
+                <table>
+                    <tr><th>Yang sering hilang</th><th>Akibatnya</th></tr>
+                    <tr><td>Log tidak menyebut <em>siapa</em> (user id) yang melakukan aksi</td><td>Data berubah, tidak ada yang bisa ditanyai &ldquo;kamu yang mengubah ini?&rdquo;</td></tr>
+                    <tr><td>Log hanya di terminal, hilang saat server restart</td><td>Insiden minggu lalu tidak bisa ditelusuri lagi hari ini</td></tr>
+                    <tr><td>Tidak ada yang memantau log secara aktif</td><td>Percobaan login gagal 10.000 kali tidak memicu siapa pun sampai data sudah bocor &mdash; bedanya <em>logging</em> (mencatat) dan <em>alerting</em> (memberi tahu), penekanan baru di edisi 2025</td></tr>
+                </table>
+                <div class="info-box">
+                    Untuk skala mata kuliah ini, log ke terminal (atau file) yang menyertakan <code>req.user?.id</code> di setiap baris sudah menunjukkan kesadaran akan A09. Di produksi sungguhan, log dikirim ke layanan terpusat (misalnya ELK Stack atau Datadog) yang bisa memicu alert otomatis &mdash; dibahas sebagai pengayaan, bukan kewajiban.
+                </div>
+            </section>
+
+            <section id="hardening">
+                <h2>2. Header Keamanan, CORS, Rate Limiting &amp; Pengelolaan Secret <span class="badge">Indikator 5.4</span></h2>
+
+                <h3>2.1 Header Keamanan dengan Helmet</h3>
+                <p><code>helmet</code> tidak menguji apa pun; ia hanya menambahkan header respons yang membatasi apa yang boleh dilakukan browser terhadap halaman/API kalian. Satu baris memasang lebih dari sepuluh header sekaligus:</p>
+                <div class="terminal"><span class="prompt">$</span> npm install helmet</div>
+                <pre><code><span class="keyword">import</span> <span class="variable">helmet</span> <span class="keyword">from</span> <span class="string">'helmet'</span>;
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">helmet</span>());</code></pre>
+                <p>Header yang benar-benar terkirim setelah <code>helmet()</code> dipasang (hasil tangkapan sungguhan dari endpoint lokal, bukan daftar dari dokumentasi):</p>
+<div class="terminal"><span class="out">Content-Security-Policy: default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Resource-Policy: same-origin
+Origin-Agent-Cluster: ?1
+Referrer-Policy: no-referrer
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+X-Content-Type-Options: nosniff
+X-DNS-Prefetch-Control: off
+X-Download-Options: noopen
+X-Frame-Options: SAMEORIGIN
+X-Permitted-Cross-Domain-Policies: none
+X-XSS-Protection: 0</span></div>
+                <table>
+                    <tr><th>Header</th><th>Mencegah</th></tr>
+                    <tr><td><code>Content-Security-Policy</code></td><td>Script asing yang disuntikkan lewat XSS dijalankan browser (hanya sumber dari <code>'self'</code> yang dipercaya)</td></tr>
+                    <tr><td><code>Strict-Transport-Security</code></td><td>Koneksi turun ke HTTP biasa (bukan HTTPS) selama 1 tahun (<code>max-age=31536000</code> detik) ke depan</td></tr>
+                    <tr><td><code>X-Frame-Options: SAMEORIGIN</code></td><td>Halaman disisipkan di <code>&lt;iframe&gt;</code> domain lain (clickjacking)</td></tr>
+                    <tr><td><code>X-Content-Type-Options: nosniff</code></td><td>Browser menebak-nebak tipe konten yang salah (misalnya memperlakukan file teks sebagai HTML yang dieksekusi)</td></tr>
+                    <tr><td><code>Referrer-Policy: no-referrer</code></td><td>URL halaman kalian ikut terkirim ke situs lain lewat header <code>Referer</code> saat ada link keluar</td></tr>
+                    <tr><td><code>Cross-Origin-Resource-Policy</code></td><td>Situs lain men-<em>embed</em> resource API kalian (gambar, file) di halaman mereka</td></tr>
+                </table>
+                <div class="info-box">
+                    <strong>Mengapa ini kategori A05 (Security Misconfiguration), bukan A02/A03?</strong> Tidak ada bug di kode kalian; API-nya berjalan sempurna secara fungsional. Masalahnya murni <em>konfigurasi yang dilewatkan</em>, dan itu memang persis definisi A05: pengaturan keamanan yang tersedia tapi tidak diaktifkan.
+                </div>
+
+                <h3>2.2 CORS: Siapa Boleh Memanggil API Kita</h3>
+                <p>Browser punya aturan bawaan bernama <strong>Same-Origin Policy</strong>: JavaScript yang berjalan di domain A tidak boleh membaca respons dari domain B, kecuali domain B mengizinkannya secara eksplisit. Sejak Pertemuan 1 arsitektur kita memang dua proyek terpisah (backend di <code>localhost:3000</code>, frontend React nanti di <code>localhost:5173</code> &mdash; dua <em>origin</em> yang berbeda), jadi tanpa izin eksplisit, browser akan <strong>menolak</strong> respons API sebelum sampai ke kode React, walau request-nya sendiri sukses di sisi server.</p>
+                <div class="terminal"><span class="prompt">$</span> npm install cors</div>
+                <pre><code><span class="keyword">import</span> <span class="variable">cors</span> <span class="keyword">from</span> <span class="string">'cors'</span>;
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="function">cors</span>({ <span class="variable">origin</span>: <span class="string">'http://localhost:5173'</span> }));   <span class="comment">// hanya origin ini yang diizinkan</span></code></pre>
+                <div class="warning-box">
+                    <strong><code>cors()</code> tanpa argumen mengizinkan SEMUA origin</strong> (header <code>Access-Control-Allow-Origin: *</code>). Itu nyaman saat belajar, tetapi di produksi berarti situs mana pun di internet bisa memanggil API kalian langsung dari browser korban yang sudah login &mdash; persis definisi A05 Security Misconfiguration. Selalu sebutkan <code>origin</code> secara eksplisit sebelum deploy (dibahas lagi Pertemuan 14).
+                </div>
+                <p>Satu detail yang sering membingungkan: untuk request tertentu (misalnya <code>DELETE</code>, atau yang membawa header <code>Authorization</code>), browser mengirim request <strong>OPTIONS</strong> dulu secara otomatis sebelum request aslinya &mdash; disebut <em>preflight</em> &mdash; untuk bertanya ke server &ldquo;method dan header apa yang kamu izinkan dari origin ini?&rdquo;. Middleware <code>cors</code> menjawab preflight ini otomatis; kalian tidak perlu menulis handler <code>OPTIONS</code> sendiri.</p>
+
+                <h3>2.3 Rate Limiting</h3>
+                <p>Tanpa pembatasan, endpoint login bisa dicoba ribuan kali per detik (serangan <em>brute-force</em>, A07 &mdash; Section 1.6).</p>
+                <div class="terminal"><span class="prompt">$</span> npm install express-rate-limit</div>
+                <pre><code><span class="keyword">import</span> <span class="variable">rateLimit</span> <span class="keyword">from</span> <span class="string">'express-rate-limit'</span>;
+
+<span class="keyword">const</span> <span class="variable">batasLogin</span> = <span class="function">rateLimit</span>({
+    <span class="variable">windowMs</span>: <span class="number">15</span> * <span class="number">60</span> * <span class="number">1000</span>,   <span class="comment">// 15 menit</span>
+    <span class="variable">max</span>: <span class="number">5</span>,                        <span class="comment">// maksimal 5 percobaan per IP</span>
+    <span class="variable">message</span>: { <span class="variable">error</span>: { <span class="variable">pesan</span>: <span class="string">'Terlalu banyak percobaan, coba lagi nanti'</span> } }
+});
+
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/auth/login'</span>, <span class="variable">batasLogin</span>, <span class="variable">ctrl</span>.<span class="variable">login</span>);</code></pre>
+                <p><code>express-rate-limit</code> menghitung mundur <em>fixed window</em>: setiap IP diberi jatah 5 request per 15 menit, dan jatahnya di-reset total begitu jendela waktu berakhir (bukan &ldquo;5 request dalam 15 menit terakhir&rdquo; yang bergeser terus). Cukup untuk login, karena pengguna sah jarang butuh lebih dari 5 kali percobaan dalam 15 menit.</p>
+
+                <h3>2.4 Pengelolaan Secret yang Benar</h3>
+                <table>
+                    <tr><th>❌ Jangan</th><th>✅ Lakukan</th></tr>
+                    <tr><td>Menaruh <code>JWT_SECRET</code> langsung di kode</td><td>Selalu lewat <code>process.env</code>, dibaca dari <code>.env</code></td></tr>
+                    <tr><td>Commit file <code>.env</code> ke Git</td><td><code>.env</code> di <code>.gitignore</code>, commit <code>.env.example</code> saja</td></tr>
+                    <tr><td>Memakai secret yang sama untuk dev dan produksi</td><td>Nilai berbeda per lingkungan (dibahas lagi Pertemuan 14)</td></tr>
+                    <tr><td>Menampilkan stack trace lengkap ke client</td><td>Log detail di server, client cukup terima pesan umum</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Kalau secret sudah pernah ter-commit ke Git, mengganti isinya SAJA TIDAK CUKUP.</strong> Secret itu tetap ada di riwayat commit lama dan bisa ditemukan siapa saja yang meng-clone repository. Nilai yang bocor harus <strong>diganti sepenuhnya</strong> (rotate), dan idealnya riwayat Git dibersihkan.
+                </div>
+                <p>Untuk skala mata kuliah ini, file <code>.env</code> yang benar di <code>.gitignore</code> sudah cukup. Tim di luar kelas yang mengelola banyak secret dan banyak lingkungan biasanya memakai <strong>secret manager</strong> khusus &mdash; HashiCorp Vault, Doppler, atau fitur bawaan platform seperti AWS Secrets Manager &mdash; supaya secret tidak pernah tersimpan sebagai file sama sekali, hanya diambil saat runtime dan tercatat siapa yang mengaksesnya kapan.</p>
+            </section>
+
+            <section id="scan-otomatis">
+                <h2>3. Scan Otomatis &amp; Pengujian Manual <span class="badge badge-important">Indikator 5.4</span></h2>
+
+                <p>Empat tool di bawah ini saling melengkapi, masing-masing menutupi sisi yang berbeda. Tidak satu pun yang cukup dipakai sendirian, seperti akan terlihat di tabel perbandingan Section 3.5.</p>
+
+                <h3>3.1 OWASP ZAP: Baseline Scan vs Full Scan</h3>
+                <p><strong>ZAP</strong> (Zed Attack Proxy) adalah proyek flagship OWASP sendiri (Section 1.1): sebuah <em>proxy</em> yang diposisikan di antara client dan server, sehingga bisa membaca, menganalisis, dan (kalau diminta) memodifikasi setiap request/response yang lewat. Cara kerjanya dua tahap:</p>
+                <ol>
+                    <li><strong>Spider</strong> &mdash; ZAP merayapi API kalian untuk menemukan endpoint apa saja yang ada, mirip cara Google mengindeks halaman web.</li>
+                    <li><strong>Scan</strong> &mdash; setiap endpoint yang ditemukan diperiksa. Perbedaan <em>baseline</em> dan <em>full</em> ada di tahap ini.</li>
+                </ol>
+                <table>
+                    <tr><th>&nbsp;</th><th>Baseline scan</th><th>Full scan</th></tr>
+                    <tr><td><strong>Jenis pemeriksaan</strong></td><td><em>Passive</em> &mdash; hanya mengamati response yang wajar, tidak mengirim payload aneh</td><td><em>Passive</em> + <em>Active</em> &mdash; benar-benar mengirim payload mencoba menembus (SQLi, XSS, dsb)</td></tr>
+                    <tr><td><strong>Aman untuk</strong></td><td>API mana pun, termasuk yang sedang berjalan normal di <code>localhost</code></td><td><strong>Hanya</strong> lingkungan development/staging &mdash; active scan bisa membuat data tidak valid, bahkan membuat server crash</td></tr>
+                    <tr><td><strong>Biasa dipakai di</strong></td><td>Setiap kali commit (CI), karena cepat dan aman</td><td>Sesekali, manual, saat punya waktu memeriksa lebih dalam</td></tr>
+                </table>
+                <p>Perintah di bawah menjalankan baseline scan (karena itu yang aman kita coba sekarang) lewat image Docker resmi ZAP:</p>
+                <div class="terminal"><span class="prompt">$</span> docker run -t zaproxy/zap-stable zap-baseline.py \
+    -t http://host.docker.internal:3000 -r laporan-zap.html
+<span class="out">... scanning endpoint ...
+WARN-NEW: Missing Anti-clickjacking Header [10020] x 3
+WARN-NEW: X-Content-Type-Options Header Missing [10021] x 5
+PASS: SQL Injection [40018]
+FAIL-NEW: 0	FAIL-INPROG: 0	WARN-NEW: 2	WARN-INPROG: 0	INFO: 0	IGNORE: 0	PASS: 42</span></div>
+                <p>Angka di kurung siku (<code>[10020]</code>, <code>[40018]</code>) adalah <strong>Rule ID</strong> ZAP, bisa dicari di dokumentasinya untuk penjelasan lengkap dan cara perbaikan. <code>PASS: SQL Injection [40018]</code> di atas konsisten dengan yang sudah kita pelajari di Pertemuan 6: Prisma memang menolak percobaan SQL injection selama tidak memakai <code>$queryRawUnsafe</code>.</p>
+                <div class="info-box">
+                    <strong>Endpoint yang butuh login bagaimana?</strong> ZAP tidak otomatis tahu cara login ke API kalian. Tanpa konfigurasi tambahan, ia hanya bisa men-scan endpoint yang terbuka (seperti <code>POST /auth/login</code> sendiri). Men-scan endpoint di belakang <code>butuhLogin</code> butuh <em>authentication context</em> (ZAP diberi tahu cara mendapat token lebih dulu) &mdash; di luar cakupan wajib mata kuliah ini, tetapi perlu kalian ketahui keterbatasannya: baseline scan default <strong>tidak</strong> otomatis menguji <code>GET /mahasiswa</code> yang terproteksi.
+                </div>
+                <div class="info-box">
+                    <strong>Catatan:</strong> baseline scan ZAP dijalankan lewat paket distribusi resminya (bisa via Docker atau distribusi mandiri) &mdash; bukan menyerang sistem produksi siapa pun, hanya API lokal kalian sendiri di <code>localhost</code>.
+                </div>
+
+                <h3>3.2 Audit Dependency: <code>npm audit</code></h3>
+                <p>Library pihak ketiga (dari <code>npm install</code>) bisa mengandung vulnerability yang sudah diketahui publik. Ini persis A06 Vulnerable &amp; Outdated Components dari Section 1.3. <code>npm audit</code> mencocokkan nama dan versi setiap package di <code>node_modules</code> kalian dengan <strong>GitHub Advisory Database</strong>, database celah yang dikumpulkan dari laporan GitHub, <em>National Vulnerability Database</em> (NVD), dan tim keamanan npm sendiri.</p>
+                <div class="terminal"><span class="prompt">$</span> npm audit
+<span class="out"># npm audit report
+
+lodash  <4.17.21
+Severity: high
+Prototype Pollution - https://github.com/advisories/GHSA-...
+
+3 vulnerabilities (1 moderate, 2 high)
+
+<span class="prompt">$</span> npm audit fix</span></div>
+                <table>
+                    <tr><th>Severity</th><th>Artinya</th></tr>
+                    <tr><td><code>critical</code></td><td>Mudah dieksploitasi, akibatnya parah (misalnya remote code execution)</td></tr>
+                    <tr><td><code>high</code></td><td>Serius, tapi butuh kondisi tertentu untuk dieksploitasi</td></tr>
+                    <tr><td><code>moderate</code></td><td>Berdampak terbatas, atau butuh akses yang sudah lumayan tinggi</td></tr>
+                    <tr><td><code>low</code> / <code>info</code></td><td>Risiko kecil, sering berupa potensi, bukan eksploitasi langsung</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong><code>npm audit fix --force</code> bukan tombol aman.</strong> <code>npm audit fix</code> biasa hanya menaikkan versi <em>patch</em>/<em>minor</em> yang seharusnya tidak merusak apa pun (mengikuti semver). <code>--force</code> akan menaikkan ke versi <strong>major</strong> kalau itu satu-satunya cara menutup celahnya &mdash; dan versi major sering mengandung <em>breaking change</em>. Setelah <code>--force</code>, jalankan ulang seluruh test (Pertemuan 13) sebelum percaya aplikasinya masih berjalan.
+                </div>
+                <p>Dependency yang rentan juga tidak harus salah satu yang kalian <code>npm install</code> langsung. <code>express</code> bisa saja aman, tapi salah satu <em>dependency dari dependency-nya</em> (disebut <em>transitive dependency</em>, tersembunyi beberapa lapis di <code>node_modules</code>) yang bermasalah. <code>npm audit</code> memeriksa <strong>seluruh pohon dependency</strong>, bukan hanya yang disebut di <code>package.json</code>. Tool komersial seperti Snyk atau Socket.dev melakukan hal serupa dengan database yang lebih luas dan integrasi CI yang lebih kaya; GitHub juga menawarkan <strong>Dependabot</strong> yang otomatis membuka pull request saat dependency kalian punya celah baru.</p>
+
+                <h3>3.3 Secret Scan: <code>gitleaks</code></h3>
+                <p>Memeriksa apakah pernah ada <code>.env</code>, API key, atau password yang ter-commit tanpa sengaja (Section 2.4). Cara kerjanya dua lapis:</p>
+                <ol>
+                    <li><strong>Pencocokan pola (regex)</strong> &mdash; setiap <em>rule</em> gitleaks punya pola untuk bentuk kredensial yang dikenal (API key AWS, token GitHub, dsb punya format yang khas dan mudah dikenali).</li>
+                    <li><strong>Entropy</strong> &mdash; untuk nilai yang tidak punya format khas (seperti password bebas), gitleaks mengukur <em>keacakan</em> teksnya (entropi Shannon). Teks acak seperti hasil <code>randomBytes</code> punya entropi tinggi; teks seperti <code>"contoh-password-123"</code> atau placeholder dokumentasi punya entropi lebih rendah dan bisa diabaikan lewat <em>allowlist</em>, mengurangi <em>false positive</em>.</li>
+                </ol>
+                <div class="terminal"><span class="prompt">$</span> npx gitleaks detect --source . -v
+<span class="out">Finding:    DATABASE_URL=postgresql://postgres:rahasia123@...
+Secret:     rahasia123
+File:       .env
+Line:       2
+Commit:     a1b2c3d
+
+3:41PM WARN 1 leaks found</span></div>
+                <p>Kolom <strong>Commit</strong> di output itu menunjukkan bahwa gitleaks memeriksa <strong>seluruh riwayat Git</strong>, bukan hanya file yang ada sekarang &mdash; sejalan dengan peringatan di Section 2.4: menghapus <code>.env</code> dari commit terbaru tidak menghapusnya dari riwayat lama.</p>
+                <div class="info-box">
+                    <code>gitleaks</code> mendeteksi <em>setelah</em> secret ter-commit. Pencegahan yang lebih awal dipasang sebagai <em>pre-commit hook</em> (lewat tool seperti <code>husky</code>) yang menjalankan gitleaks otomatis <strong>sebelum</strong> commit diterima, sehingga secret tidak pernah sampai masuk ke riwayat sama sekali. Tool sejenis lain: <code>truffleHog</code> dan <code>detect-secrets</code>.
+                </div>
+
+                <h3>3.4 Pengujian Manual dengan Postman</h3>
+                <p>ZAP, <code>npm audit</code>, dan gitleaks mendeteksi pola umum, tapi <strong>tidak satu pun memahami logika bisnis</strong> aplikasi kalian &mdash; seperti IDOR pada Section 1.4, yang hanya ketahuan kalau penguji tahu persis &ldquo;pesanan id 5 itu milik user mana&rdquo;. <strong>Postman</strong>, yang sudah kalian pakai sejak Pertemuan 6, berperan di sini sebagai alat uji manual, bukan sekadar pengganti curl.</p>
+                <p>Tiga fitur Postman yang membuat pengujian manual sistematis, bukan sekadar klik <em>Send</em> berulang:</p>
+                <table>
+                    <tr><th>Fitur</th><th>Gunanya untuk uji keamanan</th></tr>
+                    <tr><td><strong>Environment &amp; Variable</strong></td><td>Simpan token hasil login sebagai variable (misalnya <code>{{token}}</code>); ganti satu nilai, semua request terproteksi ikut terupdate &mdash; penting saat menguji dengan token milik role berbeda (mahasiswa vs admin)</td></tr>
+                    <tr><td><strong>Collection</strong></td><td>Kumpulan request tersimpan dan berurutan; cocok untuk mencatat <em>langkah reproduksi</em> sebuah temuan agar bisa diulang orang lain persis sama</td></tr>
+                    <tr><td><strong>Collection Runner</strong></td><td>Menjalankan seluruh collection berurutan sekali klik &mdash; berguna untuk mengulang satu skenario (misalnya brute-force 5 percobaan login) tanpa mengirim satu per satu secara manual</td></tr>
+                </table>
+                <p>Contoh konkret menguji IDOR dari Section 1.4 di Postman: login sebagai dua user berbeda, simpan masing-masing token sebagai variable terpisah, lalu coba akses resource milik user A memakai token user B.</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; Authorization: Bearer {{tokenUserB}}, bukan milik pemesan)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3000/pesanan/5</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": { "id": 5, "userId": 3, "item": "..." }
+}</div></div>
+                <p>Respons <code>200</code> di atas <strong>adalah temuannya</strong>: token user B seharusnya ditolak (403), bukan diterima. Ganti ID, ganti token, catat responsnya &mdash; itu saja sudah jadi langkah reproduksi yang bisa diulang orang lain.</p>
+
+                <h3>3.5 Tidak Ada Tool Tunggal yang Cukup</h3>
+                <table>
+                    <tr><th>Tool</th><th>Menangkap</th><th>Tidak menangkap</th></tr>
+                    <tr><td>ZAP baseline scan</td><td>Header hilang, TLS lemah, XSS umum</td><td>Logika bisnis (IDOR, alur otorisasi salah); endpoint di belakang login tanpa auth context</td></tr>
+                    <tr><td><code>npm audit</code></td><td>Vulnerability library yang sudah dipublikasikan, termasuk transitive dependency</td><td>Bug pada kode yang kalian tulis sendiri</td></tr>
+                    <tr><td>Secret scan (<code>gitleaks</code>)</td><td>Kredensial ter-commit tidak sengaja, di seluruh riwayat Git</td><td>Kredensial yang bocor lewat cara lain (screenshot, chat, dsb)</td></tr>
+                    <tr><td>Pengujian manual (Postman)</td><td>Logika bisnis, IDOR, alur otorisasi</td><td>Vulnerability yang belum terpikirkan skenarionya oleh penguji</td></tr>
+                </table>
+                <div class="info-box">
+                    Setiap baris di tabel ini punya kolom &ldquo;Tidak menangkap&rdquo; yang terisi, dan itu bukan kekurangan satu tool tertentu. Itu sebabnya keamanan aplikasi selalu memakai <strong>kombinasi</strong> tool, bukan mencari satu tool yang &ldquo;paling lengkap&rdquo;.
+                </div>
+            </section>
+
+            <section id="juice-shop">
+                <h2>4. Laboratorium OWASP Juice Shop <span class="badge">Indikator 5.4 &amp; 5.5</span></h2>
+
+                <p><strong>OWASP Juice Shop</strong> adalah toko online tiruan yang sengaja dibuat penuh lubang keamanan untuk latihan &mdash; proyek flagship OWASP sendiri (Section 1.1), bukan buatan pihak ketiga. Bedanya dengan contoh kode di Section 1: di sana kalian membaca potongan route yang rentan, di Juice Shop kalian benar-benar menemukan dan mengeksploitasi lubangnya sendiri di aplikasi yang berjalan nyata, tanpa melihat kodenya dulu.</p>
+
+                <h3>4.1 Menjalankan Juice Shop</h3>
+                <p>Cara paling sederhana tetap lewat image Docker resminya, sama seperti ZAP di Section 3.1:</p>
+                <div class="terminal"><span class="prompt">$</span> docker run -d -p 3000:3000 bkimminich/juice-shop</div>
+                <p>Buka <code>http://localhost:3000</code> setelah container berjalan. Kalau ingin versi tertentu (bukan yang paling baru), ganti tag image-nya, misalnya <code>bkimminich/juice-shop:v17.0.0</code>. Dua cara lain yang juga resmi kalau tidak mau memakai Docker: clone repository <a href="https://github.com/juice-shop/juice-shop" target="_blank">juice-shop/juice-shop</a> di GitHub lalu jalankan <code>npm install &amp;&amp; npm start</code>, atau unduh paket rilis siap pakai dari halaman <em>Releases</em> repository tersebut.</p>
+
+                <h3>4.2 Score Board, Tingkat Kesulitan, dan Hint</h3>
+                <p>Juice Shop tidak menampilkan daftar tantangannya begitu saja di halaman utama &mdash; kalian harus menemukan <strong>Score Board</strong>-nya sendiri dulu, dan itu sebenarnya tantangan pertamanya (klik ikon topi toga di banner selamat datang, atau cari linknya yang disembunyikan di HTML halaman). Begitu ditemukan, Score Board itu jadi pusat latihannya:</p>
+                <ul>
+                    <li><strong>Daftar tantangan</strong> dikelompokkan per kategori OWASP (Broken Access Control, Injection, Security Misconfiguration, dst.), persis kategori yang sudah dibahas di Section 1.</li>
+                    <li><strong>Tingkat kesulitan</strong> ditandai 1 sampai 6 bintang. Mulai dari bintang 1&ndash;2 dulu; beberapa tantangan berbintang tinggi butuh teknik di luar cakupan mata kuliah ini.</li>
+                    <li><strong>Tombol hint</strong> (ikon topi toga juga) muncul di tiap tantangan kalau kalian benar-benar buntu. Boleh dipakai, tetapi coba dulu tanpa hint &mdash; proses mencari sendiri itu yang melatih kepekaan terhadap celah.</li>
+                    <li>Tantangan yang berhasil diselesaikan otomatis tercoret di Score Board, jadi progres kalian selalu terlihat tanpa perlu mencatat manual.</li>
+                </ul>
+
+                <h3>4.3 Tantangan yang Relevan dengan API Kita</h3>
+                <table>
+                    <tr><th>Tantangan Juice Shop</th><th>Konsep yang dilatih</th><th>Kaitan dengan API kalian</th></tr>
+                    <tr><td>Login Admin</td><td>SQL Injection pada form login</td><td>Kenapa Prisma parameterized query aman</td></tr>
+                    <tr><td>View Basket of Another User</td><td>IDOR (Section 1.4)</td><td>Kenapa endpoint harus cek kepemilikan data</td></tr>
+                    <tr><td>Forged Feedback</td><td>Mengirim feedback atas nama user lain lewat field yang seharusnya tidak bisa diubah client</td><td>Kenapa validasi WAJIB diulang di server (Pertemuan 6), bukan dipercaya dari input client</td></tr>
+                    <tr><td>Reset Jim's Password</td><td>Password reset yang lemah (jawaban keamanan bisa ditebak)</td><td>Kenapa token reset harus acak &amp; expired</td></tr>
+                    <tr><td>Error Handling</td><td>Memancing error yang tidak ditangani rapi sampai muncul stack trace</td><td>A05 Security Misconfiguration (Section 2.1) &mdash; persis alasan <code>errorHandler</code> di Pertemuan 5 menyembunyikan detail error dari client</td></tr>
+                    <tr><td>Confidential Document</td><td>Menemukan file yang tidak seharusnya bisa diakses publik, tanpa link yang terlihat di halaman mana pun</td><td>Broken Access Control &mdash; endpoint/file bisa diakses bukan karena ditautkan, tapi karena tidak benar-benar dijaga</td></tr>
+                </table>
+
+                <div class="success-box">
+                    <strong>Integrasi penelitian:</strong> vulnerability SQL Injection yang kalian temukan di Juice Shop adalah kelas vulnerability yang sama dengan yang ditemukan pada serangan nyata terhadap sistem akademik sebuah universitas dan dideteksi lewat SIEM (Security Information and Event Management) [23]. Vulnerability seperti ini bukan sekadar latihan akademis; polanya persis yang terjadi pada sistem produksi sungguhan.
+                </div>
+            </section>
+
+            <section id="referensi">
+                <h2>5. Referensi</h2>
+                <ul>
+                    <li><a href="https://owasp.org/Top10/" target="_blank">OWASP Top 10 (2021)</a> [11]</li>
+                    <li><a href="https://owasp.org/Top10/2025/" target="_blank">OWASP Top 10 (2025)</a></li>
+                    <li><a href="https://cheatsheetseries.owasp.org/" target="_blank">OWASP Cheat Sheet Series</a> [11]</li>
+                    <li><a href="https://owasp.org/www-project-application-security-verification-standard/" target="_blank">OWASP ASVS (Application Security Verification Standard)</a></li>
+                    <li><a href="https://www.zaproxy.org/docs/" target="_blank">OWASP ZAP Documentation</a> [18]</li>
+                    <li><a href="https://owasp.org/www-project-juice-shop/" target="_blank">OWASP Juice Shop</a> [19]</li>
+                    <li><a href="https://docs.npmjs.com/cli/commands/npm-audit" target="_blank">npm Docs &mdash; <code>npm audit</code></a></li>
+                    <li><a href="https://github.com/advisories" target="_blank">GitHub Advisory Database</a></li>
+                    <li><a href="https://github.com/gitleaks/gitleaks" target="_blank">gitleaks (GitHub)</a></li>
+                    <li><a href="https://www.npmjs.com/package/cors" target="_blank">npm &mdash; cors</a></li>
+                    <li><a href="https://www.npmjs.com/package/express-rate-limit" target="_blank">npm &mdash; express-rate-limit</a></li>
+                    <li><a href="https://learning.postman.com/docs/getting-started/overview/" target="_blank">Postman Learning Center</a></li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 10 &mdash; Pemrograman Web Lanjut &mdash; Keamanan Aplikasi & Pengujian</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('owasp-top10');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+    <script src="sidebar-toggle.js"></script>
+</body>
+</html>

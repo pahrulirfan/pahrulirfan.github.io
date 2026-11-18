@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 13: Pengujian Otomatis & Integrasi Berkelanjutan - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        header { background: #b45309 !important; }
+        .sidebar h3 { color: #fcd34d !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #fcd34d !important; }
+        .sidebar ul li a.active { background-color: #b45309 !important; }
+        section h2 { border-bottom: 3px solid #b45309 !important; }
+        th { background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; }
+        .badge { background: #b45309 !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #fcd34d !important; }
+
+        .console-output {
+            background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 5px;
+            font-family: 'Consolas', monospace; margin: 10px 0; min-height: 50px;
+            max-height: 300px; overflow-y: auto; white-space: pre-wrap;
+        }
+        .console-output::before {
+            content: '> Console Output:'; color: #888; display: block;
+            margin-bottom: 10px; font-size: 0.85em;
+        }
+        .interactive-demo {
+            background: #f8f9fa; border: 2px solid #b45309; border-radius: 8px;
+            padding: 20px; margin: 15px 0;
+        }
+        .interactive-demo h5 { color: #78350f; margin-bottom: 15px; }
+        .interactive-demo button {
+            padding: 8px 20px; background: #b45309; color: white; border: none;
+            border-radius: 5px; cursor: pointer; margin: 5px;
+        }
+        .interactive-demo button:hover { background: #78350f; }
+        .result-box {
+            background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 5px;
+            margin-top: 10px; min-height: 40px;
+        }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #fcd34d; }
+        .terminal .out { color: #8a8f98; }
+        .terminal .pass { color: #4ade80; }
+        .terminal .fail { color: #f87171; }
+
+        /* Piramida testing — CSS */
+        .pyramid { display: flex; flex-direction: column; align-items: center; margin: 20px 0; gap: 3px; }
+        .pyr-layer {
+            color: white; text-align: center; padding: 12px 0; font-family: 'Consolas', monospace;
+            font-size: 0.85em; font-weight: 700; border-radius: 4px;
+        }
+        .pyr-e2e { width: 220px; background: #b45309; }
+        .pyr-integration { width: 340px; background: #d97706; }
+        .pyr-unit { width: 460px; background: #f59e0b; }
+        .pyr-desc { font-size: 0.72em; font-weight: 400; display: block; margin-top: 2px; opacity: 0.9; }
+
+        /* Pipeline stages — CSS */
+        .pipeline {
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+            background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px;
+            padding: 18px; margin: 15px 0; overflow-x: auto;
+        }
+        .pipe-box {
+            background: #fff; border: 2px solid #b45309; border-radius: 8px;
+            padding: 10px 16px; text-align: center; font-family: 'Consolas', monospace;
+            font-size: 0.82em; min-width: 100px; flex-shrink: 0;
+        }
+        .pipe-box-title { font-weight: 700; color: #78350f; }
+        .pipe-box-desc { color: #666; font-size: 0.85em; margin-top: 3px; }
+        .pipe-arrow { color: #b45309; font-size: 1.3em; flex-shrink: 0; }
+        .pipe-box.pipe-fail { border-color: #dc2626; background: #fef2f2; }
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 13: Pengujian Otomatis & CI</h1>
+        <p>Sub-CPMK 7 &mdash; Minggu 13 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#piramida" class="active">1. Jenis & Tingkatan Pengujian</a></li>
+                <li><a href="#unit">2. Pengujian Unit (Vitest)</a></li>
+                <li><a href="#e2e">3. Pengujian End-to-End</a></li>
+                <li><a href="#regresi-keamanan">4. Uji Regresi Keamanan</a></li>
+                <li><a href="#ci">5. Integrasi Berkelanjutan</a></li>
+                <li><a href="#batas-pengujian">6. Batas Pengujian Otomatis</a></li>
+                <li><a href="#praktik">7. Praktik</a></li>
+                <li><a href="#cpmk">8. Capaian Pembelajaran</a></li>
+            </ul>
+            <h3>Link Terkait</h3>
+            <ul>
+                <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-12-integrasi-api-frontend.html">&larr; Pertemuan 12</a></li>
+                <li><a href="materi-14-build-produksi-rilis.html">Pertemuan 14 &rarr;</a></li>
+                <li><a href="https://vitest.dev" target="_blank">Vitest</a></li>
+                <li><a href="https://playwright.dev" target="_blank">Playwright</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <section id="piramida">
+                <h2>1. Jenis dan Tingkatan Pengujian <span class="badge">Pengantar</span></h2>
+
+                <p>Sejauh ini kalian menguji secara manual: <code>curl</code>, REST client (Pertemuan 5), klik-klik di antarmuka React (Pertemuan 11&ndash;12). Cara ini <strong>tidak bisa diulang secara konsisten</strong> setiap kali kode berubah. Pengujian otomatis menjalankan pemeriksaan yang sama, berkali-kali, tanpa campur tangan manusia.</p>
+
+                <h3>1.1 Piramida Pengujian</h3>
+                <div class="pyramid">
+                    <div class="pyr-layer pyr-e2e">E2E<span class="pyr-desc">sedikit, lambat, mahal — Playwright</span></div>
+                    <div class="pyr-layer pyr-integration">Integrasi<span class="pyr-desc">sedang — API + basis data</span></div>
+                    <div class="pyr-layer pyr-unit">Unit<span class="pyr-desc">banyak, cepat, murah — Vitest</span></div>
+                </div>
+
+                <table>
+                    <tr><th>Tingkatan</th><th>Menguji</th><th>Kecepatan</th><th>Perkakas kita</th></tr>
+                    <tr><td><strong>Unit</strong></td><td>Satu fungsi berdiri sendiri, terisolasi</td><td>Sangat cepat (ms)</td><td>Vitest</td></tr>
+                    <tr><td><strong>Integrasi</strong></td><td>Beberapa bagian bekerja sama (service + basis data)</td><td>Sedang</td><td>Vitest + database uji</td></tr>
+                    <tr><td><strong>End-to-End (E2E)</strong></td><td>Alur pengguna utuh, lewat browser sungguhan</td><td>Lambat (detik)</td><td>Playwright</td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Mengapa piramida, bukan kotak sama besar?</strong> Pengujian unit murah dan cepat &mdash; tulis banyak. Pengujian E2E mahal (butuh browser, server, database sungguhan berjalan) &mdash; tulis hanya untuk alur paling kritis. Piramida terbalik (E2E lebih banyak dari unit) membuat pipeline CI menjadi sangat lambat dan rapuh.
+                </div>
+            </section>
+
+            <section id="unit">
+                <h2>2. Pengujian Unit dengan Vitest <span class="badge badge-important">Indikator 7.1</span></h2>
+
+                <div class="terminal"><span class="prompt">$</span> npm install -D vitest</div>
+
+                <h3>2.1 Menguji Fungsi Murni</h3>
+                <p>Yang paling mudah diuji: fungsi yang <strong>tidak bergantung apa pun di luar dirinya</strong> &mdash; ingat konsep "fungsi sebagai nilai" dari Materi 1.</p>
+
+                <pre><code><span class="comment">// src/utils/hitung.js</span>
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hitungRataRata</span>(<span class="variable">nilai</span>) {
+    <span class="keyword">if</span> (<span class="variable">nilai</span>.<span class="variable">length</span> === <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span>;
+    <span class="keyword">return</span> <span class="variable">nilai</span>.<span class="function">reduce</span>((<span class="variable">a</span>, <span class="variable">b</span>) <span class="operator">=&gt;</span> <span class="variable">a</span> + <span class="variable">b</span>, <span class="number">0</span>) / <span class="variable">nilai</span>.<span class="variable">length</span>;
+}</code></pre>
+
+                <pre><code><span class="comment">// src/utils/hitung.test.js</span>
+<span class="keyword">import</span> { <span class="variable">describe</span>, <span class="variable">it</span>, <span class="variable">expect</span> } <span class="keyword">from</span> <span class="string">'vitest'</span>;
+<span class="keyword">import</span> { <span class="variable">hitungRataRata</span> } <span class="keyword">from</span> <span class="string">'./hitung.js'</span>;
+
+<span class="function">describe</span>(<span class="string">'hitungRataRata'</span>, () <span class="operator">=&gt;</span> {
+    <span class="function">it</span>(<span class="string">'menghitung rata-rata dengan benar'</span>, () <span class="operator">=&gt;</span> {
+        <span class="function">expect</span>(<span class="function">hitungRataRata</span>([<span class="number">80</span>, <span class="number">90</span>, <span class="number">70</span>])).<span class="function">toBe</span>(<span class="number">80</span>);
+    });
+
+    <span class="function">it</span>(<span class="string">'mengembalikan 0 untuk larik kosong'</span>, () <span class="operator">=&gt;</span> {
+        <span class="function">expect</span>(<span class="function">hitungRataRata</span>([])).<span class="function">toBe</span>(<span class="number">0</span>);
+    });
+
+    <span class="function">it</span>(<span class="string">'menangani satu elemen'</span>, () <span class="operator">=&gt;</span> {
+        <span class="function">expect</span>(<span class="function">hitungRataRata</span>([<span class="number">100</span>])).<span class="function">toBe</span>(<span class="number">100</span>);
+    });
+});</code></pre>
+
+                <div class="terminal"><span class="prompt">$</span> npx vitest run
+<span class="out"> <span class="pass">✓</span> src/utils/hitung.test.js (3)
+   <span class="pass">✓</span> hitungRataRata > menghitung rata-rata dengan benar
+   <span class="pass">✓</span> hitungRataRata > mengembalikan 0 untuk larik kosong
+   <span class="pass">✓</span> hitungRataRata > menangani satu elemen
+
+ Test Files  1 passed (1)
+      Tests  3 passed (3)</span></div>
+
+                <h3>2.2 Menguji Service (Ingat Pemisahan Lapis dari Pertemuan 5!)</h3>
+                <p>Inilah manfaat nyata memisahkan <code>service</code> dari <code>controller</code>: <code>service</code> bisa diuji <strong>tanpa</strong> menjalankan server HTTP sungguhan.</p>
+
+                <pre><code><span class="comment">// src/services/mahasiswa.service.test.js</span>
+<span class="keyword">import</span> { <span class="variable">describe</span>, <span class="variable">it</span>, <span class="variable">expect</span> } <span class="keyword">from</span> <span class="string">'vitest'</span>;
+<span class="keyword">import</span> { <span class="variable">buatMahasiswa</span> } <span class="keyword">from</span> <span class="string">'./mahasiswa.service.js'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="function">describe</span>(<span class="string">'buatMahasiswa'</span>, () <span class="operator">=&gt;</span> {
+    <span class="function">it</span>(<span class="string">'menolak input tanpa nama'</span>, <span class="keyword">async</span> () <span class="operator">=&gt;</span> {
+        <span class="keyword">await</span> <span class="function">expect</span>(<span class="function">buatMahasiswa</span>({ <span class="variable">nim</span>: <span class="string">'F1D021099'</span> }))
+            .<span class="function">rejects</span>.<span class="function">toThrow</span>(<span class="variable">AppError</span>);
+    });
+});</code></pre>
+
+                <table>
+                    <tr><th>Matcher Vitest</th><th>Dipakai untuk</th></tr>
+                    <tr><td><code>toBe(nilai)</code></td><td>Kesamaan persis (primitif)</td></tr>
+                    <tr><td><code>toEqual(objek)</code></td><td>Kesamaan struktur object/array</td></tr>
+                    <tr><td><code>toThrow()</code></td><td>Fungsi melempar galat</td></tr>
+                    <tr><td><code>rejects.toThrow()</code></td><td>Promise yang reject dengan galat</td></tr>
+                    <tr><td><code>toBeGreaterThan(n)</code></td><td>Perbandingan angka</td></tr>
+                </table>
+
+                <div class="interactive-demo">
+                    <h5>Coba Langsung: Tulis Skenario Uji</h5>
+                    <button onclick="demoUnit('normal')">Kasus normal</button>
+                    <button onclick="demoUnit('edge')">Kasus tepi (edge case)</button>
+                    <button onclick="demoUnit('galat')">Kasus galat</button>
+                    <div class="console-output" id="demo1-out">Klik salah satu tombol...</div>
+                </div>
+            </section>
+
+            <section id="e2e">
+                <h2>3. Pengujian End-to-End dengan Playwright <span class="badge badge-important">Indikator 7.2</span></h2>
+
+                <p>Pengujian E2E menjalankan <strong>browser sungguhan</strong> dan mensimulasikan alur pengguna nyata &mdash; login, mengisi form, melihat hasilnya &mdash; menguji frontend dan backend <strong>sekaligus</strong>, persis seperti yang kalian bangun di Pertemuan 11&ndash;12.</p>
+
+                <div class="terminal"><span class="prompt">$</span> npm install -D @playwright/test
+<span class="prompt">$</span> npx playwright install</div>
+
+                <pre><code><span class="comment">// e2e/login.spec.js</span>
+<span class="keyword">import</span> { <span class="variable">test</span>, <span class="variable">expect</span> } <span class="keyword">from</span> <span class="string">'@playwright/test'</span>;
+
+<span class="function">test</span>(<span class="string">'mahasiswa bisa login dan melihat daftar'</span>, <span class="keyword">async</span> ({ <span class="variable">page</span> }) <span class="operator">=&gt;</span> {
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">goto</span>(<span class="string">'http://localhost:5173/login'</span>);
+
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">fill</span>(<span class="string">'input[name="email"]'</span>, <span class="string">'dosen@unram.ac.id'</span>);
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">fill</span>(<span class="string">'input[name="password"]'</span>, <span class="string">'rahasia123'</span>);
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">click</span>(<span class="string">'button[type="submit"]'</span>);
+
+    <span class="comment">// Setelah login berhasil, halaman berpindah ke daftar mahasiswa</span>
+    <span class="keyword">await</span> <span class="function">expect</span>(<span class="variable">page</span>).<span class="function">toHaveURL</span>(<span class="string">'http://localhost:5173/'</span>);
+    <span class="keyword">await</span> <span class="function">expect</span>(<span class="variable">page</span>.<span class="function">getByText</span>(<span class="string">'Andi'</span>)).<span class="function">toBeVisible</span>();
+});
+
+<span class="function">test</span>(<span class="string">'login gagal menampilkan pesan galat'</span>, <span class="keyword">async</span> ({ <span class="variable">page</span> }) <span class="operator">=&gt;</span> {
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">goto</span>(<span class="string">'http://localhost:5173/login'</span>);
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">fill</span>(<span class="string">'input[name="email"]'</span>, <span class="string">'salah@unram.ac.id'</span>);
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">fill</span>(<span class="string">'input[name="password"]'</span>, <span class="string">'salahjuga'</span>);
+    <span class="keyword">await</span> <span class="variable">page</span>.<span class="function">click</span>(<span class="string">'button[type="submit"]'</span>);
+
+    <span class="keyword">await</span> <span class="function">expect</span>(<span class="variable">page</span>.<span class="function">getByText</span>(<span class="string">'Email atau kata sandi salah'</span>)).<span class="function">toBeVisible</span>();
+});</code></pre>
+
+                <div class="terminal"><span class="prompt">$</span> npx playwright test
+<span class="out">Running 2 tests using 1 worker
+
+  <span class="pass">✓</span>  1 [chromium] › login.spec.js:4 › mahasiswa bisa login dan melihat daftar (1.2s)
+  <span class="pass">✓</span>  2 [chromium] › login.spec.js:16 › login gagal menampilkan pesan galat (0.8s)
+
+  2 passed (2.4s)</span></div>
+
+                <div class="warning-box">
+                    <strong>E2E butuh backend DAN frontend berjalan bersamaan</strong> (seperti di Pertemuan 12), sehingga jauh lebih lambat dan lebih rapuh daripada unit test &mdash; kalau server belum siap saat test mulai, test bisa gagal walau kodenya benar. Karena itu jumlah test E2E dijaga sedikit, 
+                <h3>3.3 Menguji API dengan Postman Collection dan Newman</h3>
+                <p>Vitest dan Supertest menguji API dari <em>dalam</em> kode. Ada satu lapis lagi yang berguna: menguji API dari <em>luar</em>, sebagai klien HTTP sungguhan, tanpa menyentuh kode sumbernya sama sekali. Ini berguna untuk memverifikasi API yang sudah dirilis di server, dan menjadi jembatan alami dari berkas <code>requests.http</code> yang kalian pakai sejak Pertemuan 5.</p>
+                <p>Alurnya tiga langkah: susun permintaan sebagai <strong>Collection</strong> di Postman &rarr; tambahkan pemeriksaan pada tab <strong>Tests</strong> &rarr; jalankan seluruh Collection dari terminal dengan <strong>Newman</strong>.</p>
+
+                <h4>Menulis pemeriksaan di tab Tests</h4>
+                <p>Setiap permintaan di Postman punya tab <em>Tests</em>, berisi JavaScript yang dijalankan setelah tanggapan diterima.</p>
+
+<pre><code><span class="comment">// Tests untuk POST /mahasiswa</span>
+<span class="variable">pm</span>.<span class="function">test</span>(<span class="string">'status code 201'</span>, () <span class="operator">=&gt;</span> {
+    <span class="variable">pm</span>.<span class="variable">response</span>.<span class="variable">to</span>.<span class="variable">have</span>.<span class="function">status</span>(<span class="number">201</span>);
+});
+
+<span class="variable">pm</span>.<span class="function">test</span>(<span class="string">'Content-Type adalah application/json'</span>, () <span class="operator">=&gt;</span> {
+    <span class="variable">pm</span>.<span class="function">expect</span>(<span class="variable">pm</span>.<span class="variable">response</span>.<span class="variable">headers</span>.<span class="function">get</span>(<span class="string">'Content-Type'</span>)).<span class="variable">to</span>.<span class="function">include</span>(<span class="string">'application/json'</span>);
+});
+
+<span class="variable">pm</span>.<span class="function">test</span>(<span class="string">'tanggapan memuat id mahasiswa baru'</span>, () <span class="operator">=&gt;</span> {
+    <span class="keyword">const</span> { <span class="variable">data</span> } = <span class="variable">pm</span>.<span class="variable">response</span>.<span class="function">json</span>();
+    <span class="variable">pm</span>.<span class="function">expect</span>(<span class="variable">data</span>).<span class="variable">to</span>.<span class="variable">be</span>.<span class="function">an</span>(<span class="string">'object'</span>);
+    <span class="variable">pm</span>.<span class="function">expect</span>(<span class="variable">data</span>.<span class="variable">id</span>).<span class="variable">to</span>.<span class="variable">not</span>.<span class="variable">be</span>.<span class="variable">empty</span>;
+
+    <span class="comment">// Simpan untuk dipakai permintaan berikutnya dalam Collection yang sama</span>
+    <span class="variable">pm</span>.<span class="variable">environment</span>.<span class="function">set</span>(<span class="string">'mahasiswaId'</span>, <span class="variable">data</span>.<span class="variable">id</span>);
+});</code></pre>
+                <p>Baris terakhir itu kuncinya. <code>pm.environment.set()</code> menyimpan nilai dari satu tanggapan ke dalam <em>environment variable</em>, sehingga permintaan berikutnya bisa memakainya sebagai <code>{{mahasiswaId}}</code> di URL. Dengan begitu satu Collection bisa menguji alur utuh &mdash; buat, baca, ubah, hapus &mdash; secara berurutan, tanpa id yang ditulis manual.</p>
+
+                <h4>Menjalankan tanpa membuka Postman</h4>
+                <p>Ekspor Collection (format v2.1) dan Environment menjadi dua berkas JSON, simpan di dalam repositori proyek, lalu jalankan dengan Newman.</p>
+
+                <div class="terminal"><span class="prompt">$</span> npm install --save-dev newman
+<span class="prompt">$</span> npx newman run mahasiswa-api.postman_collection.json \
+      --environment lokal.postman_environment.json</div>
+
+                <p>Newman mengembalikan <em>exit code</em> bukan-nol bila ada pemeriksaan yang gagal &mdash; syarat agar sebuah perintah bisa dipakai di pipeline CI. Karena itu ia bisa ditambahkan sebagai satu langkah lagi pada alur kerja GitHub Actions di Section 5.</p>
+
+<pre><code># .<span class="variable">github</span>/<span class="variable">workflows</span>/<span class="variable">ci</span>.<span class="variable">yml</span> — <span class="variable">potongan</span> <span class="variable">tambahan</span>
+      - <span class="variable">name</span>: <span class="variable">Jalankan</span> <span class="variable">server</span> <span class="variable">di</span> <span class="variable">latar</span> <span class="variable">belakang</span>
+        <span class="variable">run</span>: <span class="variable">npm</span> <span class="variable">start</span> &amp;
+
+      - <span class="variable">name</span>: <span class="variable">Tunggu</span> <span class="variable">server</span> <span class="variable">siap</span>
+        <span class="variable">run</span>: <span class="variable">npx</span> <span class="variable">wait</span>-<span class="variable">on</span> <span class="variable">http</span>:<span class="comment">//localhost:3000/health</span>
+
+      - <span class="variable">name</span>: <span class="variable">Uji</span> <span class="variable">API</span> <span class="variable">dengan</span> <span class="variable">Newman</span>
+        <span class="variable">run</span>: <span class="variable">npx</span> <span class="variable">newman</span> <span class="variable">run</span> <span class="variable">mahasiswa</span>-<span class="variable">api</span>.<span class="variable">postman_collection</span>.<span class="variable">json</span> \
+               --<span class="variable">environment</span> <span class="variable">ci</span>.<span class="variable">postman_environment</span>.<span class="variable">json</span></code></pre>
+                <table>
+                    <tr><th>&nbsp;</th><th>Vitest + Supertest</th><th>Postman + Newman</th></tr>
+                    <tr><td><strong>Menguji dari</strong></td><td>dalam proses aplikasi</td><td>luar, lewat jaringan</td></tr>
+                    <tr><td><strong>Server perlu jalan?</strong></td><td>tidak</td><td>ya</td></tr>
+                    <tr><td><strong>Bisa menguji server produksi?</strong></td><td>tidak</td><td>ya</td></tr>
+                    <tr><td><strong>Kecepatan</strong></td><td>cepat</td><td>lebih lambat</td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Keduanya bukan pilihan salah satu.</strong> Vitest tetap menjadi tulang punggung pengujian kalian karena cepat dan bisa menguji bagian dalam. Newman melengkapinya sebagai <em>pemeriksaan kesehatan</em> yang bisa dijalankan terhadap alamat mana pun &mdash; termasuk aplikasi yang sudah dirilis pada Pertemuan 14.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Jangan pernah menyimpan Environment berisi token asli ke repositori.</strong> Berkas <code>*.postman_environment.json</code> hasil ekspor ikut membawa nilai variabelnya. Ekspor environment untuk CI dengan nilai kosong, lalu isikan lewat <em>secrets</em> GitHub Actions &mdash; pola yang sama seperti <code>JWT_SECRET</code> di Pertemuan 9.
+                </div>
+
+hanya untuk alur paling penting (piramida Section 1.1).
+                </div>
+            </section>
+
+            <section id="regresi-keamanan">
+                <h2>4. Uji Regresi Keamanan <span class="badge badge-important">Indikator 7.3</span></h2>
+
+                <p>Ingat kerentanan yang ditemukan dan diperbaiki di Pertemuan 10? Perbaikan manual bisa <strong>rusak lagi tanpa sengaja</strong> saat kode terus dikembangkan &mdash; misalnya seseorang di kelompok menghapus middleware <code>butuhPeran</code> tanpa sadar. <strong>Uji regresi keamanan</strong> mengubah temuan itu menjadi test otomatis yang gagal kalau kerentanan itu muncul kembali.</p>
+
+                <pre><code><span class="comment">// src/routes/mahasiswa.security.test.js</span>
+<span class="keyword">import</span> { <span class="variable">describe</span>, <span class="variable">it</span>, <span class="variable">expect</span> } <span class="keyword">from</span> <span class="string">'vitest'</span>;
+<span class="keyword">import</span> <span class="variable">request</span> <span class="keyword">from</span> <span class="string">'supertest'</span>;
+<span class="keyword">import</span> <span class="variable">app</span> <span class="keyword">from</span> <span class="string">'../app.js'</span>;
+
+<span class="function">describe</span>(<span class="string">'Regresi keamanan — Broken Access Control (temuan Pertemuan 10)'</span>, () <span class="operator">=&gt;</span> {
+    <span class="function">it</span>(<span class="string">'DELETE /mahasiswa/:id HARUS ditolak untuk peran mahasiswa'</span>, <span class="keyword">async</span> () <span class="operator">=&gt;</span> {
+        <span class="keyword">const</span> <span class="variable">tokenMahasiswa</span> = <span class="keyword">await</span> <span class="function">loginSebagai</span>(<span class="string">'mahasiswa'</span>);
+
+        <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">request</span>(<span class="variable">app</span>)
+            .<span class="function">delete</span>(<span class="string">'/mahasiswa/1'</span>)
+            .<span class="function">set</span>(<span class="string">'Authorization'</span>, <span class="string">`Bearer ${tokenMahasiswa}`</span>);
+
+        <span class="function">expect</span>(<span class="variable">respons</span>.<span class="variable">status</span>).<span class="function">toBe</span>(<span class="number">403</span>);   <span class="comment">// kalau ini pernah 200 lagi → BUG kambuh</span>
+    });
+
+    <span class="function">it</span>(<span class="string">'GET /pesanan/:id HARUS ditolak untuk data milik user lain (IDOR)'</span>, <span class="keyword">async</span> () <span class="operator">=&gt;</span> {
+        <span class="keyword">const</span> <span class="variable">tokenUserA</span> = <span class="keyword">await</span> <span class="function">loginSebagai</span>(<span class="string">'userA'</span>);
+
+        <span class="keyword">const</span> <span class="variable">respons</span> = <span class="keyword">await</span> <span class="function">request</span>(<span class="variable">app</span>)
+            .<span class="function">get</span>(<span class="string">'/pesanan/99'</span>)   <span class="comment">// pesanan #99 milik userB</span>
+            .<span class="function">set</span>(<span class="string">'Authorization'</span>, <span class="string">`Bearer ${tokenUserA}`</span>);
+
+        <span class="function">expect</span>(<span class="variable">respons</span>.<span class="variable">status</span>).<span class="function">toBe</span>(<span class="number">403</span>);
+    });
+});</code></pre>
+
+                <div class="success-box">
+                    <strong>Ini kewajiban minimum:</strong> setiap kelompok wajib mengubah <strong>minimal satu temuan</strong> dari <code>SECURITY.md</code> (Pertemuan 10) menjadi test otomatis seperti contoh di atas. Test ini menjadi jaring pengaman permanen sampai akhir semester.
+                </div>
+            </section>
+
+            <section id="ci">
+                <h2>5. Integrasi Berkelanjutan (CI) <span class="badge badge-important">Indikator 7.4</span></h2>
+
+                <p><strong>Continuous Integration</strong> menjalankan seluruh pengujian secara <strong>otomatis</strong> setiap kali ada perubahan kode di-push ke repositori &mdash; tidak lagi bergantung pada seseorang mengingat untuk menjalankan test secara manual.</p>
+
+                <h3>5.1 Alur Pipeline</h3>
+                <div class="pipeline">
+                    <div class="pipe-box">
+                        <div class="pipe-box-title">git push</div>
+                        <div class="pipe-box-desc">memicu pipeline</div>
+                    </div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box">
+                        <div class="pipe-box-title">npm ci</div>
+                        <div class="pipe-box-desc">pasang dependensi</div>
+                    </div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box">
+                        <div class="pipe-box-title">npm audit</div>
+                        <div class="pipe-box-desc">cek kerentanan (Pert. 10)</div>
+                    </div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box">
+                        <div class="pipe-box-title">vitest run</div>
+                        <div class="pipe-box-desc">unit + regresi keamanan</div>
+                    </div>
+                    <div class="pipe-arrow">&rarr;</div>
+                    <div class="pipe-box">
+                        <div class="pipe-box-title">playwright test</div>
+                        <div class="pipe-box-desc">E2E</div>
+                    </div>
+                </div>
+
+                <h3>5.2 GitHub Actions</h3>
+                <pre><code><span class="comment"># .github/workflows/ci.yml</span>
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: [<span class="string">'5432:5432'</span>]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: <span class="string">'24'</span>
+
+      - run: npm ci
+      - run: npm audit --audit-level=high
+      - run: npx prisma migrate deploy
+      - run: npx vitest run
+      - run: npx playwright install --with-deps
+      - run: npx playwright test</code></pre>
+
+                <table>
+                    <tr><th>Bagian</th><th>Fungsi</th></tr>
+                    <tr><td><code>on: [push, pull_request]</code></td><td>Pipeline jalan setiap push DAN setiap pull request</td></tr>
+                    <tr><td><code>services: postgres</code></td><td>Menyediakan basis data uji sungguhan untuk pipeline (bukan mock)</td></tr>
+                    <tr><td><code>npm ci</code></td><td>Pasang dependensi PERSIS sesuai <code>package-lock.json</code> (Materi 1)</td></tr>
+                    <tr><td><code>npm audit --audit-level=high</code></td><td>Pipeline GAGAL kalau ada kerentanan tingkat tinggi (Pertemuan 10)</td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Ini penyambungan langsung dengan Pertemuan 10:</strong> <code>npm audit</code> yang dulu dijalankan manual sekali, sekarang berjalan <strong>otomatis pada setiap perubahan</strong> sampai akhir semester &mdash; sesuai RPS Catatan D.10.
+                </div>
+            </section>
+
+            <section id="batas-pengujian">
+                <h2>6. Batas Kemampuan Pengujian Otomatis <span class="badge">Indikator 7.6</span></h2>
+
+                <p>Pengujian otomatis sangat berguna, tetapi <strong>bukan jaminan mutlak</strong> tidak ada bug. Penting memahami batasnya agar tidak salah percaya diri.</p>
+
+                <table>
+                    <tr><th>Yang BISA dijamin pengujian otomatis</th><th>Yang TIDAK BISA dijamin</th></tr>
+                    <tr><td>Fungsi menghasilkan output yang benar untuk kasus yang DIUJI</td><td>Kasus yang tidak terpikirkan untuk ditulis testnya</td></tr>
+                    <tr><td>Perilaku yang sudah benar tidak rusak diam-diam (regresi)</td><td>Aplikasi "terasa" enak dipakai (UX)</td></tr>
+                    <tr><td>Endpoint mengembalikan status code yang benar</td><td>Performa di bawah beban ribuan pengguna sungguhan</td></tr>
+                    <tr><td>Alur login-CRUD-logout berjalan (E2E)</td><td>Semua kombinasi input yang mungkin (ruang kemungkinan tak terbatas)</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>"Semua test hijau" &ne; "aplikasi bebas bug".</strong> Test hanya menjamin apa yang <strong>ditulis</strong> untuk diuji. Aspek seperti kejelasan pesan galat bagi pengguna awam, kenyamanan alur, atau kerentanan yang belum pernah terpikirkan tetap butuh <strong>penilaian manusia</strong> &mdash; termasuk tinjauan kode antar kelompok (Pertemuan 12) dan audit manual (Pertemuan 10).
+                </div>
+            </section>
+
+            <section id="praktik">
+                <h2>7. Praktik: Susun Pipeline Lengkap <span class="badge badge-new">Latihan</span></h2>
+
+                <p>Lengkapi proyek kelompok dengan pengujian otomatis dan pipeline CI, menyatukan seluruh materi hari ini.</p>
+
+                <h3>Langkah 1 &mdash; Pasang Vitest &amp; Supertest</h3>
+                <div class="terminal"><span class="prompt">$</span> npm install -D vitest supertest</div>
+
+                <h3>Langkah 2 &mdash; Uji Unit untuk Service</h3>
+                <p>Tulis minimal 3 test unit untuk fungsi <code>service</code> yang sudah ada (validasi, perhitungan) mengikuti pola Section 2.2.</p>
+
+                <h3>Langkah 3 &mdash; Uji Regresi Keamanan</h3>
+                <p>Ambil <strong>minimal satu temuan</strong> dari <code>SECURITY.md</code> milik kelompok (Pertemuan 10), ubah menjadi test otomatis mengikuti pola Section 4.</p>
+
+                <h3>Langkah 4 &mdash; Uji E2E untuk Satu Alur Utuh</h3>
+                <div class="terminal"><span class="prompt">$</span> npm install -D @playwright/test
+<span class="prompt">$</span> npx playwright install</div>
+                <p>Tulis satu test E2E untuk alur paling penting di aplikasi kalian (login &rarr; lihat data &rarr; tambah data, mengikuti pola Section 3).</p>
+
+                <h3>Langkah 5 &mdash; Buat Pipeline CI</h3>
+                <p>Buat <code>.github/workflows/ci.yml</code> mengikuti Section 5.2, sesuaikan dengan struktur proyek kalian.</p>
+
+                <h3>Langkah 6 &mdash; Push dan Verifikasi</h3>
+                <div class="terminal"><span class="prompt">$</span> git add .
+<span class="prompt">$</span> git commit -m <span class="string">"Tambah pengujian otomatis dan pipeline CI"</span>
+<span class="prompt">$</span> git push</div>
+                <p>Buka tab <strong>Actions</strong> di repositori GitHub, pastikan pipeline berjalan dan seluruh langkah berhasil (centang hijau).</p>
+
+                <div class="success-box">
+                    <strong>Selesai kalau:</strong> pipeline CI di GitHub Actions berjalan otomatis setelah push, menjalankan <code>npm audit</code>, test unit, uji regresi keamanan, dan minimal satu test E2E &mdash; semuanya lulus (atau, kalau sengaja dibuat gagal untuk latihan, kalian bisa menjelaskan mengapa).
+                </div>
+
+                <h3>Latihan Mandiri</h3>
+                <ol>
+                    <li>Sengaja rusak salah satu middleware otorisasi (hapus <code>butuhPeran</code> dari satu rute), push, dan amati pipeline CI gagal pada test regresi keamanan. Kembalikan lagi, buktikan pipeline hijau kembali.</li>
+                    <li>Tambahkan badge status CI (<em>"build passing"</em>) di README repositori.</li>
+                    <li>Diskusikan dalam kelompok: sebutkan satu skenario nyata yang <strong>tidak</strong> tercakup test kalian saat ini, dan mengapa itu penting (Section 6).</li>
+                </ol>
+
+                <div class="info-box">
+                    <strong>Menuju Pertemuan 14&ndash;15:</strong> dengan pipeline CI yang hijau sebagai jaring pengaman, kelompok kalian siap merilis aplikasi ke layanan hosting publik.
+                </div>
+            </section>
+
+            <section id="cpmk">
+                <h2>Capaian Pembelajaran (Pertemuan 13)</h2>
+
+                <p><strong>Sub-CPMK 7:</strong> Mahasiswa mampu menyusun pengujian otomatis unit, end-to-end, dan regresi keamanan, serta menjalankannya melalui pipeline integrasi berkelanjutan. <strong>[C3, C4]</strong></p>
+
+                <table>
+                    <tr><th>Indikator</th><th>Deskripsi</th><th>Materi Terkait</th></tr>
+                    <tr><td>7.1</td><td>Menulis pengujian unit untuk logika yang berdiri sendiri</td><td>Section 2</td></tr>
+                    <tr><td>7.2</td><td>Menulis pengujian end-to-end untuk satu alur pengguna utuh</td><td>Section 3</td></tr>
+                    <tr><td>7.3</td><td>Mengubah temuan keamanan Pertemuan 10 menjadi pengujian otomatis</td><td>Section 4</td></tr>
+                    <tr><td>7.4</td><td>Menyusun berkas pipeline sehingga seluruh pengujian berjalan otomatis pada setiap perubahan</td><td>Section 5</td></tr>
+                    <tr><td>7.5</td><td>Membaca dan menindaklanjuti kegagalan pengujian pada pipeline</td><td>Section 7 (latihan mandiri)</td></tr>
+                    <tr><td>7.6</td><td>Menjelaskan batas kemampuan pengujian otomatis</td><td>Section 6</td></tr>
+                </table>
+
+                <h3>Daftar Periksa Akhir Pertemuan</h3>
+                <div class="info-box">
+                    <ul>
+                        <li>Bisa menjelaskan piramida pengujian dan alasan di baliknya</li>
+                        <li>Ada minimal 3 test unit yang lulus untuk logika service</li>
+                        <li>Minimal 1 temuan keamanan Pertemuan 10 sudah menjadi test regresi otomatis</li>
+                        <li>Ada minimal 1 test E2E untuk alur pengguna utuh</li>
+                        <li>Pipeline CI di GitHub Actions berjalan otomatis dan hijau setelah push</li>
+                    </ul>
+                </div>
+
+                <h3>&#128218; Referensi</h3>
+                <ul>
+                    <li><a href="https://vitest.dev/guide/" target="_blank">Vitest &mdash; Guide</a> [15]</li>
+                    <li><a href="https://playwright.dev/docs/writing-tests" target="_blank">Playwright &mdash; Writing Tests</a> [15]</li>
+                    <li><a href="https://docs.github.com/en/actions" target="_blank">GitHub Actions Documentation</a></li>
+                    <li><a href="https://martinfowler.com/articles/practical-test-pyramid.html" target="_blank">Martin Fowler &mdash; The Practical Test Pyramid</a> [17]</li>
+                </ul>
+            </section>
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 13 &mdash; Pemrograman Web Lanjut &mdash; Pengujian Otomatis & Integrasi Berkelanjutan</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        function tulis(id, teks) { document.getElementById(id).textContent = teks; }
+
+        function demoUnit(mode) {
+            let out = '';
+            if (mode === 'normal') {
+                out = 'function hitungRataRata(nilai) {\n  return nilai.reduce((a,b)=>a+b,0) / nilai.length;\n}\n\nit("kasus normal", () => {\n  expect(hitungRataRata([80, 90, 70])).toBe(80);\n});\n\n✓ PASS — (80+90+70)/3 = 80';
+            } else if (mode === 'edge') {
+                out = 'it("larik kosong — kasus TEPI yang sering terlupakan", () => {\n  expect(hitungRataRata([])).toBe(0);\n});\n\n⚠️ Tanpa penanganan khusus, [].reduce(...,0) / 0 = NaN\n   bukan 0 — inilah gunanya kasus tepi diuji secara eksplisit,\n   bukan hanya kasus yang "biasanya" terjadi.';
+            } else {
+                out = 'it("menolak input tanpa nama", async () => {\n  await expect(buatMahasiswa({ nim: "F1D021099" }))\n    .rejects.toThrow(AppError);\n});\n\n✓ PASS — service benar-benar throw AppError(422, ...)\n  ketika field "nama" tidak ada, sesuai Pertemuan 6.';
+            }
+            tulis('demo1-out', out);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection('piramida');
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+        (function() {
+            'use strict';
+            document.querySelectorAll('pre, code, .terminal').forEach(function(el) {
+                el.addEventListener('contextmenu', function(e) { e.preventDefault(); showCopyWarning(); return false; });
+                el.style.userSelect = 'none'; el.style.webkitUserSelect = 'none'; el.style.MozUserSelect = 'none';
+                el.setAttribute('draggable', 'false');
+                el.addEventListener('dragstart', function(e) { e.preventDefault(); return false; });
+            });
+            document.addEventListener('keydown', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'Insert')) { e.preventDefault(); showCopyWarning(); return false; }
+                    if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A')) { e.preventDefault(); return false; }
+                }
+            });
+            document.addEventListener('copy', function(e) {
+                var selection = window.getSelection();
+                var el = selection.anchorNode ? selection.anchorNode.parentElement : null;
+                if (el && (el.closest('pre') || el.closest('code') || el.closest('.terminal'))) {
+                    e.preventDefault();
+                    e.clipboardData.setData('text/plain', 'Copy kode tidak diizinkan! Silakan ketik manual untuk latihan.');
+                    showCopyWarning();
+                }
+            });
+            function showCopyWarning() {
+                var existingModal = document.getElementById('copy-warning-modal');
+                if (existingModal) existingModal.remove();
+                var modal = document.createElement('div');
+                modal.id = 'copy-warning-modal';
+                modal.innerHTML = `
+                    <div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:99999;">
+                        <div style="background:white;padding:30px;border-radius:10px;text-align:center;max-width:400px;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+                            <div style="font-size:50px;margin-bottom:15px;">🚫</div>
+                            <h3 style="color:#b45309;margin-bottom:10px;">Copy Tidak Diizinkan!</h3>
+                            <p style="color:#555;margin-bottom:20px;">Silakan <strong>ketik manual</strong> kode tersebut untuk latihan dan pemahaman yang lebih baik.</p>
+                            <button onclick="this.closest('#copy-warning-modal').remove()" style="background:#b45309;color:white;border:none;padding:10px 30px;border-radius:5px;cursor:pointer;font-size:16px;">Mengerti</button>
+                        </div>
+                    </div>`;
+                document.body.appendChild(modal);
+                setTimeout(function() { var m = document.getElementById('copy-warning-modal'); if (m) m.remove(); }, 3000);
+            }
+            console.log('🔒 Anti-copy protection aktif untuk elemen kode');
+        })();
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+    <script src="sidebar-toggle.js"></script>
+</body>
+</html>

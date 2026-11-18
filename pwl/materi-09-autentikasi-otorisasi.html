@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 9: Autentikasi & Otorisasi - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        header { background: #b91c1c !important; }
+        .sidebar h3 { color: #fca5a5 !important; }
+        .sidebar ul li a:hover { border-left: 3px solid #fca5a5 !important; }
+        .sidebar ul li a.active { background-color: #b91c1c !important; }
+        section h2 { border-bottom: 3px solid #b91c1c !important; }
+        th { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; }
+        .badge { background: #b91c1c !important; }
+        .sidebar::-webkit-scrollbar-thumb { background: #fca5a5 !important; }
+
+        .keyword { color: #c678dd; } .string { color: #98c379; } .number { color: #d19a66; }
+        .function { color: #61afef; } .comment { color: #7f8c8d; } .variable { color: #e06c75; }
+        .operator { color: #56b6c2; }
+
+        .terminal {
+            background: #0f1419; color: #d7dae0; padding: 18px; border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace; font-size: 0.88em; line-height: 1.6;
+            overflow-x: auto; margin: 15px 0; white-space: pre;
+        }
+        .terminal .prompt { color: #fca5a5; }
+        .terminal .out { color: #8a8f98; }
+
+        /* ===== Tampilan Postman (mockup) ===== */
+        .req-mock { border:1px solid #d6dbe4; border-radius:8px; overflow:hidden; margin:12px 0 18px; background:#fff; font-size:0.9em; }
+        .req-cap { padding:6px 14px; background:#eef1f7; color:#64748b; font-size:0.8em; border-bottom:1px solid #e0e5ee; }
+        .req-bar { display:flex; padding:10px 14px; background:#f4f6fa; border-bottom:1px solid #e0e5ee; }
+        .req-method { padding:8px 14px; font-weight:700; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-radius:6px 0 0 6px; }
+        .req-url { flex:1; padding:8px 12px; font-family:'Consolas','Monaco',monospace; background:#fff; border:1px solid #cfd6e3; border-left:none; overflow-x:auto; white-space:nowrap; }
+        .req-send { padding:8px 18px; font-weight:700; color:#fff; background:#ff6c37; border-radius:0 6px 6px 0; }
+        .req-tabs { display:flex; gap:20px; padding:8px 14px 0; border-bottom:1px solid #e0e5ee; color:#64748b; font-size:0.85em; overflow-x:auto; }
+        .req-tabs span { padding-bottom:6px; white-space:nowrap; }
+        .req-tabs .on { color:#0f172a; font-weight:700; border-bottom:2px solid #ff6c37; }
+        .req-pane { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; background:#fafbfd; border-bottom:1px solid #e0e5ee; }
+        .req-res { display:flex; gap:14px; align-items:center; padding:8px 14px; background:#f4f6fa; border-top:1px solid #e0e5ee; border-bottom:1px solid #e0e5ee; font-size:0.85em; color:#475569; }
+        .req-res .st { font-weight:700; }
+        .req-res .s2 { color:#15803d; } .req-res .s4 { color:#b91c1c; } .req-res .s5 { color:#7c2d12; }
+        .req-resbody { padding:10px 14px; font-family:'Consolas','Monaco',monospace; font-size:0.9em; white-space:pre; overflow-x:auto; }
+        .req-empty { padding:10px 14px; font-size:0.85em; color:#94a3b8; font-style:italic; }
+
+        /* ===== Sesi vs Token: dua kartu berdampingan ===== */
+        .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0 22px; }
+        .vs-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+        .vs-head { padding: 10px 14px; color: #fff; font-weight: 700; }
+        .vs-head small { display: block; font-weight: 400; opacity: .88; font-size: .8em; margin-top: 2px; }
+        .vs-sesi .vs-head { background: #475569; }
+        .vs-token .vs-head { background: #b91c1c; }
+        .seq { padding: 8px 14px 4px; flex: 1; }
+        .seq-top, .seq-row { display: grid; grid-template-columns: 56px 1fr 56px; align-items: stretch; }
+        .seq-top span { text-align: center; font-size: .7em; font-weight: 700; color: #475569; background: #e2e8f0; border-radius: 5px; padding: 4px 0; text-transform: uppercase; letter-spacing: .5px; }
+        .seq-top span.srv { background: #fecaca; color: #7f1d1d; }
+        .seq-top .gap { background: none; }
+        .seq-row .lane { background: linear-gradient(#cbd5e1, #cbd5e1) center / 2px 100% no-repeat; min-height: 62px; }
+        .seq-msg { position: relative; text-align: center; font-size: .74em; font-family: 'Consolas', monospace; padding: 12px 6px 14px; line-height: 1.35; color: #334155; }
+        .seq-msg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 4px; height: 2px; background: #94a3b8; }
+        .seq-msg.kanan::before, .seq-msg.kiri::before { content: ''; position: absolute; bottom: 1px; border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+        .seq-msg.kanan::before { right: 0; border-left: 8px solid #94a3b8; }
+        .seq-msg.kiri::before { left: 0; border-right: 8px solid #94a3b8; }
+        .vs-token .seq-msg.balik::after { background: #b91c1c; }
+        .vs-token .seq-msg.balik.kiri::before { border-right-color: #b91c1c; }
+        .vs-sesi .seq-msg.balik::after { background: #475569; }
+        .vs-sesi .seq-msg.balik.kiri::before { border-right-color: #475569; }
+        .seq-msg .no { display: inline-block; width: 17px; height: 17px; border-radius: 50%; background: #1e293b; color: #fff; font-size: .9em; line-height: 17px; margin-right: 5px; font-family: sans-serif; font-weight: 700; }
+        .keep { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 14px 14px; border-top: 1px dashed #cbd5e1; background: #f8fafc; }
+        .keep h6 { margin: 0 0 4px; font-size: .7em; text-transform: uppercase; letter-spacing: .5px; color: #475569; }
+        .chip { display: block; font-family: 'Consolas', monospace; font-size: .72em; padding: 5px 8px; border-radius: 5px; margin: 4px 0; word-break: break-all; line-height: 1.4; }
+        .chip-isi { background: #dcfce7; color: #14532d; }
+        .chip-token { background: #fee2e2; color: #7f1d1d; }
+        .chip-kosong { background: #f1f5f9; color: #64748b; font-family: inherit; font-style: italic; }
+        .vs-foot { padding: 10px 14px; font-size: .82em; color: #334155; background: #fff; border-top: 1px solid #e2e8f0; }
+        @media (max-width: 1180px) { .vs { grid-template-columns: 1fr; } }
+        @media (max-width: 520px) { .keep { grid-template-columns: 1fr; } }
+
+        /* ===== Simulator sesi vs token ===== */
+        .sim { background: #f8fafc; border: 2px solid #b91c1c; border-radius: 10px; padding: 16px; margin: 18px 0; }
+        .sim h5 { margin: 0 0 4px; color: #7f1d1d; font-size: 1.05em; }
+        .sim p.hint { margin: 0 0 12px; font-size: .85em; color: #475569; }
+        .sim-mode { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+        .sim-mode button { padding: 7px 14px; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 999px; cursor: pointer; font-size: .85em; }
+        .sim-mode button.on { background: #b91c1c; border-color: #b91c1c; color: #fff; font-weight: 700; }
+        .sim-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+        .sim-actions button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: .85em; background: #1e293b; color: #fff; }
+        .sim-actions button:hover { background: #0f172a; }
+        .sim-actions button.alt { background: #fff; color: #334155; border: 1px solid #94a3b8; }
+        .sim-stage { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+        .node { background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 9px 10px; min-height: 96px; }
+        .node h6 { margin: 0 0 6px; font-size: .72em; text-transform: uppercase; letter-spacing: .5px; color: #475569; display: flex; justify-content: space-between; }
+        .node.client { border-top: 4px solid #64748b; }
+        .node.server { border-top: 4px solid #b91c1c; }
+        .node.store { border-top: 4px solid #d97706; }
+        .node .tag { font-size: .9em; padding: 0 6px; border-radius: 4px; background: #dcfce7; color: #166534; text-transform: none; letter-spacing: 0; }
+        .node .tag.mati { background: #fee2e2; color: #991b1b; }
+        .sim-log { margin-top: 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; max-height: 260px; overflow-y: auto; }
+        .log-line { display: flex; gap: 8px; align-items: flex-start; font-size: .8em; padding: 5px 0; border-bottom: 1px solid #f1f5f9; }
+        .log-line:last-child { border-bottom: none; }
+        .log-line .st { font-family: 'Consolas', monospace; font-weight: 700; padding: 1px 7px; border-radius: 4px; color: #fff; min-width: 38px; text-align: center; flex: none; }
+        .st-200 { background: #16a34a; } .st-401 { background: #dc2626; } .st-info { background: #64748b; }
+        .log-line .why { color: #475569; }
+        .sim-empty { color: #94a3b8; font-size: .85em; padding: 6px 0; }
+
+        /* ===== Lab JWT ===== */
+        .jwtlab { background: #f8fafc; border: 2px solid #b91c1c; border-radius: 10px; padding: 16px; margin: 18px 0; }
+        .jwtlab h5 { margin: 0 0 4px; color: #7f1d1d; font-size: 1.05em; }
+        .jwtlab label { display: block; font-size: .78em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .4px; margin: 10px 0 4px; }
+        .jwtlab input[type=text], .jwtlab textarea { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Consolas', monospace; font-size: .85em; background: #fff; }
+        .jwtlab textarea { resize: vertical; }
+        .jwtlab .btns { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 4px; }
+        .jwtlab .btns button { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-size: .85em; background: #1e293b; color: #fff; }
+        .jwtlab .btns button.serang { background: #b91c1c; }
+        .jwtlab .btns button:hover { filter: brightness(1.15); }
+        .jwt-tampil { font-family: 'Consolas', monospace; font-size: .8em; word-break: break-all; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; line-height: 1.7; }
+        .jwt-part { display: inline-block; padding: 1px 6px; border-radius: 4px; font-family: 'Consolas', monospace; font-weight: 700; margin: 2px 0; }
+        .jwt-header { background: #fecaca; color: #7f1d1d; }
+        .jwt-payload { background: #ddd6fe; color: #4c1d95; }
+        .jwt-signature { background: #bbf7d0; color: #14532d; }
+        .jwt-bagian { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-top: 10px; }
+        .jwt-bagian > div { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px; font-size: .78em; }
+        .jwt-bagian h6 { margin: 0 0 4px; font-size: .95em; }
+        .jwt-bagian pre { margin: 0; white-space: pre-wrap; word-break: break-all; font-size: .95em; background: none; color: #0f172a; padding: 0; }
+        .verdict { margin-top: 12px; padding: 10px 14px; border-radius: 8px; font-weight: 700; font-size: .9em; }
+        .verdict.ok { background: #dcfce7; color: #14532d; border: 1px solid #86efac; }
+        .verdict.bad { background: #fee2e2; color: #7f1d1d; border: 1px solid #fca5a5; }
+        .verdict small { display: block; font-weight: 400; margin-top: 3px; }
+
+        /* ===== Rantai middleware ===== */
+        .chain { display: flex; align-items: flex-start; gap: 6px; margin: 14px 0 20px; flex-wrap: wrap; }
+        .chain .link { background: #fff; border: 2px solid #b91c1c; border-radius: 8px; padding: 8px 12px; font-family: 'Consolas', monospace; font-size: .82em; text-align: center; min-width: 110px; }
+        .chain .link.ujung { background: #1e293b; border-color: #1e293b; color: #fff; }
+        .chain .link.ok { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+        .chain .link small { display: block; font-family: inherit; color: #64748b; margin-top: 3px; font-size: .85em; }
+        .chain .link.ujung small, .chain .link.ok small { color: inherit; opacity: .8; }
+        .chain .x { display: block; margin-top: 6px; font-size: .78em; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #fee2e2; color: #991b1b; font-family: sans-serif; }
+        .chain .arr { align-self: center; color: #94a3b8; font-size: 1.2em; }
+
+        /* ===== Peta perubahan per lapis ===== */
+        .layers { margin: 14px 0 22px; }
+        .layer { display: grid; grid-template-columns: 120px 1fr; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: #fff; }
+        .layer + .layer { margin-top: 18px; position: relative; }
+        .layer + .layer::before { content: '\25BC'; position: absolute; top: -16px; left: 50px; color: #94a3b8; font-size: .8em; }
+        .layer-nama { background: #1e293b; color: #fff; font-size: .8em; font-weight: 700; padding: 10px; display: flex; align-items: center; }
+        .layer-isi { padding: 8px 10px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+        .file { font-family: 'Consolas', monospace; font-size: .78em; padding: 4px 9px; border-radius: 5px; border: 1px solid #cbd5e1; background: #f8fafc; color: #334155; }
+        .file.baru { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+        .file.ubah { background: #fef3c7; border-color: #d97706; color: #78350f; }
+        .file.hapus { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; text-decoration: line-through; }
+        .legenda { font-size: .8em; color: #475569; margin: 6px 0 0; }
+        .legenda .file { margin-right: 6px; }
+        @media (max-width: 560px) { .layer { grid-template-columns: 1fr; } }
+
+        /* ===== Garis waktu token ===== */
+        .tl { margin: 14px 0 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px; }
+        .tl-row { display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: 10px; margin: 8px 0; font-size: .82em; }
+        .tl-bar { height: 22px; border-radius: 5px; }
+        .tl-long { background: #7f1d1d; }
+        .tl-seg { display: flex; gap: 3px; }
+        .tl-seg i { flex: 1; background: #f87171; border-radius: 4px; position: relative; }
+        .tl-seg i::after { content: '\21BB'; position: absolute; top: -17px; left: 0; font-size: .85em; color: #7f1d1d; font-style: normal; }
+        @media (max-width: 560px) { .tl-row { grid-template-columns: 1fr; } }
+
+        /* ===== Severity & alur perbaikan (Pertemuan 10) ===== */
+        .sev { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.75em; font-weight: 700; color: #fff; }
+        .sev-critical { background: #7f1d1d; } .sev-high { background: #b91c1c; } .sev-medium { background: #d97706; } .sev-low { background: #65a30d; }
+        .remediation { display: flex; gap: 12px; flex-wrap: wrap; margin: 15px 0; }
+        .rem-col { flex: 1; min-width: 200px; background: #f8f9fa; border-radius: 8px; padding: 14px; border-top: 4px solid #b91c1c; }
+        .rem-col h5 { margin: 0 0 8px; font-size: 0.85em; color: #7f1d1d; text-transform: uppercase; letter-spacing: 0.5px; }
+        .rem-col ol { margin: 0; padding-left: 18px; font-size: 0.85em; color: #444; }
+        .rem-col li { margin: 6px 0; }
+        .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+        .cmp > div { border-radius: 8px; padding: 10px 14px; font-size: .88em; }
+        .cmp .sebelum { background: #fef2f2; border: 1px solid #fca5a5; }
+        .cmp .sesudah { background: #f0fdf4; border: 1px solid #86efac; }
+        .cmp h6 { margin: 0 0 6px; font-size: .78em; text-transform: uppercase; letter-spacing: .5px; }
+        .cmp .sebelum h6 { color: #991b1b; } .cmp .sesudah h6 { color: #166534; }
+        @media (max-width: 700px) { .cmp { grid-template-columns: 1fr; } }
+
+    </style>
+</head>
+<body>
+    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" onclick="toggleMobileMenu()"></div>
+
+    <header>
+        <h1>Pertemuan 9: Autentikasi & Otorisasi</h1>
+        <p>Sub-CPMK 5 (bagian 1) &mdash; Minggu 9 &mdash; Pemrograman Web Lanjut</p>
+    </header>
+
+    <div class="container">
+        <nav class="sidebar">
+            <h3>Daftar Materi</h3>
+            <ul>
+                <li><a href="#password" class="active">1. Password &amp; Hash</a></li>
+                <li><a href="#sesi-token">2. Sesi vs Token</a></li>
+                <li><a href="#token-uji">3. Token di Proyek Percobaan</a></li>
+                <li><a href="#gabung">4. Gabungkan ke api-mahasiswa</a></li>
+                <li><a href="#refresh">5. Pengayaan: Refresh Token</a></li>
+                <li><a href="#referensi">6. Referensi</a></li>
+            </ul>
+            <h3>Link Terkait</h3>
+            <ul>
+                <!-- <li><a href="https://berajah-if.unram.ac.id/course/view.php?id=74" target="_blank">eLearning Berajah</a></li>
+                <li><a href="materi-07-query-lanjutan-transaksi.html">&larr; Pertemuan 7</a></li>
+                <li><a href="materi-10-keamanan-owasp.html">Pertemuan 10 &rarr;</a></li> -->
+                <li><a href="https://jwt.io" target="_blank">jwt.io &mdash; Debugger</a></li>
+            </ul>
+        </nav>
+
+        <button class="sidebar-collapse-toggle" onclick="toggleSidebarCollapse()" aria-label="Perkecil/perbesar sidebar" title="Perkecil/perbesar sidebar">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <main class="content">
+
+            <section id="password">
+                <h2>1. Password: Hash, Bukan Enkripsi <span class="badge badge-important">Indikator 5.1</span></h2>
+
+                <p>Sebelum membahas login, ada satu hal yang harus benar sejak awal: <strong>bagaimana password disimpan</strong>. Kalau tabel <code>users</code> bocor, yang bocor adalah isi kolom password. Kalau isinya password asli, semua akun ikut jatuh, termasuk akun di website lain yang memakai password yang sama.</p>
+
+                <div class="cmp">
+                    <div class="sebelum">
+                        <h6>Jangan</h6>
+                        Simpan <code>rahasia123</code> apa adanya, atau simpan hasil MD5/SHA-256 saja. Keduanya cepat dihitung, sehingga penyerang bisa mencoba miliaran tebakan per detik.
+                    </div>
+                    <div class="sesudah">
+                        <h6>Lakukan</h6>
+                        Simpan <strong>hash</strong> dari <code>bcrypt</code>: satu arah (tidak bisa dibalik) dan sengaja lambat, sehingga tebakan massal jadi mahal.
+                    </div>
+                </div>
+
+                <p><strong>Hash</strong> adalah fungsi satu arah: dari password kita bisa menghitung hash-nya, tetapi dari hash tidak ada jalan kembali ke password. Saat login, server tidak &ldquo;membuka&rdquo; hash. Server menghitung hash dari password yang baru diketik, lalu membandingkannya dengan hash yang tersimpan.</p>
+
+                <h3>1.1 Buat Proyek Baru untuk Percobaan</h3>
+                <p>Kita tidak langsung mengubah <code>api-mahasiswa</code>. Mulai dari proyek kecil <code>auth-uji</code> supaya setiap konsep bisa dicoba tanpa gangguan: tanpa database, tanpa Prisma. Setelah semuanya jelas, baru kita pindahkan ke <code>api-mahasiswa</code> di Section 4.</p>
+<div class="terminal">$ mkdir auth-uji
+$ cd auth-uji
+$ npm init -y
+$ npm pkg set type=module
+$ npm install express bcrypt jsonwebtoken dotenv</div>
+                <table>
+                    <tr><th>Library</th><th>Fungsinya</th></tr>
+                    <tr><td><code>express</code></td><td>Server HTTP (sudah dikenal sejak Pertemuan 4)</td></tr>
+                    <tr><td><code>bcrypt</code></td><td>Membuat dan membandingkan hash password</td></tr>
+                    <tr><td><code>jsonwebtoken</code></td><td>Membuat dan memverifikasi token JWT (Section 3)</td></tr>
+                    <tr><td><code>dotenv</code></td><td>Membaca <code>.env</code> (sudah dikenal sejak Pertemuan 6)</td></tr>
+                </table>
+
+                <h3>1.2 Hash Pertama</h3>
+                <p>Buat file <code>hash.js</code>. Kita hash password yang sama <strong>dua kali</strong>, lalu bandingkan hasilnya:</p>
+<pre><code><span class="comment">// hash.js</span>
+<span class="keyword">import</span> <span class="variable">bcrypt</span> <span class="keyword">from</span> <span class="string">'bcrypt'</span>;
+
+<span class="keyword">const</span> <span class="variable">password</span> = <span class="string">'rahasia123'</span>;
+
+<span class="keyword">const</span> <span class="variable">hash1</span> = <span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">hash</span>(<span class="variable">password</span>, <span class="number">10</span>);
+<span class="keyword">const</span> <span class="variable">hash2</span> = <span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">hash</span>(<span class="variable">password</span>, <span class="number">10</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'hash 1:'</span>, <span class="variable">hash1</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'hash 2:'</span>, <span class="variable">hash2</span>);
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'hash 1 sama dengan hash 2?'</span>, <span class="variable">hash1</span> <span class="operator">===</span> <span class="variable">hash2</span>);
+
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'compare password benar:'</span>, <span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">compare</span>(<span class="string">'rahasia123'</span>, <span class="variable">hash1</span>));
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'compare password salah:'</span>, <span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">compare</span>(<span class="string">'salahketik'</span>, <span class="variable">hash1</span>));</code></pre>
+<div class="terminal">$ node hash.js
+hash 1: $2b$10$mMhE1PhRx0c98vCtPl6SeO6p244MqrMrE/DcGMn6oSe1fC7g1OIWW
+hash 2: $2b$10$GnCJOvjq7zYmHFk.9pW5TOTdb/xKNvE7D1OtNhn7xatAKHEo7PJr2
+hash 1 sama dengan hash 2? false
+compare password benar: true
+compare password salah: false</div>
+                <p>Hash di komputer kalian akan berbeda dari di atas, dan itu memang yang diharapkan. Ada tiga hal yang bisa diamati dari percobaan ini:</p>
+                <ul>
+                    <li><strong>Password sama, hash berbeda.</strong> <code>bcrypt</code> menambahkan <em>salt</em> (teks acak) di setiap pemanggilan, jadi dua user dengan password sama tidak punya hash yang sama, dan penyerang tidak bisa memakai tabel hash yang sudah dihitung sebelumnya (<em>rainbow table</em>).</li>
+                    <li><strong><code>$2b$10$...</code></strong> adalah awalan yang memuat versi algoritma (<code>2b</code>) dan <em>cost factor</em> (<code>10</code>). Salt ikut tersimpan di dalam string hash, jadi tidak perlu kolom tambahan.</li>
+                    <li><strong>Memeriksa password = <code>bcrypt.compare</code>,</strong> bukan membandingkan teks. Fungsi ini membaca salt dari hash, menghitung ulang, lalu mencocokkan.</li>
+                </ul>
+
+                <h3>1.3 Cost Factor: Sengaja Lambat</h3>
+                <p>Angka <code>10</code> pada <code>bcrypt.hash(password, 10)</code> adalah cost factor: setiap kenaikan 1 menggandakan waktu hitung. Nilai 10 membuat satu hash butuh sekitar puluhan milidetik. Bagi pengguna yang login sekali, itu tidak terasa. Bagi penyerang yang mencoba jutaan tebakan, itu sangat mahal.</p>
+
+                <table>
+                    <tr><th>Cara menyimpan</th><th>Bisa dibalik?</th><th>Kecepatan untuk penyerang</th><th>Cocok untuk password?</th></tr>
+                    <tr><td>Plain text</td><td>Tidak perlu dibalik, sudah terbaca</td><td>&mdash;</td><td><strong>Tidak</strong></td></tr>
+                    <tr><td>Enkripsi (AES)</td><td>Ya, dengan kunci</td><td>Kunci bocor = semua terbuka</td><td><strong>Tidak</strong> (password tidak perlu dibaca ulang)</td></tr>
+                    <tr><td>Hash cepat (MD5, SHA-256)</td><td>Tidak</td><td>Miliaran tebakan per detik</td><td><strong>Tidak</strong></td></tr>
+                    <tr><td>Hash lambat (bcrypt, argon2)</td><td>Tidak</td><td>Ribuan tebakan per detik</td><td><strong>Ya</strong></td></tr>
+                </table>
+
+                <div class="info-box">
+                    <strong>Padanan di Laravel:</strong> <code>Hash::make($password)</code> dan <code>Hash::check($password, $hash)</code> memakai bcrypt juga. Konsepnya sama, hanya sintaksnya berbeda.
+                </div>
+
+                <div class="warning-box">
+                    <strong>Batas bcrypt:</strong> hanya 72 byte pertama password yang dihitung. Itu sebabnya validasi di Section 4 membatasi password maksimal 72 karakter.
+                </div>
+            </section>
+
+            <section id="sesi-token">
+                <h2>2. Sesi vs Token <span class="badge badge-important">Indikator 5.2</span></h2>
+
+                <p>Setelah login berhasil, ada masalah baru: <strong>HTTP itu stateless</strong>. Setiap request berdiri sendiri, server tidak otomatis ingat bahwa request kedua datang dari orang yang sama dengan request pertama. Kalau tidak ada yang kita lakukan, user harus mengirim email dan password di <em>setiap</em> request.</p>
+
+                <h3>2.1 Dua Cara Mengingat User</h3>
+                <p>Solusinya: setelah login, server memberi client sebuah <strong>tanda pengenal</strong>, dan client menyertakannya di setiap request berikutnya. Yang membedakan hanyalah <strong>siapa yang menyimpan catatan identitasnya</strong>:</p>
+                <ul>
+                    <li><strong>Sesi (session)</strong> seperti <em>karcis parkir</em>. Karcis hanya berisi nomor. Data lengkapnya (plat nomor, jam masuk) dicatat petugas di buku. Setiap keluar, petugas mencari nomor itu di bukunya. <strong>Server menyimpan catatan</strong>, client hanya memegang nomor.</li>
+                    <li><strong>Token (JWT)</strong> seperti <em>gelang konser dengan segel</em>. Gelang itu sendiri sudah memuat informasinya (jenis tiket, tanggal berlaku) dan segelnya tidak bisa dipalsukan. Penjaga cukup memeriksa segelnya, tanpa membuka buku apa pun. <strong>Client memegang datanya</strong>, server hanya memeriksa signature.</li>
+                </ul>
+
+                <div class="vs">
+                    <div class="vs-card vs-sesi">
+                        <div class="vs-head">Sesi (session)<small>server mencatat, client memegang nomor</small></div>
+                        <div class="seq">
+                            <div class="seq-top"><span>Client</span><span class="gap"></span><span class="srv">Server</span></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kanan"><span class="no">1</span>POST /login<br>email + password</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kiri balik"><span class="no">2</span>Set-Cookie:<br>sid=abc123</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kanan"><span class="no">3</span>GET /profil<br>Cookie: sid=abc123</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kiri balik"><span class="no">4</span>cari abc123 di catatan<br>200 OK</div><div class="lane"></div></div>
+                        </div>
+                        <div class="keep">
+                            <div>
+                                <h6>Disimpan di client</h6>
+                                <span class="chip chip-id">sid=abc123</span>
+                                <span class="chip chip-kosong">hanya nomor, tanpa data</span>
+                            </div>
+                            <div>
+                                <h6>Disimpan di server</h6>
+                                <span class="chip chip-isi">abc123 &rarr; { id: 1, role: 'mahasiswa' }</span>
+                                <span class="chip chip-kosong">satu catatan per user yang login</span>
+                            </div>
+                        </div>
+                        <div class="vs-foot"><strong>Konsekuensi:</strong> setiap request butuh pencarian ke catatan. Server restart atau ada server kedua = catatan hilang atau tidak terbagi.</div>
+                    </div>
+
+                    <div class="vs-card vs-token">
+                        <div class="vs-head">Token (JWT)<small>client memegang data yang di-sign</small></div>
+                        <div class="seq">
+                            <div class="seq-top"><span>Client</span><span class="gap"></span><span class="srv">Server</span></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kanan"><span class="no">1</span>POST /login<br>email + password</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kiri balik"><span class="no">2</span>{ token: "eyJhbGci..." }<br>sudah di-sign</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kanan"><span class="no">3</span>GET /profil<br>Authorization: Bearer eyJ...</div><div class="lane"></div></div>
+                            <div class="seq-row"><div class="lane"></div><div class="seq-msg kiri balik"><span class="no">4</span>cek signature + expired<br>200 OK</div><div class="lane"></div></div>
+                        </div>
+                        <div class="keep">
+                            <div>
+                                <h6>Disimpan di client</h6>
+                                <span class="chip chip-token">eyJhbGci...<br>{ id: 1, role: 'mahasiswa', exp: ... }</span>
+                            </div>
+                            <div>
+                                <h6>Disimpan di server</h6>
+                                <span class="chip chip-kosong">tidak ada catatan sama sekali</span>
+                                <span class="chip chip-isi">hanya JWT_SECRET (untuk cek signature)</span>
+                            </div>
+                        </div>
+                        <div class="vs-foot"><strong>Konsekuensi:</strong> server mana pun yang punya secret bisa memverifikasi. Tetapi server tidak bisa &ldquo;mencabut&rdquo; token yang sudah beredar.</div>
+                    </div>
+                </div>
+
+                <h3>2.2 Simulator: Sesi vs Token Saat Server Bermasalah</h3>
+                <p>Di aplikasi nyata sering ada <strong>lebih dari satu server</strong> di belakang load balancer, dan server kadang restart. Simulator di bawah memperlihatkan apa yang terjadi pada tiga rancangan. Coba urutan ini pada tiap mode: <em>Login</em> &rarr; <em>Request ke Server B</em> &rarr; <em>Restart Server A</em> &rarr; <em>Cabut akses</em> &rarr; <em>Maju 3 jam</em>, lalu bandingkan.</p>
+
+                <div class="sim" id="sim">
+                    <h5>Coba Langsung: Dua Server, Tiga Rancangan</h5>
+                    <p class="hint">Login selalu diarahkan ke Server A. Request berikutnya boleh ke Server A atau B. Ini hanya simulasi di browser, bukan server sungguhan.</p>
+                    <div class="sim-mode" id="simMode"></div>
+                    <div class="sim-stage" id="simStage"></div>
+                    <div class="sim-actions" id="simActions"></div>
+                    <div class="sim-log" id="simLog"></div>
+                </div>
+
+                <table>
+                    <tr><th>Kejadian</th><th>Sesi (memori tiap server)</th><th>Sesi (store bersama)</th><th>Token (JWT)</th></tr>
+                    <tr><td>Request ke Server B</td><td>401, B tidak punya catatan</td><td>200</td><td>200, B cukup punya secret</td></tr>
+                    <tr><td>Server A restart</td><td>401, catatan hilang</td><td>200, catatan ada di store</td><td>200, tidak ada yang hilang</td></tr>
+                    <tr><td>Cabut akses (logout, ban)</td><td>401 seketika</td><td>401 seketika</td><td><strong>Tetap 200</strong> sampai token expired</td></tr>
+                    <tr><td>Waktu berlalu 3 jam</td><td>401 bila TTL habis</td><td>401 bila TTL habis</td><td>401, token expired</td></tr>
+                    <tr><td>Komponen tambahan</td><td>Tidak ada</td><td>Redis / database sesi</td><td>Tidak ada</td></tr>
+                </table>
+
+                <h3>2.3 Mana yang Dipilih?</h3>
+                <p>Tidak ada yang selalu menang. Keduanya sah, dan masing-masing unggul di keadaan berbeda:</p>
+                <table>
+                    <tr><th>Pertimbangan</th><th>Sesi (cookie)</th><th>Token (JWT)</th></tr>
+                    <tr><td>Mencabut akses seketika</td><td><strong>Mudah</strong>, hapus catatannya</td><td>Sulit, perlu daftar cabut atau token berumur pendek</td></tr>
+                    <tr><td>Beberapa server</td><td>Butuh store bersama</td><td><strong>Mudah</strong>, cukup bagikan secret</td></tr>
+                    <tr><td>Client selain browser (mobile, API lain)</td><td>Kurang pas (cookie milik browser)</td><td><strong>Pas</strong>, tinggal kirim header</td></tr>
+                    <tr><td>Frontend di domain berbeda (React di Pertemuan 11)</td><td>Rumit (cookie lintas domain, CORS)</td><td><strong>Alami</strong></td></tr>
+                    <tr><td>Aplikasi server-rendered satu domain (Laravel Blade)</td><td><strong>Pas</strong>, bawaan framework</td><td>Tidak perlu</td></tr>
+                </table>
+                <div class="info-box">
+                    <strong>Pilihan kita: token (JWT).</strong> Backend dan frontend di mata kuliah ini adalah dua proyek terpisah (React di Pertemuan 11), dan API yang sama bisa dipakai client lain. Itu kondisi di mana JWT paling pas. Harganya sudah terlihat di simulator: akses tidak bisa dicabut seketika. Karena itu token dibuat berumur pendek, dan Section 5 menunjukkan pola untuk menutup kelemahan itu.
+                </div>
+
+                <h3>2.4 Anatomi JWT</h3>
+                <p>Token JWT terdiri dari tiga bagian yang dipisah titik. Header dan payload hanyalah JSON yang di-encode dengan Base64, <strong>bukan dienkripsi</strong>. Bagian ketiga, <em>signature</em>, dihitung dari dua bagian pertama ditambah <code>JWT_SECRET</code>:</p>
+                <p style="font-family:'Consolas',monospace;font-size:0.85em;word-break:break-all;">
+                    <span class="jwt-part jwt-header">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="jwt-part jwt-payload">eyJpZCI6MSwicm9sZSI6Im1haGFzaXN3YSIsImV4cCI6NDEwMjQ0NDgwMH0</span>.<span class="jwt-part jwt-signature">jkvSx_dfgXgYYD2cG_VyB-3eyUZqGbi5UU7DCG5AcJ8</span>
+                </p>
+                <table>
+                    <tr><th>Bagian</th><th>Isi (setelah di-decode)</th><th>Bisa dibaca siapa saja?</th></tr>
+                    <tr><td class="jwt-header" style="border-radius:4px;padding:2px 8px;">Header</td><td><code>{"alg":"HS256","typ":"JWT"}</code> (algoritma untuk signature)</td><td>Ya</td></tr>
+                    <tr><td class="jwt-payload" style="border-radius:4px;padding:2px 8px;">Payload</td><td><code>{"id":1,"role":"mahasiswa","exp":4102444800}</code></td><td>Ya. <strong>Jangan taruh data rahasia di sini</strong></td></tr>
+                    <tr><td class="jwt-signature" style="border-radius:4px;padding:2px 8px;">Signature</td><td>HMAC-SHA256 dari <code>header.payload</code> dengan secret</td><td>Tidak bisa dibuat tanpa secret</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>JWT tidak rahasia, hanya tidak bisa dipalsukan.</strong> Siapa pun bisa membuka payload-nya. Yang dijamin signature adalah <em>keaslian</em>: kalau ada satu karakter payload yang diubah, signature tidak lagi cocok. Coba sendiri di lab di bawah.
+                </div>
+
+                <div class="jwtlab" id="jwtlab">
+                    <h5>Coba Langsung: Memalsukan Token</h5>
+                    <p style="margin:0 0 6px;font-size:.85em;color:#475569;">Server menerbitkan token untuk user biasa. Lalu &ldquo;penyerang&rdquo; mencoba mengubahnya jadi admin. Perhitungan HMAC-SHA256 di sini nyata (Web Crypto API), bukan pura-pura.</p>
+                    <label for="jlSecretServer">Secret di server (penyerang tidak tahu)</label>
+                    <input type="text" id="jlSecretServer" value="rahasia-belajar-pwl" autocomplete="off">
+                    <label for="jlToken">Token yang diterima server (boleh diedit langsung)</label>
+                    <textarea id="jlToken" rows="4" spellcheck="false"></textarea>
+                    <div class="jwt-tampil" id="jlTampil"></div>
+                    <div class="btns">
+                        <button type="button" id="jlBuat">1. Server menerbitkan token (user biasa)</button>
+                        <button type="button" id="jlAdmin" class="serang">2. Penyerang: ganti role jadi admin</button>
+                        <button type="button" id="jlTtd" class="serang">3. Penyerang: sign ulang dengan tebakan ini &rarr;</button>
+                    </div>
+                    <label for="jlSecretTebakan">Tebakan secret penyerang</label>
+                    <input type="text" id="jlSecretTebakan" value="tebakan-saya" autocomplete="off">
+                    <div class="jwt-bagian">
+                        <div><h6>Header</h6><pre id="jlHeader"></pre></div>
+                        <div><h6>Payload</h6><pre id="jlPayload"></pre></div>
+                    </div>
+                    <div class="verdict" id="jlVerdict"></div>
+                    <p style="margin:10px 0 0;font-size:.82em;color:#475569;">Percobaan lanjutan: isi &ldquo;Tebakan secret penyerang&rdquo; dengan secret yang sebenarnya, lalu klik tombol 3. Token palsu langsung valid. Itu sebabnya secret harus acak, panjang, dan tidak pernah bocor (dibahas lagi di Pertemuan 10).</p>
+                </div>
+
+                <h3>2.5 Tiga Skema Autentikasi pada HTTP</h3>
+                <p>JWT bukan satu-satunya cara menitipkan bukti identitas. Tiga skema berikut sama-sama dikirim lewat header <code>Authorization</code>:</p>
+                <table>
+                    <tr><th>Skema</th><th>Bentuk header</th><th>Kelemahan</th></tr>
+                    <tr><td><strong>Basic</strong></td><td><code>Authorization: Basic ZGljb2Rpbmc6cjRoYXNpYQ==</code></td><td>Isinya <code>user:password</code> yang hanya di-Base64, siapa pun bisa membukanya</td></tr>
+                    <tr><td><strong>API Key</strong></td><td><code>Authorization: Apikey 4a6eac5979a6...</code></td><td>Tidak punya masa berlaku; sekali bocor, berlaku selamanya</td></tr>
+                    <tr><td><strong>Bearer (token)</strong></td><td><code>Authorization: Bearer eyJhbGciOi...</code></td><td>Skema yang kita pakai</td></tr>
+                </table>
+                <p>Mungkin terasa janggal: proses <em>autentikasi</em> memakai header bernama <em>Authorization</em>. Itu warisan spesifikasi HTTP dan berlaku di semua bahasa dan framework. Bearer unggul karena yang dikirim bukan password, dan token punya masa expired, jadi kalaupun dicuri hanya berguna dalam jangka waktu terbatas.</p>
+                <div class="info-box">
+                    <strong>Ingat <code>x-api-key</code> dari Pertemuan 5?</strong> Itu adalah skema API Key versi sederhana (satu kunci untuk semua orang). Di Section 4 kita menggantinya dengan Bearer token, sehingga server tahu <em>siapa</em> pemilik request, bukan hanya &ldquo;request ini membawa kunci yang benar&rdquo;.
+                </div>
+            </section>
+
+            <section id="token-uji">
+                <h2>3. Token di Proyek Percobaan <span class="badge badge-important">Indikator 5.2</span></h2>
+
+                <p>Kembali ke <code>auth-uji</code>. Kita bangun versi token langkah demi langkah: buat dan periksa token, lalu buat satu endpoint yang memerlukan password dan satu endpoint yang terbuka. Versi lengkap &mdash; register, password ter-hash sungguhan, dan otorisasi berbasis role &mdash; baru dipasang ke data asli di Section 4.</p>
+
+                <h3>3.1 Siapkan Secret di <code>.env</code></h3>
+                <p>Signature dibuat dari <code>JWT_SECRET</code>. Nilai ini tidak boleh ada di kode, jadi simpan di <code>.env</code> (seperti <code>DATABASE_URL</code> di Pertemuan 6). Buat file <code>.env</code> di folder <code>auth-uji</code>:</p>
+<pre><code>JWT_SECRET=rahasia-belajar-pwl-ganti-di-produksi</code></pre>
+                <p>Untuk percobaan, kalimat ini cukup. Di Section 4 kita membuat secret yang benar-benar acak.</p>
+
+                <h3>3.2 Buat, Baca, dan Periksa Token</h3>
+                <p>Buat <code>token.js</code>. Lima percobaan dalam satu file: membuat token, membacanya tanpa secret, memverifikasinya, memalsukannya, dan menunggunya expired.</p>
+<pre><code><span class="comment">// token.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> <span class="variable">jwt</span> <span class="keyword">from</span> <span class="string">'jsonwebtoken'</span>;
+
+<span class="keyword">const</span> <span class="variable">secret</span> = <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_SECRET</span>;
+
+<span class="comment">// 1. Buat token</span>
+<span class="keyword">const</span> <span class="variable">token</span> = <span class="variable">jwt</span>.<span class="function">sign</span>({ <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">role</span>: <span class="string">'mahasiswa'</span> }, <span class="variable">secret</span>, { <span class="variable">expiresIn</span>: <span class="string">'2h'</span> });
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'token:'</span>, <span class="variable">token</span>);
+
+<span class="comment">// 2. Isi token bisa dibaca siapa saja, tanpa secret</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'decode:'</span>, <span class="variable">jwt</span>.<span class="function">decode</span>(<span class="variable">token</span>));
+
+<span class="comment">// 3. Verifikasi dengan secret yang benar</span>
+<span class="variable">console</span>.<span class="function">log</span>(<span class="string">'verify:'</span>, <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">token</span>, <span class="variable">secret</span>));
+
+<span class="comment">// 4. Token dipalsukan: payload diganti, signature dibiarkan</span>
+<span class="keyword">const</span> [<span class="variable">header</span>, , <span class="variable">signature</span>] = <span class="variable">token</span>.<span class="function">split</span>(<span class="string">'.'</span>);
+<span class="keyword">const</span> <span class="variable">payloadPalsu</span> = <span class="variable">Buffer</span>.<span class="keyword">from</span>(<span class="variable">JSON</span>.<span class="function">stringify</span>({ <span class="variable">id</span>: <span class="number">1</span>, <span class="variable">role</span>: <span class="string">'admin'</span> })).<span class="function">toString</span>(<span class="string">'base64url'</span>);
+<span class="keyword">const</span> <span class="variable">tokenPalsu</span> = <span class="string">`${header}.${payloadPalsu}.${signature}`</span>;
+<span class="keyword">try</span> {
+    <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">tokenPalsu</span>, <span class="variable">secret</span>);
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'token palsu ditolak:'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}
+
+<span class="comment">// 5. Token expired</span>
+<span class="keyword">const</span> <span class="variable">singkat</span> = <span class="variable">jwt</span>.<span class="function">sign</span>({ <span class="variable">id</span>: <span class="number">1</span> }, <span class="variable">secret</span>, { <span class="variable">expiresIn</span>: <span class="string">'1s'</span> });
+<span class="keyword">await</span> <span class="keyword">new</span> <span class="function">Promise</span>((<span class="variable">r</span>) <span class="operator">=&gt;</span> <span class="function">setTimeout</span>(<span class="variable">r</span>, <span class="number">1500</span>));
+<span class="keyword">try</span> {
+    <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">singkat</span>, <span class="variable">secret</span>);
+} <span class="keyword">catch</span> (<span class="variable">err</span>) {
+    <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'token expired ditolak:'</span>, <span class="variable">err</span>.<span class="variable">name</span>, <span class="string">'-'</span>, <span class="variable">err</span>.<span class="variable">message</span>);
+}</code></pre>
+<div class="terminal">$ node token.js
+token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6Im1haGFzaXN3YSIsImlhdCI6MTc5NDk1NDU2NywiZXhwIjoxNzk0OTYxNzY3fQ.yJ-AOjMPqJ8AW9ZkWjCQGCt-SO8UydGSVJQnqGdBk74
+decode: { id: 1, role: 'mahasiswa', iat: 1794954567, exp: 1794961767 }
+verify: { id: 1, role: 'mahasiswa', iat: 1794954567, exp: 1794961767 }
+token palsu ditolak: invalid signature
+token expired ditolak: TokenExpiredError - jwt expired</div>
+                <table>
+                    <tr><th>Fungsi</th><th>Tugasnya</th><th>Butuh secret?</th></tr>
+                    <tr><td><code>jwt.sign(payload, secret, opsi)</code></td><td>Membuat token. <code>iat</code> (waktu dibuat) dan <code>exp</code> (waktu expired) ditambahkan otomatis</td><td>Ya</td></tr>
+                    <tr><td><code>jwt.decode(token)</code></td><td>Hanya membaca payload. <strong>Tidak memeriksa apa pun</strong></td><td>Tidak</td></tr>
+                    <tr><td><code>jwt.verify(token, secret)</code></td><td>Memeriksa signature dan expired. Melempar error bila gagal</td><td>Ya</td></tr>
+                </table>
+                <div class="warning-box">
+                    <strong>Jangan pernah mengambil keputusan dari <code>jwt.decode</code>.</strong> Hasil decode di atas muncul tanpa secret sama sekali, artinya payload bisa dibaca dan ditiru siapa saja. Yang boleh dipercaya hanya hasil <code>jwt.verify</code>.
+                </div>
+                <p><code>iat</code> dan <code>exp</code> berupa detik sejak 1 Januari 1970 (<em>Unix time</em>). <code>exp - iat = 7200</code> detik = 2 jam, sesuai <code>expiresIn: '2h'</code>.</p>
+
+                <h3>3.3 Satu Endpoint Memerlukan Password, Satu Endpoint Terbuka</h3>
+                <p>Sekarang implementasikan sebagai server. Buat <code>server.js</code>. Supaya fokusnya murni pada mekanisme token, password-nya untuk sementara ditulis langsung di kode (satu nilai tetap, bukan per user) &mdash; Section 4 baru menggantinya dengan hash sungguhan yang tersimpan di database:</p>
+<pre><code><span class="comment">// server.js</span>
+<span class="keyword">import</span> <span class="string">'dotenv/config'</span>;
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> <span class="variable">jwt</span> <span class="keyword">from</span> <span class="string">'jsonwebtoken'</span>;
+
+<span class="keyword">const</span> <span class="variable">app</span> = <span class="function">express</span>();
+<span class="variable">app</span>.<span class="function">use</span>(<span class="variable">express</span>.<span class="function">json</span>());
+
+<span class="keyword">const</span> <span class="variable">PASSWORD</span> = <span class="string">'rahasia123'</span>;   <span class="comment">// sementara satu nilai tetap, bukan per user</span>
+
+<span class="variable">app</span>.<span class="function">post</span>(<span class="string">'/login'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="keyword">if</span> (<span class="variable">req</span>.<span class="variable">body</span>.<span class="variable">password</span> <span class="operator">!==</span> <span class="variable">PASSWORD</span>) {
+        <span class="keyword">return</span> <span class="variable">res</span>.<span class="function">status</span>(<span class="number">401</span>).<span class="function">json</span>({ <span class="variable">error</span>: <span class="string">'Password salah'</span> });
+    }
+
+    <span class="keyword">const</span> <span class="variable">token</span> = <span class="variable">jwt</span>.<span class="function">sign</span>({ <span class="variable">user</span>: <span class="string">'andi'</span> }, <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_SECRET</span>, { <span class="variable">expiresIn</span>: <span class="string">'2h'</span> });
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">token</span> });
+});
+
+<span class="keyword">function</span> <span class="function">butuhLogin</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">header</span> = <span class="variable">req</span>.<span class="variable">headers</span>.<span class="variable">authorization</span>;           <span class="comment">// "Bearer eyJhbGci..."</span>
+
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">header</span><span class="operator">?</span>.<span class="function">startsWith</span>(<span class="string">'Bearer '</span>)) {
+        <span class="keyword">return</span> <span class="variable">res</span>.<span class="function">status</span>(<span class="number">401</span>).<span class="function">json</span>({ <span class="variable">error</span>: <span class="string">'Token diperlukan'</span> });
+    }
+
+    <span class="keyword">try</span> {
+        <span class="variable">req</span>.<span class="variable">user</span> = <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">header</span>.<span class="function">slice</span>(<span class="number">7</span>), <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_SECRET</span>);   <span class="comment">// { user, iat, exp }</span>
+        <span class="function">next</span>();
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="variable">res</span>.<span class="function">status</span>(<span class="number">401</span>).<span class="function">json</span>({ <span class="variable">error</span>: <span class="string">'Token tidak valid atau expired'</span> });
+    }
+}
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/rahasia'</span>, <span class="variable">butuhLogin</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">pesan</span>: <span class="string">`Halo ${req.user.user}, ini isi yang butuh password.`</span> });
+});
+
+<span class="variable">app</span>.<span class="function">get</span>(<span class="string">'/publik'</span>, (<span class="variable">req</span>, <span class="variable">res</span>) <span class="operator">=&gt;</span> {
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">pesan</span>: <span class="string">'Siapa pun boleh baca ini, tanpa password.'</span> });
+});
+
+<span class="variable">app</span>.<span class="function">listen</span>(<span class="number">3100</span>, () <span class="operator">=&gt;</span> <span class="variable">console</span>.<span class="function">log</span>(<span class="string">'Server jalan di http://localhost:3100'</span>));</code></pre>
+                <p>Dua hal yang perlu dipahami dari kode ini:</p>
+                <ul>
+                    <li><strong><code>butuhLogin</code> adalah middleware</strong> (Pertemuan 5). Ia membaca header, memanggil <code>jwt.verify</code>, lalu menaruh hasilnya di <code>req.user</code> supaya handler berikutnya tahu siapa pemilik request. <code>header.slice(7)</code> membuang awalan <code>Bearer </code> (7 karakter).</li>
+                    <li>Bedanya ada di <code>/publik</code>: <strong>tidak dipasangi <code>butuhLogin</code> sama sekali</strong>. <code>/rahasia</code> memasangnya sebagai argumen kedua, sebelum handler.</li>
+                </ul>
+
+                <p>Jalankan <code>node server.js</code>, lalu uji dengan Postman dari jendela lain.</p>
+
+                <p><code>GET /publik</code> &mdash; tidak perlu apa pun di tab Headers:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/publik</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "pesan": "Siapa pun boleh baca ini, tanpa password."
+}</div></div>
+
+                <p><code>GET /rahasia</code> &mdash; dicoba dulu tanpa token sama sekali:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; belum ada apa pun di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/rahasia</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">401 Unauthorized</span></div><div class="req-resbody">{
+  "error": "Token diperlukan"
+}</div></div>
+
+                <p><code>POST /login</code> dengan password salah di tab Body &rarr; raw &rarr; JSON:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">http://localhost:3100/login</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "password": "salah"
+}</div><div class="req-res"><span>Response</span><span class="st s4">401 Unauthorized</span></div><div class="req-resbody">{
+  "error": "Password salah"
+}</div></div>
+
+                <p>Password yang benar &mdash; <strong>salin nilai <code>token</code> dari respons ini</strong>, akan dipakai di dua request berikutnya:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">http://localhost:3100/login</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "password": "rahasia123"
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYW5kaSIsImlhdCI6MTc5NTAwOTc1OSwiZXhwIjoxNzk1MDE2OTU5fQ.FBTRQb86L9sk_NPij-ydoSX1CWz39KWR1QROtuuNcG4"
+}</div></div>
+
+                <p><code>GET /rahasia</code> lagi, kali ini dengan token &mdash; isi tab <strong>Headers</strong>: key <code>Authorization</code>, value <code>Bearer eyJhbGciOiJIUzI1NiIs...</code> (token kalian):</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; header Authorization diisi di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/rahasia</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "pesan": "Halo andi, ini isi yang butuh password."
+}</div></div>
+
+                <p>Coba lagi dengan token yang asal diketik, bukan hasil login:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; Authorization: Bearer asal.ketik.token)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/rahasia</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">401 Unauthorized</span></div><div class="req-resbody">{
+  "error": "Token tidak valid atau expired"
+}</div></div>
+
+                <h3>3.4 Bukti: Token Tidak Perlu Catatan di Server</h3>
+                <p>Ingat simulator di 2.2: pada mode sesi (memori), restart Server A membuat sesinya hilang. Sekarang buktikan token tidak begitu. Simpan token hasil login, hentikan server, jalankan lagi, lalu pakai token yang sama:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; Authorization: Bearer eyJhbGci...(token sebelum restart))</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/rahasia</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "pesan": "Halo andi, ini isi yang butuh password."
+}</div></div>
+                <p>Server yang baru tidak kehilangan apa pun (bahkan <code>PASSWORD</code> dan logikanya sama, karena ditulis di kode, bukan disimpan saat runtime), tetapi yang membuktikan <em>stateless</em> sebenarnya adalah ini: <code>/rahasia</code> tidak mencatat token siapa pun di mana pun &mdash; ia hanya membutuhkan <code>JWT_SECRET</code> untuk memeriksa signature-nya. Token lama tetap diterima tanpa server perlu "mengingat" pernah menerbitkannya.</p>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> kalian sudah punya <code>hash.js</code>, <code>token.js</code>, dan <code>server.js</code> yang berjalan: <code>/publik</code> bisa diakses siapa saja, <code>/login</code> menolak password salah dengan 401 dan menerbitkan token kalau benar, <code>/rahasia</code> menolak request tanpa token dengan 401 tapi menerima token yang valid. Mekanismenya sudah terlihat bekerja; Section 4 memasangnya ke data sungguhan.
+                </div>
+            </section>
+
+            <section id="gabung">
+                <h2>4. Gabungkan ke <code>api-mahasiswa</code> <span class="badge badge-important">Indikator 5.1 &ndash; 5.3</span></h2>
+
+                <p>Sekarang kita pasang pola password&rarr;token&rarr;endpoint-terproteksi itu ke <code>api-mahasiswa</code> dari Pertemuan 7 (MySQL + Prisma, arsitektur berlapis) &mdash; sekaligus melengkapi dua hal yang sengaja dilewatkan di percobaan: password di-<strong>hash</strong> sungguhan dan tersimpan per user di database (bukan satu nilai tetap di kode), dan akses dibatasi per <strong>role</strong> (bukan sekadar "login atau tidak"). Potongan kode <code>server.js</code> tidak disalin utuh; tiap bagiannya kita taruh di lapis yang sesuai, persis seperti pembagian di Pertemuan 5:</p>
+
+                <h3>4.1 Peta Perubahan</h3>
+                <div class="layers">
+                    <div class="layer"><div class="layer-nama">Database</div><div class="layer-isi"><span class="file baru">tabel users</span><span class="file ubah">prisma/schema.prisma</span><span class="file ubah">.env (JWT_SECRET)</span></div></div>
+                    <div class="layer"><div class="layer-nama">Data</div><div class="layer-isi"><span class="file baru">src/data/user.data.js</span></div></div>
+                    <div class="layer"><div class="layer-nama">Service</div><div class="layer-isi"><span class="file baru">src/services/auth.service.js</span><span class="file">register, login, hash, token</span></div></div>
+                    <div class="layer"><div class="layer-nama">Controller</div><div class="layer-isi"><span class="file baru">src/controllers/auth.controller.js</span></div></div>
+                    <div class="layer"><div class="layer-nama">Routes &amp; middleware</div><div class="layer-isi"><span class="file baru">src/routes/auth.routes.js</span><span class="file baru">src/validators/auth.validator.js</span><span class="file baru">src/middleware/auth.js</span><span class="file ubah">src/routes/mahasiswa.routes.js</span><span class="file ubah">index.js</span><span class="file hapus">src/middleware/cekApiKey.js</span></div></div>
+                </div>
+                <p class="legenda"><span class="file baru">baru</span><span class="file ubah">diubah</span><span class="file hapus">dihapus</span></p>
+                <p>Pola yang sama dengan <code>mahasiswa</code>: route memanggil controller, controller memanggil service, service memanggil data, data memanggil Prisma. Yang berbeda hanya isi service (hash dan token) dan middleware di route.</p>
+
+                <h3>4.2 Tabel <code>users</code></h3>
+                <p>Buka <code>prisma/schema.prisma</code> dan tambahkan model <code>User</code> di bagian bawah. Model yang sudah ada tidak diubah:</p>
+<pre><code>model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @db.VarChar(100)
+  role         String   @default("mahasiswa") @db.VarChar(20)
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}</code></pre>
+                <p>Nama kolomnya <code>passwordHash</code>, bukan <code>password</code>, supaya jelas bahwa isinya hash. <code>@unique</code> pada <code>email</code> mencegah dua akun dengan email yang sama (di level database). Panjang 100 cukup, karena hash bcrypt selalu 60 karakter. Install library, lalu migrasikan:</p>
+<div class="terminal">$ npm install bcrypt jsonwebtoken
+$ npx prisma migrate dev --name tambah_user
+$ npx prisma generate</div>
+                <p>Prisma membuat file <code>migration.sql</code> baru. Isinya SQL biasa yang bisa dibaca:</p>
+<pre><code>-- CreateTable
+CREATE TABLE `users` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `email` VARCHAR(100) NOT NULL,
+    `passwordHash` VARCHAR(100) NOT NULL,
+    `role` VARCHAR(20) NOT NULL DEFAULT 'mahasiswa',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    UNIQUE INDEX `users_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;</code></pre>
+                <p>Buka phpMyAdmin: tabel <code>users</code> sudah ada dan masih kosong.</p>
+
+                <h3>4.3 Buat JWT_SECRET yang Acak</h3>
+                <p>Di <code>auth-uji</code> kita memakai kalimat biasa. Untuk proyek sungguhan, minta Node membuatkan 32 byte acak:</p>
+<div class="terminal">$ node -p "require('node:crypto').randomBytes(32).toString('hex')"
+d035c54c136b3f7d8e4b68ff77d1d828f3b5a24c20bb0b564c31b5573fd2a9dd</div>
+                <p>Buka <code>.env</code> di editor, tambahkan baris baru dengan hasil perintah tadi (hasil milik kalian pasti berbeda), lalu simpan:</p>
+<pre><code>DATABASE_URL="..."                      (baris milik kalian, jangan diubah)
+JWT_SECRET=isi-dengan-hasil-perintah-di-atas</code></pre>
+                <div class="warning-box">
+                    <strong>Tambahkan lewat editor, jangan lewat <code>echo ... &gt;&gt; .env</code>.</strong> Kalau baris terakhir <code>.env</code> tidak diakhiri baris baru, perintah itu akan menempelkan <code>JWT_SECRET</code> di ujung baris <code>DATABASE_URL</code> dan koneksi database rusak.
+                </div>
+
+                <h3>4.4 Lapis Data, Validasi, Service</h3>
+                <p>Lapis data hanya berbicara dengan Prisma. Di <code>simpan</code>, <code>select</code> sengaja <strong>tidak memuat <code>passwordHash</code></strong>, supaya hash tidak pernah ikut terkirim ke client:</p>
+<pre><code><span class="comment">// src/data/user.data.js</span>
+<span class="keyword">import</span> { <span class="variable">prisma</span> } <span class="keyword">from</span> <span class="string">'../lib/prisma.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariByEmail</span>(<span class="variable">email</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">user</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">email</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpan</span>({ <span class="variable">email</span>, <span class="variable">passwordHash</span> }) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">user</span>.<span class="function">create</span>({
+        <span class="variable">data</span>: { <span class="variable">email</span>, <span class="variable">passwordHash</span> },
+        <span class="variable">select</span>: { <span class="variable">id</span>: <span class="keyword">true</span>, <span class="variable">email</span>: <span class="keyword">true</span>, <span class="variable">role</span>: <span class="keyword">true</span> },   <span class="comment">// passwordHash tidak ikut dikembalikan</span>
+    });
+}</code></pre>
+                <p>Validator memakai Joi seperti di Pertemuan 5. Hanya <code>email</code> dan <code>password</code> yang diizinkan. Field lain, termasuk <code>role</code>, akan ditolak, sehingga user tidak bisa menjadikan dirinya admin saat register:</p>
+<pre><code><span class="comment">// src/validators/auth.validator.js</span>
+<span class="keyword">import</span> <span class="variable">Joi</span> <span class="keyword">from</span> <span class="string">'joi'</span>;
+
+<span class="keyword">export</span> <span class="keyword">const</span> <span class="variable">skemaAuth</span> = <span class="variable">Joi</span>.<span class="function">object</span>({
+    <span class="variable">email</span>:    <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">email</span>().<span class="function">max</span>(<span class="number">100</span>).<span class="function">required</span>(),
+    <span class="variable">password</span>: <span class="variable">Joi</span>.<span class="function">string</span>().<span class="function">min</span>(<span class="number">8</span>).<span class="function">max</span>(<span class="number">72</span>).<span class="function">required</span>()
+});</code></pre>
+                <p><code>register</code> adalah fungsi baru &mdash; pada percobaan, password-nya satu nilai tetap di kode, tidak pernah di-hash atau disimpan per user. <code>login</code> memakai pola yang sama dengan <code>server.js</code> tadi (periksa dulu, baru terbitkan token), hanya sekarang dibandingkan ke hash di database lewat <code>bcrypt.compare</code>, bukan ke satu nilai tetap, dan payload tokennya menyertakan <code>role</code> karena akan dipakai middleware otorisasi di 4.6. Keduanya memakai <code>AppError</code> (Pertemuan 5) dan lapis data:</p>
+<pre><code><span class="comment">// src/services/auth.service.js</span>
+<span class="keyword">import</span> <span class="variable">bcrypt</span> <span class="keyword">from</span> <span class="string">'bcrypt'</span>;
+<span class="keyword">import</span> <span class="variable">jwt</span> <span class="keyword">from</span> <span class="string">'jsonwebtoken'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">data</span> <span class="keyword">from</span> <span class="string">'../data/user.data.js'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">register</span>({ <span class="variable">email</span>, <span class="variable">password</span> }) {
+    <span class="keyword">if</span> (<span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByEmail</span>(<span class="variable">email</span>)) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">409</span>, <span class="string">'Email sudah terdaftar'</span>, <span class="string">'EMAIL_DUPLIKAT'</span>);
+    }
+
+    <span class="keyword">const</span> <span class="variable">passwordHash</span> = <span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">hash</span>(<span class="variable">password</span>, <span class="number">10</span>);
+    <span class="keyword">return</span> <span class="variable">data</span>.<span class="function">simpan</span>({ <span class="variable">email</span>, <span class="variable">passwordHash</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">login</span>({ <span class="variable">email</span>, <span class="variable">password</span> }) {
+    <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByEmail</span>(<span class="variable">email</span>);
+    <span class="keyword">const</span> <span class="variable">cocok</span> = <span class="variable">user</span> <span class="operator">&amp;&amp;</span> (<span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">compare</span>(<span class="variable">password</span>, <span class="variable">user</span>.<span class="variable">passwordHash</span>));
+
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">cocok</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Email atau password salah'</span>, <span class="string">'LOGIN_GAGAL'</span>);
+    }
+
+    <span class="keyword">const</span> <span class="variable">token</span> = <span class="variable">jwt</span>.<span class="function">sign</span>(
+        { <span class="variable">id</span>: <span class="variable">user</span>.<span class="variable">id</span>, <span class="variable">role</span>: <span class="variable">user</span>.<span class="variable">role</span> },
+        <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_SECRET</span>,
+        { <span class="variable">expiresIn</span>: <span class="string">'2h'</span> },
+    );
+    <span class="keyword">return</span> { <span class="variable">token</span> };
+}</code></pre>
+
+                <h3>4.5 Controller, Route, dan <code>index.js</code></h3>
+<pre><code><span class="comment">// src/controllers/auth.controller.js</span>
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">service</span> <span class="keyword">from</span> <span class="string">'../services/auth.service.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">register</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">register</span>(<span class="variable">req</span>.<span class="variable">body</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">201</span>).<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">user</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">login</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">const</span> <span class="variable">hasil</span> = <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">login</span>(<span class="variable">req</span>.<span class="variable">body</span>);
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">hasil</span> });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">saya</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="variable">req</span>.<span class="variable">user</span> });
+}</code></pre>
+<pre><code><span class="comment">// src/routes/auth.routes.js</span>
+<span class="keyword">import</span> <span class="variable">express</span> <span class="keyword">from</span> <span class="string">'express'</span>;
+<span class="keyword">import</span> * <span class="variable">as</span> <span class="variable">ctrl</span> <span class="keyword">from</span> <span class="string">'../controllers/auth.controller.js'</span>;
+<span class="keyword">import</span> { <span class="variable">validasi</span> } <span class="keyword">from</span> <span class="string">'../middleware/validasi.js'</span>;
+<span class="keyword">import</span> { <span class="variable">butuhLogin</span> } <span class="keyword">from</span> <span class="string">'../middleware/auth.js'</span>;
+<span class="keyword">import</span> { <span class="variable">skemaAuth</span> } <span class="keyword">from</span> <span class="string">'../validators/auth.validator.js'</span>;
+
+<span class="keyword">const</span> <span class="variable">router</span> = <span class="variable">express</span>.<span class="function">Router</span>();
+
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/register'</span>, <span class="function">validasi</span>(<span class="variable">skemaAuth</span>), <span class="variable">ctrl</span>.<span class="variable">register</span>);
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/login'</span>, <span class="function">validasi</span>(<span class="variable">skemaAuth</span>), <span class="variable">ctrl</span>.<span class="variable">login</span>);
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/saya'</span>, <span class="variable">butuhLogin</span>, <span class="variable">ctrl</span>.<span class="variable">saya</span>);
+
+<span class="keyword">export</span> <span class="keyword">default</span> <span class="variable">router</span>;</code></pre>
+                <p>Pasang di <code>index.js</code>, di atas router mahasiswa:</p>
+<pre><code><span class="comment">// index.js</span>
+<span class="keyword">import</span> <span class="variable">authRoutes</span> <span class="keyword">from</span> <span class="string">'./src/routes/auth.routes.js'</span>;
+
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/auth'</span>, <span class="variable">authRoutes</span>);                <span class="comment">// ← baru</span>
+<span class="variable">app</span>.<span class="function">use</span>(<span class="string">'/mahasiswa'</span>, <span class="variable">mahasiswaRoutes</span>);</code></pre>
+
+                <h3>4.6 Autentikasi vs Otorisasi: Middleware <code>butuhRole</code></h3>
+                <p>Satu middleware lagi diperlukan di sini, dan sebelum menulisnya ada satu bedanya dulu yang wajib jelas. Dua istilah ini sering tertukar, padahal menjawab pertanyaan berbeda dan menghasilkan status berbeda:</p>
+                <table>
+                    <tr><th>Istilah</th><th>Pertanyaan</th><th>Gagal berarti</th></tr>
+                    <tr><td><strong>Autentikasi</strong></td><td>&ldquo;Siapa kamu?&rdquo;</td><td><code>401 Unauthorized</code>: token tidak ada, rusak, atau expired</td></tr>
+                    <tr><td><strong>Otorisasi</strong></td><td>&ldquo;Kamu boleh melakukan ini?&rdquo;</td><td><code>403 Forbidden</code>: sudah dikenali, tapi tidak berhak</td></tr>
+                </table>
+                <p><code>butuhLogin</code> (dari Section 3) hanya menjawab yang pertama. Untuk yang kedua kita tulis middleware baru, <code>butuhRole</code>, dengan satu perbedaan dari percobaan: error dikirim lewat <code>next(new AppError(...))</code> supaya format jawabannya sama dengan error lain di API (lewat <code>errorHandler</code> Pertemuan 5).</p>
+<pre><code><span class="comment">// src/middleware/auth.js</span>
+<span class="keyword">import</span> <span class="variable">jwt</span> <span class="keyword">from</span> <span class="string">'jsonwebtoken'</span>;
+<span class="keyword">import</span> { <span class="variable">AppError</span> } <span class="keyword">from</span> <span class="string">'../utils/AppError.js'</span>;
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">butuhLogin</span>(<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) {
+    <span class="keyword">const</span> <span class="variable">header</span> = <span class="variable">req</span>.<span class="variable">headers</span>.<span class="variable">authorization</span>;             <span class="comment">// "Bearer eyJhbGci..."</span>
+
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">header</span><span class="operator">?</span>.<span class="function">startsWith</span>(<span class="string">'Bearer '</span>)) {
+        <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Token diperlukan'</span>, <span class="string">'TOKEN_DIPERLUKAN'</span>));
+    }
+
+    <span class="keyword">try</span> {
+        <span class="variable">req</span>.<span class="variable">user</span> = <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">header</span>.<span class="function">slice</span>(<span class="number">7</span>), <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_SECRET</span>);   <span class="comment">// { id, role, iat, exp }</span>
+        <span class="function">next</span>();
+    } <span class="keyword">catch</span> (<span class="variable">err</span>) {
+        <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Token tidak valid atau expired'</span>, <span class="string">'TOKEN_TIDAK_VALID'</span>));
+    }
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">butuhRole</span>(...<span class="variable">roleDiizinkan</span>) {
+    <span class="keyword">return</span> (<span class="variable">req</span>, <span class="variable">res</span>, <span class="variable">next</span>) <span class="operator">=&gt;</span> {
+        <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">roleDiizinkan</span>.<span class="function">includes</span>(<span class="variable">req</span>.<span class="variable">user</span>.<span class="variable">role</span>)) {
+            <span class="keyword">return</span> <span class="function">next</span>(<span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">403</span>, <span class="string">'Tidak punya izin untuk aksi ini'</span>, <span class="string">'DILARANG'</span>));
+        }
+        <span class="function">next</span>();
+    };
+}</code></pre>
+                <p><code>butuhRole</code> adalah <em>fungsi yang mengembalikan middleware</em>: kita memberi daftar role yang diizinkan (misalnya <code>butuhRole('admin')</code>), dan hasilnya middleware biasa. Urutan pemasangannya penting, karena <code>butuhRole</code> membaca <code>req.user</code> yang baru diisi oleh <code>butuhLogin</code>:</p>
+
+                <div class="chain">
+                    <div class="link ujung">Request<small>DELETE /mahasiswa/5</small></div>
+                    <div class="arr">&rarr;</div>
+                    <div class="link">butuhLogin<small>token valid?</small><span class="x">tidak &rarr; 401</span></div>
+                    <div class="arr">&rarr;</div>
+                    <div class="link">butuhRole('admin')<small>role = admin?</small><span class="x">tidak &rarr; 403</span></div>
+                    <div class="arr">&rarr;</div>
+                    <div class="link ok">Handler<small>204 No Content</small></div>
+                </div>
+
+                <h3>4.7 Ganti <code>cekApiKey</code> dengan Login dan Role</h3>
+                <p>Di Pertemuan 5, penulisan (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>) dijaga <code>cekApiKey</code>. Sekarang kita ganti dengan aturan yang lebih tepat:</p>
+                <table>
+                    <tr><th>Endpoint</th><th>Dulu</th><th>Sekarang</th></tr>
+                    <tr><td><code>GET /mahasiswa</code>, <code>GET /mahasiswa/:id</code></td><td>Terbuka</td><td>Wajib login (role apa pun)</td></tr>
+                    <tr><td><code>POST /mahasiswa</code>, <code>PUT /mahasiswa/:id</code></td><td><code>x-api-key</code></td><td>Login + role <code>admin</code> atau <code>dosen</code></td></tr>
+                    <tr><td><code>DELETE /mahasiswa/:id</code></td><td><code>x-api-key</code></td><td>Login + role <code>admin</code></td></tr>
+                </table>
+<pre><code><span class="comment">// src/routes/mahasiswa.routes.js</span>
+<span class="keyword">import</span> { <span class="variable">butuhLogin</span>, <span class="variable">butuhRole</span> } <span class="keyword">from</span> <span class="string">'../middleware/auth.js'</span>;     <span class="comment">// ← ganti import cekApiKey</span>
+
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/'</span>, <span class="variable">butuhLogin</span>, <span class="variable">ctrl</span>.<span class="variable">daftar</span>);
+<span class="variable">router</span>.<span class="function">get</span>(<span class="string">'/:id'</span>, <span class="variable">butuhLogin</span>, <span class="variable">ctrl</span>.<span class="variable">detail</span>);
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/'</span>, <span class="variable">butuhLogin</span>, <span class="function">butuhRole</span>(<span class="string">'admin'</span>, <span class="string">'dosen'</span>), <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), <span class="variable">ctrl</span>.<span class="variable">buat</span>);
+<span class="variable">router</span>.<span class="function">put</span>(<span class="string">'/:id'</span>, <span class="variable">butuhLogin</span>, <span class="function">butuhRole</span>(<span class="string">'admin'</span>, <span class="string">'dosen'</span>), <span class="function">validasi</span>(<span class="variable">skemaMahasiswa</span>), <span class="variable">ctrl</span>.<span class="variable">ubah</span>);
+<span class="variable">router</span>.<span class="keyword">delete</span>(<span class="string">'/:id'</span>, <span class="variable">butuhLogin</span>, <span class="function">butuhRole</span>(<span class="string">'admin'</span>), <span class="variable">ctrl</span>.<span class="variable">hapus</span>);</code></pre>
+                <p>Baris <code>router.use(...)</code> pembuat log di file itu tidak berubah. <code>cekApiKey.js</code> sekarang tidak dipakai lagi dan boleh dihapus. Kalau di <code>mahasiswa.routes.js</code> kalian sudah menambahkan route lain dari Pertemuan 7 (paginasi, filter, dsb.), pola penggantiannya sama: tambahkan <code>butuhLogin</code> di depan, dan <code>butuhRole(...)</code> pada aksi yang mengubah data.</p>
+
+                <h3>4.8 Uji dari Awal Sampai Akhir</h3>
+                <p>Jalankan <code>npm run dev</code>, lalu uji dengan Postman.</p>
+
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">localhost:3000/auth/register</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "email": "andi@unram.ac.id",
+  "password": "rahasia123"
+}</div><div class="req-res"><span>Response</span><span class="st s2">201 Created</span></div><div class="req-resbody">{
+  "data": { "id": 1, "email": "andi@unram.ac.id", "role": "mahasiswa" }
+}</div></div>
+
+                <p>Kirim lagi request yang <strong>sama persis</strong> (klik Send sekali lagi):</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; body sama dengan request sebelumnya)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">localhost:3000/auth/register</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">409 Conflict</span></div><div class="req-resbody">{
+  "error": { "pesan": "Email sudah terdaftar", "kode": "EMAIL_DUPLIKAT" }
+}</div></div>
+
+                <p>Coba selipkan <code>role</code> di body &mdash; validator di 4.4 menolaknya:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">localhost:3000/auth/register</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "email": "dosen@unram.ac.id",
+  "password": "rahasia123",
+  "role": "admin"
+}</div><div class="req-res"><span>Response</span><span class="st s4">422 Unprocessable Entity</span></div><div class="req-resbody">{
+  "error": { "pesan": "\"role\" is not allowed", "kode": "VALIDATION_ERROR" }
+}</div></div>
+
+                <p>Login dengan password yang salah:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">localhost:3000/auth/login</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "email": "andi@unram.ac.id",
+  "password": "salah12345"
+}</div><div class="req-res"><span>Response</span><span class="st s4">401 Unauthorized</span></div><div class="req-resbody">{
+  "error": { "pesan": "Email atau password salah", "kode": "LOGIN_GAGAL" }
+}</div></div>
+
+                <p>Buka phpMyAdmin, tabel <code>users</code>. Isi kolom <code>passwordHash</code> adalah hash, bukan <code>rahasia123</code>:</p>
+                <table>
+                    <tr><th>id</th><th>email</th><th>passwordHash</th><th>role</th></tr>
+                    <tr><td>1</td><td>andi@unram.ac.id</td><td>$2b$10$S2uX.dtxNWGSU...</td><td>mahasiswa</td></tr>
+                </table>
+                <p>Login dengan password yang benar &mdash; <strong>salin <code>data.token</code> dari respons ini</strong>, akan dipakai di dua request berikutnya:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#2563eb">POST</span><span class="req-url">localhost:3000/auth/login</span><span class="req-send">Send</span></div><div class="req-tabs"><span>Params</span><span>Headers</span><span class="on">Body</span></div><div class="req-pane">raw   JSON
+
+{
+  "email": "andi@unram.ac.id",
+  "password": "rahasia123"
+}</div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": { "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6..." }
+}</div></div>
+
+                <p>Akses <code>mahasiswa</code> tanpa token dulu:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; belum ada apa pun di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">localhost:3000/mahasiswa/1</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">401 Unauthorized</span></div><div class="req-resbody">{
+  "error": { "pesan": "Token diperlukan", "kode": "TOKEN_DIPERLUKAN" }
+}</div></div>
+
+                <p>Lalu dengan token &mdash; isi tab <strong>Headers</strong>: key <code>Authorization</code>, value <code>Bearer</code> + token dari respons login:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; header Authorization diisi di tab Headers)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">localhost:3000/mahasiswa/1</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
+  "data": { "id": 1, "nim": "F1D021001", "nama": "Andi", "email": null, "ipk": 3.75, "semester": 6, "createdAt": "..." }
+}</div></div>
+
+                <p>Terakhir, hapus dengan token milik Andi (role <code>mahasiswa</code>):</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; header Authorization: Bearer TOKEN milik Andi)</div><div class="req-bar"><span class="req-method" style="color:#dc2626">DELETE</span><span class="req-url">localhost:3000/mahasiswa/25</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">403 Forbidden</span></div><div class="req-resbody">{
+  "error": { "pesan": "Tidak punya izin untuk aksi ini", "kode": "DILARANG" }
+}</div></div>
+
+                <h4>Membuat Admin Pertama</h4>
+                <p>Semua akun baru punya role <code>mahasiswa</code>, dan tidak ada endpoint untuk menjadi admin (itu memang disengaja). Admin pertama dibuat langsung di database. Di phpMyAdmin, tab <strong>SQL</strong>, pilih database <code>api_mahasiswa</code>:</p>
+<pre><code>UPDATE users SET role = 'admin' WHERE email = 'andi@unram.ac.id';</code></pre>
+                <p>Kirim lagi <code>DELETE</code> yang sama di Postman, dengan <strong>token yang sama</strong> (belum login ulang):</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; Authorization: Bearer TOKEN yang sama seperti sebelumnya)</div><div class="req-bar"><span class="req-method" style="color:#dc2626">DELETE</span><span class="req-url">localhost:3000/mahasiswa/25</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s4">403 Forbidden</span></div><div class="req-resbody">{
+  "error": { "pesan": "Tidak punya izin untuk aksi ini", "kode": "DILARANG" }
+}</div></div>
+                <p>Masih ditolak. Penyebabnya: <code>role</code> yang dibaca <code>butuhRole</code> berasal dari <strong>payload token</strong>, yang dicatat saat login, bukan dari database saat ini. Token itu adalah &ldquo;foto&rdquo; saat login. Kirim lagi request <strong>Login</strong> di Postman untuk mendapat token baru, lalu pakai token itu:</p>
+<div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi; Authorization: Bearer TOKEN_BARU, hasil login ulang)</div><div class="req-bar"><span class="req-method" style="color:#dc2626">DELETE</span><span class="req-url">localhost:3000/mahasiswa/25</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">204 No Content</span></div><div class="req-empty">(tidak ada body)</div></div>
+                <p>Ini konsekuensi lain dari token yang <em>stateless</em>: perubahan role, atau pencabutan akses, baru terasa setelah token lama expired atau diganti. Itu sebabnya masa berlaku token dibuat tidak terlalu panjang. (<code>DELETE</code> di atas benar-benar menghapus baris id 25 hasil data uji Pertemuan 7. Itu tidak masalah untuk latihan.)</p>
+
+                <h4>Perbarui <code>requests.http</code></h4>
+                <p>Kalau memakai REST Client (<code>requests.http</code>), ganti header <code>x-api-key</code> dengan <code>Authorization</code>. Variabel di bagian atas file memudahkan mengganti token sekali saja:</p>
+<pre><code>@token = tempel-token-hasil-login-di-sini
+
+### Login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ "email": "andi@unram.ac.id", "password": "rahasia123" }
+
+### Daftar mahasiswa (wajib login)
+GET http://localhost:3000/mahasiswa
+Authorization: Bearer {{token}}</code></pre>
+
+                <div class="success-box">
+                    <strong>Checkpoint:</strong> <code>users</code> menyimpan hash (bukan password); register menolak email kembar dan field <code>role</code>; login mengembalikan token; <code>GET /mahasiswa</code> tanpa token ditolak 401; <code>DELETE</code> oleh mahasiswa ditolak 403 dan oleh admin berhasil 204. <code>api-mahasiswa</code> ini yang akan kita uji dan perkuat di Pertemuan 10.
+                </div>
+            </section>
+
+            <section id="refresh">
+                <h2>5. Pengayaan: Access Token dan Refresh Token <span class="badge badge-new">Opsional</span></h2>
+
+                <div class="info-box">
+                    <strong>Bagian ini tidak wajib.</strong> Untuk tugas dan proyek, satu access token (Section 4) sudah memenuhi kriteria. Pola dua token tetap wajib <em>dipahami</em>, karena ini yang akan kalian temui di API produksi, dan boleh diterapkan sebagai nilai tambah pada proyek akhir. Kerjakan setelah Section 4 berjalan; Pertemuan 10 dan seterusnya mengasumsikan versi satu token.
+                </div>
+
+                <h3>5.1 Masalah yang Diselesaikan</h3>
+                <p>Dari simulator kita tahu token tidak bisa dicabut, jadi masa berlakunya sebaiknya pendek. Tetapi masa berlaku pendek (misalnya 15 menit) memaksa user login ulang berulang kali. Solusi standar (mengikuti OAuth2): terbitkan <strong>dua token</strong> sekaligus.</p>
+
+                <div class="tl">
+                    <div class="tl-row"><span>Refresh token (7 hari)</span><div class="tl-bar tl-long"></div></div>
+                    <div class="tl-row"><span>Access token (15 menit)</span><div class="tl-bar tl-seg"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+                </div>
+                <p>Tanda &#8635; di atas menunjukkan saat access token habis dan client menukarkan refresh token untuk mendapat access token baru, tanpa meminta user mengetik password lagi.</p>
+
+                <table>
+                    <tr><th>&nbsp;</th><th>Access token</th><th>Refresh token</th></tr>
+                    <tr><td><strong>Fungsi</strong></td><td>Dikirim di setiap request ke endpoint terproteksi</td><td>Hanya ditukar dengan access token baru</td></tr>
+                    <tr><td><strong>Masa berlaku</strong></td><td>Pendek (menit)</td><td>Panjang (hari)</td></tr>
+                    <tr><td><strong>Dikirim ke</strong></td><td>Semua endpoint</td><td>Hanya <code>POST /auth/refresh</code> dan <code>/auth/logout</code></td></tr>
+                    <tr><td><strong>Dicatat di server?</strong></td><td>Tidak (tetap stateless)</td><td><strong>Ya</strong>, di database, supaya bisa dicabut</td></tr>
+                </table>
+
+                <h3>5.2 Implementasi</h3>
+                <p><strong>1. Tabel penyimpanan refresh token.</strong> Tambahkan model baru dan satu baris relasi di <code>User</code>, lalu migrasikan:</p>
+<pre><code>model User {
+  // ...field yang sudah ada, tambahkan satu baris ini:
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique @db.VarChar(500)
+  userId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}</code></pre>
+<div class="terminal">$ npx prisma migrate dev --name tambah_refresh_token
+$ npx prisma generate</div>
+                <p><strong>2. Dua secret berbeda di <code>.env</code></strong> (ganti <code>JWT_SECRET</code>; generate masing-masing dengan perintah di 4.3). Kalau kuncinya sama, refresh token yang bocor bisa dipakai sebagai access token, dan pemisahan ini sia-sia:</p>
+<pre><code>JWT_ACCESS_SECRET=hasil-generate-pertama
+JWT_REFRESH_SECRET=hasil-generate-kedua</code></pre>
+                <p>Di <code>src/middleware/auth.js</code>, ganti <code>process.env.JWT_SECRET</code> menjadi <code>process.env.JWT_ACCESS_SECRET</code>.</p>
+                <p><strong>3. Lapis data</strong>, tambahkan di <code>src/data/user.data.js</code>:</p>
+<pre><code><span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariById</span>(<span class="variable">id</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">user</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">id</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">simpanRefresh</span>(<span class="variable">token</span>, <span class="variable">userId</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">refreshToken</span>.<span class="function">create</span>({ <span class="variable">data</span>: { <span class="variable">token</span>, <span class="variable">userId</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">cariRefresh</span>(<span class="variable">token</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">refreshToken</span>.<span class="function">findUnique</span>({ <span class="variable">where</span>: { <span class="variable">token</span> } });
+}
+
+<span class="keyword">export</span> <span class="keyword">function</span> <span class="function">hapusRefresh</span>(<span class="variable">token</span>) {
+    <span class="keyword">return</span> <span class="variable">prisma</span>.<span class="variable">refreshToken</span>.<span class="function">deleteMany</span>({ <span class="variable">where</span>: { <span class="variable">token</span> } });   <span class="comment">// deleteMany: tidak error bila sudah tidak ada</span>
+}</code></pre>
+                <p><strong>4. Service.</strong> Ganti fungsi <code>login</code> di <code>auth.service.js</code> dan tambahkan <code>refresh</code> serta <code>logout</code>:</p>
+<pre><code><span class="keyword">function</span> <span class="function">terbitkanToken</span>(<span class="variable">user</span>) {
+    <span class="keyword">const</span> <span class="variable">accessToken</span> = <span class="variable">jwt</span>.<span class="function">sign</span>(
+        { <span class="variable">id</span>: <span class="variable">user</span>.<span class="variable">id</span>, <span class="variable">role</span>: <span class="variable">user</span>.<span class="variable">role</span> },
+        <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_ACCESS_SECRET</span>,
+        { <span class="variable">expiresIn</span>: <span class="string">'15m'</span> },
+    );
+    <span class="keyword">const</span> <span class="variable">refreshToken</span> = <span class="variable">jwt</span>.<span class="function">sign</span>(
+        { <span class="variable">id</span>: <span class="variable">user</span>.<span class="variable">id</span> },                                   <span class="comment">// cukup id: tugasnya hanya menerbitkan token baru</span>
+        <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_REFRESH_SECRET</span>,
+        { <span class="variable">expiresIn</span>: <span class="string">'7d'</span> },
+    );
+    <span class="keyword">return</span> { <span class="variable">accessToken</span>, <span class="variable">refreshToken</span> };
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">login</span>({ <span class="variable">email</span>, <span class="variable">password</span> }) {
+    <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariByEmail</span>(<span class="variable">email</span>);
+    <span class="keyword">const</span> <span class="variable">cocok</span> = <span class="variable">user</span> <span class="operator">&amp;&amp;</span> (<span class="keyword">await</span> <span class="variable">bcrypt</span>.<span class="function">compare</span>(<span class="variable">password</span>, <span class="variable">user</span>.<span class="variable">passwordHash</span>));
+
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">cocok</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Email atau password salah'</span>, <span class="string">'LOGIN_GAGAL'</span>);
+    }
+
+    <span class="keyword">const</span> { <span class="variable">accessToken</span>, <span class="variable">refreshToken</span> } = <span class="function">terbitkanToken</span>(<span class="variable">user</span>);
+    <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">simpanRefresh</span>(<span class="variable">refreshToken</span>, <span class="variable">user</span>.<span class="variable">id</span>);       <span class="comment">// dicatat agar bisa dicabut</span>
+    <span class="keyword">return</span> { <span class="variable">accessToken</span>, <span class="variable">refreshToken</span> };
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">refresh</span>(<span class="variable">refreshToken</span>) {
+    <span class="comment">// 1. Masih tercatat di database? (belum dicabut lewat logout)</span>
+    <span class="keyword">const</span> <span class="variable">tersimpan</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariRefresh</span>(<span class="variable">refreshToken</span>);
+    <span class="keyword">if</span> (<span class="operator">!</span><span class="variable">tersimpan</span>) {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Refresh token tidak dikenali'</span>, <span class="string">'REFRESH_TIDAK_VALID'</span>);
+    }
+
+    <span class="comment">// 2. Signature asli dan belum expired?</span>
+    <span class="keyword">let</span> <span class="variable">payload</span>;
+    <span class="keyword">try</span> {
+        <span class="variable">payload</span> = <span class="variable">jwt</span>.<span class="function">verify</span>(<span class="variable">refreshToken</span>, <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_REFRESH_SECRET</span>);
+    } <span class="keyword">catch</span> {
+        <span class="keyword">throw</span> <span class="keyword">new</span> <span class="function">AppError</span>(<span class="number">401</span>, <span class="string">'Refresh token tidak valid atau expired'</span>, <span class="string">'REFRESH_TIDAK_VALID'</span>);
+    }
+
+    <span class="comment">// 3. Ambil role TERBARU dari database, lalu terbitkan access token baru</span>
+    <span class="keyword">const</span> <span class="variable">user</span> = <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">cariById</span>(<span class="variable">payload</span>.<span class="variable">id</span>);
+    <span class="keyword">return</span> {
+        <span class="variable">accessToken</span>: <span class="variable">jwt</span>.<span class="function">sign</span>({ <span class="variable">id</span>: <span class="variable">user</span>.<span class="variable">id</span>, <span class="variable">role</span>: <span class="variable">user</span>.<span class="variable">role</span> }, <span class="variable">process</span>.<span class="variable">env</span>.<span class="variable">JWT_ACCESS_SECRET</span>, { <span class="variable">expiresIn</span>: <span class="string">'15m'</span> }),
+    };
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">logout</span>(<span class="variable">refreshToken</span>) {
+    <span class="keyword">await</span> <span class="variable">data</span>.<span class="function">hapusRefresh</span>(<span class="variable">refreshToken</span>);
+}</code></pre>
+                <p>Pemeriksaan di <code>refresh</code> ada dua lapis, dan urutannya disengaja. Database diperiksa dulu karena hanya itu cara mengetahui token sudah dicabut: <code>jwt.verify</code> tidak tahu soal logout, selama signature cocok dan belum expired ia selalu meloloskan. Langkah 3 juga penting: role dibaca ulang dari database, bukan dari refresh token, sehingga perubahan role (seperti kasus admin di 4.8) langsung berlaku di access token berikutnya.</p>
+                <p><strong>5. Controller dan route</strong>, tambahkan:</p>
+<pre><code><span class="comment">// src/controllers/auth.controller.js</span>
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">refresh</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="variable">res</span>.<span class="function">json</span>({ <span class="variable">data</span>: <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">refresh</span>(<span class="variable">req</span>.<span class="variable">body</span>.<span class="variable">refreshToken</span>) });
+}
+
+<span class="keyword">export</span> <span class="keyword">async</span> <span class="keyword">function</span> <span class="function">logout</span>(<span class="variable">req</span>, <span class="variable">res</span>) {
+    <span class="keyword">await</span> <span class="variable">service</span>.<span class="function">logout</span>(<span class="variable">req</span>.<span class="variable">body</span>.<span class="variable">refreshToken</span>);
+    <span class="variable">res</span>.<span class="function">status</span>(<span class="number">204</span>).<span class="function">end</span>();
+}</code></pre>
+<pre><code><span class="comment">// src/routes/auth.routes.js — tambahkan di atas router.get('/saya', ...)</span>
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/refresh'</span>, <span class="variable">ctrl</span>.<span class="variable">refresh</span>);
+<span class="variable">router</span>.<span class="function">post</span>(<span class="string">'/logout'</span>, <span class="variable">ctrl</span>.<span class="variable">logout</span>);</code></pre>
+                <h3>5.3 Uji</h3>
+                <p>Respons login sekarang berisi <code>accessToken</code> dan <code>refreshToken</code>. Urutan uji dan hasil yang diharapkan:</p>
+                <table>
+                    <tr><th>Langkah</th><th>Hasil</th></tr>
+                    <tr><td><code>GET /auth/saya</code> dengan access token</td><td>200</td></tr>
+                    <tr><td><code>GET /auth/saya</code> dengan <strong>refresh token</strong> sebagai Bearer</td><td>401 <code>TOKEN_TIDAK_VALID</code> (secret berbeda)</td></tr>
+                    <tr><td><code>POST /auth/refresh</code> dengan refresh token</td><td>200, berisi <code>accessToken</code> baru</td></tr>
+                    <tr><td><code>POST /auth/logout</code> dengan refresh token</td><td>204, barisnya hilang dari <code>refresh_tokens</code></td></tr>
+                    <tr><td><code>POST /auth/refresh</code> lagi dengan refresh token yang sama</td><td>401 <code>REFRESH_TIDAK_VALID</code> (sudah dicabut)</td></tr>
+                    <tr><td><code>GET /auth/saya</code> dengan access token lama setelah logout</td><td><strong>Masih 200</strong> sampai 15 menit habis</td></tr>
+                </table>
+                <div class="warning-box">
+                    Baris terakhir bukan bug. Access token tidak punya catatan di server, jadi logout hanya mematikan kemampuan <em>memperbarui</em>. Umur access token dibuat pendek justru karena alasan ini: jendela penyalahgunaan paling lama 15 menit.
+                </div>
+            </section>
+
+            <section id="referensi">
+                <h2>6. Referensi</h2>
+                <ul>
+                    <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html" target="_blank">OWASP &mdash; Password Storage Cheat Sheet</a> [11]</li>
+                    <li><a href="https://jwt.io/introduction" target="_blank">JWT.io &mdash; Introduction</a></li>
+                    <li><a href="https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html" target="_blank">OWASP &mdash; JSON Web Token Cheat Sheet</a></li>
+                    <li><a href="https://www.npmjs.com/package/bcrypt" target="_blank">npm &mdash; bcrypt</a></li>
+                    <li><a href="https://www.npmjs.com/package/jsonwebtoken" target="_blank">npm &mdash; jsonwebtoken</a></li>
+                </ul>
+            </section>
+
+
+        </main>
+    </div>
+
+    <footer>
+        <p>Pertemuan 9 &mdash; Pemrograman Web Lanjut &mdash; Autentikasi & Otorisasi</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+
+    <script>
+        /* ========== Simulator: sesi vs token ========== */
+        (function () {
+            const MODE = {
+                memori:  { nama: 'Sesi (memori tiap server)' },
+                bersama: { nama: 'Sesi (store bersama)' },
+                token:   { nama: 'Token (JWT)' },
+            };
+            const TTL = 120;                 // menit: sesi dan token sama-sama berumur 2 jam
+            let S;
+
+            function awal(mode) {
+                return { mode, menit: 0, client: null, A: { hidup: true, sesi: null }, B: { hidup: true, sesi: null }, store: null, log: [] };
+            }
+            function catat(kode, teks, alasan) { S.log.unshift({ kode, teks, alasan }); }
+
+            function login() {
+                if (S.mode === 'token') {
+                    S.client = { token: true, exp: S.menit + TTL };
+                    catat(200, 'POST /login → Server A', 'Server membuat token yang di-sign. Tidak ada yang dicatat di server.');
+                } else if (S.mode === 'memori') {
+                    S.A.sesi = { exp: S.menit + TTL };
+                    S.client = { sid: 'abc123' };
+                    catat(200, 'POST /login → Server A', 'Server A mencatat sesi abc123 di memorinya sendiri.');
+                } else {
+                    S.store = { exp: S.menit + TTL };
+                    S.client = { sid: 'abc123' };
+                    catat(200, 'POST /login → Server A', 'Server A mencatat sesi abc123 di store bersama.');
+                }
+            }
+
+            function request(nama) {
+                const srv = S[nama];
+                const baris = 'GET /profil → Server ' + nama;
+                if (!S.client) return catat(401, baris, 'Belum login: client belum punya sesi atau token.');
+                if (S.mode === 'token') {
+                    if (S.menit >= S.client.exp) return catat(401, baris, 'Signature valid, tetapi token sudah expired.');
+                    return catat(200, baris, 'Server memeriksa signature dengan JWT_SECRET. Tidak ada pencarian apa pun.');
+                }
+                if (S.mode === 'memori') {
+                    if (!srv.sesi) return catat(401, baris, 'Server ' + nama + ' tidak punya catatan untuk abc123.');
+                    if (S.menit >= srv.sesi.exp) return catat(401, baris, 'Catatan sesi ada, tetapi TTL-nya sudah habis.');
+                    return catat(200, baris, 'Server ' + nama + ' menemukan abc123 di memorinya.');
+                }
+                if (!S.store) return catat(401, baris, 'abc123 tidak ada di store bersama (sudah dicabut).');
+                if (S.menit >= S.store.exp) return catat(401, baris, 'Catatan sesi ada, tetapi TTL-nya sudah habis.');
+                return catat(200, baris, 'Server ' + nama + ' mencari abc123 di store bersama (satu pencarian per request).');
+            }
+
+            function restartA() {
+                S.A.sesi = null;
+                catat('info', 'Server A restart',
+                    S.mode === 'memori' ? 'Memori Server A dikosongkan: sesi di dalamnya hilang.'
+                    : S.mode === 'bersama' ? 'Memori A kosong, tetapi sesi ada di store bersama, jadi tidak terpengaruh.'
+                    : 'Server A tidak menyimpan apa pun tentang user, jadi tidak ada yang hilang.');
+            }
+
+            function cabut() {
+                if (S.mode === 'token') {
+                    catat('info', 'Cabut akses (logout / ban user)', 'Server tidak punya catatan yang bisa dihapus. Token yang sudah beredar tetap berlaku sampai expired.');
+                } else if (S.mode === 'memori') {
+                    S.A.sesi = null; S.B.sesi = null;
+                    catat('info', 'Cabut akses (logout / ban user)', 'Catatan sesi dihapus. Berlaku seketika.');
+                } else {
+                    S.store = null;
+                    catat('info', 'Cabut akses (logout / ban user)', 'Catatan sesi dihapus dari store. Berlaku seketika di semua server.');
+                }
+            }
+
+            function maju() { S.menit += 180; catat('info', 'Waktu berlalu 3 jam', 'Sesi dan token sama-sama berumur 2 jam, jadi keduanya sudah melewati batas.'); }
+
+            function chip(teks, kelas) { return '<span class="chip ' + kelas + '">' + teks + '</span>'; }
+
+            function simpanSesi(o) {
+                if (!o) return chip('kosong', 'chip-kosong');
+                const habis = S.menit >= o.exp;
+                return chip('abc123 → { id: 1, role: \'mahasiswa\' }' + (habis ? '<br>(TTL habis)' : ''), habis ? 'chip-kosong' : 'chip-isi');
+            }
+
+            function render() {
+                const tombol = document.getElementById('simMode');
+                tombol.innerHTML = '';
+                Object.keys(MODE).forEach(k => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.textContent = MODE[k].nama;
+                    if (k === S.mode) b.className = 'on';
+                    b.onclick = () => { S = awal(k); render(); };
+                    tombol.appendChild(b);
+                });
+
+                let clientIsi;
+                if (!S.client) clientIsi = chip('belum login', 'chip-kosong');
+                else if (S.mode === 'token') {
+                    const habis = S.menit >= S.client.exp;
+                    clientIsi = chip('Bearer eyJhbGci...<br>{ id: 1, role: \'mahasiswa\' }' + (habis ? '<br>(expired)' : ''), 'chip-token');
+                } else clientIsi = chip('sid=abc123', 'chip-id');
+
+                const node = (kelas, judul, isi, tag) =>
+                    '<div class="node ' + kelas + '"><h6><span>' + judul + '</span>' + (tag || '') + '</h6>' + isi + '</div>';
+                const tagHidup = '<span class="tag">hidup</span>';
+
+                let html = node('client', 'Client', clientIsi);
+                if (S.mode === 'token') {
+                    const k = chip('tidak ada catatan', 'chip-kosong') + chip('hanya JWT_SECRET', 'chip-isi');
+                    html += node('server', 'Server A', k, tagHidup) + node('server', 'Server B', k, tagHidup);
+                } else if (S.mode === 'memori') {
+                    html += node('server', 'Server A (memori)', simpanSesi(S.A.sesi), tagHidup);
+                    html += node('server', 'Server B (memori)', simpanSesi(S.B.sesi), tagHidup);
+                } else {
+                    html += node('server', 'Server A', chip('tidak menyimpan sesi', 'chip-kosong'), tagHidup);
+                    html += node('server', 'Server B', chip('tidak menyimpan sesi', 'chip-kosong'), tagHidup);
+                    html += node('store', 'Store bersama (Redis / DB)', simpanSesi(S.store));
+                }
+                html += node('', 'Waktu', '<span class="chip chip-id">+' + Math.floor(S.menit / 60) + ' jam ' + (S.menit % 60) + ' menit</span>');
+                document.getElementById('simStage').innerHTML = html;
+
+                const aksi = document.getElementById('simActions');
+                aksi.innerHTML = '';
+                [['1. Login', login], ['2. Request ke Server A', () => request('A')], ['3. Request ke Server B', () => request('B')],
+                 ['4. Restart Server A', restartA], ['5. Cabut akses', cabut], ['6. Maju 3 jam', maju]].forEach(([t, f]) => {
+                    const b = document.createElement('button');
+                    b.type = 'button'; b.textContent = t;
+                    b.onclick = () => { f(); render(); };
+                    aksi.appendChild(b);
+                });
+                const r = document.createElement('button');
+                r.type = 'button'; r.className = 'alt'; r.textContent = 'Reset';
+                r.onclick = () => { S = awal(S.mode); render(); };
+                aksi.appendChild(r);
+
+                const log = document.getElementById('simLog');
+                log.innerHTML = S.log.length ? S.log.map(l =>
+                    '<div class="log-line"><span class="st ' + (l.kode === 200 ? 'st-200' : l.kode === 401 ? 'st-401' : 'st-info') + '">' +
+                    (l.kode === 'info' ? 'info' : l.kode) + '</span><span><strong>' + l.teks + '</strong><br><span class="why">' + l.alasan + '</span></span></div>').join('')
+                    : '<div class="sim-empty">Belum ada kejadian. Mulai dengan tombol &ldquo;1. Login&rdquo;.</div>';
+            }
+
+            if (document.getElementById('sim')) { S = awal('memori'); render(); }
+        })();
+
+        /* ========== Lab JWT (HMAC-SHA256 sungguhan lewat Web Crypto) ========== */
+const enc = new TextEncoder();
+function b64u(bytes) {
+    let s = '';
+    new Uint8Array(bytes).forEach(b => { s += String.fromCharCode(b); });
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64uStr(teks) { return b64u(enc.encode(teks)); }
+function b64uDecode(t) {
+    const baku = t.replace(/-/g, '+').replace(/_/g, '/');
+    const biner = atob(baku + '='.repeat((4 - baku.length % 4) % 4));
+    return new TextDecoder().decode(Uint8Array.from(biner, c => c.charCodeAt(0)));
+}
+async function hmacSha256(secret, data) {
+    const key = await crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    return b64u(await crypto.subtle.sign('HMAC', key, enc.encode(data)));
+}
+async function buatJwt(payload, secret) {
+    const header = b64uStr(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+    const isi = b64uStr(JSON.stringify(payload));
+    return `${header}.${isi}.${await hmacSha256(secret, header + '.' + isi)}`;
+}
+async function cekJwt(token, secret) {
+    const bagian = token.trim().split('.');
+    if (bagian.length !== 3) return { valid: false, alasan: 'bukan format JWT (harus 3 bagian dipisah titik)' };
+    const seharusnya = await hmacSha256(secret, bagian[0] + '.' + bagian[1]);
+    if (seharusnya !== bagian[2]) return { valid: false, alasan: 'invalid signature' };
+    let payload;
+    try { payload = JSON.parse(b64uDecode(bagian[1])); } catch { return { valid: false, alasan: 'payload bukan JSON' }; }
+    return { valid: true, payload };
+}
+
+        (function () {
+            const el = id => document.getElementById(id);
+            if (!el('jwtlab')) return;
+            const ok = !!(window.crypto && crypto.subtle);
+
+            async function segarkan() {
+                const token = el('jlToken').value.trim();
+                const bagian = token.split('.');
+                el('jlTampil').innerHTML = bagian.length === 3
+                    ? '<span class="jwt-part jwt-header">' + bagian[0] + '</span>.<span class="jwt-part jwt-payload">' + bagian[1] + '</span>.<span class="jwt-part jwt-signature">' + bagian[2] + '</span>'
+                    : '<em>belum berupa token (harus 3 bagian dipisah titik)</em>';
+
+                let header = '-', payload = '-';
+                try { header = JSON.stringify(JSON.parse(b64uDecode(bagian[0])), null, 2); } catch (e) {}
+                try { payload = JSON.stringify(JSON.parse(b64uDecode(bagian[1])), null, 2); } catch (e) {}
+                el('jlHeader').textContent = header;
+                el('jlPayload').textContent = payload;
+
+                const v = el('jlVerdict');
+                if (!ok) { v.className = 'verdict bad'; v.textContent = 'Browser ini tidak menyediakan Web Crypto (butuh HTTPS atau localhost).'; return; }
+                if (!el('jlSecretServer').value) { v.className = 'verdict bad'; v.textContent = 'Isi dulu secret server.'; return; }
+                const hasil = await cekJwt(token, el('jlSecretServer').value);
+                if (hasil.valid) {
+                    v.className = 'verdict ok';
+                    v.innerHTML = 'Server menerima token ini: signature VALID.<small>Server akan percaya bahwa pemiliknya adalah user dengan role &ldquo;' + (hasil.payload.role || '?') + '&rdquo;.</small>';
+                } else {
+                    v.className = 'verdict bad';
+                    v.innerHTML = 'Server menolak token ini: ' + hasil.alasan + '.<small>Signature tidak cocok dengan header + payload, jadi isinya dianggap sudah diubah. Respons: 401.</small>';
+                }
+            }
+
+            async function terbitkan() {
+                if (!el('jlSecretServer').value) return segarkan();
+                el('jlToken').value = await buatJwt({ id: 1, role: 'mahasiswa', exp: 4102444800 }, el('jlSecretServer').value);
+                segarkan();
+            }
+
+            async function gantiRole() {
+                const b = el('jlToken').value.trim().split('.');
+                if (b.length !== 3) return;
+                let p; try { p = JSON.parse(b64uDecode(b[1])); } catch (e) { return; }
+                p.role = 'admin';
+                el('jlToken').value = b[0] + '.' + b64uStr(JSON.stringify(p)) + '.' + b[2];   // signature lama dibiarkan
+                segarkan();
+            }
+
+            async function signUlang() {
+                const b = el('jlToken').value.trim().split('.');
+                let p; try { p = JSON.parse(b64uDecode(b[1])); } catch (e) { return; }
+                if (!el('jlSecretTebakan').value) return;
+                el('jlToken').value = await buatJwt(p, el('jlSecretTebakan').value);
+                segarkan();
+            }
+
+            el('jlBuat').onclick = terbitkan;
+            el('jlAdmin').onclick = gantiRole;
+            el('jlTtd').onclick = signUlang;
+            el('jlToken').addEventListener('input', segarkan);
+            el('jlSecretServer').addEventListener('input', segarkan);
+            if (ok) terbitkan(); else segarkan();
+        })();
+
+        const BAGIAN_AWAL = 'password';
+        function showSection(sectionId) {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            const target = document.getElementById(sectionId);
+            if (target) { target.style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }); }
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.sidebar a[href="#${sectionId}"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('main.content section').forEach(s => s.style.display = 'none');
+            showSection(BAGIAN_AWAL);
+            document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showSection(this.getAttribute('href').substring(1));
+                });
+            });
+        });
+
+    </script>
+
+    <script>
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        document.querySelectorAll('.sidebar a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) toggleMobileMenu();
+            });
+        });
+    </script>
+    <script src="sidebar-toggle.js"></script>
+
+</body>
+</html>
