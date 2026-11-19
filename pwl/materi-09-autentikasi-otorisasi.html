@@ -563,7 +563,40 @@ token expired ditolak: TokenExpiredError - jwt expired</div>
                     <li>Bedanya ada di <code>/publik</code>: <strong>tidak dipasangi <code>butuhLogin</code> sama sekali</strong>. <code>/rahasia</code> memasangnya sebagai argumen kedua, sebelum handler.</li>
                 </ul>
 
-                <p>Jalankan <code>node server.js</code>, lalu uji dengan Postman dari jendela lain.</p>
+                <h4>Menjalankan Server</h4>
+                <p>Pastikan <code>.env</code> (3.1) dan <code>server.js</code> ada di folder <code>auth-uji</code>, lalu jalankan dari folder itu:</p>
+<div class="terminal">$ node server.js
+Server jalan di http://localhost:3100</div>
+                <p>Terminal ini sekarang <strong>sibuk melayani request</strong> dan tidak mengembalikan prompt. Itu normal, bukan hang. Jangan ditutup dan jangan ditekan <code>Ctrl+C</code> dulu. Untuk menghentikan server, tekan <code>Ctrl+C</code> di terminal ini; untuk menjalankannya lagi, ulangi <code>node server.js</code>. Setiap kali <code>server.js</code> diubah, server harus dihentikan lalu dijalankan ulang agar perubahannya terbaca.</p>
+                <p>Kalau muncul <code>EADDRINUSE: address already in use :::3100</code>, berarti server dari percobaan sebelumnya masih hidup di terminal lain. Hentikan dulu dengan <code>Ctrl+C</code> di terminal itu.</p>
+
+                <h4>Menguji dengan Terminal (<code>curl</code>)</h4>
+                <p>Buka <strong>terminal kedua</strong> (di VS Code: ikon <code>+</code> di panel Terminal), tidak perlu pindah folder. Keempat perintah ini menghasilkan jawaban yang sama dengan Postman di bawah:</p>
+<div class="terminal"><span class="out"># 1. Endpoint terbuka: tanpa token</span>
+$ curl http://localhost:3100/publik
+{"pesan":"Siapa pun boleh baca ini, tanpa password."}
+
+<span class="out"># 2. Endpoint terkunci: tanpa token, ditolak</span>
+$ curl -i http://localhost:3100/rahasia
+HTTP/1.1 401 Unauthorized
+{"error":"Token diperlukan"}
+
+<span class="out"># 3. Login: password salah, lalu benar</span>
+$ curl -X POST http://localhost:3100/login -H "Content-Type: application/json" -d '{"password":"salah"}'
+{"error":"Password salah"}
+$ curl -X POST http://localhost:3100/login -H "Content-Type: application/json" -d '{"password":"rahasia123"}'
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiYW5kaSIs..."}
+
+<span class="out"># 4. Pakai token hasil login (ganti TOKEN_KALIAN dengan nilai token di atas)</span>
+$ curl http://localhost:3100/rahasia -H "Authorization: Bearer TOKEN_KALIAN"
+{"pesan":"Halo andi, ini isi yang butuh password."}</div>
+                <p>Opsi <code>-X POST</code> menentukan method, <code>-H</code> menambah header (di Postman: tab Headers), dan <code>-d</code> mengisi body (di Postman: tab Body &rarr; raw &rarr; JSON). Opsi <code>-i</code> menampilkan baris status <code>401</code>-nya.</p>
+                <div class="info-box">
+                    <strong>Pengguna Windows:</strong> di PowerShell, <code>curl</code> adalah alias dari perintah lain dan sintaksnya berbeda. Pakai <code>curl.exe</code> sebagai pengganti, dan ganti kutip tunggal pada <code>-d</code> dengan kutip ganda yang di-<em>escape</em>: <code>-d "{\"password\":\"rahasia123\"}"</code>. Atau lewati bagian ini dan pakai Postman.
+                </div>
+
+                <h4>Menguji dengan Postman</h4>
+                <p>Server tetap berjalan di terminal pertama. Lakukan hal yang sama di Postman, satu request demi satu:</p>
 
                 <p><code>GET /publik</code> &mdash; tidak perlu apa pun di tab Headers:</p>
 <div class="req-mock"><div class="req-cap">Tampilan Postman (ilustrasi)</div><div class="req-bar"><span class="req-method" style="color:#16a34a">GET</span><span class="req-url">http://localhost:3100/publik</span><span class="req-send">Send</span></div><div class="req-res"><span>Response</span><span class="st s2">200 OK</span></div><div class="req-resbody">{
