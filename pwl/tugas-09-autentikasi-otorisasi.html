@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 9 - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%) !important;
+        }
+        section h2 { border-bottom: 3px solid #b91c1c !important; }
+        th { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; }
+        .badge { background: #b91c1c !important; }
+
+        /* Tanpa sidebar - konten satu kolom, dilebarkan penuh */
+        .container {
+            display: block;
+            max-width: 820px;
+            margin: 100px auto 0;
+        }
+        .content {
+            margin-left: 0;
+            width: auto;
+            padding: 30px 20px;
+        }
+        /* Footer: tanpa sidebar, jadi tidak perlu bergeser 280px */
+        footer { margin-left: 0; }
+        @media (max-width: 768px) {
+            .container { margin-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="text-align:center;">
+        <h1>Tugas 9 &mdash; Autentikasi &amp; Otorisasi</h1>
+        <p>Pertemuan 9, lanjutan dari <a href="materi-09-autentikasi-otorisasi.html" style="color:#fee2e2;">Materi 9: Autentikasi dan Otorisasi</a></p>
+    </header>
+
+    <div class="container">
+        <main class="content">
+
+            <section id="tugas">
+                <h2>Menambahkan Login pada Proyek ETS <span class="badge">Tugas 9</span></h2>
+
+                <p><strong>Tujuan:</strong> menambahkan <em>register</em>, <em>login</em> (password di-hash, token JWT), dan pembagian halaman <em>publik</em> dan <em>wajib login</em> pada <strong>proyek ETS kalian sendiri</strong>. Rujukan langkahnya ada di Materi 9, Section 1&ndash;4 (di materi dikerjakan pada <code>api-mahasiswa</code>; di tugas ini pada proyek ETS).</p>
+
+                <h3>Proyek Dasar</h3>
+                <p>Kerjakan di atas <strong>REST API Mini Project ETS</strong> kalian (kasus kalian sendiri: Books, Students, Orders, dan seterusnya). Di bawah ini tabel utama ETS ditulis <code>/resource</code>; ganti dengan nama resource kalian (mis. <code>/books</code>).</p>
+                <ol>
+                    <li>Salin folder proyek ETS ke folder baru <strong>tanpa</strong> <code>.git</code> dan <code>node_modules</code>, lalu jalankan <code>npm install</code>.</li>
+                    <li>Buat repository baru <strong>T9-AUTENTIKASI</strong> untuk folder itu (repository ETS tidak diubah, supaya nilai ETS tetap utuh).</li>
+                    <li>Boleh memakai database ETS yang sama. Tabel dan migrasi lama <strong>tidak diubah</strong>; kalian hanya menambah tabel <code>users</code>.</li>
+                </ol>
+                <div class="info-box">
+                    <strong>Cek terlebih dahulu apakah Proyek ETS sudah bisa dijalankan di folder baru</strong> jika belum silahkan perbaiki dulu. atau bisa menggunakan project <code>api-mahasiswa</code> dari Materi 7 dengan resource <code>/mahasiswa</code>.
+                </div>
+
+                <h3>Bagian 1 &mdash; Endpoint Autentikasi</h3>
+                <table>
+                    <tr><th>Method</th><th>URL</th><th>Syarat</th><th>Hasil</th></tr>
+                    <tr><td><code>POST</code></td><td><code>/auth/register</code></td><td>body <code>email</code>, <code>password</code></td><td>201 berisi <code>{ id, email }</code>; 409 <code>EMAIL_DUPLIKAT</code>; 422 <code>VALIDATION_ERROR</code></td></tr>
+                    <tr><td><code>POST</code></td><td><code>/auth/login</code></td><td>body <code>email</code>, <code>password</code></td><td>200 berisi <code>{ token }</code>; 401 <code>LOGIN_GAGAL</code></td></tr>
+                    <tr><td><code>GET</code></td><td><code>/auth/saya</code></td><td>wajib login</td><td>200 berisi data dari token (<code>id</code>); 401 bila tanpa token</td></tr>
+                </table>
+                <table>
+                    <tr><th>Hal yang diperiksa</th><th>Aturan</th></tr>
+                    <tr><td>Validasi (Joi)</td><td><code>email</code>: format email, maksimal 100 karakter, wajib. <code>password</code>: string 8&ndash;72 karakter, wajib. Kalau tidak sesuai, 422.</td></tr>
+                    <tr><td>Password</td><td>Disimpan sebagai hash <code>bcrypt</code> (cost 10) di kolom <code>passwordHash</code>. Hash <strong>tidak pernah</strong> ikut dikirim ke client.</td></tr>
+                    <tr><td>Pesan login gagal</td><td>Email tidak terdaftar dan password salah dijawab <strong>sama persis</strong>: 401, <code>LOGIN_GAGAL</code>, &ldquo;Email atau password salah&rdquo;.</td></tr>
+                    <tr><td>Token</td><td>JWT berisi <code>{ id }</code>, <code>expiresIn: '2h'</code>, ditandatangani dengan secret buatan kalian sendiri.</td></tr>
+                </table>
+
+                <h3>Bagian 2 &mdash; Tabel <code>users</code> dan Akun Uji</h3>
+                <ul>
+                    <li><strong>Tabel <code>users</code></strong> dengan kolom <code>id</code>, <code>email</code> (unik), <code>passwordHash</code>, dan <code>createdAt</code>. Satu jenis pengguna saja, tanpa role. Cara membuatnya bebas: lewat model Prisma + migrasi baru (<code>npx prisma migrate dev --name tambah_user</code>, seperti Materi 9, 4.2), atau langsung dengan SQL/phpMyAdmin. Kalau dibuat langsung, sertakan SQL <code>CREATE TABLE</code>-nya di README.</li>
+                    <li><strong>Tidak perlu seeder.</strong> Akun uji dibuat lewat endpoint <code>/auth/register</code>.</li>
+                    <li><strong>Secret JWT:</strong> nilai dan cara menyimpannya kalian tentukan sendiri.</li>
+                </ul>
+                <div class="warning-box">
+                    <strong>Repository ini public.</strong> Password akun uji yang kalian tulis di README harus password sembarang untuk tugas (bukan password email, media sosial, atau Berajah kalian).
+                </div>
+
+                <h3>Bagian 3 &mdash; Halaman Publik dan Halaman Wajib Login</h3>
+                <p>Buat <code>src/middleware/auth.js</code> berisi <code>butuhLogin</code> (pola Materi 9, Section 3.3 dan 4.6). Middleware ini membaca header <code>Authorization: Bearer ...</code>, memeriksa token dengan <code>jwt.verify</code>, dan mengirim error lewat <code>next(new AppError(...))</code> ke <code>errorHandler</code> terpusat dari ETS:</p>
+                <table>
+                    <tr><th>Situasi</th><th>Status</th><th>Kode</th></tr>
+                    <tr><td>Header <code>Authorization</code> tidak ada atau bukan <code>Bearer</code></td><td>401</td><td><code>TOKEN_DIPERLUKAN</code></td></tr>
+                    <tr><td>Token rusak, signature salah, atau expired</td><td>401</td><td><code>TOKEN_TIDAK_VALID</code></td></tr>
+                </table>
+                <p>Format error tetap seragam: <code>{ error: { pesan, kode } }</code>. Setelah itu bagi endpoint proyek ETS menjadi dua kelompok. Pasang middleware di <strong>route</strong> (bukan di controller atau service), sebelum <code>validasi</code>: <code>butuhLogin</code> &rarr; <code>validasi</code> &rarr; controller.</p>
+                <table>
+                    <tr><th>Kelompok</th><th>Endpoint ETS</th><th>Tanpa token</th><th>Dengan token valid</th></tr>
+                    <tr><td><strong>Publik</strong></td><td><code>POST /auth/register</code>, <code>POST /auth/login</code>, <code>GET /resource</code> (daftar), <code>GET /resource/:id</code>, endpoint tabel kedua (include)</td><td>Berhasil</td><td>Berhasil</td></tr>
+                    <tr><td><strong>Wajib login</strong></td><td><code>GET /auth/saya</code>, <code>POST /resource</code>, <code>PUT /resource/:id</code>, <code>DELETE /resource/:id</code>, endpoint transaksi dua tabel</td><td>401</td><td>Berhasil</td></tr>
+                </table>
+
+                <div class="warning-box">
+                    <strong>Jebakan dari materi:</strong> endpoint publik tidak boleh dipasangi <code>butuhLogin</code>; mengambil keputusan dari <code>jwt.decode</code> (harus <code>jwt.verify</code>); lupa <code>select</code> sehingga <code>passwordHash</code> ikut terkirim; <code>bcrypt.compare</code> itu <code>async</code> (lupa <code>await</code> membuat semua password dianggap benar); password lebih dari 72 karakter terpotong oleh bcrypt.
+                </div>
+
+                <h3>Bagian 4 &mdash; Dua Percobaan Wajib</h3>
+                <p>Seperti di ETS, kalian sengaja membuat sesuatu gagal lalu menjelaskan akibatnya. Keduanya didokumentasikan di README (hasil, screenshot, dan 2&ndash;3 kalimat penjelasan dengan kata-kata sendiri):</p>
+                <table>
+                    <tr><th>No</th><th>Percobaan</th><th>Yang harus terlihat</th></tr>
+                    <tr><td>1</td><td><strong>Token dipalsukan.</strong> Login, lalu ganti payload token (mis. <code>id</code> menjadi angka lain) dengan Base64 manual atau <a href="https://jwt.io" target="_blank">jwt.io</a> tanpa mengetahui secret, dan kirim ke endpoint wajib login.</td><td>401 <code>TOKEN_TIDAK_VALID</code>. Jelaskan kenapa payload bisa dibaca dan diubah siapa saja, tetapi tetap ditolak.</td></tr>
+                    <tr><td>2</td><td><strong>Token expired.</strong> Ubah sementara <code>expiresIn</code> menjadi <code>'5s'</code>, login, tunggu 6 detik, kirim request. <strong>Kembalikan ke <code>'2h'</code></strong> sebelum commit.</td><td>401 <code>TOKEN_TIDAK_VALID</code>. Jelaskan dari mana server tahu token itu expired tanpa menyimpan catatan apa pun.</td></tr>
+                </table>
+
+                <h3>Pengujian: <code>requests.http</code></h3>
+                <p>Cukup tunjukkan bahwa halaman publik bisa dibuka tanpa login, sedangkan halaman wajib login (mis. tambah data) ditolak tanpa token dan berhasil dengan token. Buat <code>requests.http</code> (REST Client) dengan variabel <code>@token</code>, minimal <strong>5 request</strong> berikut:</p>
+                <table>
+                    <tr><th>No</th><th>Request</th><th>Hasil</th></tr>
+                    <tr><td>1</td><td><code>POST /auth/register</code></td><td>201</td></tr>
+                    <tr><td>2</td><td><code>POST /auth/login</code></td><td>200 berisi token (salin ke <code>@token</code>)</td></tr>
+                    <tr><td>3</td><td><code>GET /resource</code> tanpa token (halaman publik)</td><td>200</td></tr>
+                    <tr><td>4</td><td><code>POST /resource</code> (tambah data) tanpa token</td><td>401</td></tr>
+                    <tr><td>5</td><td><code>POST /resource</code> dengan header <code>Authorization: Bearer {{token}}</code></td><td>201</td></tr>
+                </table>
+                <p>Request lain (<code>PUT</code>, <code>DELETE</code>, endpoint transaksi, login gagal) boleh ditambahkan. Request dari dua percobaan di Bagian 4 juga dimasukkan ke file yang sama (diberi komentar <code>### Percobaan 1</code> dan seterusnya).</p>
+
+                <h3>Bonus (Opsional)</h3>
+                <ul>
+                    <li><strong>+5%:</strong> Pengayaan <em>access token + refresh token</em> sesuai Materi 9, Section 5 (<code>POST /auth/refresh</code>, access token berumur pendek). Sertakan request dan screenshot, serta jelaskan di README mengapa dua token lebih aman.</li>
+                </ul>
+
+                <h3>Screenshot</h3>
+                <p>Simpan di folder <code>screenshot/</code> dalam repository, setiap gambar memperlihatkan nama atau NIM kalian (mis. pada email akun uji):</p>
+                <ul>
+                    <li>phpMyAdmin tabel <code>users</code>: kolom <code>passwordHash</code> berisi hash, bukan password asli.</li>
+                    <li>Hasil REST Client/Postman untuk request 3, 4, dan 5. Request 3 (publik, tanpa token) dan 4 (wajib login, tanpa token) terlihat berdampingan.</li>
+                    <li>Dua percobaan wajib.</li>
+                    <li><code>requests.http</code> di VS Code.</li>
+                </ul>
+
+                <h3>README.md</h3>
+<pre><code># Tugas 9 - Autentikasi &amp; Otorisasi
+
+## Identitas
+- Nama : [Nama Lengkap]
+- NIM  : [NIM Mahasiswa]
+- Kasus ETS : [mis. Books API]
+
+## Cara Menjalankan
+[Langkah dari nol sampai API berjalan: install, konfigurasi, buat tabel users, jalankan]
+
+## Akun Uji
+[Tabel: email dan password (sembarang, bukan password asli); dibuat lewat /auth/register]
+
+## Struktur Proyek
+[Pohon folder; tandai file baru/diubah dan 1 kalimat tugas tiap file]
+
+## Endpoint
+[Tabel: Method, URL, Akses (publik / wajib login), Status]
+
+## Pengujian
+[Screenshot + satu kalimat keterangan tiap gambar]
+
+## Dua Percobaan
+[Percobaan 1-2: hasil, screenshot, penjelasan 2-3 kalimat]
+
+## Deklarasi Penggunaan AI
+[Lihat di bawah]
+
+## Kesimpulan &amp; Kendala
+[Jawab: (1) kenapa password di-hash, bukan dienkripsi? (2) kenapa pesan login gagal dibuat sama
+untuk email tidak terdaftar dan password salah? (3) apa bedanya halaman publik dan halaman wajib login pada proyek kalian, dan dari mana server tahu sebuah token sah tanpa menyimpannya? Lalu kendala dan solusinya]</code></pre>
+
+                <h3>Deklarasi Penggunaan AI</h3>
+                <p>AI <strong>boleh</strong> dipakai, tetapi wajib dideklarasikan jujur di README. Yang dinilai kejujuran dan kelengkapan, bukan banyaknya AI.</p>
+<pre><code>| Bagian | Alat AI | Dipakai untuk apa | Cara saya memeriksa hasilnya |
+|--------|---------|-------------------|------------------------------|
+| butuhLogin | ChatGPT | Contoh middleware membaca header Bearer | Uji POST tanpa token, hasilnya 401 |
+| Tabel users | - | - | - |
+
+Pernyataan: [Saya menggunakan AI pada bagian yang tertulis di tabel. Bagian lain saya kerjakan sendiri.]</code></pre>
+                <ul>
+                    <li>Cantumkan <strong>setiap bagian</strong> yang dibantu AI, untuk apa, dan cara kalian memeriksanya. Sertakan minimal satu contoh prompt.</li>
+                    <li>Kalau tidak memakai AI: <em>&quot;Saya tidak menggunakan AI dalam mengerjakan tugas ini.&quot;</em></li>
+                    <li>Bersiaplah ditanya, misalnya: &ldquo;kenapa <code>butuhLogin</code> dipasang sebelum <code>validasi</code>?&rdquo; atau &ldquo;kenapa token yang payload-nya diubah ditolak?&rdquo;. Deklarasi tidak jujur dapat mengurangi nilai.</li>
+                </ul>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr><th>No</th><th>Kriteria</th><th>Bobot</th></tr>
+                    <tr><td>1</td><td>Tabel <code>users</code> sesuai kolom yang diminta, akun uji (lewat register)</td><td>10%</td></tr>
+                    <tr><td>2</td><td>Register dan login: hash bcrypt, token JWT, validasi, status dan kode error benar, pesan login gagal seragam</td><td>15%</td></tr>
+                    <tr><td>3</td><td><code>butuhLogin</code> bekerja (token tidak ada, rusak, expired), memakai <code>errorHandler</code> terpusat</td><td>15%</td></tr>
+                    <tr><td>4</td><td>Pembagian halaman publik dan wajib login benar pada semua endpoint ETS (termasuk endpoint relasi dan transaksi)</td><td>20%</td></tr>
+                    <tr><td>5</td><td>Keamanan: <code>passwordHash</code> tidak bocor, dua percobaan dan penjelasannya</td><td>10%</td></tr>
+                    <tr><td>6</td><td><code>requests.http</code> (minimal 5 request) dan screenshot pengujian</td><td>10%</td></tr>
+                    <tr><td>7</td><td>README.md lengkap di GitHub</td><td>10%</td></tr>
+                    <tr><td>8</td><td>Deklarasi penggunaan AI jujur dan lengkap</td><td>10%</td></tr>
+                    <tr><td colspan="2"><strong>Total</strong></td><td><strong>100%</strong></td></tr>
+                    <tr><td>+</td><td><strong>Bonus:</strong> refresh token</td><td>+5%</td></tr>
+                </table>
+
+                <h3>Submission</h3>
+                <ul>
+                    <li>Satu repository GitHub bernama <strong>T9-AUTENTIKASI</strong>, status <strong>Public</strong>, berisi kode, <code>requests.http</code>, screenshot, dan README.</li>
+                    <li>Upload link repository ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">Berajah</a> &mdash; hanya link GitHub, bukan file/ZIP.</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Perhatian:</strong>
+                    <ul>
+                        <li>Repository tetap <strong>public</strong> hingga <strong>akhir semester</strong>.</li>
+                        <li>Proyek harus bisa dijalankan dengan langkah di README, dan <code>node_modules</code> tidak di-upload.</li>
+                        <li>Kode yang di-commit harus kode yang benar (<code>expiresIn</code> kembali ke <code>'2h'</code>), bukan yang sengaja diubah untuk percobaan.</li>
+                        <li>Terlambat mengumpulkan: nilai dikurangi 10 poin per hari.</li>
+                        <li>Menyalin pekerjaan teman: baik yang menyalin maupun yang disalin mendapat nilai maksimal 50.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Tugas 9 &mdash; Pemrograman Web Lanjut &mdash; Autentikasi &amp; Otorisasi</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+</body>
+</html>
