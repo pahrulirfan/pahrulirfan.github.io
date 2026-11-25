@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Mahasiswa {
+  id        Int      @id @default(autoincrement())
+  nim       String   @unique @db.VarChar(20)
+  nama      String   @db.VarChar(100)
+  ipk       Float    @default(0)
+  semester  Int      @default(1)
+  createdAt DateTime @default(now())
+  email     String?  @db.VarChar(100)
+
+  pendaftaran Pendaftaran[]
+
+  @@map("mahasiswa")
+}
+
+model Kelas {
+  id    Int    @id @default(autoincrement())
+  nama  String
+  kuota Int    @default(30)
+
+  pendaftaran Pendaftaran[]
+
+  @@map("kelas")
+}
+
+model Pendaftaran {
+  id            Int      @id @default(autoincrement())
+  mahasiswaId   Int
+  kelasId       Int
+  tanggalDaftar DateTime @default(now())
+
+  mahasiswa Mahasiswa @relation(fields: [mahasiswaId], references: [id])
+  kelas     Kelas     @relation(fields: [kelasId], references: [id])
+
+  @@unique([mahasiswaId, kelasId])
+  @@map("pendaftaran")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique @db.VarChar(100)
+  passwordHash String   @db.VarChar(100)
+  role         String   @default("mahasiswa") @db.VarChar(20)
+  createdAt    DateTime @default(now())
+
+  @@map("users")
+}
