@@ -19,6 +19,7 @@
  *                           data-fokus="peluang" (gabungan, bersyarat, independen) atau "bayes" (posterior)
  *   data-viz="bayes-update" tiga hipotesis dan tiga bukti; bukti diamati satu per satu
  *   data-viz="bayes-net"    jaringan Bayes Berawan-Sprinkler-Hujan-Rumput basah (enumerasi)
+ *   data-viz="bayes-hugin"  laboratorium jaringan Bayes ala Hugin Lite: edit/jalankan, bukti, CPT, ekspor .net, contoh soal
  *   data-viz="dup-lab"      bukti yang sama dihitung berulang: Bayes naif dan CF menjadi terlalu yakin
  */
 (function (root) {
@@ -250,6 +251,75 @@
         '.kp .kp-cpt th,.kp .kp-cpt td{border:1px solid #d6e2f3;padding:3px 6px;text-align:center}',
         '.kp .kp-cpt th{background:#eceff1;color:#263238}',
         '.kp .kp-cpt caption{font-size:.82em;font-weight:700;color:#1a2a4a;text-align:left;padding-bottom:2px}',
+        /* bayes-hugin */
+        '.kp.hg .hg-win{border:1px solid #b0bec5;border-radius:10px;overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(26,42,74,.08)}',
+        '.kp.hg .hg-title{display:flex;align-items:center;gap:6px;background:linear-gradient(#f3f4f6,#e3e6ea);border-bottom:1px solid #cfd8dc;padding:6px 12px;font-size:.84em;color:#263238}',
+        '.kp.hg .hg-title b{margin-left:auto;margin-right:auto;font-weight:600}',
+        '.kp.hg .hg-lamp{width:11px;height:11px;border-radius:50%;display:inline-block}',
+        '.kp.hg .hg-lamp.r{background:#ff5f57}.kp.hg .hg-lamp.y{background:#febc2e}.kp.hg .hg-lamp.g{background:#28c840}',
+        '.kp.hg .hg-tool{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 12px;background:#fafbfc;border-bottom:1px solid #e3e8f0;font-size:.85em}',
+        '.kp.hg .hg-tool select{font:inherit;padding:4px 6px;border:1px solid #b0c4de;border-radius:6px;max-width:300px}',
+        '.kp.hg .hg-seg{display:inline-flex;border:1px solid #b0c4de;border-radius:7px;overflow:hidden}',
+        '.kp.hg .hg-seg button,.kp.hg .hg-b{font:inherit;border:0;background:#fff;color:#1a2a4a;padding:5px 10px;cursor:pointer}',
+        '.kp.hg .hg-b{border:1px solid #b0c4de;border-radius:7px}',
+        '.kp.hg .hg-seg button+button{border-left:1px solid #b0c4de}',
+        '.kp.hg .hg-seg button.on{background:#1565c0;color:#fff}',
+        '.kp.hg .hg-seg button:hover:not(.on),.kp.hg .hg-b:hover{background:#e3f2fd}',
+        '.kp.hg .hg-cek{display:inline-flex;align-items:center;gap:5px;cursor:pointer}',
+        '.kp.hg .hg-main{display:grid;grid-template-columns:minmax(230px,280px) minmax(0,1fr);min-height:300px}',
+        '.kp.hg .hg-tree{border-right:1px solid #e3e8f0;padding:8px 6px 8px 10px;font-family:Consolas,Monaco,monospace;font-size:.8em;max-height:470px;overflow-y:auto;background:#fff}',
+        '.kp.hg .hg-root{font-weight:700;color:#37474f;margin-bottom:4px}',
+        '.kp.hg .hg-nd{margin:0 0 6px 6px}',
+        '.kp.hg .hg-nh{display:flex;align-items:center;gap:6px;font-weight:700;color:#263238;cursor:pointer;padding:1px 4px;border-radius:4px}',
+        '.kp.hg .hg-nd.sel>.hg-nh,.kp.hg .hg-nd.sel[data-pilih]{background:#dbe9fb}',
+        '.kp.hg .hg-dot{width:12px;height:12px;border-radius:50%;background:#2ecc40;border:1px solid #1b7a2a;flex:none}',
+        '.kp.hg .hg-nd.ev .hg-dot{background:#e53935;border-color:#8e1b1b}',
+        '.kp.hg .hg-st{display:grid;grid-template-columns:64px 54px 1fr;align-items:center;gap:6px;width:100%;margin:1px 0 1px 14px;padding:1px 4px;border:0;background:none;font:inherit;text-align:left;cursor:pointer;border-radius:4px;color:#263238}',
+        '.kp.hg .hg-st:hover{background:#eef4fc}',
+        '.kp.hg .hg-st.on{background:#1565c0;color:#fff}',
+        '.kp.hg .hg-bar{height:11px;border:1px solid #9e9e9e;background:#fff;position:relative;overflow:hidden}',
+        '.kp.hg .hg-bar i{position:absolute;left:0;top:0;bottom:0;background:#2ecc40;transition:width .35s}',
+        '.kp.hg .hg-nd.ev .hg-bar i{background:#e53935}',
+        '.kp.hg .hg-v{text-align:right}',
+        '.kp.hg .hg-s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+        '.kp.hg .hg-canvas{background:#fff;padding:4px;touch-action:none}',
+        '.kp.hg .hg-n{cursor:pointer}',
+        '.kp.hg .hg-n ellipse{fill:#fff9c4;stroke:#263238;stroke-width:1.6}',
+        '.kp.hg .hg-n.ev ellipse{fill:#ffe0dc;stroke:#c62828;stroke-width:2}',
+        '.kp.hg .hg-n.sel ellipse{stroke:#1565c0;stroke-width:3.2}',
+        '.kp.hg .hg-n text{font-size:12.5px;font-weight:700;fill:#212121;text-anchor:middle;pointer-events:none}',
+        '.kp.hg .hg-n text.v{font-size:10.5px;font-weight:600;fill:#37474f}',
+        '.kp.hg .hg-e{fill:none;stroke:#37474f;stroke-width:1.5}',
+        '.kp.hg .hg-e-ico{fill:#fff;stroke:#c62828;stroke-width:1.2}',
+        '.kp.hg text.hg-e-t{font-size:10px;fill:#c62828;font-weight:700}',
+        '.kp.hg .hg-status{border-top:1px solid #e3e8f0;background:#fafbfc;padding:6px 12px;font-size:.8em;color:#455a64;line-height:1.5}',
+        '.kp.hg .hg-warn-t{color:#b71c1c;font-weight:700}',
+        '.kp.hg .hg-muted{color:#607d8b;font-size:.9em;font-family:"Segoe UI",Tahoma,sans-serif}',
+        '.kp.hg .hg-story{margin:12px 0;padding:10px 14px;background:#f5f8ff;border-left:4px solid #1565c0;border-radius:0 8px 8px 0;font-size:.92em;line-height:1.6}',
+        '.kp.hg .kp-out{margin-bottom:12px}',
+        '.kp.hg .hg-ed{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:10px 14px;margin-bottom:12px}',
+        '.kp.hg .hg-prop{border-top:1px dashed #cfd8dc;padding-top:10px;margin-top:6px}',
+        '.kp.hg .hg-f{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:8px;font-size:.88em}',
+        '.kp.hg .hg-f label{display:flex;flex-direction:column;gap:3px;font-weight:600;color:#1a2a4a}',
+        '.kp.hg .hg-f input{font:inherit;font-weight:400;padding:5px 8px;border:1px solid #b0c4de;border-radius:6px;min-width:190px}',
+        '.kp.hg .hg-par{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.88em;margin-bottom:8px}',
+        '.kp.hg .hg-par label{cursor:pointer}',
+        '.kp.hg .hg-cpt caption{text-align:left;font-weight:700;color:#1a2a4a;padding-bottom:4px}',
+        '.kp.hg .hg-cpt input{width:74px;font:inherit;padding:3px 5px;border:1px solid #b0c4de;border-radius:5px;text-align:right}',
+        '.kp.hg .hg-cpt td:first-child{font-weight:400}',
+        '.kp.hg .hg-sum{font-family:Consolas,Monaco,monospace}',
+        '.kp.hg .hg-sum.bad{background:#fce4ec;color:#b71c1c;font-weight:700}',
+        '.kp.hg .hg-h{margin:14px 0 8px}',
+        '.kp.hg .hg-q{background:#fff;border:1px solid #e3e8f0;border-radius:10px;padding:10px 14px;margin-bottom:10px}',
+        '.kp.hg .hg-q>p{margin:6px 0 8px;line-height:1.6}',
+        '.kp.hg .hg-qh{display:flex;align-items:center;gap:8px}',
+        '.kp.hg .hg-qn{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1a2a4a;color:#fff;font-weight:700;font-size:.85em}',
+        '.kp.hg .hg-tag{font-size:.75em;font-weight:700;padding:2px 9px;border-radius:10px;background:#fff3e0;color:#e65100}',
+        '.kp.hg .hg-ans{display:inline-flex;align-items:center;gap:6px;font-size:.92em}',
+        '.kp.hg .hg-ans input{width:90px;font:inherit;padding:4px 8px;border:1px solid #b0c4de;border-radius:6px;text-align:right}',
+        '.kp.hg .hg-bahas{margin-top:8px;padding:10px 12px;background:#fafbfc;border:1px dashed #b0c4de;border-radius:8px;font-size:.92em;line-height:1.6}',
+        '.kp.hg .hg-bahas p{margin:0 0 6px}',
+        '@media (max-width:760px){.kp.hg .hg-main{grid-template-columns:1fr}.kp.hg .hg-tree{border-right:0;border-bottom:1px solid #e3e8f0;max-height:none}}',
         '@media (max-width:760px){.kp .kp-cols{grid-template-columns:1fr}}'
     ].join('\n');
 
@@ -746,6 +816,575 @@
         render();
     }
 
+    /* ---------- bayes-hugin: laboratorium jaringan Bayes ala Hugin ---------- */
+    /**
+     * Inferensi eksak dengan enumerasi (hasilnya sama dengan junction tree pada Hugin).
+     * nodes: [{id, states:[..], parents:[id..], cpt:[[p..]..]}]; baris CPT berurutan dengan induk pertama berubah paling lambat.
+     * ev: {id: indeksState}. Mengembalikan {marg:{id:[P(X=x|e)]}, joint:{id:[P(X=x,e)]}, pe:P(e), n:jumlah kombinasi}.
+     */
+    function bnInfer(nodes, ev) {
+        const n = nodes.length, idx = {};
+        nodes.forEach((d, i) => { idx[d.id] = i; });
+        const K = nodes.map(d => d.states.length);
+        const par = nodes.map(d => d.parents.map(p => idx[p]));
+        const cpt = nodes.map(d => d.cpt.map(r => {
+            const s = r.reduce((a, b) => a + b, 0);
+            return s > 0 ? r.map(v => v / s) : r.map(() => 1 / r.length);
+        }));
+        const joint = nodes.map((d, i) => new Array(K[i]).fill(0));
+        const a = new Array(n).fill(0);
+        const free = [];
+        nodes.forEach((d, i) => { if (ev[d.id] === undefined) free.push(i); else a[i] = ev[d.id]; });
+        let pe = 0, cnt = 0;
+        for (;;) {
+            cnt++;
+            let p = 1;
+            for (let i = 0; i < n && p > 0; i++) {
+                let r = 0;
+                for (const j of par[i]) r = r * K[j] + a[j];
+                p *= cpt[i][r][a[i]];
+            }
+            if (p > 0) { pe += p; for (let i = 0; i < n; i++) joint[i][a[i]] += p; }
+            let k = free.length - 1;
+            while (k >= 0) { const i = free[k]; a[i]++; if (a[i] < K[i]) break; a[i] = 0; k--; }
+            if (k < 0) break;
+        }
+        const marg = {}, jo = {};
+        nodes.forEach((d, i) => { jo[d.id] = joint[i]; marg[d.id] = joint[i].map(v => (pe > 0 ? v / pe : NaN)); });
+        return { marg, joint: jo, pe, n: cnt };
+    }
+
+    const yt = p => [p, Number((1 - p).toFixed(6))];
+    /** Tabel noisy-OR: tiap induk yang "ada" (state indeks 0) bisa memicu akibat dengan peluangnya sendiri; leak = penyebab lain. */
+    function noisyOr(leak, ps) {
+        const rows = [], n = ps.length;
+        for (let m = 0; m < (1 << n); m++) {
+            let q = 1 - leak;
+            for (let i = 0; i < n; i++) if (((m >> (n - 1 - i)) & 1) === 0) q *= 1 - ps[i];
+            const p = Number((1 - q).toFixed(4));
+            rows.push([p, Number((1 - p).toFixed(4))]);
+        }
+        return rows;
+    }
+    /** Kasus siap pakai. Angka bersumber dari pustaka bila disebutkan; selain itu ilustrasi. */
+    const HUGIN_KASUS = [
+        {
+            kunci: 'nilai_mk', judul: 'Nilai mata kuliah (seperti video Hugin)',
+            cerita: 'Nilai <b>Kecerdasan Buatan (AI)</b> memengaruhi peluang lulus <b>Machine Learning (ML)</b> dan <b>Pengenalan Pola</b>; keduanya menjadi bekal untuk <b>Jaringan Saraf Tiruan (JST)</b>. Strukturnya sama dengan jaringan <i>nilai_mk</i> di Hugin Lite. Angka tabel adalah ilustrasi, dipilih agar hasilnya sama dengan tampilan Hugin (AI lulus 47,37%).',
+            nodes: [
+                { id: 'AI', name: 'AI', states: ['Lulus', 'Gagal'], parents: [], cpt: [[0.6, 0.4]], x: 320, y: 50 },
+                { id: 'ML', name: 'ML', states: ['Lulus', 'Gagal'], parents: ['AI'], cpt: [[0.8, 0.2], [0.5, 0.5]], x: 160, y: 175 },
+                { id: 'Pola', name: 'Pola', states: ['Lulus', 'Gagal'], parents: ['AI'], cpt: [[0.75, 0.25], [0.5, 0.5]], x: 480, y: 175 },
+                { id: 'JST', name: 'JST', states: ['Lulus', 'Gagal'], parents: ['ML', 'Pola'], cpt: [[0.9, 0.1], [0.6, 0.4], [0.5, 0.5], [0.1, 0.9]], x: 320, y: 300 }
+            ],
+            soal: [
+                { t: 'Belum ada bukti apa pun. Berapa peluang seorang mahasiswa <b>lulus JST</b>?', ev: {}, q: 'JST', s: 0, jenis: 'Marginal',
+                    b: 'Jumlahkan atas semua kombinasi AI, ML, dan Pola. Bila AI lulus: P(JST lulus) = 0,8·0,75·0,9 + 0,8·0,25·0,6 + 0,2·0,75·0,5 + 0,2·0,25·0,1 = 0,74. Bila AI gagal: 0,25·(0,9 + 0,6 + 0,5 + 0,1) = 0,525. Hasil: 0,6·0,74 + 0,4·0,525 = 0,654.' },
+                { t: 'Mahasiswa diketahui <b>lulus AI</b>. Berapa peluang ia <b>lulus JST</b>?', ev: { AI: 0 }, q: 'JST', s: 0, jenis: 'Prediktif (sebab → akibat)',
+                    b: 'Arah penalaran sama dengan arah panah, jadi cukup menjumlahkan atas ML dan Pola dengan AI = lulus: 0,54 + 0,12 + 0,075 + 0,005 = 0,74. Peluang naik dari 65,4% menjadi 74%.' },
+                { t: 'Mahasiswa diketahui <b>lulus JST</b>. Berapa peluang ia dulu <b>lulus AI</b>?', ev: { JST: 0 }, q: 'AI', s: 0, jenis: 'Diagnostik (akibat → sebab)',
+                    b: 'Arah berlawanan dengan panah, jadi pakai Bayes: P(AI lulus | JST lulus) = P(AI lulus) · P(JST lulus | AI lulus) / P(JST lulus) = 0,6 · 0,74 / 0,654 = 0,444 / 0,654 ≈ 67,9%. Bukti pada akibat menaikkan keyakinan pada sebab (dari 60%).' },
+                { t: 'Seperti tampilan Hugin: mahasiswa <b>lulus JST, gagal ML, lulus Pola</b>. Berapa peluang ia <b>lulus AI</b>?', ev: { JST: 0, ML: 1, Pola: 0 }, q: 'AI', s: 0, jenis: 'Bukti campuran',
+                    b: 'Karena ML dan Pola sudah diketahui, faktor P(JST | ML, Pola) bernilai sama untuk AI lulus maupun gagal, sehingga habis saat dinormalisasi: JST tidak lagi memberi informasi tentang AI. AI lulus: 0,6 · 0,2 · 0,75 = 0,09. AI gagal: 0,4 · 0,5 · 0,5 = 0,10. Jadi 0,09 / 0,19 = <b>47,37%</b>, persis seperti di Hugin. Gagal ML menurunkan keyakinan bahwa ia lulus AI.' }
+            ]
+        },
+        {
+            kunci: 'rumput_basah', judul: 'Rumput basah (slide)',
+            cerita: 'Contoh dari slide: langit <b>berawan</b> memengaruhi apakah <b>sprinkler</b> dinyalakan dan apakah <b>hujan</b> turun; sprinkler dan hujan membuat <b>rumput basah</b>. Baris terakhir tabel rumput basah sudah diperbaiki menjadi P(basah) = 0.',
+            nodes: [
+                { id: 'Berawan', name: 'Berawan', states: ['Ya', 'Tidak'], parents: [], cpt: [[0.5, 0.5]], x: 320, y: 50 },
+                { id: 'Sprinkler', name: 'Sprinkler', states: ['Ya', 'Tidak'], parents: ['Berawan'], cpt: [[0.1, 0.9], [0.5, 0.5]], x: 160, y: 175 },
+                { id: 'Hujan', name: 'Hujan', states: ['Ya', 'Tidak'], parents: ['Berawan'], cpt: [[0.8, 0.2], [0.2, 0.8]], x: 480, y: 175 },
+                { id: 'Basah', name: 'Rumput basah', states: ['Ya', 'Tidak'], parents: ['Sprinkler', 'Hujan'], cpt: [[0.99, 0.01], [0.9, 0.1], [0.9, 0.1], [0, 1]], x: 320, y: 300 }
+            ],
+            soal: [
+                { t: 'Pagi ini <b>rumput basah</b>. Berapa peluang semalam <b>hujan</b>?', ev: { Basah: 0 }, q: 'Hujan', s: 0, jenis: 'Diagnostik',
+                    b: 'P(hujan, basah) = 0,4581 dan P(basah) = 0,6471, sehingga 0,4581 / 0,6471 ≈ 70,8%. Naik dari 50%.' },
+                { t: 'Rumput basah <b>dan sprinkler ternyata menyala</b>. Berapa peluang hujan sekarang?', ev: { Basah: 0, Sprinkler: 0 }, q: 'Hujan', s: 0, jenis: 'Explaining away',
+                    b: 'Turun ke sekitar 32%. Sprinkler sudah cukup menjelaskan rumput basah, sehingga hujan tidak lagi dibutuhkan sebagai penjelasan. Dua penyebab yang semula bebas menjadi saling “bersaing” setelah akibatnya diamati.' },
+                { t: 'Rumput basah. Berapa peluang <b>langit berawan</b>?', ev: { Basah: 0 }, q: 'Berawan', s: 0, jenis: 'Diagnostik dua langkah',
+                    b: 'Bukti mengalir naik dua langkah: rumput basah → (sprinkler, hujan) → berawan. Hasilnya sekitar 57,6%. Kenaikannya kecil karena berawan menaikkan hujan tetapi menurunkan sprinkler, dan keduanya sama-sama membuat rumput basah.' }
+            ]
+        },
+        {
+            kunci: 'diagnosis_demam', judul: 'Penyakit dengan beberapa gejala (DBD, tifoid, flu)',
+            cerita: 'Pasien datang ke puskesmas dengan <b>demam</b>. Ada tiga kemungkinan penyakit yang <i>tidak saling meniadakan</i> (pasien bisa punya dua sekaligus): <b>DBD</b>, <b>tifoid</b>, dan <b>flu</b>. <b>Musim hujan</b> menaikkan risiko DBD dan flu. Gejala dan hasil lab: <b>demam</b> (bisa dari ketiganya), <b>ruam</b> dan <b>trombosit rendah</b> (khas DBD), <b>mual</b> (DBD atau tifoid), <b>batuk pilek</b> (flu). Tabel demam dan mual diisi dengan pola <i>noisy-OR</i>: tiap penyakit punya peluang sendiri memicu gejala (demam: DBD 0,95, tifoid 0,85, flu 0,6; mual: DBD 0,4, tifoid 0,7), ditambah peluang kecil dari penyebab lain. Angka ilustrasi untuk latihan, bukan pedoman klinis.',
+            nodes: [
+                { id: 'Hujan', name: 'Musim hujan', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.5)], x: 320, y: 42 },
+                { id: 'DBD', name: 'DBD', states: ['Ya', 'Tidak'], parents: ['Hujan'], cpt: [yt(0.03), yt(0.005)], x: 150, y: 160 },
+                { id: 'Tifoid', name: 'Tifoid', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.02)], x: 330, y: 160 },
+                { id: 'Flu', name: 'Flu', states: ['Ya', 'Tidak'], parents: ['Hujan'], cpt: [yt(0.15), yt(0.08)], x: 510, y: 160 },
+                { id: 'Ruam', name: 'Ruam', states: ['Ya', 'Tidak'], parents: ['DBD'], cpt: [yt(0.5), yt(0.03)], x: 60, y: 310 },
+                { id: 'Trombosit', name: 'Trombosit', states: ['Rendah', 'Normal'], parents: ['DBD'], cpt: [yt(0.9), yt(0.05)], x: 190, y: 330 },
+                { id: 'Mual', name: 'Mual', states: ['Ya', 'Tidak'], parents: ['DBD', 'Tifoid'], cpt: noisyOr(0.08, [0.4, 0.7]), x: 320, y: 310 },
+                { id: 'Demam', name: 'Demam', states: ['Ya', 'Tidak'], parents: ['DBD', 'Tifoid', 'Flu'], cpt: noisyOr(0.05, [0.95, 0.85, 0.6]), x: 450, y: 330 },
+                { id: 'Batuk', name: 'Batuk pilek', states: ['Ya', 'Tidak'], parents: ['Flu'], cpt: [yt(0.8), yt(0.1)], x: 580, y: 310 }
+            ],
+            soal: [
+                { t: 'Musim hujan. Pasien datang dengan <b>demam</b>. Berapa peluang ia terkena <b>DBD</b>?', ev: { Hujan: 0, Demam: 0 }, q: 'DBD', s: 0, jenis: 'Satu gejala',
+                    b: 'Sekitar 16,5%, naik dari 3% (risiko DBD di musim hujan). Demam saja belum cukup, karena flu jauh lebih sering dan juga menyebabkan demam: lihat simpul Flu, naik ke sekitar 54,8%.' },
+                { t: 'Pasien yang sama ternyata juga punya <b>ruam</b>. Berapa peluang DBD sekarang?', ev: { Hujan: 0, Demam: 0, Ruam: 0 }, q: 'DBD', s: 0, jenis: 'Gejala bertambah',
+                    b: 'Melonjak ke sekitar 76,7%. Ruam jarang muncul tanpa DBD (3%), tetapi muncul pada separuh pasien DBD, jadi bukti ini sangat membedakan.' },
+                { t: 'Hasil lab keluar: <b>trombosit rendah</b>. Berapa peluang DBD?', ev: { Hujan: 0, Demam: 0, Ruam: 0, Trombosit: 0 }, q: 'DBD', s: 0, jenis: 'Hasil lab',
+                    b: 'Sekitar 98,3%. Tiga bukti yang saling menguatkan. Perhatikan urutannya: setiap bukti baru dimasukkan, posterior sebelumnya menjadi “prior” bagi bukti berikutnya.' },
+                { t: 'Pasien lain, juga di musim hujan: <b>demam dan batuk pilek</b>. Berapa peluang DBD?', ev: { Hujan: 0, Demam: 0, Batuk: 0 }, q: 'DBD', s: 0, jenis: 'Explaining away',
+                    b: 'Turun ke sekitar 7,1% (bandingkan dengan 16,5% pada soal 1). Batuk pilek membuat flu hampir pasti (sekitar 90,7%), dan flu sudah menjelaskan demamnya, sehingga DBD tidak lagi dibutuhkan sebagai penjelasan.' },
+                { t: 'Pasien dengan <b>demam dan mual</b>, tetapi <b>tanpa ruam</b> dan <b>trombosit normal</b> (musim tidak diketahui). Berapa peluang <b>tifoid</b>?', ev: { Demam: 0, Mual: 0, Ruam: 1, Trombosit: 1 }, q: 'Tifoid', s: 0, jenis: 'Bukti negatif',
+                    b: 'Sekitar 57,1%. Bukti negatif juga bukti: tanpa ruam dan dengan trombosit normal, DBD turun ke sekitar 1,9%, sehingga tifoid menjadi penjelasan utama untuk demam dan mual. Coba hapus bukti ruam dan trombosit: tifoid hanya sekitar 43,8% dan DBD 26,5%.' },
+                { t: 'Musim hujan, pasien <b>demam, batuk pilek</b>, dan <b>trombosit rendah</b>. Berapa peluang DBD?', ev: { Hujan: 0, Demam: 0, Batuk: 0, Trombosit: 0 }, q: 'DBD', s: 0, jenis: 'Dua penyakit sekaligus',
+                    b: 'Sekitar 57,8%, sementara flu tetap sekitar 73,5%. Jumlah keduanya lebih dari 100% dan itu wajar: DBD dan flu adalah dua simpul terpisah, bukan pilihan dari satu hipotesis. Pada contoh tiga hipotesis A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub> di atas, hipotesis dianggap saling lepas sehingga pasien hanya boleh punya satu penyakit.' }
+            ]
+        },
+        {
+            kunci: 'alarm_rumah', judul: 'Alarm: maling atau gempa? (AIMA)',
+            cerita: 'Contoh terkenal Judea Pearl dari buku <i>Artificial Intelligence: A Modern Approach</i> (Russell &amp; Norvig), dengan angka asli buku. Alarm rumah di Lombok bisa berbunyi karena <b>maling</b> atau karena <b>gempa</b>. Dua tetangga, <b>Pak Budi</b> dan <b>Bu Ani</b>, mungkin menelepon bila mendengar alarm (Pak Budi kadang keliru mengira dering telepon sebagai alarm; Bu Ani sering tidak dengar karena musik).',
+            nodes: [
+                { id: 'Maling', name: 'Maling', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.001)], x: 170, y: 50 },
+                { id: 'Gempa', name: 'Gempa', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.002)], x: 470, y: 50 },
+                { id: 'Alarm', name: 'Alarm', states: ['Ya', 'Tidak'], parents: ['Maling', 'Gempa'], cpt: [yt(0.95), yt(0.94), yt(0.29), yt(0.001)], x: 320, y: 170 },
+                { id: 'Budi', name: 'Budi menelepon', states: ['Ya', 'Tidak'], parents: ['Alarm'], cpt: [yt(0.9), yt(0.05)], x: 170, y: 300 },
+                { id: 'Ani', name: 'Ani menelepon', states: ['Ya', 'Tidak'], parents: ['Alarm'], cpt: [yt(0.7), yt(0.01)], x: 470, y: 300 }
+            ],
+            soal: [
+                { t: 'Pak Budi <b>dan</b> Bu Ani sama-sama menelepon. Berapa peluang ada <b>maling</b>?', ev: { Budi: 0, Ani: 0 }, q: 'Maling', s: 0, jenis: 'Diagnostik',
+                    b: 'Jawaban buku AIMA: sekitar <b>28,4%</b>. Walau dua orang menelepon, maling tetap kurang dari sepertiga, karena prior maling sangat kecil (0,1%) dan alarm juga bisa dipicu gempa. Inilah pentingnya prior (base rate).' },
+                { t: 'Hanya Pak Budi yang menelepon; Bu Ani <b>tidak</b>. Berapa peluang ada maling?', ev: { Budi: 0, Ani: 1 }, q: 'Maling', s: 0, jenis: 'Bukti bertentangan',
+                    b: 'Sangat kecil (sekitar 0,5%). Bu Ani tidak menelepon membuat alarm kemungkinan tidak berbunyi, dan telepon Pak Budi lebih mungkin salah dengar. Bandingkan dengan soal sebelumnya.' },
+                { t: 'Alarm diketahui <b>berbunyi</b>. Berapa peluang ada maling?', ev: { Alarm: 0 }, q: 'Maling', s: 0, jenis: 'Diagnostik',
+                    b: 'Sekitar 37,4%. Alarm lebih kuat daripada laporan tetangga, tetapi gempa masih menjadi penjelasan saingan.' },
+                { t: 'Alarm berbunyi <b>dan BMKG melaporkan gempa</b>. Berapa peluang ada maling?', ev: { Alarm: 0, Gempa: 0 }, q: 'Maling', s: 0, jenis: 'Explaining away',
+                    b: 'Turun tajam menjadi sekitar 0,3%. Gempa sudah menjelaskan bunyi alarm, sehingga maling tidak lagi dibutuhkan. Padahal maling dan gempa saling bebas sebelum alarm diamati.' }
+            ]
+        },
+        {
+            kunci: 'klinik_paru', judul: 'Klinik paru (asia.net, contoh bawaan Hugin)',
+            cerita: 'Jaringan diagnosis paru dari Lauritzen &amp; Spiegelhalter (1988), contoh bawaan Hugin (<i>asia.net</i>), dengan angka aslinya. <b>Riwayat kontak TBC</b> (aslinya: pernah berkunjung ke Asia) menaikkan risiko <b>TBC</b>; <b>merokok</b> menaikkan risiko <b>kanker paru</b> dan <b>bronkitis</b>. Rontgen tidak dapat membedakan TBC dan kanker, karena itu ada simpul <b>“TBC atau kanker”</b> yang deterministik. <b>Sesak napas</b> bisa disebabkan keduanya atau bronkitis. Angka untuk latihan, bukan pedoman klinis.',
+            nodes: [
+                { id: 'Kontak', name: 'Kontak TBC', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.01)], x: 90, y: 45 },
+                { id: 'Rokok', name: 'Merokok', states: ['Ya', 'Tidak'], parents: [], cpt: [yt(0.5)], x: 450, y: 45 },
+                { id: 'TBC', name: 'TBC', states: ['Ya', 'Tidak'], parents: ['Kontak'], cpt: [yt(0.05), yt(0.01)], x: 90, y: 140 },
+                { id: 'Kanker', name: 'Kanker paru', states: ['Ya', 'Tidak'], parents: ['Rokok'], cpt: [yt(0.1), yt(0.01)], x: 330, y: 140 },
+                { id: 'Bronkitis', name: 'Bronkitis', states: ['Ya', 'Tidak'], parents: ['Rokok'], cpt: [yt(0.6), yt(0.3)], x: 560, y: 140 },
+                { id: 'TBCatauKanker', name: 'TBC atau kanker', states: ['Ya', 'Tidak'], parents: ['TBC', 'Kanker'], cpt: [[1, 0], [1, 0], [1, 0], [0, 1]], x: 210, y: 225 },
+                { id: 'Rontgen', name: 'Rontgen', states: ['Abnormal', 'Normal'], parents: ['TBCatauKanker'], cpt: [yt(0.98), yt(0.05)], x: 90, y: 320 },
+                { id: 'Sesak', name: 'Sesak napas', states: ['Ya', 'Tidak'], parents: ['TBCatauKanker', 'Bronkitis'], cpt: [yt(0.9), yt(0.7), yt(0.8), yt(0.1)], x: 420, y: 320 }
+            ],
+            soal: [
+                { t: 'Belum ada data pasien. Berapa peluang seseorang mengalami <b>sesak napas</b>?', ev: {}, q: 'Sesak', s: 0, jenis: 'Marginal',
+                    b: 'Sekitar 43,6% (angka yang juga muncul di Hugin saat asia.net dibuka). Sebagian besar datang dari bronkitis, yang prior-nya 45%.' },
+                { t: 'Pasien <b>perokok</b> datang dengan <b>sesak napas</b>. Berapa peluang ia menderita <b>kanker paru</b>?', ev: { Rokok: 0, Sesak: 0 }, q: 'Kanker', s: 0, jenis: 'Diagnostik',
+                    b: 'Sekitar 14,8%, naik dari 10% (risiko perokok tanpa gejala). Sesak napas lebih banyak dijelaskan oleh bronkitis, sehingga kenaikannya terbatas.' },
+                { t: 'Perokok dengan sesak napas, lalu <b>rontgen abnormal</b>. Berapa peluang kanker paru sekarang?', ev: { Rokok: 0, Sesak: 0, Rontgen: 0 }, q: 'Kanker', s: 0, jenis: 'Bukti bertambah',
+                    b: 'Melonjak ke sekitar 72,4%. Rontgen abnormal hampir hanya muncul bila ada TBC atau kanker, dan pada perokok tanpa kontak TBC, kanker jauh lebih mungkin.' },
+                { t: 'Pasien yang sama ternyata <b>punya riwayat kontak TBC</b>. Berapa peluang kanker paru?', ev: { Rokok: 0, Sesak: 0, Rontgen: 0, Kontak: 0 }, q: 'Kanker', s: 0, jenis: 'Explaining away',
+                    b: 'Turun ke sekitar 57,9%, karena TBC kini menjadi penjelasan saingan untuk rontgen abnormal. Coba periksa juga simpul TBC: naik dari 7,5% ke 29,0%.' }
+            ]
+        }
+    ];
+
+    function initBayesHugin(rootEl) {
+        const salin = k => JSON.parse(JSON.stringify(k));
+        let kasusIdx = 0, net = salin(HUGIN_KASUS[0]);
+        let ev = {}, mode = 'run', sel = null, tutup = false, pesan = '';
+        const jawab = {};                 // status soal: {i: {nilai, status}}
+        let uid = 100;
+
+        rootEl.classList.add('viz', 'kp', 'hg');
+        rootEl.innerHTML =
+            '<div class="hg-win">' +
+            '<div class="hg-title"><span class="hg-lamp r"></span><span class="hg-lamp y"></span><span class="hg-lamp g"></span><b data-role="judul"></b></div>' +
+            '<div class="hg-tool">' +
+            '<label class="hg-pilih">Kasus: <select data-role="kasus">' + HUGIN_KASUS.map((k, i) => '<option value="' + i + '">' + esc(k.judul) + '</option>').join('') + '</select></label>' +
+            '<span class="hg-seg"><button type="button" data-act="edit" title="Gambar simpul, panah, dan isi tabel peluang"><i class="fa-solid fa-pencil"></i> Mode edit</button>' +
+            '<button type="button" data-act="run" title="Kompilasi lalu masukkan bukti"><i class="fa-solid fa-bolt"></i> Mode jalankan</button></span>' +
+            '<button type="button" class="hg-b" data-act="reset" title="Hapus semua bukti"><i class="fa-solid fa-eraser"></i> Hapus bukti</button>' +
+            '<label class="hg-cek"><input type="checkbox" data-role="tutup"> Sembunyikan angka</label>' +
+            '<button type="button" class="hg-b" data-act="net" title="Unduh berkas .net untuk dibuka di Hugin"><i class="fa-solid fa-download"></i> Unduh .net</button>' +
+            '</div>' +
+            '<div class="hg-main"><div class="hg-tree" data-role="tree"></div>' +
+            '<div class="hg-canvas"><svg viewBox="0 0 640 370" data-role="svg" role="img" aria-label="Graf jaringan Bayes"></svg></div></div>' +
+            '<div class="hg-status" data-role="status"></div>' +
+            '</div>' +
+            '<div class="hg-story" data-role="cerita"></div>' +
+            '<div data-role="edit"></div>' +
+            '<div class="kp-out" data-role="info"></div>' +
+            '<div class="hg-soal" data-role="soal"></div>';
+        const svg = $q(rootEl, 'svg');
+
+        const nodeById = id => net.nodes.find(d => d.id === id);
+        const RX = 56, RY = 24;
+        const fmtH = v => (v === 0 ? '–' : (v * 100).toFixed(2).replace('.', ','));   // gaya Hugin
+        const pctH = v => pct(v, 2);
+        const totalState = () => net.nodes.reduce((a, d) => a + d.states.length, 0);
+        const ukuranGabung = () => net.nodes.reduce((a, d) => a * d.states.length, 1);
+
+        function barisInduk(d) {
+            // daftar kombinasi state induk, urutan: induk pertama paling lambat
+            let rows = [[]];
+            d.parents.forEach(p => {
+                const P = nodeById(p), next = [];
+                rows.forEach(r => P.states.forEach((s, k) => next.push(r.concat(k))));
+                rows = next;
+            });
+            return rows;
+        }
+        function cptKosong(d) {
+            const nr = d.parents.reduce((a, p) => a * nodeById(p).states.length, 1);
+            return Array.from({ length: nr }, () => d.states.map(() => Number((1 / d.states.length).toFixed(4))));
+        }
+        function keturunan(id) {
+            const out = new Set(), st = [id];
+            while (st.length) {
+                const x = st.pop();
+                net.nodes.forEach(d => { if (d.parents.includes(x) && !out.has(d.id)) { out.add(d.id); st.push(d.id); } });
+            }
+            return out;
+        }
+        function barisSalah() {
+            const salah = [];
+            net.nodes.forEach(d => d.cpt.forEach((r, i) => {
+                const s = r.reduce((a, b) => a + b, 0);
+                if (r.some(v => !(v >= 0)) || Math.abs(s - 1) > 1e-6) salah.push([d, i, s]);
+            }));
+            return salah;
+        }
+        function hitung(e) { return bnInfer(net.nodes, e || ev); }
+
+        /* ---- panel kiri: pohon simpul ala Hugin ---- */
+        function renderTree(h) {
+            if (mode === 'edit') {
+                $q(rootEl, 'tree').innerHTML = '<p class="hg-muted"><i class="fa-solid fa-pencil"></i> Mode edit. Seperti di Hugin, peluang baru tampil setelah jaringan dikompilasi: klik <b>Mode jalankan</b>.</p>' +
+                    net.nodes.map(d => '<div class="hg-nd' + (sel === d.id ? ' sel' : '') + '" data-pilih="' + d.id + '"><div class="hg-nh"><span class="hg-dot"></span>' + esc(d.name) + '</div></div>').join('');
+                return;
+            }
+            $q(rootEl, 'tree').innerHTML = '<div class="hg-root"><i class="fa-solid fa-diagram-project"></i> ' + esc(net.kunci) + '</div>' + net.nodes.map(d => {
+                const isEv = ev[d.id] !== undefined;
+                return '<div class="hg-nd' + (isEv ? ' ev' : '') + (sel === d.id ? ' sel' : '') + '">' +
+                    '<div class="hg-nh" data-pilih="' + d.id + '"><span class="hg-dot"></span>' + esc(d.name) + '</div>' +
+                    d.states.map((s, k) => {
+                        const v = h.marg[d.id][k];
+                        const w = tutup && !isEv ? 0 : v * 100;
+                        return '<button type="button" class="hg-st' + (isEv && ev[d.id] === k ? ' on' : '') + '" data-st="' + d.id + '|' + k + '" title="Klik untuk menjadikan bukti: ' + esc(d.name) + ' = ' + esc(s) + '">' +
+                            '<span class="hg-bar"><i style="width:' + w.toFixed(1) + '%"></i></span>' +
+                            '<span class="hg-v">' + (tutup && !isEv ? '?' : fmtH(v)) + '</span><span class="hg-s">' + esc(s) + '</span></button>';
+                    }).join('') + '</div>';
+            }).join('');
+        }
+
+        /* ---- graf ---- */
+        function renderSvg(h) {
+            const tepi = u => 1 / Math.sqrt(Math.pow(u[0] / RX, 2) + Math.pow(u[1] / RY, 2));
+            let s = '<defs><marker id="hg-arr' + rootEl.dataset.hgid + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#37474f"/></marker></defs>';
+            net.nodes.forEach(d => d.parents.forEach(pid => {
+                const p = nodeById(pid);
+                const dx = d.x - p.x, dy = d.y - p.y, L = Math.sqrt(dx * dx + dy * dy) || 1;
+                const u = [dx / L, dy / L], t = tepi(u);
+                s += '<path class="hg-e" marker-end="url(#hg-arr' + rootEl.dataset.hgid + ')" d="M' + (p.x + u[0] * t).toFixed(1) + ',' + (p.y + u[1] * t).toFixed(1) + ' L' + (d.x - u[0] * (t + 2)).toFixed(1) + ',' + (d.y - u[1] * (t + 2)).toFixed(1) + '"/>';
+            }));
+            net.nodes.forEach(d => {
+                const isEv = mode === 'run' && ev[d.id] !== undefined;
+                let bawah = '';
+                if (mode === 'run' && h) {
+                    if (isEv) bawah = '= ' + d.states[ev[d.id]];
+                    else if (!tutup) {
+                        const m = h.marg[d.id];
+                        let k = 0; m.forEach((v, i) => { if (v > m[k]) k = i; });
+                        bawah = d.states[k] + ' ' + pct(m[k], 1);
+                    }
+                }
+                s += '<g class="hg-n' + (isEv ? ' ev' : '') + (sel === d.id ? ' sel' : '') + '" data-node="' + d.id + '" transform="translate(' + d.x + ',' + d.y + ')">' +
+                    '<ellipse rx="' + RX + '" ry="' + RY + '"/>' +
+                    '<text y="' + (bawah ? -3 : 4) + '">' + esc(d.name) + '</text>' +
+                    (bawah ? '<text class="v" y="13">' + esc(bawah) + '</text>' : '') +
+                    (isEv ? '<rect class="hg-e-ico" x="' + (RX - 16) + '" y="' + (RY - 14) + '" width="13" height="13" rx="2"/><text class="hg-e-t" x="' + (RX - 9.5) + '" y="' + (RY - 4) + '">e</text>' : '') +
+                    '</g>';
+            });
+            svg.innerHTML = s;
+        }
+
+        /* ---- pembahasan hitungan untuk simpul q ---- */
+        function rincian(e, q, sTarget) {
+            const d = nodeById(q);
+            if (!d) return '';
+            const h = hitung(e);
+            const bukti = Object.keys(e).map(id => esc(nodeById(id).name) + ' = ' + esc(nodeById(id).states[e[id]]));
+            const sembunyi = net.nodes.filter(x => x.id !== q && e[x.id] === undefined).map(x => esc(x.name));
+            if (e[q] !== undefined) return '<p><b>' + esc(d.name) + '</b> sudah menjadi bukti (= ' + esc(d.states[e[q]]) + '), jadi peluangnya 100%. Klik simpul lain untuk melihat hitungannya.</p>';
+            if (!(h.pe > 0)) return '<div class="kp-bad">Kombinasi bukti ini mustahil menurut tabel (P(e) = 0). Hapus salah satu bukti.</div>';
+            const eTxt = bukti.length ? bukti.join(', ') : 'tanpa bukti';
+            return '<p><b>Pertanyaan:</b> P(' + esc(d.name) + ' | ' + eTxt + ')</p>' +
+                '<p>Rumus: <span class="kp-f">P(' + esc(d.name) + ' = x | e) = P(' + esc(d.name) + ' = x, e) / P(e)</span>, dengan P(' + esc(d.name) + ' = x, e) = jumlah, atas semua nilai variabel tersembunyi' + (sembunyi.length ? ' (' + sembunyi.join(', ') + ')' : '') + ', dari hasil kali P(simpul | induknya).</p>' +
+                '<table class="kp-tab"><thead><tr><th>' + esc(d.name) + ' = x</th><th>P(x, e)</th><th>P(x | e) = P(x, e) / P(e)</th></tr></thead><tbody>' +
+                d.states.map((s, k) => '<tr' + (sTarget === k ? ' class="hit"' : '') + '><td>' + esc(s) + '</td><td>' + num(h.joint[q][k], 6) + '</td><td>' + num(h.joint[q][k], 6) + ' / ' + num(h.pe, 6) + ' = <b>' + pctH(h.marg[q][k]) + '</b></td></tr>').join('') +
+                '<tr><td>Jumlah</td><td>P(e) = ' + num(h.pe, 6) + '</td><td>100%</td></tr></tbody></table>' +
+                '<p class="kp-note">Simulator ini menjumlahkan ' + h.n + ' kombinasi yang cocok dengan bukti (enumerasi). Hugin memakai algoritma <i>junction tree</i> yang jauh lebih cepat untuk jaringan besar, tetapi hasilnya sama persis.</p>';
+        }
+
+        function renderInfo() {
+            const el = $q(rootEl, 'info');
+            if (mode === 'edit') { el.style.display = 'none'; return; }
+            el.style.display = '';
+            if (tutup) { el.innerHTML = '<p><i class="fa-solid fa-eye-slash"></i> Angka disembunyikan. Hitung dulu dengan tangan, tulis jawaban di soal di bawah, lalu klik <b>Periksa</b>.</p>'; return; }
+            el.innerHTML = sel ? rincian(ev, sel) : '<p>Klik nama simpul (di panel kiri atau di graf) untuk melihat cara angkanya dihitung.</p>';
+        }
+
+        /* ---- editor (mode edit) ---- */
+        function renderEdit() {
+            const el = $q(rootEl, 'edit');
+            if (mode !== 'edit') { el.innerHTML = ''; return; }
+            let s = '<div class="hg-ed"><div class="kp-row"><b>Mode edit:</b>' +
+                '<button type="button" class="viz-btn secondary" data-act="tambah"><i class="fa-solid fa-plus"></i> Simpul baru</button>' +
+                '<span class="hg-muted">Seret simpul untuk memindah. Klik simpul untuk mengisi nama, state, induk, dan tabel peluangnya.</span></div>';
+            s += '<p class="hg-muted">Total state: <b>' + totalState() + '</b> (Hugin Lite membatasi 50 state). Kombinasi gabungan: ' + ukuranGabung() + '.</p>';
+            if (pesan) s += '<div class="kp-warn">' + pesan + '</div>';
+            const d = sel && nodeById(sel);
+            if (d) {
+                const tur = keturunan(d.id);
+                s += '<div class="hg-prop"><div class="hg-f"><label>Nama simpul <input type="text" data-ed="name" value="' + esc(d.name) + '"></label>' +
+                    '<label>State (pisahkan dengan koma) <input type="text" data-ed="states" value="' + esc(d.states.join(', ')) + '"></label>' +
+                    '<button type="button" class="viz-btn secondary" data-act="hapus"><i class="fa-solid fa-trash"></i> Hapus simpul</button></div>' +
+                    '<div class="hg-par"><b>Induk (panah masuk ke ' + esc(d.name) + '):</b> ' +
+                    (net.nodes.filter(x => x.id !== d.id).map(x => {
+                        const dis = tur.has(x.id);
+                        return '<label' + (dis ? ' title="Tidak boleh: akan membentuk siklus"' : '') + '><input type="checkbox" data-par="' + x.id + '"' + (d.parents.includes(x.id) ? ' checked' : '') + (dis ? ' disabled' : '') + '> ' + esc(x.name) + '</label>';
+                    }).join('') || '<span class="hg-muted">belum ada simpul lain</span>') + '</div>';
+                const rows = barisInduk(d);
+                s += '<div class="kp-scroll"><table class="kp-tab hg-cpt"><caption>Tabel peluang bersyarat P(' + esc(d.name) + (d.parents.length ? ' | ' + d.parents.map(p => esc(nodeById(p).name)).join(', ') : '') + ')</caption><thead><tr>' +
+                    d.parents.map(p => '<th>' + esc(nodeById(p).name) + '</th>').join('') +
+                    d.states.map(st => '<th>' + esc(st) + '</th>').join('') + '<th>Jumlah</th></tr></thead><tbody>' +
+                    rows.map((r, i) => {
+                        const sum = d.cpt[i].reduce((a, b) => a + b, 0);
+                        return '<tr>' + r.map((k, j) => '<td>' + esc(nodeById(d.parents[j]).states[k]) + '</td>').join('') +
+                            d.cpt[i].map((v, k) => '<td><input type="number" min="0" max="1" step="0.01" data-cpt="' + i + '|' + k + '" value="' + v + '"></td>').join('') +
+                            '<td class="hg-sum' + (Math.abs(sum - 1) > 1e-6 ? ' bad' : '') + '" data-sum="' + i + '">' + num(sum, 4) + '</td></tr>';
+                    }).join('') + '</tbody></table></div>' +
+                    '<div class="kp-row" style="margin-top:8px"><button type="button" class="viz-btn secondary" data-act="norm">Normalisasi semua baris</button><span class="hg-muted">Setiap baris harus berjumlah 1: untuk tiap kombinasi induk, salah satu state pasti terjadi.</span></div></div>';
+            } else s += '<p class="hg-muted">Belum ada simpul yang dipilih.</p>';
+            el.innerHTML = s + '</div>';
+        }
+
+        /* ---- soal ---- */
+        function renderSoal() {
+            const k = HUGIN_KASUS[kasusIdx];
+            const ubah = JSON.stringify(net.nodes.map(d => [d.id, d.states, d.parents, d.cpt])) !== JSON.stringify(k.nodes.map(d => [d.id, d.states, d.parents, d.cpt]));
+            $q(rootEl, 'soal').innerHTML = '<h4 class="hg-h">Contoh soal: ' + esc(k.judul) + '</h4>' +
+                (ubah ? '<div class="kp-warn">Jaringan sudah Anda ubah. Kunci jawaban dihitung dari jaringan yang sekarang, jadi pembahasan teks di bawah mungkin tidak cocok lagi. Pilih ulang kasus untuk kembali ke angka asli.</div>' : '') +
+                k.soal.map((q, i) => {
+                    const st = jawab[kasusIdx + '-' + i] || {};
+                    return '<div class="hg-q" data-q="' + i + '"><div class="hg-qh"><span class="hg-qn">' + (i + 1) + '</span><span class="hg-tag">' + esc(q.jenis) + '</span></div>' +
+                        '<p>' + q.t + '</p>' +
+                        '<div class="kp-row"><button type="button" class="viz-btn secondary" data-qa="pasang">Pasang bukti di jaringan</button>' +
+                        '<label class="hg-ans">Jawaban P(' + esc(nodeById(q.q) ? nodeById(q.q).name : q.q) + ' = ' + esc(nodeById(q.q) ? nodeById(q.q).states[q.s] : '') + ') = <input type="text" inputmode="decimal" data-qa="nilai" value="' + esc(st.nilai || '') + '" placeholder="mis. 47,37"> %</label>' +
+                        '<button type="button" class="viz-btn" data-qa="cek">Periksa</button>' +
+                        '<button type="button" class="viz-btn secondary" data-qa="bahas">' + (st.bahas ? 'Tutup pembahasan' : 'Pembahasan') + '</button></div>' +
+                        (st.status ? '<div class="' + (st.status === 'ok' ? 'kp-ok' : 'kp-bad') + '">' + st.pesan + '</div>' : '') +
+                        (st.bahas ? '<div class="hg-bahas">' + (ubah ? '' : '<p>' + q.b + '</p>') + rincian(q.ev, q.q, q.s) + '</div>' : '') +
+                        '</div>';
+                }).join('');
+        }
+
+        function render() {
+            $q(rootEl, 'judul').textContent = 'Jaringan: ' + net.kunci + ' · ' + (mode === 'edit' ? 'Mode edit' : 'Mode jalankan');
+            rootEl.querySelectorAll('[data-act="edit"],[data-act="run"]').forEach(b => b.classList.toggle('on', b.dataset.act === mode));
+            $q(rootEl, 'cerita').innerHTML = net.cerita || '';
+            let h = null;
+            if (mode === 'run') {
+                h = hitung();
+                if (!(h.pe > 0)) {
+                    const ids = Object.keys(ev); delete ev[ids[ids.length - 1]];
+                    pesan = 'Bukti terakhir dibatalkan: kombinasi itu mustahil menurut tabel (P(e) = 0).';
+                    h = hitung();
+                }
+            }
+            renderTree(h); renderSvg(h); renderInfo(); renderEdit(); renderSoal();
+            const nb = Object.keys(ev).length;
+            $q(rootEl, 'status').innerHTML = mode === 'run'
+                ? (pesan ? '<span class="hg-warn-t">' + pesan + '</span> · ' : '') + 'Bukti: ' + (nb ? Object.keys(ev).map(id => esc(nodeById(id).name) + ' = ' + esc(nodeById(id).states[ev[id]])).join(', ') : 'belum ada') + (h && nb ? ' · P(e) = ' + (tutup ? '?' : num(h.pe, 6)) : '') + ' · Klik baris state di panel kiri untuk memasukkan bukti; klik lagi untuk mencabutnya.'
+                : 'Mode edit: ' + net.nodes.length + ' simpul, ' + totalState() + ' state.';
+            if (mode === 'run') pesan = '';
+        }
+
+        function muatKasus(i) {
+            kasusIdx = i; net = salin(HUGIN_KASUS[i]); ev = {}; pesan = '';
+            sel = HUGIN_KASUS[i].soal[0].q;
+            Object.keys(jawab).forEach(k => { if (k.indexOf(i + '-') === 0) delete jawab[k]; });
+            render();
+        }
+        function keMode(m) {
+            if (m === 'run') {
+                const salah = barisSalah();
+                if (salah.length) {
+                    mode = 'edit';
+                    pesan = 'Jaringan belum bisa dikompilasi: ' + salah.slice(0, 4).map(x => 'tabel <b>' + esc(x[0].name) + '</b> baris ' + (x[1] + 1) + ' berjumlah ' + num(x[2], 4)).join('; ') + (salah.length > 4 ? '; …' : '') + '. Perbaiki atau klik “Normalisasi semua baris”.';
+                    render(); return;
+                }
+                if (ukuranGabung() > 200000) { mode = 'edit'; pesan = 'Jaringan terlalu besar untuk dienumerasi di browser. Kurangi simpul atau state.'; render(); return; }
+            }
+            mode = m; if (m === 'edit') pesan = ''; render();
+        }
+        function unduhNet() {
+            const nama = {};
+            const pakai = new Set();
+            net.nodes.forEach(d => {
+                let b = String(d.name).replace(/[^A-Za-z0-9_]/g, '_').replace(/^([^A-Za-z_])/, '_$1') || 'Simpul';
+                let c = b, n = 2; while (pakai.has(c)) c = b + '_' + (n++);
+                pakai.add(c); nama[d.id] = c;
+            });
+            const q = s => '"' + String(s).replace(/"/g, "'") + '"';
+            let t = 'net\n{\n    node_size = (' + (RX * 2) + ' ' + (RY * 2) + ');\n    label = ' + q(net.kunci) + ';\n}\n\n';
+            net.nodes.forEach(d => {
+                t += 'node ' + nama[d.id] + '\n{\n    label = ' + q(d.name) + ';\n    position = (' + Math.round(d.x) + ' ' + Math.round(370 - d.y) + ');\n    states = (' + d.states.map(q).join(' ') + ');\n}\n\n';
+            });
+            net.nodes.forEach(d => {
+                const K = d.parents.map(p => nodeById(p).states.length);
+                let r = 0;
+                const blok = lv => {
+                    if (lv === K.length) { const row = d.cpt[r++]; return '(' + row.map(v => String(v)).join(' ') + ')'; }
+                    const isi = []; for (let k = 0; k < K[lv]; k++) isi.push(blok(lv + 1));
+                    return '(' + isi.join(' ') + ')';
+                };
+                const data = K.length ? blok(0) : '(' + d.cpt[0].join(' ') + ')';
+                t += 'potential (' + nama[d.id] + (d.parents.length ? ' | ' + d.parents.map(p => nama[p]).join(' ') : '') + ')\n{\n    data = ' + data + ';\n}\n\n';
+            });
+            try {
+                const blob = new root.Blob([t], { type: 'text/plain' });
+                const a = root.document.createElement('a');
+                a.href = root.URL.createObjectURL(blob); a.download = net.kunci + '.net';
+                root.document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => root.URL.revokeObjectURL(a.href), 2000);
+            } catch (err) { if (root.console) root.console.error(err); }
+            return t;
+        }
+        rootEl._hgNet = unduhNet;   // untuk pengujian
+
+        function bacaAngka(s) {
+            const v = parseFloat(String(s).replace('%', '').replace(',', '.').trim());
+            return isNaN(v) ? null : v;
+        }
+
+        /* ---- event ---- */
+        $q(rootEl, 'kasus').addEventListener('change', e => muatKasus(+e.target.value));
+        $q(rootEl, 'tutup').addEventListener('change', e => { tutup = e.target.checked; render(); });
+        rootEl.addEventListener('click', e => {
+            const act = e.target.closest('[data-act]');
+            if (act) {
+                const a = act.dataset.act;
+                if (a === 'edit' || a === 'run') keMode(a);
+                else if (a === 'reset') { ev = {}; render(); }
+                else if (a === 'net') unduhNet();
+                else if (a === 'tambah') {
+                    const id = 'S' + (++uid);
+                    net.nodes.push({ id, name: 'Simpul ' + (net.nodes.length + 1), states: ['Ya', 'Tidak'], parents: [], cpt: [[0.5, 0.5]], x: 60 + (uid * 47) % 520, y: 40 + (uid * 31) % 280 });
+                    sel = id; render();
+                } else if (a === 'hapus' && sel) {
+                    const id = sel;
+                    net.nodes = net.nodes.filter(d => d.id !== id);
+                    net.nodes.forEach(d => { if (d.parents.includes(id)) { d.parents = d.parents.filter(p => p !== id); d.cpt = cptKosong(d); } });
+                    delete ev[id]; sel = null; render();
+                } else if (a === 'norm') {
+                    net.nodes.forEach(d => { d.cpt = d.cpt.map(r => { const s = r.reduce((x, y) => x + y, 0); return s > 0 ? r.map(v => Number((v / s).toFixed(4))) : r.map(() => Number((1 / r.length).toFixed(4))); }); });
+                    pesan = ''; render();
+                }
+                return;
+            }
+            const st = e.target.closest('[data-st]');
+            if (st && mode === 'run') {
+                const [id, k] = st.dataset.st.split('|');
+                if (ev[id] === +k) delete ev[id]; else ev[id] = +k;
+                sel = sel || id; render(); return;
+            }
+            const pl = e.target.closest('[data-pilih]');
+            if (pl) { sel = pl.dataset.pilih; render(); return; }
+            const qa = e.target.closest('[data-qa]');
+            if (qa && qa.tagName === 'BUTTON') {
+                const i = +qa.closest('[data-q]').dataset.q, q = HUGIN_KASUS[kasusIdx].soal[i], key = kasusIdx + '-' + i;
+                const st2 = jawab[key] = jawab[key] || {};
+                st2.nilai = qa.closest('[data-q]').querySelector('[data-qa="nilai"]').value;
+                if (qa.dataset.qa === 'pasang') {
+                    if (mode !== 'run') keMode('run');
+                    if (mode === 'run') { ev = Object.assign({}, q.ev); sel = q.q; render(); rootEl.querySelector('.hg-win').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+                } else if (qa.dataset.qa === 'cek') {
+                    const benar = hitung(q.ev).marg[q.q][q.s] * 100, v = bacaAngka(st2.nilai);
+                    if (v === null) { st2.status = 'bad'; st2.pesan = 'Tulis jawaban dalam persen, misalnya 47,37.'; }
+                    else if (Math.abs(v - benar) <= 0.5) { st2.status = 'ok'; st2.pesan = '<b>Benar.</b> Nilai tepatnya ' + num(benar, 2) + '%.'; }
+                    else if (Math.abs(v / 100 - benar) <= 0.5 && v <= 1) { st2.status = 'bad'; st2.pesan = 'Tampaknya Anda menulis dalam bentuk desimal. Tulis dalam persen (kalikan 100).'; }
+                    else { st2.status = 'bad'; st2.pesan = 'Belum tepat (selisih ' + num(Math.abs(v - benar), 2) + ' poin persen). Periksa apakah semua bukti sudah dipakai, lalu bandingkan dengan pembahasan.'; }
+                    renderSoal();
+                } else if (qa.dataset.qa === 'bahas') { st2.bahas = !st2.bahas; renderSoal(); }
+            }
+        });
+        rootEl.addEventListener('input', e => {
+            const t = e.target;
+            if (t.dataset.qa === 'nilai') {
+                const i = +t.closest('[data-q]').dataset.q, key = kasusIdx + '-' + i;
+                (jawab[key] = jawab[key] || {}).nilai = t.value; return;
+            }
+            const d = sel && nodeById(sel);
+            if (!d) return;
+            if (t.dataset.cpt) {
+                const [i, k] = t.dataset.cpt.split('|').map(Number);
+                const v = parseFloat(t.value);
+                d.cpt[i][k] = isNaN(v) ? 0 : v;
+                const sum = d.cpt[i].reduce((a, b) => a + b, 0);
+                const c = rootEl.querySelector('[data-sum="' + i + '"]');
+                if (c) { c.textContent = num(sum, 4); c.classList.toggle('bad', Math.abs(sum - 1) > 1e-6); }
+            } else if (t.dataset.ed === 'name') {
+                d.name = t.value || d.id;
+                renderTree(null); renderSvg(null);
+                $q(rootEl, 'judul').textContent = 'Jaringan: ' + net.kunci + ' · Mode edit';
+            }
+        });
+        rootEl.addEventListener('change', e => {
+            const t = e.target, d = sel && nodeById(sel);
+            if (!d) return;
+            if (t.dataset.ed === 'states') {
+                const st = t.value.split(',').map(x => x.trim()).filter(Boolean);
+                if (st.length < 2 || st.length > 6) { pesan = 'Simpul perlu 2 sampai 6 state.'; render(); return; }
+                if (st.length !== d.states.length) {
+                    d.states = st; d.cpt = cptKosong(d);
+                    net.nodes.forEach(x => { if (x.parents.includes(d.id)) x.cpt = cptKosong(x); });
+                    pesan = 'Jumlah state berubah: tabel ' + esc(d.name) + ' dan tabel anak-anaknya diisi ulang dengan peluang seragam.';
+                } else { d.states = st; pesan = ''; }
+                delete ev[d.id]; render();
+            } else if (t.dataset.par) {
+                const p = t.dataset.par;
+                if (t.checked) d.parents.push(p); else d.parents = d.parents.filter(x => x !== p);
+                d.cpt = cptKosong(d); delete ev[d.id];
+                pesan = 'Induk ' + esc(d.name) + ' berubah: tabelnya sekarang punya ' + d.cpt.length + ' baris dan diisi ulang dengan peluang seragam.';
+                render();
+            }
+        });
+
+        /* seret simpul (mode edit) atau pilih simpul (kedua mode) */
+        let drag = null;
+        const keSvg = ev2 => {
+            const pt = svg.createSVGPoint(); pt.x = ev2.clientX; pt.y = ev2.clientY;
+            return pt.matrixTransform(svg.getScreenCTM().inverse());
+        };
+        svg.addEventListener('pointerdown', e => {
+            const g = e.target.closest('[data-node]');
+            if (!g) return;
+            const d = nodeById(g.dataset.node), p = keSvg(e);
+            drag = { d, dx: d.x - p.x, dy: d.y - p.y, gerak: false };
+            if (mode === 'edit') { svg.setPointerCapture(e.pointerId); e.preventDefault(); }
+        });
+        svg.addEventListener('pointermove', e => {
+            if (!drag || mode !== 'edit') return;
+            const p = keSvg(e);
+            drag.d.x = Math.max(RX, Math.min(640 - RX, p.x + drag.dx));
+            drag.d.y = Math.max(RY, Math.min(370 - RY, p.y + drag.dy));
+            drag.gerak = true; renderSvg(null);
+        });
+        svg.addEventListener('pointerup', () => {
+            if (!drag) return;
+            const d = drag.d, gerak = drag.gerak; drag = null;
+            if (!gerak || sel !== d.id) { sel = d.id; render(); }
+        });
+
+        rootEl.dataset.hgid = String(++UID);
+        muatKasus(0);
+    }
+
     /* ---------- dup-lab ---------- */
     function initDup(rootEl) {
         const st = { n: 3 };
@@ -855,6 +1494,7 @@
         'bayes-lab': initBayesLab,
         'bayes-update': initBayesUpdate,
         'bayes-net': initBayesNet,
+        'bayes-hugin': initBayesHugin,
         'dup-lab': initDup
     };
     function boot() {
@@ -870,7 +1510,7 @@
 
     root.KetidakpastianViz = {
         mb, md, cfDari, gabung, gabungDetail, gabungBanyak, premisDan, premisAtau, buktiTakPasti, istilahCF,
-        FLU_ATURAN, fluHitung, kotak, PRIOR, LIK, posterior, NET, netHitung, DUP, dupHitung, BEDA, bedaHitung, INIT
+        FLU_ATURAN, fluHitung, kotak, PRIOR, LIK, posterior, NET, netHitung, bnInfer, HUGIN_KASUS, DUP, dupHitung, BEDA, bedaHitung, INIT
     };
     if (typeof module !== 'undefined' && module.exports) module.exports = root.KetidakpastianViz;
     if (root.document) {

@@ -1586,6 +1586,7 @@ gabung(-0.4, -0.5) = -0.7</pre>
                     <button type="button" data-goto="b-contoh">Contoh tiga hipotesis</button>
                     <button type="button" data-goto="b-nol">Peluang 0</button>
                     <button type="button" data-goto="b-jaringan">Jaringan Bayes</button>
+                    <button type="button" data-goto="b-hugin">Lab ala Hugin</button>
                     <button type="button" data-goto="b-python">Python</button>
                 </nav>
 
@@ -1720,6 +1721,85 @@ gabung(-0.4, -0.5) = -0.7</pre>
                 <div class="info-box">
                     <strong><i class="fa-solid fa-lightbulb"></i> Kaitan dengan pertemuan 9–10:</strong>
                     <p style="margin-top:6px;">Sistem berbasis aturan hanya dapat bertanya “apa kesimpulannya?” dalam satu arah penelusuran. Jaringan Bayes menjawab pertanyaan dari arah mana saja (dari penyebab ke akibat, dari akibat ke penyebab) dengan satu model yang sama, dan memberi angka keyakinan yang konsisten secara probabilitas. Harganya: semua tabel peluang harus tersedia dan benar.</p>
+                </div>
+
+                <h3 id="b-hugin">Laboratorium Jaringan Bayes: Belajar seperti di Hugin Lite</h3>
+                <p>Dalam praktik, jaringan Bayes tidak dihitung dengan tangan. Salah satu perangkat lunak yang paling dikenal adalah <strong>Hugin</strong>, buatan Hugin Expert A/S dari Aalborg, Denmark. Versi gratisnya, <strong>Hugin Lite</strong>, dibatasi paling banyak 50 state dan belajar dari paling banyak 500 kasus, serta hanya boleh dipakai untuk demonstrasi. Cara kerja Hugin terdiri atas dua mode:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Langkah di Hugin</th><th>Yang dikerjakan</th><th>Di simulator bawah</th></tr></thead>
+                        <tbody>
+                            <tr><td>1. <em>Edit mode</em>: gambar simpul dan panah</td><td>Menyusun struktur (graf berarah tanpa siklus)</td><td>Mode edit: Simpul baru, centang induk, seret simpul</td></tr>
+                            <tr><td>2. Isi state dan tabel peluang</td><td>Setiap simpul diberi CPT: P(simpul | induknya)</td><td>Klik simpul, isi tabel; setiap baris harus berjumlah 1</td></tr>
+                            <tr><td>3. <em>Compile</em> lalu <em>run mode</em></td><td>Jaringan diperiksa dan disiapkan untuk inferensi</td><td>Mode jalankan (ditolak bila ada baris yang jumlahnya bukan 1)</td></tr>
+                            <tr><td>4. Masukkan bukti</td><td>Simpul yang diamati menjadi merah dan 100%</td><td>Klik baris state di panel kiri; klik lagi untuk mencabut</td></tr>
+                            <tr><td>5. Baca <em>belief</em></td><td>Peluang setiap simpul lain setelah bukti, P(X | e)</td><td>Batang hijau di panel kiri dan rincian hitungan di bawah graf</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Simulator di bawah meniru alur itu dan sudah memuat lima kasus nyata (pilih di menu <em>Kasus</em>): jaringan nilai mata kuliah seperti pada video Hugin, rumput basah dari slide, diagnosis penyakit dengan beberapa gejala (DBD, tifoid, flu), alarm maling atau gempa dari buku Russell &amp; Norvig, dan jaringan klinik paru (<em>asia.net</em>) yang menjadi contoh bawaan Hugin. Tiap kasus disertai soal yang jawabannya dapat langsung diperiksa.</p>
+
+                <div data-viz="bayes-hugin"></div>
+
+                <div class="algo-steps">
+                    <div class="algo-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Latihan hitung tangan dulu.</strong>
+                            <p>Centang <em>Sembunyikan angka</em>, pilih sebuah soal, klik <em>Pasang bukti di jaringan</em>, lalu hitung dengan rumus P(X | e) = P(X, e) / P(e). Tulis jawaban dalam persen dan klik <em>Periksa</em>. Toleransinya 0,5 poin persen.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Baca angka seperti di Hugin.</strong>
+                            <p>Matikan <em>Sembunyikan angka</em>. Klik nama simpul untuk melihat tabel P(x, e), P(e), dan hasil pembagiannya. Angka di panel kiri memakai gaya Hugin: persen dengan dua desimal, dan “–” untuk peluang nol.</p>
+                        </div>
+                    </div>
+                    <div class="algo-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Ubah jaringannya.</strong>
+                            <p>Masuk ke <em>Mode edit</em>, ubah satu angka tabel atau tambahkan simpul, lalu jalankan lagi. Kunci soal ikut dihitung ulang dari jaringan yang baru. Tombol <em>Unduh .net</em> menyimpan jaringan dalam format berkas Hugin agar dapat dibuka di Hugin Lite.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4>Membaca Angka 47,37% pada Tampilan Hugin</h4>
+                <p>Pada tampilan Hugin jaringan <em>nilai_mk</em>, buktinya adalah JST = lulus, ML = gagal, dan Pola = lulus, dan Hugin menunjukkan AI lulus <strong>47,37%</strong>. Angka tabel pada video tidak terlihat, jadi simulator memakai tabel ilustrasi yang menghasilkan angka yang sama: P(AI lulus) = 0,6; P(ML gagal | AI lulus) = 0,2 dan P(ML gagal | AI gagal) = 0,5; P(Pola lulus | AI lulus) = 0,75 dan P(Pola lulus | AI gagal) = 0,5.</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(AI | JST, ML, Pola) ∝ <i>P</i>(AI) · <i>P</i>(ML | AI) · <i>P</i>(Pola | AI) · <i>P</i>(JST | ML, Pola)</div>
+                    <div class="baris">AI lulus: 0,6 × 0,2 × 0,75 = 0,09 &nbsp;&nbsp; AI gagal: 0,4 × 0,5 × 0,5 = 0,10</div>
+                    <div class="baris"><i>P</i>(AI lulus | bukti) = 0,09 / (0,09 + 0,10) = <b>0,4737</b></div>
+                </div>
+                <p>Faktor P(JST | ML, Pola) sama untuk AI lulus maupun gagal, sehingga hilang saat dinormalisasi. Artinya, setelah ML dan Pola diketahui, nilai JST tidak lagi memberi informasi tentang AI. Inilah <em>independensi kondisional</em> yang dibaca langsung dari struktur jaringan: AI hanya terhubung ke JST melalui ML dan Pola.</p>
+                <h4>Penyakit dengan Beberapa Gejala: Mengapa Perlu Jaringan</h4>
+                <p>Pilih kasus <em>Penyakit dengan beberapa gejala</em>. Bandingkan dengan contoh tiga hipotesis A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub> di atas, yang memakai dua asumsi: hipotesisnya <strong>saling lepas</strong> (pasien hanya punya satu penyakit) dan buktinya <strong>bebas bersyarat</strong>. Pada jaringan penyakit, kedua asumsi itu tidak dibutuhkan:</p>
+                <div class="tbl-wrap">
+                    <table class="small-table">
+                        <thead><tr><th>Aspek</th><th>Tiga hipotesis (naive Bayes)</th><th>Jaringan penyakit</th></tr></thead>
+                        <tbody>
+                            <tr><td>Penyakit</td><td>Satu variabel dengan tiga nilai; peluangnya berjumlah 1</td><td>Tiga simpul ya/tidak; pasien bisa punya dua penyakit sekaligus</td></tr>
+                            <tr><td>Gejala bersama</td><td>Tiap bukti hanya bergantung pada hipotesis</td><td>Demam punya tiga induk (DBD, tifoid, flu); mual punya dua</td></tr>
+                            <tr><td>Faktor risiko</td><td>Hanya lewat prior</td><td>Simpul tersendiri (musim hujan) yang memengaruhi DBD dan flu</td></tr>
+                            <tr><td>Gejala lain menjelaskan</td><td>Tidak tertangkap</td><td><em>Explaining away</em>: batuk pilek menurunkan peluang DBD</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p>Masalah praktisnya: simpul demam dengan tiga induk ya/tidak butuh 2<sup>3</sup> = 8 baris tabel, dan pakar sulit mengisi baris seperti “P(demam | DBD, tifoid, tidak flu)”. Jalan pintasnya adalah pola <strong>noisy-OR</strong>: pakar cukup memberi satu angka per penyakit, yaitu peluang penyakit itu sendirian memicu demam (DBD 0,95, tifoid 0,85, flu 0,6), ditambah peluang kecil dari penyebab lain (0,05). Seluruh baris lalu dihitung:</p>
+                <div class="rumus">
+                    <div class="baris"><i>P</i>(demam | penyakit yang ada) = 1 − (1 − 0,05) · Π (1 − <i>p</i><sub>penyakit yang ada</sub>)</div>
+                    <div class="baris">Contoh, DBD dan flu ada, tifoid tidak: 1 − 0,95 × 0,05 × 0,4 = 1 − 0,019 = <b>0,981</b></div>
+                </div>
+                <p>Buka <em>Mode edit</em> dan klik simpul Demam untuk melihat kedelapan baris itu. Lalu kerjakan soal 1 sampai 3 berurutan: setiap gejala baru menggeser keyakinan, dan posterior sebelumnya menjadi titik awal bagi bukti berikutnya.</p>
+
+                <div class="info-box">
+                    <strong><i class="fa-solid fa-lightbulb"></i> Pola yang perlu dikenali dari kelima kasus:</strong>
+                    <ul style="margin:6px 0 0 18px;">
+                        <li><strong>Prediktif</strong> (searah panah, dari sebab ke akibat): cukup menjumlahkan atas simpul di antaranya.</li>
+                        <li><strong>Diagnostik</strong> (melawan arah panah, dari akibat ke sebab): perlu teorema Bayes, dan prior sangat menentukan. Dua tetangga menelepon pun hanya membuat peluang maling 28,4%, dan demam di musim hujan hanya membuat peluang DBD 16,5%.</li>
+                        <li><strong>Explaining away</strong>: dua sebab yang semula bebas menjadi saling bersaing setelah akibatnya diamati. Gempa menjelaskan alarm, sehingga peluang maling turun; batuk pilek menjelaskan demam, sehingga peluang DBD turun.</li>
+                    </ul>
                 </div>
 
                 <h3 id="b-python">Program: Posterior Tiga Hipotesis dalam Python</h3>
@@ -2303,7 +2383,7 @@ beli obligasi (CF 0.5822), dari: R6 -&gt; 0.4032, R7 -&gt; 0.3000
            Pahrul Irfan &amp; Halil Akhyar</p>
     </footer>
 
-    <script src="ketidakpastian-viz.js?v=20261108a"></script>
+    <script src="ketidakpastian-viz.js?v=20261127b"></script>
     <script>
         function toggleMobileMenu() {
             document.querySelector('.sidebar').classList.toggle('active');
