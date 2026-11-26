@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tugas 11 - Pemrograman Web Lanjut</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        header {
+            background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%) !important;
+        }
+        section h2 { border-bottom: 3px solid #b91c1c !important; }
+        th { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important; }
+        .badge { background: #b91c1c !important; }
+
+        /* Tanpa sidebar - konten satu kolom, dilebarkan penuh */
+        .container {
+            display: block;
+            max-width: 820px;
+            margin: 100px auto 0;
+        }
+        .content {
+            margin-left: 0;
+            width: auto;
+            padding: 30px 20px;
+        }
+        /* Footer: tanpa sidebar, jadi tidak perlu bergeser 280px */
+        footer { margin-left: 0; }
+        @media (max-width: 768px) {
+            .container { margin-top: 80px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header style="text-align:center;">
+        <h1>Tugas 11 &mdash; Front End Dasar (Vue)</h1>
+        <p>Pertemuan 11, lanjutan dari <a href="materi-11-front-end-dasar.html" style="color:#fee2e2;">Materi 11: Front End Dasar</a></p>
+    </header>
+
+    <div class="container">
+        <main class="content">
+
+            <section id="tugas">
+                <h2>Menampilkan Data dengan Vue Router <span class="badge">Tugas 11</span></h2>
+
+                <p><strong>Tujuan:</strong> membuat aplikasi Vue dengan <strong>minimal 4 halaman</strong> yang menampilkan data dan berpindah halaman lewat Vue Router. Rujukan: Materi 11, Section 2&ndash;5 dan Section 7.</p>
+
+                <h3>Proyek Dasar</h3>
+                <ol>
+                    <li>Buat repository <strong>T11-VUE-ROUTER</strong>. Project Vue dibuat langsung di akar repository (Materi 11, Section 2.3), dengan Vue Router (Section 7).</li>
+                    <li>Kerjakan dari project kosong buatan sendiri, bukan menyalin <code>vue-mahasiswa</code> lalu mengganti nama.</li>
+                </ol>
+
+                <h3>Bagian 1 &mdash; Data</h3>
+                <p><strong>Pilih tema sendiri:</strong> buku, film, resep, menu kafe, destinasi wisata, dan sejenisnya (kecuali mahasiswa dan matakuliah, karena sudah jadi contoh di materi). Contoh di bawah memakai buku; ganti dengan tema kalian. Simpan datanya di <code>src/data/</code> sebagai array, seperti <code>mahasiswa.js</code> di Section 5.1:</p>
+<pre><code>export const bukuAwal = [
+  { id: 1, judul: 'Laskar Pelangi', penulis: 'Andrea Hirata', tahun: 2005 },
+  // ... minimal 6 data
+]</code></pre>
+                <ul>
+                    <li>Minimal <strong>6 data</strong> yang masuk akal, dengan minimal 4 field termasuk <code>id</code> yang unik.</li>
+                </ul>
+
+                <h3>Bagian 2 &mdash; Halaman dan Rute</h3>
+                <p><strong>Nama rute mengikuti tema data kalian.</strong> Tabel di bawah memakai buku sebagai contoh. Kalau temanya film, rutenya <code>/film</code> dan <code>/film/:id</code>; kalau resep, <code>/resep</code> dan <code>/resep/:id</code>, dan seterusnya. Nama halaman dan file view juga disesuaikan (mis. <code>FilmView.vue</code>).</p>
+                <table>
+                    <tr><th>Rute</th><th>Halaman</th><th>Isi</th></tr>
+                    <tr><td><code>/</code></td><td>Beranda</td><td>Sambutan singkat dan tautan ke daftar</td></tr>
+                    <tr><td><code>/buku</code></td><td>Daftar</td><td>Seluruh data ditampilkan dengan <code>v-for</code> dan <code>:key</code> (kartu atau tabel), tiap item punya tautan ke detail</td></tr>
+                    <tr><td><code>/buku/:id</code></td><td>Detail</td><td>Semua field satu data. Bila <code>id</code> tidak ada, tampil pesan &ldquo;tidak ditemukan&rdquo; dan tautan kembali</td></tr>
+                    <tr><td><code>/tentang</code></td><td>Tentang</td><td>Nama dan NIM, serta jumlah data (dihitung dari array, bukan ditulis manual)</td></tr>
+                    <tr><td><code>/:pathMatch(.*)*</code></td><td>404</td><td>Wajib ada, tidak dihitung dalam 4 halaman</td></tr>
+                </table>
+                <ul>
+                    <li>Menu di atas berisi <code>RouterLink</code> ke Beranda, Daftar, dan Tentang. Tautan halaman yang sedang aktif diberi gaya berbeda.</li>
+                    <li>Perpindahan halaman memakai <code>RouterLink</code> atau <code>router.push</code>, tidak memakai <code>&lt;a href&gt;</code> biasa yang memuat ulang halaman.</li>
+                    <li>Halaman Detail mengambil <code>id</code> dari <code>useRoute()</code>. Awas: <code>route.params.id</code> bertipe <strong>teks</strong>, sedangkan <code>id</code> di data berupa angka.</li>
+                    <li>Memecah tampilan menjadi component (misalnya <code>KartuBuku</code>) tidak diwajibkan, tetapi boleh.</li>
+                </ul>
+
+                <h3>Pengujian</h3>
+                <p>Jalankan <code>npm run dev</code>, lalu lakukan tiga hal ini dan tunjukkan hasilnya lewat screenshot. Sertakan juga screenshot <code>npm run build</code> yang berhasil. Alamat <code>/buku/999</code> di bawah disesuaikan dengan rute tema kalian.</p>
+                <table>
+                    <tr><th>No</th><th>Skenario</th><th>Hasil yang diharapkan</th></tr>
+                    <tr><td>1</td><td>Pindah halaman lewat menu</td><td>Konten berganti tanpa muat ulang halaman, dan tautan aktif berubah</td></tr>
+                    <tr><td>2</td><td>Buka satu detail dari daftar, lalu buka <code>/buku/999</code></td><td>Detail sesuai data yang diklik; <code>id</code> yang tidak ada menampilkan pesan dan tautan kembali</td></tr>
+                    <tr><td>3</td><td>Buka <code>/asal-asalan</code></td><td>Halaman 404 tampil</td></tr>
+                </table>
+
+                <h3>Screenshot</h3>
+                <p>Simpan di folder <code>screenshot/</code>, setiap gambar memperlihatkan nama atau NIM (mis. di halaman Tentang): keempat halaman, 404, dan hasil build.</p>
+
+                <h3>README.md</h3>
+<pre><code># Tugas 11 - Front End Dasar (Vue)
+
+## Identitas
+- Nama : [Nama Lengkap]
+- NIM  : [NIM Mahasiswa]
+- Tema data : [Buku / ...]
+
+## Cara Menjalankan
+[npm install, npm run dev, alamat yang dibuka, dan npm run build]
+
+## Halaman dan Rute
+[Tabel: Rute, Halaman, Isi]
+
+## Pengujian
+[Screenshot + satu kalimat keterangan tiap gambar]
+
+## Deklarasi Penggunaan AI
+[Lihat di bawah]
+
+## Kesimpulan &amp; Kendala
+[Jawab: (1) apa bedanya RouterLink dengan &lt;a href&gt; biasa?
+(2) mengapa route.params.id perlu diubah menjadi angka sebelum dibandingkan dengan id di data?
+Lalu kendala dan solusinya]</code></pre>
+
+                <h3>Deklarasi Penggunaan AI</h3>
+                <p>AI <strong>boleh</strong> dipakai, tetapi wajib dideklarasikan jujur di README. Yang dinilai kejujuran, bukan banyaknya AI.</p>
+<pre><code>| Bagian | Alat AI | Dipakai untuk apa | Cara saya memeriksa hasilnya |
+|--------|---------|-------------------|------------------------------|
+| data/buku.js | ChatGPT | Membuat 10 data contoh | Cek judul dan penulis satu per satu |
+| DetailView.vue | - | - | - |</code></pre>
+                <ul>
+                    <li>Cantumkan setiap bagian yang dibantu AI beserta minimal satu contoh prompt. Kalau tidak memakai AI, tulis: <em>&quot;Saya tidak menggunakan AI dalam mengerjakan tugas ini.&quot;</em></li>
+                    <li>Bersiaplah ditanya, misalnya: &ldquo;kenapa <code>:key</code> dipakai di <code>v-for</code>?&rdquo; atau &ldquo;bagaimana halaman Detail tahu data mana yang harus ditampilkan?&rdquo;. Deklarasi tidak jujur dapat mengurangi nilai.</li>
+                </ul>
+
+                <h3>Kriteria Penilaian</h3>
+                <table>
+                    <tr><th>No</th><th>Kriteria</th><th>Bobot</th></tr>
+                    <tr><td>1</td><td>Data: sesuai syarat, ditampilkan dengan <code>v-for</code> dan <code>:key</code> di halaman Daftar</td><td>20%</td></tr>
+                    <tr><td>2</td><td>Routing: 4 halaman dan 404, menu dengan tautan aktif, tanpa muat ulang halaman</td><td>30%</td></tr>
+                    <tr><td>3</td><td>Halaman Detail dengan parameter <code>:id</code>, termasuk pesan bila data tidak ada</td><td>15%</td></tr>
+                    <tr><td>4</td><td>Pengujian dan screenshot, <code>npm run build</code> berhasil</td><td>5%</td></tr>
+                    <tr><td>5</td><td>README.md lengkap</td><td>15%</td></tr>
+                    <tr><td>6</td><td>Deklarasi penggunaan AI jujur dan lengkap</td><td>10%</td></tr>
+                    <tr><td>7</td><td>Kerapian: <code>node_modules</code> tidak ikut Git, kode terbaca</td><td>5%</td></tr>
+                    <tr><td></td><td><strong>Total</strong></td><td><strong>100%</strong></td></tr>
+                </table>
+
+                <h3>Submission</h3>
+                <ul>
+                    <li>Repository GitHub <strong>T11-VUE-ROUTER</strong>, status <strong>Public</strong>, berisi project Vue (<code>package.json</code> di akar), <code>screenshot/</code>, dan README.</li>
+                    <li>Upload link repository ke <a href="https://berajah-if.unram.ac.id/course/view.php?id=28" target="_blank">Berajah</a> &mdash; hanya link GitHub, bukan file/ZIP.</li>
+                </ul>
+
+                <div class="warning-box">
+                    <strong>Perhatian:</strong>
+                    <ul>
+                        <li>Repository tetap <strong>public</strong> hingga <strong>akhir semester</strong>.</li>
+                        <li>Proyek harus bisa dijalankan dengan langkah di README. <code>node_modules</code> dan <code>dist</code> tidak di-upload.</li>
+                        <li>Terlambat mengumpulkan: nilai dikurangi 10 poin per hari.</li>
+                        <li>Menyalin pekerjaan teman: baik yang menyalin maupun yang disalin mendapat nilai maksimal 50.</li>
+                    </ul>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Tugas 11 &mdash; Pemrograman Web Lanjut &mdash; Front End Dasar (Vue)</p>
+        <p>Teknik Informatika - Universitas Mataram &copy; 2026</p>
+    </footer>
+</body>
+</html>
